@@ -1,0 +1,954 @@
+{
+  "port_duty": {
+    "S_to_H_i": {
+      "minimum_mass_flow_kg_s": -7.746698803607184e-05,
+      "peak_forward_mass_flow_kg_s": 0.008789487011988891,
+      "mean_forward_mass_flow_kg_s": 0.0024524465972511835,
+      "forward_mass_per_cycle_kg": 0.0012262232986255917,
+      "reverse_mass_per_cycle_kg": 5.3952405966229876e-06,
+      "reverse_to_forward_mass_ratio": 0.004399884264693245,
+      "activity_threshold_kg_s": 8.789487011988891e-05,
+      "duration_above_activity_threshold_s": 0.25222919130008903,
+      "duty_fraction_above_activity_threshold": 0.5044583826001781,
+      "reflux_above_activity_threshold_s": 0.0
+    },
+    "H_i_to_L": {
+      "minimum_mass_flow_kg_s": 0.0,
+      "peak_forward_mass_flow_kg_s": 0.008804171673776366,
+      "mean_forward_mass_flow_kg_s": 0.002441656136246851,
+      "forward_mass_per_cycle_kg": 0.0012208280681234255,
+      "reverse_mass_per_cycle_kg": 0.0,
+      "reverse_to_forward_mass_ratio": 0.0,
+      "activity_threshold_kg_s": 8.804171673776366e-05,
+      "duration_above_activity_threshold_s": 0.2528679200167506,
+      "duty_fraction_above_activity_threshold": 0.5057358400335012,
+      "reflux_above_activity_threshold_s": 0.0
+    },
+    "L_to_H_o": {
+      "minimum_mass_flow_kg_s": -0.00015475442486388125,
+      "peak_forward_mass_flow_kg_s": 0.010222012615455783,
+      "mean_forward_mass_flow_kg_s": 0.002473960389790011,
+      "forward_mass_per_cycle_kg": 0.0012369801948950055,
+      "reverse_mass_per_cycle_kg": 1.615316790417442e-05,
+      "reverse_to_forward_mass_ratio": 0.013058550145619345,
+      "activity_threshold_kg_s": 0.00010222012615455782,
+      "duration_above_activity_threshold_s": 0.3242507966566333,
+      "duty_fraction_above_activity_threshold": 0.6485015933132666,
+      "reflux_above_activity_threshold_s": 0.10411816354830966
+    },
+    "H_o_to_S": {
+      "minimum_mass_flow_kg_s": 0.0,
+      "peak_forward_mass_flow_kg_s": 0.010159452640952554,
+      "mean_forward_mass_flow_kg_s": 0.0024416538857944627,
+      "forward_mass_per_cycle_kg": 0.0012208269428972314,
+      "reverse_mass_per_cycle_kg": 0.0,
+      "reverse_to_forward_mass_ratio": 0.0,
+      "activity_threshold_kg_s": 0.00010159452640952555,
+      "duration_above_activity_threshold_s": 0.24117394711075085,
+      "duty_fraction_above_activity_threshold": 0.4823478942215017,
+      "reflux_above_activity_threshold_s": 0.0
+    }
+  },
+  "periodic_status": "converged",
+  "hardware_inputs": {
+    "geometry": {
+      "tube_count": 1236,
+      "tube_length_m": 0.03175,
+      "inner_diameter_m": 0.00033,
+      "wall_thickness_m": 0.0001524,
+      "pitch_m": 0.00125,
+      "header_depth_m": 0.002,
+      "additional_internal_volume_m3": 2e-06
+    },
+    "properties": {
+      "metal_conductivity_w_m_k": 15.0,
+      "metal_density_kg_m3": 8000.0,
+      "metal_cp_j_kg_k": 500.0,
+      "extra_wall_capacity_j_k": 2.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_viscosity_pa_s": 2e-05,
+      "gas_nusselt": 3.66,
+      "air_conductivity_w_m_k": 0.03,
+      "air_viscosity_pa_s": 2e-05,
+      "air_nusselt": 4.0,
+      "air_cp_j_kg_k": 1005.0,
+      "air_mass_flow_kg_s": 0.005,
+      "air_poiseuille_number": 64.0,
+      "air_minor_loss_coefficient": 2.0,
+      "fan_total_efficiency": 0.5,
+      "core_loss_multiplier": 1.0,
+      "header_loss_coefficient": 2.0
+    },
+    "heat_in": {
+      "air_density_kg_m3": 0.788,
+      "air_inlet_temperature_k": 448.15
+    },
+    "heat_out": {
+      "air_density_kg_m3": 1.184,
+      "air_inlet_temperature_k": 298.15
+    }
+  },
+  "hardware": {
+    "H_i": {
+      "tube_flow_area_m2": 0.0001057149069525619,
+      "tube_internal_area_m2": 0.040684221766592005,
+      "tube_gas_volume_m3": 3.3564482957438407e-06,
+      "header_gas_volume_m3": 7.875e-06,
+      "working_gas_volume_m3": 1.323144829574384e-05,
+      "core_width_m": 0.045,
+      "core_height_m": 0.043750000000000004,
+      "fluid_envelope_length_m": 0.035750000000000004,
+      "wall_material_volume_m3": 9.06367530794875e-06,
+      "gas_film_resistance_k_w": 0.07387297459238276,
+      "metal_resistance_k_w": 0.00017688406865430946,
+      "air_film_resistance_k_w": 0.2542804085501038,
+      "wall_capacity_j_k": 38.254701231795,
+      "overall_static_conductance_w_k": 3.0457137214124863,
+      "air_hydraulic_diameter_m": 0.0023880484719771182,
+      "air_velocity_m_s": 4.022133887630743,
+      "air_reynolds": 378.4389969670929,
+      "air_pressure_drop_pa": 27.079494083407052,
+      "fan_electrical_power_w": 0.3436484020736935,
+      "assumptions": "constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated"
+    },
+    "H_o": {
+      "tube_flow_area_m2": 0.0001057149069525619,
+      "tube_internal_area_m2": 0.040684221766592005,
+      "tube_gas_volume_m3": 3.3564482957438407e-06,
+      "header_gas_volume_m3": 7.875e-06,
+      "working_gas_volume_m3": 1.323144829574384e-05,
+      "core_width_m": 0.045,
+      "core_height_m": 0.043750000000000004,
+      "fluid_envelope_length_m": 0.035750000000000004,
+      "wall_material_volume_m3": 9.06367530794875e-06,
+      "gas_film_resistance_k_w": 0.07387297459238276,
+      "metal_resistance_k_w": 0.00017688406865430946,
+      "air_film_resistance_k_w": 0.2542804085501038,
+      "wall_capacity_j_k": 38.254701231795,
+      "overall_static_conductance_w_k": 3.0457137214124863,
+      "air_hydraulic_diameter_m": 0.0023880484719771182,
+      "air_velocity_m_s": 2.676893161700191,
+      "air_reynolds": 378.438996967093,
+      "air_pressure_drop_pa": 18.022501129835103,
+      "fan_electrical_power_w": 0.15221707035333704,
+      "assumptions": "constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated"
+    },
+    "total_fan_electrical_power_w": 0.49586547242703055
+  },
+  "convergence_history": [
+    {
+      "cycle": 1,
+      "scaled_periodic_error": 217041.61382728838
+    },
+    {
+      "cycle": 2,
+      "scaled_periodic_error": 6290.5718833591545
+    },
+    {
+      "cycle": 3,
+      "scaled_periodic_error": 4379.649244582325
+    },
+    {
+      "cycle": 4,
+      "scaled_periodic_error": 4104.0730071264115
+    },
+    {
+      "cycle": 5,
+      "scaled_periodic_error": 3843.7847887625653
+    },
+    {
+      "cycle": 6,
+      "scaled_periodic_error": 3601.463115276091
+    },
+    {
+      "cycle": 7,
+      "scaled_periodic_error": 3375.8702860403396
+    },
+    {
+      "cycle": 8,
+      "scaled_periodic_error": 3165.736710709089
+    },
+    {
+      "cycle": 9,
+      "scaled_periodic_error": 2969.896938597319
+    },
+    {
+      "cycle": 10,
+      "scaled_periodic_error": 2787.2839784101775
+    },
+    {
+      "cycle": 11,
+      "scaled_periodic_error": 2616.9200140142098
+    },
+    {
+      "cycle": 12,
+      "scaled_periodic_error": 2457.907684855677
+    },
+    {
+      "cycle": 13,
+      "scaled_periodic_error": 2309.422791054377
+    },
+    {
+      "cycle": 14,
+      "scaled_periodic_error": 2170.7074883343494
+    },
+    {
+      "cycle": 15,
+      "scaled_periodic_error": 2041.06382406564
+    },
+    {
+      "cycle": 16,
+      "scaled_periodic_error": 1919.8488986093616
+    },
+    {
+      "cycle": 17,
+      "scaled_periodic_error": 1806.4696286143298
+    },
+    {
+      "cycle": 18,
+      "scaled_periodic_error": 1700.3786213039054
+    },
+    {
+      "cycle": 19,
+      "scaled_periodic_error": 1601.069994940493
+    },
+    {
+      "cycle": 20,
+      "scaled_periodic_error": 1508.0763113350783
+    },
+    {
+      "cycle": 21,
+      "scaled_periodic_error": 1420.9648484205998
+    },
+    {
+      "cycle": 22,
+      "scaled_periodic_error": 1339.335073536122
+    },
+    {
+      "cycle": 23,
+      "scaled_periodic_error": 1262.8157725586475
+    },
+    {
+      "cycle": 24,
+      "scaled_periodic_error": 1191.0630039663233
+    },
+    {
+      "cycle": 25,
+      "scaled_periodic_error": 1123.7575377250369
+    },
+    {
+      "cycle": 26,
+      "scaled_periodic_error": 1060.6033290261787
+    },
+    {
+      "cycle": 27,
+      "scaled_periodic_error": 1001.3251302033248
+    },
+    {
+      "cycle": 28,
+      "scaled_periodic_error": 945.6672653096008
+    },
+    {
+      "cycle": 29,
+      "scaled_periodic_error": 893.392612315685
+    },
+    {
+      "cycle": 30,
+      "scaled_periodic_error": 844.2799900343973
+    },
+    {
+      "cycle": 31,
+      "scaled_periodic_error": 798.1239541006177
+    },
+    {
+      "cycle": 32,
+      "scaled_periodic_error": 754.7332286679886
+    },
+    {
+      "cycle": 33,
+      "scaled_periodic_error": 713.9297381671662
+    },
+    {
+      "cycle": 34,
+      "scaled_periodic_error": 675.5474656583679
+    },
+    {
+      "cycle": 35,
+      "scaled_periodic_error": 639.4320198787491
+    },
+    {
+      "cycle": 36,
+      "scaled_periodic_error": 605.4391736068364
+    },
+    {
+      "cycle": 37,
+      "scaled_periodic_error": 573.4345956120953
+    },
+    {
+      "cycle": 38,
+      "scaled_periodic_error": 543.2929205706043
+    },
+    {
+      "cycle": 39,
+      "scaled_periodic_error": 514.8972794798373
+    },
+    {
+      "cycle": 40,
+      "scaled_periodic_error": 488.13850467152196
+    },
+    {
+      "cycle": 41,
+      "scaled_periodic_error": 462.91466726453416
+    },
+    {
+      "cycle": 42,
+      "scaled_periodic_error": 439.1306409552492
+    },
+    {
+      "cycle": 43,
+      "scaled_periodic_error": 416.69744243323646
+    },
+    {
+      "cycle": 44,
+      "scaled_periodic_error": 395.53218095363246
+    },
+    {
+      "cycle": 45,
+      "scaled_periodic_error": 375.55698071098993
+    },
+    {
+      "cycle": 46,
+      "scaled_periodic_error": 356.6994941375567
+    },
+    {
+      "cycle": 47,
+      "scaled_periodic_error": 338.8916272234233
+    },
+    {
+      "cycle": 48,
+      "scaled_periodic_error": 322.07004729968867
+    },
+    {
+      "cycle": 49,
+      "scaled_periodic_error": 306.1752550812647
+    },
+    {
+      "cycle": 50,
+      "scaled_periodic_error": 291.15168380922114
+    },
+    {
+      "cycle": 51,
+      "scaled_periodic_error": 276.94726125995487
+    },
+    {
+      "cycle": 52,
+      "scaled_periodic_error": 263.5133219769698
+    },
+    {
+      "cycle": 53,
+      "scaled_periodic_error": 250.80418279952377
+    },
+    {
+      "cycle": 54,
+      "scaled_periodic_error": 238.77711455177618
+    },
+    {
+      "cycle": 55,
+      "scaled_periodic_error": 227.3918297602682
+    },
+    {
+      "cycle": 56,
+      "scaled_periodic_error": 216.6114152340121
+    },
+    {
+      "cycle": 57,
+      "scaled_periodic_error": 206.4001020961318
+    },
+    {
+      "cycle": 58,
+      "scaled_periodic_error": 196.72504435716888
+    },
+    {
+      "cycle": 59,
+      "scaled_periodic_error": 187.55534698682698
+    },
+    {
+      "cycle": 60,
+      "scaled_periodic_error": 178.86199740486254
+    },
+    {
+      "cycle": 61,
+      "scaled_periodic_error": 170.61772459540305
+    },
+    {
+      "cycle": 62,
+      "scaled_periodic_error": 162.79697475949644
+    },
+    {
+      "cycle": 63,
+      "scaled_periodic_error": 155.37574542592316
+    },
+    {
+      "cycle": 64,
+      "scaled_periodic_error": 148.33156447950972
+    },
+    {
+      "cycle": 65,
+      "scaled_periodic_error": 141.6432295938674
+    },
+    {
+      "cycle": 66,
+      "scaled_periodic_error": 135.29083036324073
+    },
+    {
+      "cycle": 67,
+      "scaled_periodic_error": 129.25580859480428
+    },
+    {
+      "cycle": 68,
+      "scaled_periodic_error": 123.5205237181116
+    },
+    {
+      "cycle": 69,
+      "scaled_periodic_error": 118.0684946636259
+    },
+    {
+      "cycle": 70,
+      "scaled_periodic_error": 112.88423104599387
+    },
+    {
+      "cycle": 71,
+      "scaled_periodic_error": 107.953106083015
+    },
+    {
+      "cycle": 72,
+      "scaled_periodic_error": 103.26133687882404
+    },
+    {
+      "cycle": 73,
+      "scaled_periodic_error": 98.79637018603557
+    },
+    {
+      "cycle": 74,
+      "scaled_periodic_error": 94.54558579508146
+    },
+    {
+      "cycle": 75,
+      "scaled_periodic_error": 90.49775948161809
+    },
+    {
+      "cycle": 76,
+      "scaled_periodic_error": 86.64211497152556
+    },
+    {
+      "cycle": 77,
+      "scaled_periodic_error": 82.96846158087182
+    },
+    {
+      "cycle": 78,
+      "scaled_periodic_error": 79.46721724962323
+    },
+    {
+      "cycle": 79,
+      "scaled_periodic_error": 76.12945609458524
+    },
+    {
+      "cycle": 80,
+      "scaled_periodic_error": 72.94668150266806
+    },
+    {
+      "cycle": 81,
+      "scaled_periodic_error": 69.91074601688105
+    },
+    {
+      "cycle": 82,
+      "scaled_periodic_error": 67.01425156521799
+    },
+    {
+      "cycle": 83,
+      "scaled_periodic_error": 64.24997601835058
+    },
+    {
+      "cycle": 84,
+      "scaled_periodic_error": 61.61124417385555
+    },
+    {
+      "cycle": 85,
+      "scaled_periodic_error": 59.09164917354815
+    },
+    {
+      "cycle": 86,
+      "scaled_periodic_error": 56.68532496446847
+    },
+    {
+      "cycle": 87,
+      "scaled_periodic_error": 54.38645664732237
+    },
+    {
+      "cycle": 88,
+      "scaled_periodic_error": 52.18981295806643
+    },
+    {
+      "cycle": 89,
+      "scaled_periodic_error": 50.090211594437775
+    },
+    {
+      "cycle": 90,
+      "scaled_periodic_error": 48.083014116668345
+    },
+    {
+      "cycle": 91,
+      "scaled_periodic_error": 46.16368866939192
+    },
+    {
+      "cycle": 92,
+      "scaled_periodic_error": 44.32791421044358
+    },
+    {
+      "cycle": 93,
+      "scaled_periodic_error": 42.57157656212616
+    },
+    {
+      "cycle": 94,
+      "scaled_periodic_error": 40.89103300306738
+    },
+    {
+      "cycle": 95,
+      "scaled_periodic_error": 39.28246891284821
+    },
+    {
+      "cycle": 96,
+      "scaled_periodic_error": 37.742647671430746
+    },
+    {
+      "cycle": 97,
+      "scaled_periodic_error": 36.26820639960018
+    },
+    {
+      "cycle": 98,
+      "scaled_periodic_error": 34.85607502325242
+    },
+    {
+      "cycle": 99,
+      "scaled_periodic_error": 33.50337106242226
+    },
+    {
+      "cycle": 100,
+      "scaled_periodic_error": 32.207233665233396
+    },
+    {
+      "cycle": 101,
+      "scaled_periodic_error": 30.965262792695803
+    },
+    {
+      "cycle": 102,
+      "scaled_periodic_error": 29.77476471113204
+    },
+    {
+      "cycle": 103,
+      "scaled_periodic_error": 28.633437418738723
+    },
+    {
+      "cycle": 104,
+      "scaled_periodic_error": 27.539036108967785
+    },
+    {
+      "cycle": 105,
+      "scaled_periodic_error": 26.48954954272691
+    },
+    {
+      "cycle": 106,
+      "scaled_periodic_error": 25.482871469063788
+    },
+    {
+      "cycle": 107,
+      "scaled_periodic_error": 24.517033189301234
+    },
+    {
+      "cycle": 108,
+      "scaled_periodic_error": 23.59022698297777
+    },
+    {
+      "cycle": 109,
+      "scaled_periodic_error": 22.700835098160496
+    },
+    {
+      "cycle": 110,
+      "scaled_periodic_error": 21.84709629412087
+    },
+    {
+      "cycle": 111,
+      "scaled_periodic_error": 21.02753009910111
+    },
+    {
+      "cycle": 112,
+      "scaled_periodic_error": 20.240584803898052
+    },
+    {
+      "cycle": 113,
+      "scaled_periodic_error": 19.48483743898041
+    },
+    {
+      "cycle": 114,
+      "scaled_periodic_error": 18.758963639434846
+    },
+    {
+      "cycle": 115,
+      "scaled_periodic_error": 18.06169974840317
+    },
+    {
+      "cycle": 116,
+      "scaled_periodic_error": 17.39186365497533
+    },
+    {
+      "cycle": 117,
+      "scaled_periodic_error": 16.74815835071499
+    },
+    {
+      "cycle": 118,
+      "scaled_periodic_error": 16.129552096799394
+    },
+    {
+      "cycle": 119,
+      "scaled_periodic_error": 15.535014907589215
+    },
+    {
+      "cycle": 120,
+      "scaled_periodic_error": 14.963444632665896
+    },
+    {
+      "cycle": 121,
+      "scaled_periodic_error": 14.414016730256892
+    },
+    {
+      "cycle": 122,
+      "scaled_periodic_error": 13.885716115289068
+    },
+    {
+      "cycle": 123,
+      "scaled_periodic_error": 13.377698983610127
+    },
+    {
+      "cycle": 124,
+      "scaled_periodic_error": 12.889091161860156
+    },
+    {
+      "cycle": 125,
+      "scaled_periodic_error": 12.419137347513935
+    },
+    {
+      "cycle": 126,
+      "scaled_periodic_error": 11.967054790593542
+    },
+    {
+      "cycle": 127,
+      "scaled_periodic_error": 11.53211789667721
+    },
+    {
+      "cycle": 128,
+      "scaled_periodic_error": 11.113676239192868
+    },
+    {
+      "cycle": 129,
+      "scaled_periodic_error": 10.710898047162157
+    },
+    {
+      "cycle": 130,
+      "scaled_periodic_error": 10.32352391613164
+    },
+    {
+      "cycle": 131,
+      "scaled_periodic_error": 9.950578598750592
+    },
+    {
+      "cycle": 132,
+      "scaled_periodic_error": 9.591604773120407
+    },
+    {
+      "cycle": 133,
+      "scaled_periodic_error": 9.246004195123623
+    },
+    {
+      "cycle": 134,
+      "scaled_periodic_error": 8.913380934444008
+    },
+    {
+      "cycle": 135,
+      "scaled_periodic_error": 8.59300437744187
+    },
+    {
+      "cycle": 136,
+      "scaled_periodic_error": 8.284465649453429
+    },
+    {
+      "cycle": 137,
+      "scaled_periodic_error": 7.9876426932607085
+    },
+    {
+      "cycle": 138,
+      "scaled_periodic_error": 7.701643168469451
+    },
+    {
+      "cycle": 139,
+      "scaled_periodic_error": 7.426177977572753
+    },
+    {
+      "cycle": 140,
+      "scaled_periodic_error": 7.160852908630758
+    },
+    {
+      "cycle": 141,
+      "scaled_periodic_error": 6.9052753031632745
+    },
+    {
+      "cycle": 142,
+      "scaled_periodic_error": 6.659064000858901
+    },
+    {
+      "cycle": 143,
+      "scaled_periodic_error": 6.4218862975483875
+    },
+    {
+      "cycle": 144,
+      "scaled_periodic_error": 6.1933891040322315
+    },
+    {
+      "cycle": 145,
+      "scaled_periodic_error": 5.973258895493297
+    },
+    {
+      "cycle": 146,
+      "scaled_periodic_error": 5.761053394386022
+    },
+    {
+      "cycle": 147,
+      "scaled_periodic_error": 5.556606175412449
+    },
+    {
+      "cycle": 148,
+      "scaled_periodic_error": 5.359596431064367
+    },
+    {
+      "cycle": 149,
+      "scaled_periodic_error": 5.1697597068606305
+    },
+    {
+      "cycle": 150,
+      "scaled_periodic_error": 4.986704239520308
+    },
+    {
+      "cycle": 151,
+      "scaled_periodic_error": 4.810360703534625
+    },
+    {
+      "cycle": 152,
+      "scaled_periodic_error": 4.640307872007971
+    },
+    {
+      "cycle": 153,
+      "scaled_periodic_error": 4.4764651340663955
+    },
+    {
+      "cycle": 154,
+      "scaled_periodic_error": 4.318442916964891
+    },
+    {
+      "cycle": 155,
+      "scaled_periodic_error": 4.166128055794749
+    },
+    {
+      "cycle": 156,
+      "scaled_periodic_error": 4.019314959340788
+    },
+    {
+      "cycle": 157,
+      "scaled_periodic_error": 3.877732353902893
+    },
+    {
+      "cycle": 158,
+      "scaled_periodic_error": 3.7412172459542106
+    },
+    {
+      "cycle": 159,
+      "scaled_periodic_error": 3.609641604888221
+    },
+    {
+      "cycle": 160,
+      "scaled_periodic_error": 3.482734823090121
+    },
+    {
+      "cycle": 161,
+      "scaled_periodic_error": 3.360350755471806
+    },
+    {
+      "cycle": 162,
+      "scaled_periodic_error": 3.242288523004106
+    },
+    {
+      "cycle": 163,
+      "scaled_periodic_error": 3.1285199291974997
+    },
+    {
+      "cycle": 164,
+      "scaled_periodic_error": 3.0187353541856106
+    },
+    {
+      "cycle": 165,
+      "scaled_periodic_error": 2.91292227996102
+    },
+    {
+      "cycle": 166,
+      "scaled_periodic_error": 2.8107674683568398
+    },
+    {
+      "cycle": 167,
+      "scaled_periodic_error": 2.7123333187174357
+    },
+    {
+      "cycle": 168,
+      "scaled_periodic_error": 2.6173537141074497
+    },
+    {
+      "cycle": 169,
+      "scaled_periodic_error": 2.5257448762158123
+    },
+    {
+      "cycle": 170,
+      "scaled_periodic_error": 2.4373821064081342
+    },
+    {
+      "cycle": 171,
+      "scaled_periodic_error": 2.352077719892131
+    },
+    {
+      "cycle": 172,
+      "scaled_periodic_error": 2.26992596478606
+    },
+    {
+      "cycle": 173,
+      "scaled_periodic_error": 2.1905992849966056
+    },
+    {
+      "cycle": 174,
+      "scaled_periodic_error": 2.11404349471525
+    },
+    {
+      "cycle": 175,
+      "scaled_periodic_error": 2.0402533302872863
+    },
+    {
+      "cycle": 176,
+      "scaled_periodic_error": 1.96905983670796
+    },
+    {
+      "cycle": 177,
+      "scaled_periodic_error": 1.900322529365777
+    },
+    {
+      "cycle": 178,
+      "scaled_periodic_error": 1.8339934128677662
+    },
+    {
+      "cycle": 179,
+      "scaled_periodic_error": 1.7700544174362511
+    },
+    {
+      "cycle": 180,
+      "scaled_periodic_error": 1.7083520559440608
+    },
+    {
+      "cycle": 181,
+      "scaled_periodic_error": 1.6487857352675732
+    },
+    {
+      "cycle": 182,
+      "scaled_periodic_error": 1.5913500895407415
+    },
+    {
+      "cycle": 183,
+      "scaled_periodic_error": 1.535931829851765
+    },
+    {
+      "cycle": 184,
+      "scaled_periodic_error": 1.4824395969302073
+    },
+    {
+      "cycle": 185,
+      "scaled_periodic_error": 1.4308448242648695
+    },
+    {
+      "cycle": 186,
+      "scaled_periodic_error": 1.3810335512722776
+    },
+    {
+      "cycle": 187,
+      "scaled_periodic_error": 1.3329692464762102
+    },
+    {
+      "cycle": 188,
+      "scaled_periodic_error": 1.2866069866797292
+    },
+    {
+      "cycle": 189,
+      "scaled_periodic_error": 1.2418224739367554
+    },
+    {
+      "cycle": 190,
+      "scaled_periodic_error": 1.1986573703283572
+    },
+    {
+      "cycle": 191,
+      "scaled_periodic_error": 1.1570226082923394
+    },
+    {
+      "cycle": 192,
+      "scaled_periodic_error": 1.1167739846424
+    },
+    {
+      "cycle": 193,
+      "scaled_periodic_error": 1.0779898229116915
+    },
+    {
+      "cycle": 194,
+      "scaled_periodic_error": 1.0404647465035552
+    },
+    {
+      "cycle": 195,
+      "scaled_periodic_error": 1.0043763258495757
+    },
+    {
+      "cycle": 196,
+      "scaled_periodic_error": 0.9694862378507962
+    }
+  ],
+  "restart_source": null,
+  "frequency_hz": 2.0,
+  "final_state": [
+    7.75895870346281e-05,
+    18.259288419871,
+    0.0011813289425375237,
+    303.97520988546074,
+    1.2353175566076773e-05,
+    3.866571758080181,
+    1.6707202468405788e-05,
+    3.943842061975261,
+    16708.9844169711,
+    12375.263393496247
+  ],
+  "total_energy_residual_j": -1.9049650745728286e-11,
+  "total_mass_drift_kg": -1.713039432527097e-17,
+  "configuration_source": "# EXPLORATORY MOTOR DEMONSTRATOR SEED. See docs/MOTOR_FOUR_BAR.md.\n# This is a numerically verified first-level model result, not a validated design.\n\n[metadata]\nexample_data = true\ndescription = \"Motor demonstrator shared-crank four-bar seed; uncalibrated exchanger hardware\"\n\n[working_gas]\ngas_constant = 287.0\nheat_capacity_cp = 1004.5\nheat_capacity_cv = 717.5\n\n[reservoirs]\ncold_temperature = 298.15\nhot_temperature = 448.15\n\n[operation]\nangular_speed = -12.566370614359172 # 2 Hz, motor direction\n\n[charge]\npressure = 100000.0\ntemperature = 298.15\n\n[geometry]\n# Swept-volume ratio S/L = 0.84 with one-percent clearances.\nsmall_cylinder_minimum_volume = 8.316831683168318e-06\nsmall_cylinder_maximum_volume = 0.00084\nlarge_cylinder_minimum_volume = 9.900990099009901e-06\nlarge_cylinder_maximum_volume = 0.001\ncold_heat_exchanger_volume = 1.9801980198019803e-05\nhot_heat_exchanger_volume = 1.9801980198019803e-05\n\n# Exchanger hold-up above is a numerical seed, not Doty bank envelope.\n[heat_transfer]\n# Existing constant-UA closure; NOT calibrated from Doty gas/gas measurements.\ncold_ua = 49.504275427542765\nhot_ua = 49.504275427542765\n\n[hydraulics]\n# Explicit numerical regularization; convergence is checked separately.\norifice_pressure_regularization = 0.03\nlarge_to_hot_cda = 0.0001663343654365437\nsmall_to_cold_cda = 0.0002970256525652566\nhot_to_small_valve_cda = 0.0001663343654365437\ncold_to_large_valve_cda = 0.0005940513051305131\n\n[valves]\nmodel = \"continuous_ideal_diode\"\n\n[valves.hot_to_small]\nopening_pressure_difference = 0.0\nclosing_pressure_difference = 0.0\n\n[valves.cold_to_large]\nopening_pressure_difference = 0.0\nclosing_pressure_difference = 0.0\n\n[kinematics]\ntype = \"shared_crank_rocker\"\n# Physical scale selected so the large-piston bore/stroke ratio is about 1.\nground_distance = 0.11937584698725914\ncrank_ratio = 0.40\ncrank_angle_offset_degrees = 304.375\ncrank_direction = -1\n\n[kinematics.small_four_bar]\ncoupler_ratio = 1.0\nrocker_ratio = 1.17\noutput_along_ratio = 0.6542556970607737\noutput_normal_ratio = -0.9699739598893987\nassembly_branch = 1\nslider_rod_ratio = 5.0\n\n[kinematics.large_four_bar]\ncoupler_ratio = 1.0\nrocker_ratio = 1.17\noutput_along_ratio = 0.6542556970607737\noutput_normal_ratio = 0.9699739598893987\nassembly_branch = -1\nslider_rod_ratio = 5.0\n\n[validity]\nmaximum_pressure_equalization_error = 0.05\nmaximum_mach_number = 0.2\nmaximum_isothermality_error = 0.05\nmaximum_compressibility_deviation = 0.01\nmaximum_cp_variation = 0.01\n\n[numerical]\nintegration_method = \"LSODA\"\nintegration_relative_tolerance = 1.0e-7\nintegration_absolute_tolerance = 1.0e-9\nmaximum_step_angle_degrees = 0.5\nmaximum_valve_events_per_cycle = 100\nmaximum_cycles = 100\nperiodic_relative_tolerance = 1.0e-6\nperiodic_mass_absolute_tolerance = 1.0e-12\nperiodic_energy_absolute_tolerance = 1.0e-6\n",
+  "last_cycle_indicated_power_w": -39.03079049606599,
+  "last_cycle_external_heat_input_w": 30.777134422955694,
+  "fan_electrical_power_w": 0.49586547242703055,
+  "indicated_power_minus_fans_w": -39.52665596849302,
+  "indicated_thermal_efficiency": null,
+  "useful_shaft_power_w": null,
+  "maximum_tube_reynolds": 1595.4534040379533,
+  "maximum_tube_mach_at_exchanger_state": 0.2192516180362454,
+  "applicability": "screening_only; constant_Nusselt; entrance_pulse_and_distribution_unvalidated",
+  "laminar_reynolds_screen_passed": true,
+  "mechanical_losses": "unavailable",
+  "calibration": "Doty_geometry_reference; no_empirical_UA_fit",
+  "mach_screen_passed": false
+}

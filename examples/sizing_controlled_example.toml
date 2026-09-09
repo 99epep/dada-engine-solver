@@ -1,0 +1,68 @@
+# CONTROLLED NUMERICAL EXAMPLE ONLY.
+# This problem is not a validated DADA design and may be physically infeasible.
+
+[problem]
+base_configuration = "harmonic_controlled_example.toml"
+cooling_load_configuration = "cooling_cell_reference_load.toml"
+
+[[variables]]
+parameter = "small_swept_volume"
+lower_bound = 0.0001
+upper_bound = 0.0005
+initial_value = 0.0002
+
+[[variables]]
+parameter = "large_swept_volume"
+lower_bound = 0.0002
+upper_bound = 0.0010
+initial_value = 0.0004
+
+[[variables]]
+parameter = "charge_pressure"
+lower_bound = 100000.0
+upper_bound = 800000.0
+initial_value = 200000.0
+
+[objective]
+type = "minimize_total_swept_volume"
+
+[[constraints]]
+type = "complete_reference_cooling_task"
+
+[[constraints]]
+type = "maximum_nominal_human_power"
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1000000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 500.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.02
+
+[[constraints]]
+type = "maximum_pressure_equalization_error"
+limit = 0.10
+
+[[constraints]]
+type = "periodic_convergence"
+
+[optimizer]
+objective_scale = 0.001
+unavailable_objective_penalty = 1000000.0
+unavailable_constraint_margin = -1.0
+maximum_iterations = 50
+function_tolerance = 1.0e-8
+
+[optimizer.constraint_scales]
+complete_cooling_task_within_time = 350.0
+maximum_mechanical_input_power = 150.0
+maximum_pressure = 1000000.0
+maximum_temperature = 500.0
+maximum_absolute_mass_flow = 0.02
+maximum_pressure_equalization_error = 0.10
+periodic_convergence = 1.0

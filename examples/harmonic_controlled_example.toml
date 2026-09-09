@@ -1,0 +1,70 @@
+# CONTROLLED NUMERICAL EXAMPLE ONLY.
+# These values are not validated characteristics of the DADA machine.
+
+[metadata]
+example_data = true
+description = "Controlled harmonic integration example, not a validated DADA design"
+
+[working_gas]
+gas_constant = 287.0                    # J/(kg K)
+heat_capacity_cp = 1004.5               # J/(kg K)
+heat_capacity_cv = 717.5                # J/(kg K)
+
+[reservoirs]
+cold_temperature = 280.0                # K
+hot_temperature = 320.0                 # K
+
+[operation]
+angular_speed = 10.0                    # rad/s
+
+[charge]
+pressure = 200000.0                     # Pa
+temperature = 300.0                     # K
+# Use total_mass instead of pressure to prescribe the inventory directly.
+
+[geometry]
+small_cylinder_minimum_volume = 0.0001  # m^3
+small_cylinder_maximum_volume = 0.0003  # m^3
+large_cylinder_minimum_volume = 0.0002  # m^3
+large_cylinder_maximum_volume = 0.0006  # m^3
+cold_heat_exchanger_volume = 0.0001     # m^3
+hot_heat_exchanger_volume = 0.0001      # m^3
+
+[heat_transfer]
+cold_ua = 5.0                           # W/K
+hot_ua = 5.0                            # W/K
+
+[hydraulics]
+large_to_hot_cda = 0.000005             # m^2
+small_to_cold_cda = 0.000005            # m^2
+hot_to_small_valve_cda = 0.000002       # m^2
+cold_to_large_valve_cda = 0.000002      # m^2
+
+[valves.hot_to_small]
+opening_pressure_difference = 1000.0    # Pa
+closing_pressure_difference = 0.0       # Pa
+
+[valves.cold_to_large]
+opening_pressure_difference = 1000.0    # Pa
+closing_pressure_difference = 0.0       # Pa
+
+[kinematics]
+type = "harmonic_example"
+small_phase_offset_degrees = 180.0
+
+[validity]
+maximum_pressure_equalization_error = 0.05
+maximum_mach_number = 0.2
+maximum_isothermality_error = 0.05
+maximum_compressibility_deviation = 0.01
+maximum_cp_variation = 0.01
+
+[numerical]
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerance = 1.0e-10
+maximum_step_angle_degrees = 1.0
+maximum_valve_events_per_cycle = 100
+maximum_cycles = 100
+periodic_relative_tolerance = 1.0e-7
+periodic_mass_absolute_tolerance = 1.0e-12
+periodic_energy_absolute_tolerance = 1.0e-6

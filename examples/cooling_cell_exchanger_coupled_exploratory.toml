@@ -1,0 +1,28 @@
+[metadata]
+example_data = true
+description = "Exploratory hydraulic coupling for the high-COP candidate; not validated hardware"
+
+[problem]
+simulation_configuration = "cooling_cell_high_cop_candidate.toml"
+cold_exchanger_configuration = "cooling_cell_exchanger_exploratory.toml"
+hot_exchanger_configuration = "cooling_cell_exchanger_exploratory.toml"
+
+[objectives]
+cold = "minimum_gas_volume"
+hot = "minimum_gas_volume"
+
+[hydraulic_partition]
+cold_inlet_core_fraction = 0.5
+hot_inlet_core_fraction = 0.5
+cold_inlet_collector_loss_coefficient = 0.0
+cold_outlet_collector_loss_coefficient = 0.0
+hot_inlet_collector_loss_coefficient = 0.0
+hot_outlet_collector_loss_coefficient = 0.0
+
+[coupling]
+maximum_iterations = 12
+relative_tolerance = 1.0e-3
+flow_under_relaxation = 0.5
+hydraulic_continuation_steps = 4
+exchanger_maximum_iterations = 100
+exchanger_function_tolerance = 1.0e-9

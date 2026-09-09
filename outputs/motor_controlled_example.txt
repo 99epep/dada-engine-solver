@@ -1,0 +1,86 @@
+signed_crank_angular_speed_rad_per_s = -9.520107557799e-01
+requested_operation = motor
+heat_in_reservoir_temperature_K = 6.000000000000e+02
+heat_out_reservoir_temperature_K = 3.000000000000e+02
+DADA thermodynamic simulation
+periodic_status = converged
+cycles_completed = 5
+periodic_normalized_error = 1.156162e-01
+integration_elapsed_seconds = 1.095721e+01
+right_hand_side_evaluations = 31766
+event_function_evaluations = 0
+final_cycle_solve_segments = 4
+final_cycle_jacobian_evaluations = 236
+final_cycle_linear_decompositions = 236
+final_cycle_worst_segment_angle_deg = [0.000000, 126.000000]
+final_cycle_worst_segment_rhs_evaluations = 2086
+cycle_topology = non_nominal
+validity_verdict = indeterminate
+operating_mode = motor
+total_gas_inventory_kg = 4.081756195727e-02
+
+Cycle-integrated quantities
+exchangers = H_i:heat_in, H_o:heat_out
+angle_coordinate = increasing_cycle_progress_phi
+heat_in_J_per_cycle = 7.127421593748e+03
+heat_out_J_per_cycle = -5.857848885747e+03
+heat_in_power_W = 1.079927088968e+03
+heat_out_power_W = -8.875649646354e+02
+gas_work_J_per_cycle = 1.269572793809e+03
+gas_power_W = 1.923621373335e+02
+mechanical_input_J_per_cycle = -1.269572793809e+03
+thermal_efficiency = 1.781251153885e-01
+motor_power_W = 1.923621373335e+02
+cooling_COP = unavailable
+heating_COP = unavailable
+mechanical_input_power_W = -1.923621373335e+02
+
+Conservation
+absolute_mass_residual_kg = -5.551115123126e-17
+relative_mass_residual = -1.359982041293e-15
+absolute_energy_residual_J = 5.093170329928e-11
+relative_energy_residual = 3.572940250747e-15
+
+Validity indicators
+maximum_pressure_equalization_error = 6.107451956448e-03
+H_i_isothermality_error = 3.846000450848e-02
+H_o_isothermality_error = 8.377816671273e-02
+maximum_mach_number = unavailable
+mach_number_status = unavailable
+maximum_compressibility_deviation = 0.000000000000e+00
+maximum_cp_variation = 0.000000000000e+00
+orifice_pressure_regularization_Pa = 3.000000000000e-02
+regularization_sample_fraction = 2.046574115540e-01
+topology_reasons = observed_event_sequence_differs_from_nominal_sequence, repeated_valve_transition_observed
+unavailable_validity_criteria = mach_number
+
+Moisture screening
+moisture_phase_change_status = unavailable
+initial_water_mole_fraction = unavailable
+moisture_unavailable_reason = initial relative humidity was not configured
+
+Pressure extrema
+S_pressure_Pa = [1.238727883486e+05, 3.251990696505e+05]
+L_pressure_Pa = [1.239018392516e+05, 3.250740323833e+05]
+H_i_pressure_Pa = [1.238727969287e+05, 3.251065960180e+05]
+H_o_pressure_Pa = [1.238617036762e+05, 3.250740003668e+05]
+
+Temperature extrema
+S_temperature_K = [3.020279805364e+02, 4.070718081273e+02]
+L_temperature_K = [4.435576471163e+02, 6.281998590284e+02]
+H_i_temperature_K = [5.768686899845e+02, 5.999446926896e+02]
+H_o_temperature_K = [2.985282349598e+02, 3.236616849736e+02]
+
+Mass-flow extrema
+L_to_H_o_mass_flow_kg_per_s = [-3.131142691941e-03, 1.963114615857e-02]
+S_to_H_i_mass_flow_kg_per_s = [-5.691144930781e-03, 2.022004143128e-02]
+H_o_to_S_mass_flow_kg_per_s = [0.000000000000e+00, 2.065107372611e-02]
+H_i_to_L_mass_flow_kg_per_s = [0.000000000000e+00, 1.696830437842e-02]
+
+Valve events
+angle_deg=0.000017170, valve=H_i_to_L, transition=closed, Lambda_S=0.999999864, Lambda_L=0.000000136
+angle_deg=126.015792538, valve=H_o_to_S, transition=closed, Lambda_S=0.000143303, Lambda_L=1.000000000
+angle_deg=126.016358837, valve=H_i_to_L, transition=open, Lambda_S=0.000148441, Lambda_L=1.000000000
+angle_deg=306.328706150, valve=H_o_to_S, transition=open, Lambda_S=1.000000000, Lambda_L=0.437321654
+angle_deg=306.338068907, valve=H_o_to_S, transition=closed, Lambda_S=1.000000000, Lambda_L=0.437245364
+angle_deg=306.346377744, valve=H_o_to_S, transition=open, Lambda_S=1.000000000, Lambda_L=0.437177663

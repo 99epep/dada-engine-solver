@@ -1,0 +1,74 @@
+# EXPLORATORY COOLING-CELL MACHINE CONFIGURATION ONLY.
+# These values are not validated DADA characteristics or a feasible design.
+# The 268.15 K cold reservoir is a user-selected constant approximation.
+
+[metadata]
+example_data = true
+description = "Exploratory piecewise-linear machine point for the human-powered cooling cell"
+
+[working_gas]
+gas_constant = 287.0
+heat_capacity_cp = 1004.5
+heat_capacity_cv = 717.5
+
+[reservoirs]
+cold_temperature = 268.15                # K (-5 degC)
+hot_temperature = 298.15                 # K (25 degC)
+
+[operation]
+angular_speed = 5.0                      # rad/s, moderate hydraulic diagnostic
+
+[charge]
+pressure = 200000.0                      # Pa absolute
+temperature = 298.15                     # K
+
+[geometry]
+# Exploratory point: doubled swept volumes and 1% clearance-to-swept ratios.
+small_cylinder_minimum_volume = 0.000004 # m^3, 4 cm^3
+small_cylinder_maximum_volume = 0.000404 # m^3, 404 cm^3
+large_cylinder_minimum_volume = 0.000008 # m^3, 8 cm^3
+large_cylinder_maximum_volume = 0.000808 # m^3, 808 cm^3
+cold_heat_exchanger_volume = 0.00002     # m^3, 20 cm^3, separate from cylinder clearance
+hot_heat_exchanger_volume = 0.00002      # m^3, 20 cm^3, separate from cylinder clearance
+
+[heat_transfer]
+cold_ua = 5.0
+hot_ua = 5.0
+
+[hydraulics]
+large_to_hot_cda = 0.00001
+small_to_cold_cda = 0.00001
+hot_to_small_valve_cda = 0.000004
+cold_to_large_valve_cda = 0.000004
+
+[valves.hot_to_small]
+opening_pressure_difference = 1000.0
+closing_pressure_difference = 0.0
+
+[valves.cold_to_large]
+opening_pressure_difference = 1000.0
+closing_pressure_difference = 0.0
+
+[kinematics]
+type = "ideal_piecewise_linear"
+small_lambda_target = 0.7
+large_lambda_target = 0.7
+adiabatic_sector_fraction = 0.15
+
+[validity]
+maximum_pressure_equalization_error = 0.05
+maximum_mach_number = 0.2
+maximum_isothermality_error = 0.05
+maximum_compressibility_deviation = 0.01
+maximum_cp_variation = 0.01
+
+[numerical]
+integration_method = "Radau"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerance = 1.0e-10
+maximum_step_angle_degrees = 1.0
+maximum_valve_events_per_cycle = 100
+maximum_cycles = 100
+periodic_relative_tolerance = 1.0e-7
+periodic_mass_absolute_tolerance = 1.0e-12
+periodic_energy_absolute_tolerance = 1.0e-6

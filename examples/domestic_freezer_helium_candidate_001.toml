@@ -1,0 +1,92 @@
+# EXPLORATORY HELIUM FREEZER CANDIDATE, NOT A VALIDATED APPLIANCE DESIGN.
+
+[metadata]
+example_data = true
+description = "Five-bar compact helium freezer candidate after first sensitivity pass"
+
+[working_gas]
+gas_constant = 2077.1
+heat_capacity_cp = 5193.0
+heat_capacity_cv = 3115.9
+
+[reservoirs]
+cold_temperature = 250.15
+hot_temperature = 310.15
+
+[operation]
+angular_speed = 0.20943951023931953 # 2 rpm
+
+[charge]
+pressure = 500000.0
+temperature = 298.15
+
+[geometry]
+small_cylinder_minimum_volume = 0.0000594
+small_cylinder_maximum_volume = 0.0059994
+large_cylinder_minimum_volume = 0.000066
+large_cylinder_maximum_volume = 0.006666
+cold_heat_exchanger_volume = 0.000132
+hot_heat_exchanger_volume = 0.000132
+
+[heat_transfer]
+cold_ua = 35.0
+hot_ua = 35.0
+
+[hydraulics]
+large_to_hot_cda = 0.00003122421520603483
+small_to_cold_cda = 0.00005575752715363362
+hot_to_small_valve_cda = 0.00003122421520603483
+cold_to_large_valve_cda = 0.00011151505430726724
+orifice_pressure_regularization = 0.15
+
+[valves]
+model = "continuous_ideal_diode"
+
+[valves.hot_to_small]
+opening_pressure_difference = 0.0
+closing_pressure_difference = 0.0
+
+[valves.cold_to_large]
+opening_pressure_difference = 0.0
+closing_pressure_difference = 0.0
+
+[kinematics]
+type = "shared_crank_rocker"
+ground_distance = 0.2246664566052148
+crank_ratio = 0.40
+crank_angle_offset_degrees = 304.375
+crank_direction = -1
+
+[kinematics.small_four_bar]
+coupler_ratio = 1.0
+rocker_ratio = 1.17
+output_along_ratio = 0.6542556970607737
+output_normal_ratio = -0.9699739598893987
+assembly_branch = 1
+slider_rod_ratio = 5.0
+
+[kinematics.large_four_bar]
+coupler_ratio = 1.0
+rocker_ratio = 1.17
+output_along_ratio = 0.6542556970607737
+output_normal_ratio = 0.9699739598893987
+assembly_branch = -1
+slider_rod_ratio = 5.0
+
+[validity]
+maximum_pressure_equalization_error = 0.05
+maximum_mach_number = 0.2
+maximum_isothermality_error = 0.05
+maximum_compressibility_deviation = 0.01
+maximum_cp_variation = 0.01
+
+[numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-7
+integration_absolute_tolerance = 1.0e-9
+maximum_step_angle_degrees = 0.1
+maximum_valve_events_per_cycle = 100
+maximum_cycles = 100
+periodic_relative_tolerance = 1.0e-6
+periodic_mass_absolute_tolerance = 1.0e-12
+periodic_energy_absolute_tolerance = 1.0e-6

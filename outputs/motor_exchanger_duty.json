@@ -1,0 +1,98 @@
+{
+  "period_s": 6.59991,
+  "cycle_frequency_Hz": 0.15151721765902867,
+  "signed_crank_speed_rad_s": -0.9520107557799403,
+  "intended_flow": "intermittent_unidirectional",
+  "activity_fraction_of_forward_peak": 0.01,
+  "activity_threshold_is_reporting_only": true,
+  "sample_count": 2233,
+  "extrema_are_independent_not_a_simultaneous_operating_point": true,
+  "gas": {
+    "R_J_kg_K": 287.0,
+    "Cp_J_kg_K": 1004.5
+  },
+  "exchangers": {
+    "H_i": {
+      "reservoir_temperature_K": 600.0,
+      "gas_temperature_range_K": [
+        576.8686899845051,
+        599.9446926895941
+      ],
+      "gas_pressure_range_Pa": [
+        123872.79692866124,
+        325106.5960179991
+      ],
+      "assumed_UA_W_K": 125.0,
+      "assumed_gas_volume_m3": 0.00066,
+      "mean_heat_received_W": 1079.9270889675388,
+      "inlet_port": {
+        "minimum_mass_flow_kg_s": -0.005691144930781486,
+        "peak_forward_mass_flow_kg_s": 0.020220041431284915,
+        "mean_forward_mass_flow_kg_s": 0.005915598494515834,
+        "forward_mass_per_cycle_kg": 0.03904241765994,
+        "reverse_mass_per_cycle_kg": 0.0001302048743500581,
+        "reverse_to_forward_mass_ratio": 0.003334959312308586,
+        "activity_threshold_kg_s": 0.00020220041431284915,
+        "duration_above_activity_threshold_s": 4.289941071002757,
+        "duty_fraction_above_activity_threshold": 0.6499999349995313,
+        "reflux_above_activity_threshold_s": 0.007790217081012475
+      },
+      "outlet_port": {
+        "minimum_mass_flow_kg_s": 0.0,
+        "peak_forward_mass_flow_kg_s": 0.01696830437842037,
+        "mean_forward_mass_flow_kg_s": 0.0058958686128176615,
+        "forward_mass_per_cycle_kg": 0.038912202216421415,
+        "reverse_mass_per_cycle_kg": 0.0,
+        "reverse_to_forward_mass_ratio": 0.0,
+        "activity_threshold_kg_s": 0.00016968304378420373,
+        "duration_above_activity_threshold_s": 4.289641851016071,
+        "duty_fraction_above_activity_threshold": 0.6499545980196807,
+        "reflux_above_activity_threshold_s": 0.0
+      }
+    },
+    "H_o": {
+      "reservoir_temperature_K": 300.0,
+      "gas_temperature_range_K": [
+        298.52823495976224,
+        323.6616849735818
+      ],
+      "gas_pressure_range_Pa": [
+        123861.70367622493,
+        325074.00036683003
+      ],
+      "assumed_UA_W_K": 125.0,
+      "assumed_gas_volume_m3": 0.00066,
+      "mean_heat_received_W": -887.5649646354457,
+      "inlet_port": {
+        "minimum_mass_flow_kg_s": -0.0031311426919410743,
+        "peak_forward_mass_flow_kg_s": 0.019631146158569455,
+        "mean_forward_mass_flow_kg_s": 0.006024416960435969,
+        "forward_mass_per_cycle_kg": 0.039760609741350955,
+        "reverse_mass_per_cycle_kg": 0.0008484136501534347,
+        "reverse_to_forward_mass_ratio": 0.021338044252150544,
+        "activity_threshold_kg_s": 0.00019631146158569456,
+        "duration_above_activity_threshold_s": 3.4029138631475724,
+        "duty_fraction_above_activity_threshold": 0.5156000404774569,
+        "reflux_above_activity_threshold_s": 0.9900695517337297
+      },
+      "outlet_port": {
+        "minimum_mass_flow_kg_s": 0.0,
+        "peak_forward_mass_flow_kg_s": 0.02065107372610585,
+        "mean_forward_mass_flow_kg_s": 0.005895859747163834,
+        "forward_mass_per_cycle_kg": 0.03891214370390406,
+        "reverse_mass_per_cycle_kg": 0.0,
+        "reverse_to_forward_mass_ratio": 0.0,
+        "activity_threshold_kg_s": 0.00020651073726105852,
+        "duration_above_activity_threshold_s": 3.2917161257223224,
+        "duty_fraction_above_activity_threshold": 0.49875166869280374,
+        "reflux_above_activity_threshold_s": 0.0
+      }
+    }
+  },
+  "source_configuration": "examples/motor_controlled_example.toml",
+  "periodic_status": "converged",
+  "thermal_efficiency": 0.17812511538852482,
+  "motor_power_W": 192.36213733353654,
+  "cycle_topology": "non_nominal",
+  "cycles_completed": 5
+}

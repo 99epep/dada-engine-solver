@@ -1,0 +1,25 @@
+# IDEAL EXTERNAL LOAD EXAMPLE.
+# Property values are explicit approximations and are not hidden solver constants.
+# Container heat capacity, ambient heat leaks, contact resistances and supercooling
+# are excluded from this first load estimate.
+
+[thermal_load]
+material_name = "water_to_ice"
+mass = 1.0                              # kg
+initial_temperature = 293.15            # K (20 degC)
+target_temperature = 273.15             # K (approximately 0 degC)
+initial_phase_specific_heat = 4180.0     # J/(kg K), approximate liquid-water value
+phase_change_specific_energy = 333500.0  # J/kg, approximate fusion energy
+phase_change_fraction = 1.0
+
+[targets]
+reference_time = 1200.0                 # s (20 min)
+ambitious_time = 900.0                  # s (15 min)
+
+[environment]
+ambient_temperature = 298.15            # K (25 degC)
+
+[human_power]
+minimum_power = 75.0                     # W
+nominal_power = 150.0                    # W
+maximum_power = 250.0                    # W

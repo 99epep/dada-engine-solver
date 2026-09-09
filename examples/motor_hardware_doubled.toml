@@ -1,0 +1,41 @@
+# Screening inputs, not selected hardware or a Doty-calibrated design.
+# Tube diameter/wall/pitch originate from Doty; length and count are redesigned.
+[geometry]
+tube_count = 2472
+tube_length_m = 0.0635
+inner_diameter_m = 0.00033
+wall_thickness_m = 0.0001524
+pitch_m = 0.00125
+header_depth_m = 0.002
+additional_internal_volume_m3 = 0.000002
+
+[properties]
+# Illustrative metal properties; no alloy has been selected.
+metal_conductivity_w_m_k = 15.0
+metal_density_kg_m3 = 8000.0
+metal_cp_j_kg_k = 500.0
+extra_wall_capacity_j_k = 2.0
+# Constant transport values and Nusselt numbers are sensitivity inputs.
+gas_conductivity_w_m_k = 0.03
+gas_viscosity_pa_s = 0.00002
+gas_nusselt = 3.66
+air_conductivity_w_m_k = 0.03
+air_viscosity_pa_s = 0.00002
+air_nusselt = 4.0
+air_cp_j_kg_k = 1005.0
+air_mass_flow_kg_s = 0.005
+air_poiseuille_number = 64.0
+air_minor_loss_coefficient = 2.0
+fan_total_efficiency = 0.5
+# Unit multiplier is theoretical tube friction, not empirical Doty calibration.
+core_loss_multiplier = 1.0
+# Total inlet+outlet header K, based on mean tube-passage velocity.
+header_loss_coefficient = 2.0
+
+[heat_in]
+air_density_kg_m3 = 0.788
+air_inlet_temperature_k = 448.15
+
+[heat_out]
+air_density_kg_m3 = 1.184
+air_inlet_temperature_k = 298.15

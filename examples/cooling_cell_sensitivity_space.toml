@@ -1,0 +1,129 @@
+# EXPLORATORY DESIGN SPACE ONLY. Do not run global optimization blindly.
+
+[problem]
+base_configuration = "cooling_cell_machine_exploratory.toml"
+cooling_load_configuration = "cooling_cell_reference_load.toml"
+
+[[variables]]
+parameter = "angular_speed"
+lower_bound = 3.141592653589793          # 30 rpm
+upper_bound = 157.07963267948966         # 1500 rpm
+initial_value = 5.0
+
+[[variables]]
+# Symmetric first-search hypothesis: both kinematic targets use this value.
+parameter = "common_lambda_target"
+lower_bound = 0.40
+upper_bound = 0.70
+initial_value = 0.70
+
+[[variables]]
+# Exploratory duration study: each adiabatic sector has this cycle fraction;
+# each transfer sector has 0.5 minus this value.
+parameter = "adiabatic_sector_fraction"
+lower_bound = 0.05
+upper_bound = 0.25
+initial_value = 0.15
+
+[[variables]]
+parameter = "charge_pressure"
+lower_bound = 100000.0                   # 1 bar absolute
+upper_bound = 2000000.0                  # 20 bar absolute
+initial_value = 200000.0
+
+[[variables]]
+parameter = "small_swept_volume"
+lower_bound = 0.00001                    # 10 cm^3
+upper_bound = 0.005                      # 5 L
+initial_value = 0.0004
+
+[[variables]]
+parameter = "large_swept_volume"
+lower_bound = 0.00001
+upper_bound = 0.005
+initial_value = 0.0008
+
+[[variables]]
+parameter = "small_clearance_ratio"
+lower_bound = 0.005
+upper_bound = 0.10
+initial_value = 0.01
+
+[[variables]]
+parameter = "large_clearance_ratio"
+lower_bound = 0.005
+upper_bound = 0.10
+initial_value = 0.01
+
+[[variables]]
+parameter = "cold_heat_exchanger_volume"
+lower_bound = 0.000001                   # 1 cm^3
+upper_bound = 0.002                      # 2 L
+initial_value = 0.00002
+
+[[variables]]
+parameter = "hot_heat_exchanger_volume"
+lower_bound = 0.000001
+upper_bound = 0.002
+initial_value = 0.00002
+
+[[variables]]
+parameter = "cold_ua"
+lower_bound = 0.1
+upper_bound = 500.0
+initial_value = 5.0
+
+[[variables]]
+parameter = "hot_ua"
+lower_bound = 0.1
+upper_bound = 500.0
+initial_value = 5.0
+
+[[variables]]
+parameter = "large_to_hot_cda"
+lower_bound = 1.0e-8
+upper_bound = 1.0e-3
+initial_value = 1.0e-5
+
+[[variables]]
+parameter = "small_to_cold_cda"
+lower_bound = 1.0e-8
+upper_bound = 1.0e-3
+initial_value = 1.0e-5
+
+[[variables]]
+parameter = "hot_to_small_valve_cda"
+lower_bound = 1.0e-8
+upper_bound = 1.0e-3
+initial_value = 4.0e-6
+
+[[variables]]
+parameter = "cold_to_large_valve_cda"
+lower_bound = 1.0e-8
+upper_bound = 1.0e-3
+initial_value = 4.0e-6
+
+[objective]
+type = "maximize_cooling_cop"
+
+[[constraints]]
+type = "complete_reference_cooling_task"
+
+[[constraints]]
+type = "maximum_nominal_human_power"
+
+[[constraints]]
+type = "periodic_convergence"
+
+[optimizer]
+# Numerical scales are explicit placeholders for sensitivity tooling.
+objective_scale = 1.0
+unavailable_objective_penalty = 1000000.0
+unavailable_constraint_margin = -1.0
+maximum_iterations = 50
+function_tolerance = 1.0e-8
+
+[optimizer.constraint_scales]
+complete_cooling_task_within_time = 350.0
+maximum_mechanical_input_power = 150.0
+periodic_convergence = 1.0

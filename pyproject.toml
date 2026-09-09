@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=66.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dada-engine-solver"
+version = "0.2.3"
+description = "Thermodynamic simulation and sizing solver for the DADA engine"
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.scripts]
+dada-solver = "dada_solver.cli:main"
+dada-sizing = "dada_solver.sizing.cli:main"
+dada-cooling-load = "dada_solver.thermal_load_cli:main"
+dada-exchanger = "dada_solver.exchangers.cli:main"
+dada-exchanger-coupled = "dada_solver.exchangers.coupled_cli:main"
+dada-mechanism-animation = "dada_solver.mechanism_animation:main"
+
+[project.optional-dependencies]
+test = ["pytest>=7.2"]
+plot = ["matplotlib>=3.6", "Pillow>=9.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]

@@ -1,0 +1,221 @@
+<!-- This page describes a numerical research candidate, not validated hardware. -->
+= Human-powered DADA cooling-cell candidate =
+
+This configuration is an exploratory first-level simulation of a DADA
+refrigerating machine intended to freeze 1 kg of water initially at 20 °C. It
+reaches the ideal 20-minute thermal-load target while remaining below the
+nominal 150 W human mechanical-power limit. It is '''not''' a tested prototype,
+a manufacturing drawing or a physically validated product.
+
+[[File:publication_cooling_cell_x2_cycle.png|thumb|center|900px|Computed periodic
+cycle of the human-powered cooling-cell candidate. Positive cold-side heat rate
+means heat absorbed by the gas. S and L are the small and large cylinders; C
+and H are the cold and hot heat exchangers.]]
+
+[[File:publication_cooling_cell_x2_mechanism.gif|thumb|center|900px|Configured
+four-bar motion and cylinder-volume phasing over one revolution. Cylinder bores
+are visually enlarged and piston rods shortened for clarity; this clean
+illustration is not a manufacturing drawing.]]
+
+== Intended duty ==
+
+{| class="wikitable"
+! Quantity !! Value
+|-
+| Material || Water
+|-
+| Mass || 1 kg
+|-
+| Initial state || Liquid water at 293.15 K (20 °C)
+|-
+| Final state || Ice near 273.15 K (0 °C)
+|-
+| Ideal sensible heat || 83.6 kJ
+|-
+| Ideal latent heat || 333.5 kJ
+|-
+| Ideal total load || 417.1 kJ
+|-
+| Target duration || 20 minutes
+|-
+| Required mean cooling power || 347.6 W
+|}
+
+The load excludes the container, heat leaks, thermal gradients, contact
+resistances, supercooling and losses in the external glycol loop.
+
+== Thermodynamic configuration ==
+
+{| class="wikitable"
+! Parameter !! Value
+|-
+| Working fluid || Calorically perfect ideal air
+|-
+| Gas constants || R = 287.0 J/(kg K), Cp = 1004.5 J/(kg K), Cv = 717.5 J/(kg K)
+|-
+| Cold reservoir || 268.15 K (-5 °C)
+|-
+| Hot reservoir || 298.15 K (25 °C)
+|-
+| Initial filling state || 1.000 bar absolute at 298.15 K
+|-
+| Total gas inventory || 0.08464 kg
+|-
+| Rotational speed || 17.90 rpm
+|-
+| Valve model || Continuous ideal pressure-driven diode, zero threshold
+|}
+
+The simulated state is
+<code>X = (m_S,U_S,m_L,U_L,m_C,U_C,m_H,U_H)</code>. Pressure and temperature
+are reconstructed from mass and internal energy. Heat transfer obeys
+<code>Qdot = UA (T_reservoir - T_HX)</code>; no isothermal transformation is
+imposed.
+
+== Geometry and imposed kinematics ==
+
+{| class="wikitable"
+! Element !! Minimum volume !! Maximum volume / swept volume
+|-
+| Small cylinder S || 0.5544 L || 55.9944 L / 55.44 L swept
+|-
+| Large cylinder L || 0.6600 L || 66.6600 L / 66.00 L swept
+|-
+| Cold exchanger C || colspan="2" | 0.800 L fixed gas volume
+|-
+| Hot exchanger H || colspan="2" | 0.800 L fixed gas volume
+|}
+
+Both cylinder clearance volumes are 1% of swept volume. The two mechanisms are
+geometrically identical mirror assemblies driven by the same physical crank
+pin. They have opposite four-bar assembly branches and opposite normal output
+coordinates. They are therefore reflected, not two omitted independent
+mechanisms. Different cylinder volumes result from different piston bores; both
+physical strokes are 0.4380 m.
+
+{| class="wikitable"
+! Mechanical dimension !! Small assembly !! Large assembly
+|-
+| Ground pivot distance || 0.4840 m || 0.4840 m
+|-
+| Shared crank radius || colspan="2" | 0.1936 m
+|-
+| Coupler length || 0.4840 m || 0.4840 m
+|-
+| Rocker length || 0.5663 m || 0.5663 m
+|-
+| Output coordinates in rocker frame || (0.3167, -0.4695) m || (0.3167, +0.4695) m
+|-
+| Four-bar assembly branch || +1 || -1
+|-
+| Piston connecting-rod length || 2.1902 m || 2.1902 m
+|-
+| Piston stroke || 0.4380 m || 0.4380 m
+|-
+| Implied piston bore || 0.4014 m || 0.4380 m
+|}
+
+The common crank has an angular offset of 304.375° relative to the solver's
+thermodynamic angle origin. This is one common angular orientation, not an
+independent phase shift between the two mechanisms. Horizontal slider axes are
+centered on each output point's transverse excursion by the declared
+construction rule. The thermodynamic solver receives only the resulting volume
+laws and their derivatives.
+
+'''Optimization scope:''' this work found a strong candidate within the
+restricted family of identical reflected mechanisms. It did not prove that
+mechanical symmetry is globally optimal. Coupler length, rocker length, fixed
+pivot, output point, piston rod and slider layout were not varied independently
+for S and L. Both mechanisms may be independently parameterized in a future
+search while retaining the single shared crank pin.
+
+== Heat transfer and hydraulic closure ==
+
+{| class="wikitable"
+! Parameter !! Value
+|-
+| Cold UA || 226.0 W/K
+|-
+| Hot UA || 226.0 W/K
+|-
+| L–H effective CdA || 1.654 × 10<sup>-3</sup> m²
+|-
+| S–C effective CdA || 2.954 × 10<sup>-3</sup> m²
+|-
+| H→S valve effective CdA || 1.654 × 10<sup>-3</sup> m²
+|-
+| C→L valve effective CdA || 5.907 × 10<sup>-3</sup> m²
+|}
+
+The compressible-orifice law selects the real upstream state from the pressure
+gradient and includes choked and unchoked flow. The two passive valves prohibit
+reverse flow. CdA is an effective coefficient-area product, not yet a complete
+passage geometry.
+
+== Periodic-cycle result ==
+
+{| class="wikitable"
+! Quantity !! Result
+|-
+| Periodic solver || Converged after 4 successive cycles
+|-
+| Cooling energy per cycle || 1165.29 J
+|-
+| Rejected heat per cycle || 1534.79 J
+|-
+| Mechanical input per cycle || 369.49 J
+|-
+| Cooling power || 347.59 W
+|-
+| Heat-rejection power || 457.80 W
+|-
+| Thermodynamic mechanical input || 110.21 W
+|-
+| Cooling COP || 3.154
+|-
+| Ideal freezing time for the stated load || Approximately 20.0 minutes
+|-
+| Pressure range over all volumes || 0.776 to 1.948 bar absolute
+|-
+| Temperature range over all volumes || 242.24 to 333.93 K
+|-
+| Maximum sampled mass flow || Approximately 0.0971 kg/s
+|}
+
+Mass and global energy residuals are approximately machine precision. The
+maximum pressure-equalization error is 0.00611. Cold and hot isothermality
+indicators are 0.0313 and 0.0347 respectively.
+
+== Mandatory limitations ==
+
+* The physical-validity verdict is '''indeterminate''': Mach number is
+  unavailable until actual passage areas are supplied.
+* The observed passive-valve chronology is '''non-nominal''' and contains a
+  repeated transition. This behavior is simulated rather than suppressed.
+* The ideal-air model fixes Z = 1 and constant heat capacities.
+* The configured humid-air screen predicts condensation or frost risk in S, L
+  and C. It does not model removal of water or the resulting dry-gas cycle.
+* UA, CdA, exchanger pressure loss, pump power, mechanical friction and
+  transmission efficiency require hardware-level validation.
+* The quoted 110.21 W is thermodynamic input to the gas, not guaranteed pedal
+  input at the crank.
+
+== Reproduction ==
+
+The configuration is
+<code>examples/cooling_cell_x2_reference.toml</code>. The result was generated
+with version 0.1.0 of the Python DADA engine solver using SI units and a
+successive-cycle periodic-state search.
+
+<syntaxhighlight lang="console">
+python -m dada_solver.cli examples/cooling_cell_x2_reference.toml \
+  --plot outputs/publication_cooling_cell_x2_cycle.png
+
+python -m dada_solver.mechanism_animation \
+  examples/cooling_cell_x2_reference.toml \
+  outputs/publication_cooling_cell_x2_mechanism.gif --frames 90 --fps 18
+</syntaxhighlight>
+
+[[Category:DADA engine]]
+[[Category:Refrigeration]]
+[[Category:Human power]]

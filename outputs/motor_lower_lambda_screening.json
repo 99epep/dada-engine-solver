@@ -1,0 +1,309 @@
+{
+  "wall_time_seconds": 35.99687290600559,
+  "checkpoint_write_seconds": 0.023209656006656587,
+  "external_air_losses": "excluded_by_user",
+  "accounted_fan_power_w": 0.0,
+  "warm_start_source": "outputs/motor_doubled_screening.json",
+  "port_duty": {
+    "S_to_H_i": {
+      "minimum_mass_flow_kg_s": -0.0001623782604453108,
+      "peak_forward_mass_flow_kg_s": 0.008002791835088929,
+      "mean_forward_mass_flow_kg_s": 0.0023785443456527207,
+      "forward_mass_per_cycle_kg": 0.0011892721728263603,
+      "reverse_mass_per_cycle_kg": 1.4776145464713355e-05,
+      "reverse_to_forward_mass_ratio": 0.01242452804524734,
+      "activity_threshold_kg_s": 8.00279183508893e-05,
+      "duration_above_activity_threshold_s": 0.36890667756556156,
+      "duty_fraction_above_activity_threshold": 0.7378133551311231,
+      "reflux_above_activity_threshold_s": 0.09694622925473154
+    },
+    "H_i_to_L": {
+      "minimum_mass_flow_kg_s": 0.0,
+      "peak_forward_mass_flow_kg_s": 0.008012574887114834,
+      "mean_forward_mass_flow_kg_s": 0.002348992057110032,
+      "forward_mass_per_cycle_kg": 0.001174496028555016,
+      "reverse_mass_per_cycle_kg": 0.0,
+      "reverse_to_forward_mass_ratio": 0.0,
+      "activity_threshold_kg_s": 8.012574887114834e-05,
+      "duration_above_activity_threshold_s": 0.25367983094185365,
+      "duty_fraction_above_activity_threshold": 0.5073596618837073,
+      "reflux_above_activity_threshold_s": 0.0
+    },
+    "L_to_H_o": {
+      "minimum_mass_flow_kg_s": -0.000179783107467542,
+      "peak_forward_mass_flow_kg_s": 0.008781444097816381,
+      "mean_forward_mass_flow_kg_s": 0.0023858906008145954,
+      "forward_mass_per_cycle_kg": 0.0011929453004072977,
+      "reverse_mass_per_cycle_kg": 1.8449988275713912e-05,
+      "reverse_to_forward_mass_ratio": 0.015465913038439132,
+      "activity_threshold_kg_s": 8.781444097816381e-05,
+      "duration_above_activity_threshold_s": 0.34054197656723517,
+      "duty_fraction_above_activity_threshold": 0.6810839531344703,
+      "reflux_above_activity_threshold_s": 0.10899816441576632
+    },
+    "H_o_to_S": {
+      "minimum_mass_flow_kg_s": 0.0,
+      "peak_forward_mass_flow_kg_s": 0.008617931154587904,
+      "mean_forward_mass_flow_kg_s": 0.002348990477424809,
+      "forward_mass_per_cycle_kg": 0.0011744952387124045,
+      "reverse_mass_per_cycle_kg": 0.0,
+      "reverse_to_forward_mass_ratio": 0.0,
+      "activity_threshold_kg_s": 8.617931154587904e-05,
+      "duration_above_activity_threshold_s": 0.24303450893215364,
+      "duty_fraction_above_activity_threshold": 0.4860690178643073,
+      "reflux_above_activity_threshold_s": 0.0
+    }
+  },
+  "periodic_status": "converged",
+  "hardware_inputs": {
+    "geometry": {
+      "tube_count": 2472,
+      "tube_length_m": 0.0635,
+      "inner_diameter_m": 0.00033,
+      "wall_thickness_m": 0.0001524,
+      "pitch_m": 0.00125,
+      "header_depth_m": 0.002,
+      "additional_internal_volume_m3": 2e-06
+    },
+    "properties": {
+      "metal_conductivity_w_m_k": 15.0,
+      "metal_density_kg_m3": 8000.0,
+      "metal_cp_j_kg_k": 500.0,
+      "extra_wall_capacity_j_k": 2.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_viscosity_pa_s": 2e-05,
+      "gas_nusselt": 3.66,
+      "air_conductivity_w_m_k": 0.03,
+      "air_viscosity_pa_s": 2e-05,
+      "air_nusselt": 4.0,
+      "air_cp_j_kg_k": 1005.0,
+      "air_mass_flow_kg_s": 0.005,
+      "air_poiseuille_number": 64.0,
+      "air_minor_loss_coefficient": 2.0,
+      "fan_total_efficiency": 0.5,
+      "core_loss_multiplier": 1.0,
+      "header_loss_coefficient": 2.0
+    },
+    "heat_in": {
+      "air_density_kg_m3": 0.788,
+      "air_inlet_temperature_k": 448.15
+    },
+    "heat_out": {
+      "air_density_kg_m3": 1.184,
+      "air_inlet_temperature_k": 298.15
+    }
+  },
+  "hardware": {
+    "H_i": {
+      "tube_flow_area_m2": 0.0002114298139051238,
+      "tube_internal_area_m2": 0.16273688706636802,
+      "tube_gas_volume_m3": 1.3425793182975363e-05,
+      "header_gas_volume_m3": 1.5625e-05,
+      "working_gas_volume_m3": 3.1050793182975364e-05,
+      "core_width_m": 0.0625,
+      "core_height_m": 0.0625,
+      "fluid_envelope_length_m": 0.0675,
+      "wall_material_volume_m3": 3.6254701231795e-05,
+      "gas_film_resistance_k_w": 0.01846824364809569,
+      "metal_resistance_k_w": 4.4221017163577365e-05,
+      "air_film_resistance_k_w": 0.06421632474226373,
+      "wall_capacity_j_k": 147.01880492718,
+      "overall_static_conductance_w_k": 12.087690478268552,
+      "air_hydraulic_diameter_m": 0.002412324206196682,
+      "air_velocity_m_s": 2.0311848234422523,
+      "air_reynolds": 193.05512688385372,
+      "air_pressure_drop_pa": 17.436140995506797,
+      "fan_electrical_power_w": 0.2212708248160761,
+      "assumptions": "constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated"
+    },
+    "H_o": {
+      "tube_flow_area_m2": 0.0002114298139051238,
+      "tube_internal_area_m2": 0.16273688706636802,
+      "tube_gas_volume_m3": 1.3425793182975363e-05,
+      "header_gas_volume_m3": 1.5625e-05,
+      "working_gas_volume_m3": 3.1050793182975364e-05,
+      "core_width_m": 0.0625,
+      "core_height_m": 0.0625,
+      "fluid_envelope_length_m": 0.0675,
+      "wall_material_volume_m3": 3.6254701231795e-05,
+      "gas_film_resistance_k_w": 0.01846824364809569,
+      "metal_resistance_k_w": 4.4221017163577365e-05,
+      "air_film_resistance_k_w": 0.06421632474226373,
+      "wall_capacity_j_k": 147.01880492718,
+      "overall_static_conductance_w_k": 12.087690478268552,
+      "air_hydraulic_diameter_m": 0.002412324206196682,
+      "air_velocity_m_s": 1.3518358453314991,
+      "air_reynolds": 193.05512688385372,
+      "air_pressure_drop_pa": 11.604458703090673,
+      "fan_electrical_power_w": 0.09801063093826583,
+      "assumptions": "constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated"
+    },
+    "total_fan_electrical_power_w": 0.3192814557543419
+  },
+  "convergence_history": [
+    {
+      "cycle": 1,
+      "scaled_periodic_error": 210524.85279117318
+    },
+    {
+      "cycle": 2,
+      "scaled_periodic_error": 873.3952757871523
+    },
+    {
+      "cycle": 3,
+      "scaled_periodic_error": 301.7627462105544
+    },
+    {
+      "cycle": 4,
+      "scaled_periodic_error": 299.8001120769641
+    },
+    {
+      "cycle": 5,
+      "scaled_periodic_error": 291.2144147872506
+    },
+    {
+      "cycle": 6,
+      "scaled_periodic_error": 282.7923152452936
+    },
+    {
+      "cycle": 7,
+      "scaled_periodic_error": 274.616577592095
+    },
+    {
+      "cycle": 8,
+      "scaled_periodic_error": 266.6769705167091
+    },
+    {
+      "cycle": 9,
+      "scaled_periodic_error": 258.9659742612044
+    },
+    {
+      "cycle": 10,
+      "scaled_periodic_error": 251.48044291496691,
+      "wall_initial_guess_extrapolated": true
+    },
+    {
+      "cycle": 11,
+      "scaled_periodic_error": 8416.986829401347
+    },
+    {
+      "cycle": 12,
+      "scaled_periodic_error": 101.95070942558392
+    },
+    {
+      "cycle": 13,
+      "scaled_periodic_error": 4.55396847520118
+    },
+    {
+      "cycle": 14,
+      "scaled_periodic_error": 4.52137389859098
+    },
+    {
+      "cycle": 15,
+      "scaled_periodic_error": 4.447747870260566
+    },
+    {
+      "cycle": 16,
+      "scaled_periodic_error": 4.364984164816374
+    },
+    {
+      "cycle": 17,
+      "scaled_periodic_error": 4.290035562757024
+    },
+    {
+      "cycle": 18,
+      "scaled_periodic_error": 4.214805982848598
+    },
+    {
+      "cycle": 19,
+      "scaled_periodic_error": 4.131427424171379
+    },
+    {
+      "cycle": 20,
+      "scaled_periodic_error": 4.0586985894741305,
+      "wall_initial_guess_extrapolated": true
+    },
+    {
+      "cycle": 21,
+      "scaled_periodic_error": 222.51267594015334
+    },
+    {
+      "cycle": 22,
+      "scaled_periodic_error": 1.565395650949406
+    },
+    {
+      "cycle": 23,
+      "scaled_periodic_error": 0.8777479632349543
+    }
+  ],
+  "restart_source": null,
+  "frequency_hz": 2.0,
+  "final_state": [
+    9.634119960055733e-05,
+    22.543630607574602,
+    0.0011226879086141727,
+    303.91688061943955,
+    2.926987784446736e-05,
+    9.03270355247193,
+    3.967992154742239e-05,
+    9.228566295791724,
+    63287.532772559425,
+    47237.38806018124
+  ],
+  "total_energy_residual_j": 1.212381306459065e-10,
+  "total_mass_drift_kg": 4.336808689942018e-18,
+  "configuration_source": "# EXPLORATORY MOTOR DEMONSTRATOR SEED. See docs/MOTOR_FOUR_BAR.md.\n# This is a numerically verified first-level model result, not a validated design.\n\n[metadata]\nexample_data = true\ndescription = \"Motor demonstrator independent output-angle trial: small -80 deg, large +75 deg; uncalibrated exchanger hardware\"\n\n[working_gas]\ngas_constant = 287.0\nheat_capacity_cp = 1004.5\nheat_capacity_cv = 717.5\n\n[reservoirs]\ncold_temperature = 298.15\nhot_temperature = 448.15\n\n[operation]\nangular_speed = -12.566370614359172 # 2 Hz, motor direction\n\n[charge]\npressure = 100000.0\ntemperature = 298.15\n\n[geometry]\n# Swept-volume ratio S/L = 0.84 with one-percent clearances.\nsmall_cylinder_minimum_volume = 8.316831683168318e-06\nsmall_cylinder_maximum_volume = 0.00084\nlarge_cylinder_minimum_volume = 9.900990099009901e-06\nlarge_cylinder_maximum_volume = 0.001\ncold_heat_exchanger_volume = 1.9801980198019803e-05\nhot_heat_exchanger_volume = 1.9801980198019803e-05\n\n# Exchanger hold-up above is a numerical seed, not Doty bank envelope.\n[heat_transfer]\n# Existing constant-UA closure; NOT calibrated from Doty gas/gas measurements.\ncold_ua = 49.504275427542765\nhot_ua = 49.504275427542765\n\n[hydraulics]\n# Explicit numerical regularization; convergence is checked separately.\norifice_pressure_regularization = 0.03\nlarge_to_hot_cda = 0.0001663343654365437\nsmall_to_cold_cda = 0.0002970256525652566\nhot_to_small_valve_cda = 0.0001663343654365437\ncold_to_large_valve_cda = 0.0005940513051305131\n\n[valves]\nmodel = \"continuous_ideal_diode\"\n\n[valves.hot_to_small]\nopening_pressure_difference = 0.0\nclosing_pressure_difference = 0.0\n\n[valves.cold_to_large]\nopening_pressure_difference = 0.0\nclosing_pressure_difference = 0.0\n\n[kinematics]\ntype = \"shared_crank_rocker\"\n# Ground scale retained from the seed; bore/stroke ratio must be recalculated.\nground_distance = 0.11937584698725914\ncrank_ratio = 0.40\ncrank_angle_offset_degrees = 304.375\ncrank_direction = -1\n\n[kinematics.small_four_bar]\ncoupler_ratio = 1.0\nrocker_ratio = 1.17\noutput_along_ratio = 0.20316836787030856\noutput_normal_ratio = -1.1522250710242834\nassembly_branch = 1\nslider_rod_ratio = 5.0\n\n[kinematics.large_four_bar]\ncoupler_ratio = 1.0\nrocker_ratio = 1.17\noutput_along_ratio = 0.30281828276994927\noutput_normal_ratio = 1.1301332167582099\nassembly_branch = -1\nslider_rod_ratio = 5.0\n\n[validity]\nmaximum_pressure_equalization_error = 0.05\nmaximum_mach_number = 0.2\nmaximum_isothermality_error = 0.05\nmaximum_compressibility_deviation = 0.01\nmaximum_cp_variation = 0.01\n\n[numerical]\nintegration_method = \"LSODA\"\nintegration_relative_tolerance = 1.0e-7\nintegration_absolute_tolerance = 1.0e-9\nmaximum_step_angle_degrees = 0.5\nmaximum_valve_events_per_cycle = 100\nmaximum_cycles = 100\nperiodic_relative_tolerance = 1.0e-6\nperiodic_mass_absolute_tolerance = 1.0e-12\nperiodic_energy_absolute_tolerance = 1.0e-6\n",
+  "last_cycle_indicated_power_w": -26.937385589658707,
+  "last_cycle_external_heat_input_w": 84.59356270044847,
+  "last_cycle_external_heat_out_w": -111.54540029567873,
+  "fan_electrical_power_w": null,
+  "indicated_power_minus_fans_w": null,
+  "indicated_thermal_efficiency": null,
+  "useful_shaft_power_w": null,
+  "maximum_tube_reynolds": 685.3046168738972,
+  "maximum_tube_mach_at_exchanger_state": 0.10820577228802979,
+  "applicability": "screening_only; constant_Nusselt; entrance_pulse_and_distribution_unvalidated",
+  "laminar_reynolds_screen_passed": true,
+  "mach_screen_passed": true,
+  "mechanical_losses": "unavailable",
+  "calibration": "Doty_geometry_reference; no_empirical_UA_fit",
+  "sampled_valve_events": [
+    {
+      "valve": "H_i_to_L",
+      "transition": "opening",
+      "cycle_progress_degrees": 144.23803859375485,
+      "lambda_small": 0.046378547176978265,
+      "lambda_large": 0.9999470991138841,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_i_to_L",
+      "transition": "closing",
+      "cycle_progress_degrees": 329.2204784521939,
+      "lambda_small": 0.9993800799568927,
+      "lambda_large": 0.04908683966242084,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_o_to_S",
+      "transition": "closing",
+      "cycle_progress_degrees": 143.6179375684546,
+      "lambda_small": 0.04461525362923185,
+      "lambda_large": 0.9998565380582223,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_o_to_S",
+      "transition": "opening",
+      "cycle_progress_degrees": 326.49013449063455,
+      "lambda_small": 0.9999881910778609,
+      "lambda_large": 0.0579407104003081,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    }
+  ],
+  "mean_inlet_air_gas_temperature_differences_k": {
+    "heat_in": 19.193680175361774,
+    "heat_out": 25.30888124630377
+  },
+  "power_after_accounted_external_losses_w": -26.937385589658707
+}

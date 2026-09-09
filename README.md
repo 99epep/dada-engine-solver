@@ -1,0 +1,142 @@
+# DADA Engine Solver
+
+This project implements a conservative thermodynamic simulation and sizing
+solver for the DADA thermal machine.
+
+> [!WARNING]
+> The substantial initial implementation of this project was produced by an
+> artificial intelligence: **OpenAI Codex running on GPT-5.6 Sol
+> (`gpt-5.6-sol`)**, working interactively under human direction.
+>
+> AI-generated scientific software can contain plausible but serious errors.
+> Passing tests and numerical convergence do not establish that a model is a
+> faithful representation of a physical machine. Every equation, convention,
+> assumption and result must be independently reviewed before experimental,
+> engineering, safety-critical or commercial use.
+
+## AI implementation record
+
+- AI system: OpenAI Codex
+- Model: GPT-5.6 Sol (`gpt-5.6-sol`)
+- Project version at initial implementation: `0.1.0`
+- Initial implementation session date: 2026-09-02
+- Human role: scientific direction, requirements, physical decisions and review
+- AI role: study analysis, architecture, implementation, tests and documentation
+
+This notice is deliberately prominent so that the provenance of the work is
+not lost when files are copied or the project is handed to another reviewer.
+See [`docs/PHYSICS_DECISIONS.md`](docs/PHYSICS_DECISIONS.md) before changing the
+thermodynamic model.
+
+The scientific source of truth is the published
+[Thermodynamic and Mechanical Study](https://dada-engine.org/Thermodynamic_and_Mechanical_Study).
+Version `0.2.0` follows English revision
+[1288](https://dada-engine.org/index.php?title=Thermodynamic_and_Mechanical_Study&oldid=1288),
+including motor operation. Negative `[operation].angular_speed` reverses the
+configured refrigeration kinematics and exchanges the external hot/cold
+reservoirs. The physical exchanger branches and check-valve directions stay
+fixed. See [`docs/MOTOR_OPERATION.md`](docs/MOTOR_OPERATION.md) for conventions,
+an executable example, efficiency, and numerical evidence.
+The first-level model uses four independent zero-dimensional control volumes
+and the conservative state vector
+`(m_S, U_S, m_L, U_L, m_i, U_i, m_o, U_o)`.
+Plots and reports use `H_i` (heat in) and `H_o` (heat out). Legacy Python/TOML
+branch names `C/cold_*` and `H/hot_*` remain readable for compatibility.
+
+Its internal flow is periodic, strongly pulsating and topology-varying. Flow is
+intermittent in check-valve branches and potentially reversible in
+bidirectional branches. This distinction is important when selecting hydraulic
+and heat-transfer correlations.
+
+The project is under incremental development. Example inputs, when added, are
+illustrative numerical cases and must not be interpreted as validated DADA
+machine characteristics.
+
+The conservative simulation core is implemented and tested on controlled
+cases. The complete roadmap is not finished: constrained sizing, detailed
+mechanical interfaces, real-gas properties and experimental validation remain
+future work.
+
+## License
+
+Copyright (C) 2026 DADA Engine Solver contributors.
+
+This project is free software licensed under the
+[GNU General Public License version 3 or later](https://www.gnu.org/licenses/gpl-3.0.html)
+(`GPL-3.0-or-later`). See [`LICENSE`](LICENSE). You may redistribute and modify
+it under the terms of that license. There is no warranty, to the extent
+permitted by law. Third-party dependencies and externally sourced materials
+remain subject to their respective terms.
+
+## Development
+
+Run the test suite from the repository root:
+
+```console
+PYTHONPATH=src python3 -m pytest
+```
+
+Detailed solver-cost counters can be included in a simulation report with:
+
+```console
+dada-solver configuration.toml --integration-profile
+```
+
+The current analytical and numerical evidence is recorded in
+[`docs/validation.md`](docs/validation.md).
+
+The initial constrained-sizing and thermodynamic mechanical-boundary APIs are
+described in [`docs/SIZING.md`](docs/SIZING.md).
+
+The audit and reuse boundary for the earlier DADA four-bar optimizer are
+recorded in [`docs/FOUR_BAR_AUDIT.md`](docs/FOUR_BAR_AUDIT.md).
+
+The first configurable shared-crank search result is provided in
+`examples/cooling_cell_mechanical_candidate_001.toml`. It is an exploratory
+thermodynamic candidate rather than a validated mechanical optimum: its large
+implied piston diameters and pressure forces show why subsequent searches must
+constrain physical stroke, piston area and load.
+
+The selected doubled-capacity human-powered reference is
+`examples/cooling_cell_x2_reference.toml`. It targets the ideal 20-minute load
+at one bar filling pressure while reserving 0.8 litre per exchanger for a more
+manufacturable core and collectors.
+
+The human-powered one-kilogram water-freezing reference is documented in
+[`docs/COOLING_CELL.md`](docs/COOLING_CELL.md).
+
+The separate domestic-refrigerator comparison boundary and its required full
+redesign are documented in
+[`docs/DOMESTIC_REFRIGERATOR.md`](docs/DOMESTIC_REFRIGERATOR.md).
+
+Candidate industrial working fluids and the initial helium screening are
+documented in [`docs/WORKING_FLUIDS.md`](docs/WORKING_FLUIDS.md).
+
+Geometry-based heat-exchanger screening is documented in
+[`docs/HEAT_EXCHANGERS.md`](docs/HEAT_EXCHANGERS.md). The initial implementation
+supports straight rectangular channels in parallel and deliberately reports
+unsupported correlation regimes as `unavailable`.
+
+Motor priorities, the intermittent unidirectional flow duty export, and the
+first plate-fin / parallel-microtube literature comparison are recorded in
+[`docs/EXCHANGER_LITERATURE.md`](docs/EXCHANGER_LITERATURE.md).
+
+Ambient-air cases may optionally supply an initial relative humidity. The
+solver then reports possible condensation or frost onset as a dry-gas validity
+boundary; it does not yet model condensed water or latent heat.
+
+The experimental cycle/exchanger fixed-point command is:
+
+```console
+dada-exchanger-coupled examples/exchanger_coupled_example.toml
+```
+
+It iterates exchanger `UA` and gas volume with the periodic cycle and can inject
+explicit quasi-steady geometric port resistances. The published compressible-
+orifice closure remains the default reference model. See the exchanger
+documentation for the low-Mach and hydraulic-inertia validity limits.
+
+The current motor design brief targets approximately 100 W useful mechanical
+output, 2–10 Hz, reservoirs at 25/175 degrees Celsius, and a large-cylinder
+maximum enclosed volume of 66 litres. See [the motor demonstrator design
+brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
