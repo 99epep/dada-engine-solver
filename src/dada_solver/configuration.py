@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 import tomllib
 
+from dada_solver.free_kinematics import FreeKinematicsConfiguration, FreeMotionDefinition
 from dada_solver.fluids import CaloricallyPerfectGas
 from dada_solver.four_bar import SharedCrankRockerDesign
 from dada_solver.geometry import CylinderVolumeLimits, MachineVolumes
@@ -164,6 +165,7 @@ class SimulationConfiguration:
     hydraulic_flow_models: HydraulicNetworkModels | None = None
     humidity_screening: HumidityScreeningConfiguration | None = None
     shared_four_bar_design: SharedCrankRockerDesign | None = None
+    free_kinematics: FreeKinematicsConfiguration | None = None
 
     @property
     def motor_operation(self) -> bool:
@@ -204,7 +206,13 @@ class SimulationConfiguration:
         ):
             if not math.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and non-negative.")
-        if self.kinematics_type == "harmonic_example":
+        if self.kinematics_type == "free":
+            if self.free_kinematics is None:
+                raise ValueError('Free kinematics definitions are required.')
+            if (self.free_kinematics.small.limits != self.machine_volumes.small_cylinder
+                    or self.free_kinematics.large.limits != self.machine_volumes.large_cylinder):
+                raise ValueError('Free motion and machine cylinder volume limits must agree.')
+        elif self.kinematics_type == "harmonic_example":
             if self.small_phase_offset_degrees is None or not math.isfinite(self.small_phase_offset_degrees):
                 raise ValueError("Small-cylinder phase offset must be finite.")
             if not self.example_data:
@@ -373,6 +381,7 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
                 )
             ),
             shared_four_bar_design=_load_shared_four_bar_design(kinematics_data),
+            free_kinematics=_load_free_kinematics(kinematics_data, machine_volumes),
         )
     except KeyError as error:
         raise ValueError(f"Missing required configuration field: {error.args[0]}") from error
@@ -422,3 +431,15 @@ def _load_shared_four_bar_design(
         small_slider_rod_ratio=float(small.get("slider_rod_ratio", 5.0)),
         large_slider_rod_ratio=float(large.get("slider_rod_ratio", 5.0)),
     )
+
+
+def _load_free_kinematics(data, volumes):
+    if data['type'] != 'free':
+        return None
+    def motion(side):
+        definition = data[side]
+        limits = getattr(volumes, side+'_cylinder')
+        return FreeMotionDefinition(tuple(definition['control_values']), limits.minimum, limits.maximum,
+            definition.get('maximum_absolute_first_derivative'),
+            definition.get('maximum_absolute_second_derivative'))
+    return FreeKinematicsConfiguration(motion('small'), motion('large'))

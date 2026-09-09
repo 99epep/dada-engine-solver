@@ -10,9 +10,9 @@ from numpy.typing import NDArray
 
 from dada_solver.fluids import CaloricallyPerfectGas
 from dada_solver.geometry import InstantaneousVolumes, MachineVolumes
-from dada_solver.heat_transfer import ReservoirHeatTransfer
+from dada_solver.heat_transfer import HeatTransferModel
 from dada_solver.hydraulics import HydraulicFlowModel, FlowResult
-from dada_solver.kinematics import VolumeKinematics
+from dada_solver.kinematics import KinematicsModel
 from dada_solver.state import ThermodynamicState
 from dada_solver.valves import PassiveCheckValve, ValveState
 
@@ -58,10 +58,10 @@ class ThermodynamicModel:
 
     gas: CaloricallyPerfectGas
     machine_volumes: MachineVolumes
-    kinematics: VolumeKinematics
+    kinematics: KinematicsModel
     angular_speed: float
-    cold_heat_transfer: ReservoirHeatTransfer
-    hot_heat_transfer: ReservoirHeatTransfer
+    cold_heat_transfer: HeatTransferModel
+    hot_heat_transfer: HeatTransferModel
     large_hot_link: HydraulicFlowModel
     small_cold_link: HydraulicFlowModel
     hot_small_valve: PassiveCheckValve

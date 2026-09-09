@@ -4,6 +4,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import Protocol
+
+
+class HeatTransferModel(Protocol):
+    """Heat received by one gas control volume, independent of exchanger family."""
+    def heat_rate(self, gas_temperature: float) -> float: ...
+
+
+@dataclass(frozen=True, slots=True)
+class PrescribedHeatRate:
+    """Already evaluated coupled heat rate for one conservative RHS call."""
+    value: float
+
+    def heat_rate(self, gas_temperature: float) -> float:
+        return self.value
+
 
 
 @dataclass(frozen=True, slots=True)

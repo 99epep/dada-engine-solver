@@ -10,9 +10,11 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from dada_solver.dynamics import ThermodynamicModel
-from dada_solver.heat_transfer import ReservoirHeatTransfer
+from dada_solver.heat_transfer import PrescribedHeatRate
+from dada_solver.exchangers.base import LumpedWallThermalModel
 from dada_solver.state import ThermodynamicState
-from dada_solver.factory import initial_valve_topology
+from dada_solver.dynamics import ValveTopology
+from dada_solver.valves import ValveState
 
 
 @dataclass(frozen=True)
@@ -56,8 +58,8 @@ class AirWallMotor:
     Only continuous ideal diodes are supported; hysteretic memory is not hidden.
     """
     model: ThermodynamicModel
-    heat_in: AirWallExchanger
-    heat_out: AirWallExchanger
+    heat_in: LumpedWallThermalModel
+    heat_out: LumpedWallThermalModel
 
     def __post_init__(self):
         if not self.model.continuous_ideal_diodes or self.model.study_crank_direction != -1:
@@ -70,11 +72,9 @@ class AirWallMotor:
         outgoing = self.heat_out.rates(temperatures[3], values[9])
         # Reuse all existing conservative transport and passive-valve equations.
         instantaneous = replace(self.model,
-            cold_heat_transfer=ReservoirHeatTransfer(self.heat_in.gas_wall_conductance_w_k,
-                                                     values[8]/self.heat_in.wall_capacity_j_k),
-            hot_heat_transfer=ReservoirHeatTransfer(self.heat_out.gas_wall_conductance_w_k,
-                                                    values[9]/self.heat_out.wall_capacity_j_k))
-        rates = instantaneous.evaluate(angle, gas, initial_valve_topology())
+            cold_heat_transfer=PrescribedHeatRate(incoming['gas_heat_w']),
+            hot_heat_transfer=PrescribedHeatRate(outgoing['gas_heat_w']))
+        rates = instantaneous.evaluate(angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
         return np.r_[rates.state_derivative,
                      incoming['wall_energy_rate_w'], outgoing['wall_energy_rate_w'],
                      incoming['air_heat_w'], outgoing['air_heat_w'],

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from dada_solver.configuration import SimulationConfiguration
+from dada_solver.kinematics import KinematicConstraintViolation
 from dada_solver.dynamics import ThermodynamicModel, ValveTopology
 from dada_solver.factory import (
     build_initial_state,
@@ -26,6 +27,7 @@ from dada_solver.validity import ValidityReport, assess_cycle_validity
 
 class EvaluationStatus(Enum):
     CONVERGED = "converged"
+    INVALID_KINEMATICS = "invalid_kinematics"
     NOT_CONVERGED = "not_converged"
     INVALID_PHYSICAL_STATE = "invalid_physical_state"
     NUMERICAL_FAILURE = "numerical_failure"
@@ -42,6 +44,7 @@ class DesignEvaluation:
     validity: ValidityReport | None
     model: ThermodynamicModel | None
     cycle: CycleIntegrationResult | None
+    kinematic_diagnostics: tuple[object, ...] = ()
 
     @property
     def usable(self) -> bool:
@@ -60,7 +63,12 @@ class ThermodynamicSizingEvaluator:
         if key in self._cache:
             return self._cache[key]
         configuration = apply_design_point(self.base_configuration, point)
-        model = build_model(configuration)
+        try:
+            model = build_model(configuration)
+        except KinematicConstraintViolation as error:
+            evaluation = _kinematic_rejection(point, configuration, error)
+            self._cache[key] = evaluation
+            return evaluation
         initial_state = build_initial_state(configuration, model)
         periodic = build_periodic_solver(configuration, model).solve(
             initial_state, initial_valve_topology()
@@ -102,7 +110,10 @@ def evaluate_configuration(
 ) -> DesignEvaluation:
     """Evaluate one configuration with an optional periodic-state warm start."""
 
-    model = build_model(configuration)
+    try:
+        model = build_model(configuration)
+    except KinematicConstraintViolation as error:
+        return _kinematic_rejection(DesignPoint({}), configuration, error)
     filling_state = build_initial_state(configuration, model)
     if initial_state is None:
         state = filling_state
@@ -152,3 +163,10 @@ def _evaluation_status(status: PeriodicStatus) -> EvaluationStatus:
     if status is PeriodicStatus.NUMERICAL_INTEGRATION_FAILURE:
         return EvaluationStatus.NUMERICAL_FAILURE
     return EvaluationStatus.NOT_CONVERGED
+
+
+def _kinematic_rejection(point, configuration, error):
+    return DesignEvaluation(point, configuration, EvaluationStatus.INVALID_KINEMATICS,
+        PeriodicResult(PeriodicStatus.INVALID_PHYSICAL_STATE,
+            'Integration not started: '+str(error), (), None),
+        None, None, None, None, None, error.diagnostics)

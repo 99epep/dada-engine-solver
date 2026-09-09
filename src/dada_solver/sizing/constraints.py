@@ -184,10 +184,11 @@ class MaximumIsothermalityError:
     def evaluate(self, evaluation: DesignEvaluation) -> ConstraintValue:
         if evaluation.validity is None:
             return _unavailable(self.name)
-        maximum = max(
-            evaluation.validity.cold_isothermality_error,
-            evaluation.validity.hot_isothermality_error,
-        )
+        excursions = (evaluation.validity.cold_isothermality_error,
+                      evaluation.validity.hot_isothermality_error)
+        if any(value is None for value in excursions):
+            return _unavailable(self.name)
+        maximum = max(excursions)
         margin = self.limit - maximum
         return ConstraintValue(self.name, margin, margin >= 0.0, True)
 

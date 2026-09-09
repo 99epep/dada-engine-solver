@@ -451,6 +451,9 @@ class SharedCrankFourBarVolumeKinematics:
             theta, self._large, self.large_volume_limits
         )[1]
 
+    def breakpoint_angles(self) -> tuple[float, ...]:
+        return ()
+
     @property
     def small_physical_stroke(self) -> float:
         return self._small.stroke
@@ -717,3 +720,7 @@ def slider_rod_sensitivity(
             np.max(np.abs(slider_normalized - projected_normalized))
         ),
     )
+
+
+# Family-facing name; retain the original concrete type for animation/sizing.
+FourBarKinematics = SharedCrankFourBarVolumeKinematics
