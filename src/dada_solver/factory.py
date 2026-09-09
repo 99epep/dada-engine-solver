@@ -6,6 +6,7 @@ import math
 from dataclasses import replace
 
 from dada_solver.configuration import SimulationConfiguration
+from dada_solver.free_kinematics import FreeKinematics
 from dada_solver.dynamics import ThermodynamicModel, ValveTopology
 from dada_solver.heat_transfer import ReservoirHeatTransfer
 from dada_solver.hydraulics import CompressibleOrifice
@@ -26,7 +27,10 @@ from dada_solver.valves import PassiveCheckValve, ValveState
 def build_model(configuration: SimulationConfiguration) -> ThermodynamicModel:
     """Build the first-level model without adding unconfigured physical data."""
 
-    if configuration.kinematics_type == "harmonic_example":
+    if configuration.kinematics_type == "free":
+        kinematics = FreeKinematics(configuration.free_kinematics)
+        kinematics.require_feasible()
+    elif configuration.kinematics_type == "harmonic_example":
         assert configuration.small_phase_offset_degrees is not None
         kinematics = HarmonicVolumeKinematics(
             configuration.machine_volumes.small_cylinder,

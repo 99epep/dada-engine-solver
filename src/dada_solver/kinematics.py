@@ -4,13 +4,30 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from dada_solver.geometry import CylinderVolumeLimits
 
 
-class VolumeKinematics(Protocol):
-    """Mechanical boundary supplied to the thermodynamic model."""
+@runtime_checkable
+class KinematicsModel(Protocol):
+    """Imposed volume boundary, independent of forces or mechanism family.
+
+    Angles are radians, one cycle is 2*pi. Only first derivatives are required
+    by thermodynamics; smooth backends may expose analytic second derivatives.
+    """
+
+    @property
+    def small_volume_limits(self) -> CylinderVolumeLimits: ...
+
+    @property
+    def large_volume_limits(self) -> CylinderVolumeLimits: ...
+
+    @property
+    def small_physical_stroke(self) -> float | None: ...
+
+    @property
+    def large_physical_stroke(self) -> float | None: ...
 
     def small_cylinder_volume(self, theta: float) -> float:
         """Return small-cylinder volume in m^3."""
@@ -26,6 +43,23 @@ class VolumeKinematics(Protocol):
 
     def breakpoint_angles(self) -> tuple[float, ...]:
         """Return derivative-discontinuity angles strictly inside one cycle."""
+
+
+class KinematicConstraintViolation(ValueError):
+    """An explicitly infeasible motion with individually inspectable diagnostics."""
+    def __init__(self, message, diagnostics):
+        super().__init__(message)
+        self.diagnostics = tuple(diagnostics)
+
+
+class SmoothKinematicsModel(KinematicsModel, Protocol):
+    """Optional analytic acceleration capability; not required by thermodynamics."""
+    def small_cylinder_volume_second_derivative(self, theta: float) -> float: ...
+    def large_cylinder_volume_second_derivative(self, theta: float) -> float: ...
+
+
+# Backward-compatible public name.
+VolumeKinematics = KinematicsModel
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +83,32 @@ class ReversedVolumeKinematics:
 
     def large_cylinder_volume_derivative(self, theta: float) -> float:
         return -self.forward.large_cylinder_volume_derivative(-theta)
+
+    @property
+    def small_volume_limits(self):
+        return self.forward.small_volume_limits
+
+    @property
+    def large_volume_limits(self):
+        return self.forward.large_volume_limits
+
+    @property
+    def small_physical_stroke(self):
+        return getattr(self.forward, 'small_physical_stroke', None)
+
+    @property
+    def large_physical_stroke(self):
+        return getattr(self.forward, 'large_physical_stroke', None)
+
+    @property
+    def diagnostics(self):
+        return self.forward.diagnostics
+
+    def small_cylinder_volume_second_derivative(self, theta):
+        return self.forward.small_cylinder_volume_second_derivative(-theta)
+
+    def large_cylinder_volume_second_derivative(self, theta):
+        return self.forward.large_cylinder_volume_second_derivative(-theta)
 
     def breakpoint_angles(self) -> tuple[float, ...]:
         provider = getattr(self.forward, "breakpoint_angles", None)
@@ -78,6 +138,22 @@ class HarmonicVolumeKinematics:
     small_limits: CylinderVolumeLimits
     large_limits: CylinderVolumeLimits
     small_phase_offset: float
+
+    @property
+    def small_volume_limits(self):
+        return self.small_limits
+
+    @property
+    def large_volume_limits(self):
+        return self.large_limits
+
+    @property
+    def small_physical_stroke(self):
+        return None
+
+    @property
+    def large_physical_stroke(self):
+        return None
 
     def small_cylinder_volume(self, theta: float) -> float:
         midpoint = 0.5 * (self.small_limits.minimum + self.small_limits.maximum)
@@ -127,6 +203,22 @@ class IdealPiecewiseLinearVolumeKinematics:
     small_lambda_target: float
     large_lambda_target: float
     adiabatic_sector_fraction: float = 0.25
+
+    @property
+    def small_volume_limits(self):
+        return self.small_limits
+
+    @property
+    def large_volume_limits(self):
+        return self.large_limits
+
+    @property
+    def small_physical_stroke(self):
+        return None
+
+    @property
+    def large_physical_stroke(self):
+        return None
 
     def __post_init__(self) -> None:
         for name, value in (

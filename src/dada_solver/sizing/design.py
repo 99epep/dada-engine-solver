@@ -198,6 +198,8 @@ def apply_design_point(
     return replace(
         base,
         machine_volumes=volumes,
+        free_kinematics=(None if base.free_kinematics is None else
+            base.free_kinematics.with_volume_limits(volumes.small_cylinder, volumes.large_cylinder)),
         cold_thermal_conductance=point.value_or(
             DesignParameter.COLD_UA, base.cold_thermal_conductance
         ),

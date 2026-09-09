@@ -92,6 +92,8 @@ def scale_capacity_and_speed(
     return replace(
         configuration,
         machine_volumes=volumes,
+        free_kinematics=(None if configuration.free_kinematics is None else
+            configuration.free_kinematics.with_volume_limits(volumes.small_cylinder, volumes.large_cylinder)),
         hydraulics=scaled_hydraulics,
         cold_thermal_conductance=configuration.cold_thermal_conductance * rate_factor,
         hot_thermal_conductance=configuration.hot_thermal_conductance * rate_factor,
@@ -142,6 +144,10 @@ def scale_volume_at_constant_inventory(
 
     return replace(
         configuration,
+        free_kinematics=(None if configuration.free_kinematics is None else
+            configuration.free_kinematics.with_volume_limits(
+                _scale_cylinder(old.small_cylinder, volume_factor),
+                _scale_cylinder(old.large_cylinder, volume_factor))),
         machine_volumes=MachineVolumes(
             small_cylinder=_scale_cylinder(old.small_cylinder, volume_factor),
             large_cylinder=_scale_cylinder(old.large_cylinder, volume_factor),

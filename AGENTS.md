@@ -47,3 +47,10 @@ from expected peak internal flow with a capacity-rate margin; verify achieved
 ratios and retain finite thermal-film resistance.
 Use checkpoint intervals and optional bounded wall initial-guess acceleration
 without weakening periodic convergence or changing states within a cycle.
+
+Architecture handoff: read docs/PLUGGABLE_MODELS.md before implementing the
+global optimization campaign. Preserve generic KinematicsModel and
+ExchangerModel boundaries, independent free spline motions, explicit validity
+margins, and family-specific parameter ownership. Do not independently optimize
+geometrically derived exchanger UA, hold-up or losses. The current task adds
+no optimizer, dynamic plugin registry, or assumed mechanical efficiency.

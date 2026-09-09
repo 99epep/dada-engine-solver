@@ -140,3 +140,10 @@ The current motor design brief targets approximately 100 W useful mechanical
 output, 2–10 Hz, reservoirs at 25/175 degrees Celsius, and a large-cylinder
 maximum enclosed volume of 66 litres. See [the motor demonstrator design
 brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
+
+## Interchangeable models
+
+The thermodynamic solver accepts four-bar or independent periodic free motion.
+Exchanger families are assembled through an explicit protocol; microtubes are
+one implementation. See [architecture and validation](docs/PLUGGABLE_MODELS.md)
+and the [free-motion example](examples/motor_free_kinematics.toml).

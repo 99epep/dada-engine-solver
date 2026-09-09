@@ -160,3 +160,11 @@ This generalized torque is work-conjugate to the imposed angle. It is not a
 complete shaft-load prediction. Net piston forces, linkage forces, inertia,
 friction, bearing reactions and structural stresses require a future
 `MechanicalResponseModel` and additional mechanical data.
+
+## Interchangeable model preparation
+
+See [PLUGGABLE_MODELS.md](PLUGGABLE_MODELS.md) for independent periodic free
+kinematics, exchanger construction and the family-specific campaign adapter
+plan. The legacy enum is preserved. Free-motion derivative violations return
+`invalid_kinematics` with separate diagnostic margins before integration.
+Swept-volume/clearance changes update free-motion ranges without changing shape.

@@ -115,16 +115,12 @@ def build_exchanger(bank: MicrotubeBank, inputs: HardwareInputs):
 
 
 def connect_hardware(model, heat_in_bank, heat_out_bank, heat_in_inputs, heat_out_inputs, *, heat_in_valve_cda_m2, heat_out_valve_cda_m2):
-    hi, hi_report = build_exchanger(heat_in_bank, heat_in_inputs)
-    ho, ho_report = build_exchanger(heat_out_bank, heat_out_inputs)
-    def half(bank, properties, valve=None):
-        return TubeHalfLink(bank, properties.gas_viscosity_pa_s, properties.core_loss_multiplier,
-                            properties.header_loss_coefficient, valve)
-    changed = replace(model,
-        machine_volumes=replace(model.machine_volumes,
-            cold_heat_exchanger=hi_report['working_gas_volume_m3'], hot_heat_exchanger=ho_report['working_gas_volume_m3']),
-        small_cold_link=half(heat_in_bank, heat_in_inputs), large_hot_link=half(heat_out_bank, heat_out_inputs),
-        cold_large_valve=replace(model.cold_large_valve, flow_model=half(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2)),
-        hot_small_valve=replace(model.hot_small_valve, flow_model=half(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2)))
-    return AirWallMotor(changed, hi, ho), dict(H_i=hi_report,H_o=ho_report,
+    # Compatibility constructor; geometry-specific assembly stays at this boundary.
+    from dada_solver.exchangers.microtube import MicrotubeExchanger
+    from dada_solver.exchangers.base import connect_exchangers
+    incoming = MicrotubeExchanger(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2)
+    outgoing = MicrotubeExchanger(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2)
+    hi_report = dict(incoming.build().metadata)
+    ho_report = dict(outgoing.build().metadata)
+    return connect_exchangers(model, incoming, outgoing), dict(H_i=hi_report, H_o=ho_report,
         total_fan_electrical_power_w=hi_report['fan_electrical_power_w']+ho_report['fan_electrical_power_w'])

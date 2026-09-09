@@ -11,6 +11,19 @@ retain their own terms.
 
 ## Authority and scope
 
+### Interchangeable motion and exchanger architecture
+
+The user authorizes an architecture-only refactor and immediate independent
+free periodic spline laws. Four-bar kinematics is one family, not a cycle
+assumption; free motion must not inherit plateau, Lambda, symmetry or valve-
+timing targets. The factory retains existing direction conventions, while a
+free law may choose arbitrary cylinder volumes at the zero-angle origin.
+Uniform initial filling uses those actual volumes. No conservative equation or
+physical loss assumption is changed. Microtube geometry becomes one explicit
+exchanger implementation, with derived quantities owned by that implementation.
+See [PLUGGABLE_MODELS.md](PLUGGABLE_MODELS.md) for interfaces, feasibility,
+compatibility, tests and the next campaign's parameter-adapter boundary.
+
 ### Original four-bar motion and constant-area parallelization
 
 The user requests restoring the original shared-crank four-bar seed (small

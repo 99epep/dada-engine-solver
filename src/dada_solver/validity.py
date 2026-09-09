@@ -23,8 +23,8 @@ class ValidityVerdict(Enum):
 class ValidityReport:
     verdict: ValidityVerdict
     maximum_pressure_equalization_error: float
-    cold_isothermality_error: float
-    hot_isothermality_error: float
+    cold_isothermality_error: float | None
+    hot_isothermality_error: float | None
     maximum_mach_number: float | None
     mach_number_status: str
     maximum_compressibility_deviation: float
@@ -60,14 +60,14 @@ def assess_cycle_validity(
         pressure_history[[0, 1]] - pressure_history[[2, 3]]
     )
     pressure_error = float(np.max(pair_differences / pair_references))
-    cold_isothermality = float(
-        (np.max(temperature_history[2]) - np.min(temperature_history[2]))
-        / model.cold_heat_transfer.reservoir_temperature
-    )
-    hot_isothermality = float(
-        (np.max(temperature_history[3]) - np.min(temperature_history[3]))
-        / model.hot_heat_transfer.reservoir_temperature
-    )
+    def excursion(index, closure):
+        # A generic closure need not have a fixed reservoir reference temperature.
+        reference = getattr(closure, 'reservoir_temperature', None)
+        if reference is None:
+            return None
+        return float((np.max(temperature_history[index])-np.min(temperature_history[index])) / reference)
+    cold_isothermality = excursion(2, model.cold_heat_transfer)
+    hot_isothermality = excursion(3, model.hot_heat_transfer)
     compressibility_deviation = 0.0
     cp_variation = 0.0
 
