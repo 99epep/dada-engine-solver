@@ -1,0 +1,109 @@
+# Stage 7A — push the current A mechanical basin past its previous boundaries.
+#
+# Thermodynamics and the remaining mechanical coordinates are frozen at
+# the Stage 5 A champion. Only the coordinates showing boundary pressure,
+# or strongly coupled to them, are reopened.
+
+[campaign]
+base_configuration = "motor_demonstrator_stage3_champion_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 128
+elite_size = 16
+initial_evaluation_seconds = 30.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 1009
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 40.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+[fixed_parameters]
+
+# Thermodynamic A anchor.
+"common.small_swept_volume" = 0.0008316831683168317
+"common.large_swept_volume" = 0.0009900990099009901
+"common.small_clearance_ratio" = 0.01
+"common.large_clearance_ratio" = 0.01
+"common.charge_pressure" = 100000.0
+"operation.frequency_hz" = 2.0
+"microtube.heat_in.tube_length_m" = 0.042333333333333334
+"microtube.heat_out.tube_length_m" = 0.042333333333333334
+
+# Frozen Stage 5 A mechanical coordinates.
+"four_bar.large_coupler_ratio" = 0.9933032337389887
+"four_bar.large_output_along_ratio" = 0.6480621563270688
+"four_bar.large_output_normal_ratio" = 0.7887968220561743
+
+"four_bar.small_output_along_ratio" = 0.6705286806821824
+"four_bar.small_output_normal_ratio" = -1.0206077474355697
+
+[[parameters]]
+name = "four_bar.crank_ratio"
+lower = 0.18
+upper = 0.3
+initial = 0.252
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_rocker_ratio"
+lower = 0.78
+upper = 0.94
+initial = 0.892
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_rocker_ratio"
+lower = 0.95
+upper = 1.15
+initial = 1.03
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_coupler_ratio"
+lower = 1.08
+upper = 1.3
+initial = 1.17
+transform = "linear"
