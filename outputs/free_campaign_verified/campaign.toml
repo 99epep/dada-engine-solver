@@ -1,0 +1,97 @@
+# Small machinery smoke campaign, not a final optimization or optimal waveform.
+[campaign]
+base_configuration = "motor_demonstrator_original_325c.toml"
+maximum_candidates = 2
+elite_size = 5
+initial_evaluation_seconds = 10.0
+
+[numerical]
+# Smoke-runtime cap only. Periodic tolerances are unchanged; non-convergence
+# remains a rejection, never a provisional feasible result.
+maximum_cycles = 6
+
+[families]
+kinematics = "free"
+exchanger = "reservoir"
+
+[search]
+type = "sobol"
+seed = 27
+scramble = true
+
+[free]
+# Four chart coordinates per cylinder; only two per side vary in this smoke.
+# The initial spline is sampled from the seed; the free family imposes no such shape.
+small_coordinates = [0.022919624003035495, -0.17442834822639194, -0.4529962920228473, -0.5818216600557268]
+large_coordinates = [0.16928123471700227, 0.45423274155894733, 0.5776297313179263, 0.4629521414489773]
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 1.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 600000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[parameters]]
+name = "free.small.0"
+lower = -0.0020803759969645064
+upper = 0.047919624003035496
+initial = 0.022919624003035495
+transform = "linear"
+
+[[parameters]]
+name = "free.small.1"
+lower = -0.19942834822639194
+upper = -0.14942834822639195
+initial = -0.17442834822639194
+transform = "linear"
+
+[[parameters]]
+name = "free.large.0"
+lower = 0.14428123471700227
+upper = 0.19428123471700226
+initial = 0.16928123471700227
+transform = "linear"
+
+[[parameters]]
+name = "free.large.1"
+lower = 0.4292327415589473
+upper = 0.47923274155894735
+initial = 0.45423274155894733
+transform = "linear"
+
+[[parameters]]
+name = "operation.frequency_hz"
+lower = 2.0
+upper = 2.2
+initial = 2.0
+transform = "linear"
+
+[[parameters]]
+name = "common.charge_pressure"
+lower = 95000.0
+upper = 105000.0
+initial = 100000.0
+transform = "log"
+
+[[parameters]]
+name = "common.large_swept_volume"
+lower = 0.00094
+upper = 0.00104
+initial = 0.0009900990099009901
+transform = "log"
+
+[[parameters]]
+name = "common.small_clearance_volume"
+lower = 7.8e-06
+upper = 8.8e-06
+initial = 8.316831683168318e-06
+transform = "linear"

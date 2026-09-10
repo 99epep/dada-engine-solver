@@ -11,6 +11,17 @@ retain their own terms.
 
 ## Authority and scope
 
+### Persistent campaign orchestration and direct kinematics injection
+
+The approved architecture now permits direct study-angle kinematics injection
+through MachineDesign; the factory applies the operation reversal once and
+retains backward-compatible TOML selection otherwise. The first persistent
+Sobol campaign layer reuses physical evaluation and sizing objectives/constraints.
+It does not alter physical equations or periodic tolerances. The first physical
+campaign uses the existing eight-state reservoir-closure evaluator; dynamic-wall
+microtube campaigns require a compatible evaluator adapter, not a static-model
+substitution. See [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
+
 ### Interchangeable motion and exchanger architecture
 
 The user authorizes an architecture-only refactor and immediate independent

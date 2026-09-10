@@ -9,7 +9,10 @@ gas volumes, hydraulic graph, passive valves, heat/work signs and equations
 are unchanged by this refactor. No mechanical efficiency is introduced.
 
 `MachineDesign` in `dada_solver.machine` composes a `SimulationConfiguration`
-with optional independent `ExchangerModel` designs for both sides. Its `build()`
+with an optional directly injected `KinematicsModel` and independent
+`ExchangerModel` designs for both sides. Injected motion uses study angle;
+the factory skips family construction and applies motor reversal exactly once.
+The existing TOML selector remains the default when no implementation is supplied. Its `build()`
 method calls the existing factory and, if provided, the exchanger connector.
 There is no loader, registry, entry-point discovery or dependency-injection
 framework. A family is selected explicitly at construction time, outside the
@@ -226,14 +229,11 @@ Final full-suite verification: **232 tests passed** in 39.09 seconds, compared
 with 206 tests before the refactor (26 new focused tests). Both original
 four-bar public tests and historical sizing/exchanger tests remain included.
 
-## Next campaign work
+## Persistent campaign layer
 
-1. Define family-specific bounded parameter adapters, including free shape
-   coordinates, ranges/clearances, speed, charge and exchanger design inputs.
-   Enforce ownership so derived quantities cannot enter the same candidate twice.
-2. Add a persistent candidate/result store and complete-input cache, with explicit
-   preflight feasibility, convergence status, constraint margins and restart rules.
-3. Select the global search strategy and human review checkpoints; retain final
-   periodic/numerical refinement and physical applicability checks independently
-   from the search objective. No mechanical efficiency or optimal free waveform
-   has been established by this architecture work.
+The first orchestration layer is now implemented. See
+[OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md) for bounded family adapters,
+Sobol continuation, exact candidate caching, durable history, approximate time
+budgets, human reports and the physical free-motion smoke example. The next
+review will choose local refinement and compatible periodic-state warm starts.
+Dynamic-wall campaigns still require their own evaluator adapter.

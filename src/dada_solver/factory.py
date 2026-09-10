@@ -12,7 +12,7 @@ from dada_solver.heat_transfer import ReservoirHeatTransfer
 from dada_solver.hydraulics import CompressibleOrifice
 from dada_solver.integration import CycleIntegrator, SegmentIntegrationProgress
 from typing import Callable
-from dada_solver.kinematics import HarmonicVolumeKinematics, IdealPiecewiseLinearVolumeKinematics, ReversedVolumeKinematics
+from dada_solver.kinematics import KinematicsModel, HarmonicVolumeKinematics, IdealPiecewiseLinearVolumeKinematics, ReversedVolumeKinematics
 from dada_solver.four_bar import (
     SharedCrankFourBarVolumeKinematics,
     published_e0_opposed_kinematics,
@@ -24,10 +24,20 @@ from dada_solver.state import ThermodynamicState, UniformCharge
 from dada_solver.valves import PassiveCheckValve, ValveState
 
 
-def build_model(configuration: SimulationConfiguration) -> ThermodynamicModel:
+def build_model(configuration: SimulationConfiguration, *, kinematics: KinematicsModel | None = None) -> ThermodynamicModel:
     """Build the first-level model without adding unconfigured physical data."""
 
-    if configuration.kinematics_type == "free":
+    if kinematics is not None:
+        # Injected implementations use study angle, before the operation reversal.
+        if isinstance(kinematics, ReversedVolumeKinematics):
+            raise ValueError('Inject study-angle kinematics, not an already reversed wrapper.')
+        if (kinematics.small_volume_limits != configuration.machine_volumes.small_cylinder
+                or kinematics.large_volume_limits != configuration.machine_volumes.large_cylinder):
+            raise ValueError('Injected kinematics and configuration volume limits must agree.')
+        validator = getattr(kinematics, 'require_feasible', None)
+        if validator is not None:
+            validator()
+    elif configuration.kinematics_type == "free":
         kinematics = FreeKinematics(configuration.free_kinematics)
         kinematics.require_feasible()
     elif configuration.kinematics_type == "harmonic_example":

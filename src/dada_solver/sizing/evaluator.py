@@ -107,11 +107,13 @@ def evaluate_configuration(
     initial_state: ThermodynamicState | None = None,
     initial_topology: ValveTopology | None = None,
     integration_progress_callback: Callable[[SegmentIntegrationProgress], None] | None = None,
+    *, model: ThermodynamicModel | None = None,
 ) -> DesignEvaluation:
     """Evaluate one configuration with an optional periodic-state warm start."""
 
     try:
-        model = build_model(configuration)
+        if model is None:
+            model = build_model(configuration)
     except KinematicConstraintViolation as error:
         return _kinematic_rejection(DesignPoint({}), configuration, error)
     filling_state = build_initial_state(configuration, model)
@@ -126,7 +128,7 @@ def evaluate_configuration(
     status = _evaluation_status(periodic.status)
     if periodic.status is not PeriodicStatus.CONVERGED or periodic.final_cycle is None:
         return DesignEvaluation(
-            DesignPoint({}), configuration, status, periodic, None, None, None, None, None
+            DesignPoint({}), configuration, status, periodic, None, None, None, model, None
         )
     cycle = periodic.final_cycle
     cycle_initial_state = ThermodynamicState.from_array(cycle.states[:, 0])

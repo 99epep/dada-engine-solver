@@ -137,7 +137,7 @@ orifice closure remains the default reference model. See the exchanger
 documentation for the low-Mach and hydraulic-inertia validity limits.
 
 The current motor design brief targets approximately 100 W useful mechanical
-output, 2–10 Hz, reservoirs at 25/175 degrees Celsius, and a large-cylinder
+output, 2–10 Hz, reservoirs at 25/325 degrees Celsius, and a large-cylinder
 maximum enclosed volume of 66 litres. See [the motor demonstrator design
 brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
 
@@ -147,3 +147,12 @@ The thermodynamic solver accepts four-bar or independent periodic free motion.
 Exchanger families are assembled through an explicit protocol; microtubes are
 one implementation. See [architecture and validation](docs/PLUGGABLE_MODELS.md)
 and the [free-motion example](examples/motor_free_kinematics.toml).
+
+## Persistent exploration campaigns
+
+The first Sobol campaign layer supports bounded linear/log parameters, durable
+history, exact-cache resume, feasible archives and human phase reports. See
+[campaign documentation](docs/OPTIMIZATION_CAMPAIGN.md) and the
+[small free-motion campaign](examples/free_kinematics_campaign.toml).
+Run `dada-optimize campaign.toml --budget 30m`, or resume using the campaign
+directory as the first argument.
