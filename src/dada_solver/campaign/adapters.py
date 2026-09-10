@@ -70,8 +70,11 @@ def microtube_design(bank, inputs, valve_cda, physical, side):
 
 
 class FamilyDesignAdapter:
-    def __init__(self, configuration, families, free_settings):
+    def __init__(self, configuration, families, free_settings, *, hardware_bank=None,
+                 heat_in_inputs=None, heat_out_inputs=None):
         self.configuration, self.families, self.free_settings = configuration, families, free_settings
+        self.hardware_bank = hardware_bank
+        self.heat_in_inputs, self.heat_out_inputs = heat_in_inputs, heat_out_inputs
 
     def build(self, physical):
         try:
@@ -114,4 +117,12 @@ class FamilyDesignAdapter:
             diagnostics = ([asdict(x) for x in error.diagnostics]
                            if isinstance(error, KinematicConstraintViolation) else None)
             raise PreflightRejection('invalid_kinematics', str(error), diagnostics) from error
-        return MachineDesign(config, kinematics=kinematics)
+        heat_in = heat_out = None
+        if self.families['exchanger'] == 'microtube':
+            if self.hardware_bank is None:
+                raise PreflightRejection('invalid_exchanger', 'Microtube hardware definition is missing.')
+            heat_in = microtube_design(self.hardware_bank, self.heat_in_inputs,
+                config.hydraulics.cold_to_large_valve_cda, physical, 'heat_in')
+            heat_out = microtube_design(self.hardware_bank, self.heat_out_inputs,
+                config.hydraulics.hot_to_small_valve_cda, physical, 'heat_out')
+        return MachineDesign(config, heat_in=heat_in, heat_out=heat_out, kinematics=kinematics)

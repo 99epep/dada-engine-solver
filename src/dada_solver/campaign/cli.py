@@ -12,6 +12,8 @@ def main(argv=None):
     parser.add_argument('--directory', type=Path, help='Destination for a new campaign')
     parser.add_argument('--budget', required=True, help='For example 30m, 1h30m, 45s')
     parser.add_argument('--max-candidates', type=int, help='Optional per-run cap for smoke work')
+    parser.add_argument('--retry-incomplete', action='store_true',
+        help='Retry the most recent deadline-interrupted candidate before advancing')
     args = parser.parse_args(argv)
     try:
         if args.campaign.is_dir():
@@ -21,7 +23,8 @@ def main(argv=None):
             definition = CampaignDefinition(args.campaign)
             destination = args.directory or Path('outputs')/(args.campaign.stem+'_campaign')
             campaign = OptimizationCampaign(definition, destination)
-        report = campaign.run(parse_budget(args.budget), maximum_candidates=args.max_candidates)
+        report = campaign.run(parse_budget(args.budget), maximum_candidates=args.max_candidates,
+                              retry_incomplete=args.retry_incomplete)
     except (ValueError, RuntimeError) as error:
         parser.exit(2, f'Campaign error: {error}\n')
     print(readable_report(report))

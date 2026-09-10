@@ -5,6 +5,7 @@ import pytest
 from scipy.integrate import solve_ivp
 
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
+from dada_solver.exchangers.wall_cycle import wall_cycle_performance
 from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state
 
@@ -62,3 +63,16 @@ def test_steady_wall_matches_series_resistance_limit():
     expected = (hx.air_inlet_temperature_k-gas_temperature)/(1/external+1/hx.gas_wall_conductance_w_k)
     assert rates['wall_energy_rate_w'] == pytest.approx(0, abs=1e-10)
     assert rates['gas_heat_w'] == pytest.approx(expected)
+
+
+def test_wall_efficiency_uses_external_air_heat_boundary():
+    from types import SimpleNamespace
+    trajectory=np.zeros((15,2))
+    trajectory[:8,0]=trajectory[:8,1]=[1,100,1,100,1,100,1,100]
+    trajectory[8:10,0]=[1000,1000];trajectory[8:10,1]=[1005,1005]
+    trajectory[10:12,1]=[100,-70]
+    trajectory[12:14,1]=[999,-999]  # Gas-wall quadratures must not set efficiency.
+    trajectory[14,1]=20
+    performance=wall_cycle_performance(SimpleNamespace(model=SimpleNamespace(signed_angular_speed=-2*np.pi)),trajectory)
+    assert performance.thermal_efficiency==pytest.approx(.2)
+    assert performance.gas_power==pytest.approx(20)

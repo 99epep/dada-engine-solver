@@ -17,6 +17,7 @@ from dada_solver.state import ThermodynamicState
 from dada_solver.exchangers.hardware import HardwareInputs, connect_hardware
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.exchangers.duty import summarize_port
+from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--hardware', type=Path, default=Path('examples/motor_hardware.toml'))
@@ -78,38 +79,28 @@ if args.warm_start:
     state[8] *= wrapper.heat_in.wall_capacity_j_k/previous['hardware']['H_i']['wall_capacity_j_k']
     state[9] *= wrapper.heat_out.wall_capacity_j_k/previous['hardware']['H_o']['wall_capacity_j_k']
     reference_mass=float(state[:8:2].sum())
-converged = False
-wall_history=[]
-history_log=[]
-for cycle in range(1,args.maximum_cycles+1):
-    angles, trajectory = wrapper.integrate_cycle(state,rtol=1e-8,
-        atol=np.array([1e-13,1e-8]*4+[1e-7]*2+[1e-8]*5))
-    end = trajectory[:10,-1]
-    error = float(np.max(np.abs(end-state)/(1e-12+1e-6*np.maximum(np.abs(end),np.abs(state)))))
-    stored = lambda x: float(np.sum(x[1:8:2])+np.sum(x[8:10]))
-    residual = stored(end)-stored(state)-trajectory[10:12,-1].sum()+trajectory[14,-1]
-    history_log.append(dict(cycle=cycle,scaled_periodic_error=error))
+def completed_cycle(cycle, end, error, history_item):
+    global checkpoint_seconds
+    history_item['scaled_periodic_error'] = history_item.pop('normalized_state_error')
     if cycle == 1 or cycle % 10 == 0 or error <= 1:
-        print(history_log[-1],flush=True)
+        print(history_item,flush=True)
     if cycle % args.checkpoint_every == 0 or error <= 1:
         checkpoint_start=timer.perf_counter()
         output_path('_checkpoint.json').write_text(json.dumps(dict(
             hardware_inputs=data, final_state=end.tolist(), cycle=cycle,
             scaled_periodic_error=error, status='initial_guess_only')))
         checkpoint_seconds += timer.perf_counter()-checkpoint_start
-    state=end
-    if error<=1:
-        converged=True
-        break
-    wall_history.append(end[8:10].copy())
-    if args.accelerate_walls and cycle % 10 == 0 and cycle < args.maximum_cycles and len(wall_history) >= 3:
-        from dada_solver.exchangers.wall_iteration import extrapolate_wall_energies
-        proposed=extrapolate_wall_energies(*wall_history[-3:],
-            np.array([wrapper.heat_in.wall_capacity_j_k,wrapper.heat_out.wall_capacity_j_k]))
-        if proposed is not None:
-            state=state.copy();state[8:10]=proposed
-            history_log[-1]['wall_initial_guess_extrapolated']=True
-        wall_history=[]
+periodic = solve_periodic_wall_motor(wrapper, state, maximum_cycles=args.maximum_cycles,
+    accelerate_walls=args.accelerate_walls, cycle_callback=completed_cycle)
+if periodic.trajectory is None:
+    raise RuntimeError(periodic.message)
+angles, trajectory = periodic.angles, periodic.trajectory
+state = periodic.last_complete_state
+history_log = list(periodic.history)
+converged = periodic.converged
+stored = lambda x: float(np.sum(x[1:8:2])+np.sum(x[8:10]))
+start = trajectory[:10,0]; end = trajectory[:10,-1]
+residual = stored(end)-stored(start)-trajectory[10:12,-1].sum()+trajectory[14,-1]
 frequency = config.angular_speed/(-2*math.pi)
 power = float(trajectory[14,-1]*frequency)
 qi = float(trajectory[10,-1]*frequency)

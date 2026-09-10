@@ -1,0 +1,89 @@
+# Dynamic-wall microtube composition smoke; no optimal waveform is implied.
+[campaign]
+base_configuration = "motor_demonstrator_original_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 2
+elite_size = 5
+initial_evaluation_seconds = 20.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "free"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 41
+scramble = true
+
+[free]
+small_coordinates = [-1.0644882096517823, -0.8982360410339347, 0.1671444199266457, 1.165225598617315]
+large_coordinates = [0.16987674043167245, 0.45769911514731726, 0.42766998136995604, 0.15220593602063506]
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 1.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 600000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.05
+
+[[parameters]]
+name = "free.small.0"
+lower = -1.075
+upper = -1.055
+initial = -1.0644882096517823
+transform = "linear"
+
+[[parameters]]
+name = "free.large.0"
+lower = 0.16
+upper = 0.18
+initial = 0.16987674043167245
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+lower = 0.038
+upper = 0.047
+initial = 0.042333333333333334
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+lower = 0.038
+upper = 0.047
+initial = 0.042333333333333334
+transform = "linear"
+
+[[parameters]]
+name = "operation.frequency_hz"
+lower = 2.0
+upper = 2.2
+initial = 2.0
+transform = "linear"
+
+[[parameters]]
+name = "common.charge_pressure"
+lower = 95000.0
+upper = 105000.0
+initial = 100000.0
+transform = "log"
+
+[[parameters]]
+name = "common.large_swept_volume"
+lower = 0.00094
+upper = 0.00104
+initial = 0.0009900990099009901
+transform = "log"

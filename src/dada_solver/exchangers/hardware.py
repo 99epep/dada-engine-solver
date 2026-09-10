@@ -5,10 +5,30 @@ Half the tube/header loss is assigned to each side of the gas storage node.
 """
 from dataclasses import dataclass, replace
 import math
+import tomllib
 
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.hydraulics import CompressibleOrifice, FlowResult
+
+
+def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
+    """Parse a frozen microtube hardware TOML snapshot."""
+    data = tomllib.loads(source)
+    if 'air_sizing' in data:
+        sizing = data['air_sizing']
+        factors = [sizing['reference_peak_internal_mass_flow_kg_s'],
+            sizing['expected_peak_margin'], sizing['capacity_rate_ratio_to_expected_peak'],
+            sizing['working_gas_cp_j_kg_k']]
+        if not all(math.isfinite(value) and value > 0 for value in factors):
+            raise ValueError('Air sizing factors must be finite and positive.')
+        if not math.isclose(sizing['working_gas_cp_j_kg_k'], gas_heat_capacity_cp):
+            raise ValueError('Air sizing heat capacity does not match the working gas.')
+        data['properties']['air_mass_flow_kg_s'] = math.prod(factors)/data['properties']['air_cp_j_kg_k']
+    bank = MicrotubeBank(**data['geometry'])
+    heat_in = HardwareInputs(**data['properties'], **data['heat_in'])
+    heat_out = HardwareInputs(**data['properties'], **data['heat_out'])
+    return data, bank, heat_in, heat_out
 
 
 @dataclass(frozen=True)

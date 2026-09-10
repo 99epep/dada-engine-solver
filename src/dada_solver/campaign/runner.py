@@ -8,6 +8,7 @@ import numpy as np
 from dada_solver.campaign.candidate import Candidate
 from dada_solver.campaign.definition import CampaignDefinition
 from dada_solver.campaign.evaluator import MachineEvaluator
+from dada_solver.campaign.evaluator import EvaluationControl
 from dada_solver.campaign.history import CampaignHistory, atomic_json
 from dada_solver.campaign.report import elite_records, make_report, readable_report
 from dada_solver.campaign.strategy import SobolStrategy
@@ -43,36 +44,48 @@ class OptimizationCampaign:
                 if self.history.path.exists(): raise ValueError('History exists without a campaign definition.')
                 (self.directory/'campaign.toml').write_text(definition.source)
                 (self.directory/'base.toml').write_text(definition.base_source)
+                if definition.hardware_source is not None:
+                    (self.directory/'hardware.toml').write_text(definition.hardware_source)
                 atomic_json(manifest, dict(definition_id=definition.definition_id, **definition.identity))
 
     @classmethod
     def resume(cls, directory, *, evaluator=None, clock=time.monotonic):
         return cls(CampaignDefinition.resume(directory), directory, evaluator=evaluator, clock=clock)
 
-    def run(self, budget_seconds, *, maximum_candidates=None):
+    def run(self, budget_seconds, *, maximum_candidates=None, retry_incomplete=False):
         if not math.isfinite(budget_seconds) or budget_seconds < 0:
             raise ValueError('Budget must be finite and nonnegative.')
         limit = self.definition.maximum_candidates if maximum_candidates is None else maximum_candidates
         if limit is not None and (not isinstance(limit, int) or limit < 0):
             raise ValueError('Candidate limit must be a nonnegative integer.')
         with self.history.locked():
-            return self._run_locked(float(budget_seconds), limit)
+            return self._run_locked(float(budget_seconds), limit, retry_incomplete)
 
-    def _run_locked(self, budget, limit):
+    def _run_locked(self, budget, limit, retry_incomplete):
         started = self.clock()
         records = self.history.load()
         before = list(records)
         state = self.history.state()
         phase_id = max(state.get('phase_counter',0), max((r['phase_id'] for r in records), default=0))+1
-        completed_indices = {r['sequence_index'] for r in records}
+        completed_indices = {r['sequence_index'] for r in records if r['status'] != 'budget_exhausted'}
         pending = state.get('pending')
         if pending and pending['sequence_index'] in completed_indices:
             pending = None
-        consumed = max((r['sequence_index']+1 for r in records), default=0)
+        if retry_incomplete and pending is None:
+            resolved = {r['candidate_id'] for r in records if r['status'] != 'budget_exhausted'}
+            unfinished = [r for r in records if r['status'] == 'budget_exhausted' and r['candidate_id'] not in resolved]
+            if unfinished:
+                retry = unfinished[-1]
+                payload = {k:retry[k] for k in ('schema_version','definition_id','normalized','physical','families','numerical_settings')}
+                from dada_solver.campaign.candidate import canonical_json
+                pending = dict(candidate_id=retry['candidate_id'], payload_json=canonical_json(payload),
+                               sequence_index=retry['sequence_index'])
+        consumed = max((r['sequence_index']+1 for r in records if r['status'] != 'budget_exhausted'), default=0)
         index = max(consumed, state.get('search',{}).get('index',0))
         strategy = SobolStrategy(len(self.definition.space.parameters), seed=self.definition.seed,
                                  scramble=self.definition.scramble, index=index)
-        cache = {r['candidate_id']:r for r in records if not r.get('cache_hit')}
+        cache = {r['candidate_id']:r for r in records
+                 if not r.get('cache_hit') and r['status'] != 'budget_exhausted'}
         phase = []
         def save_state():
             self.history.save_state(dict(schema_version=1, phase_counter=phase_id,
@@ -104,7 +117,14 @@ class OptimizationCampaign:
                     'duration_seconds','cache_hit','cache_source_evaluation',*candidate.payload.keys()}
                 result = {k:v for k,v in cached.items() if k not in reserved}
             else:
-                result = self.evaluator.evaluate(candidate)
+                controlled = getattr(self.evaluator, 'evaluate_with_control', None)
+                # Reserve a small part of the configured grace for serializing the
+                # completed-cycle checkpoint and writing the durable report.
+                reporting_reserve = min(self.definition.deadline_grace_seconds, 2.0)
+                result = (controlled(candidate, EvaluationControl(
+                    deadline=started+budget+self.definition.deadline_grace_seconds-reporting_reserve,
+                    clock=self.clock, previous_records=tuple(records)))
+                    if controlled is not None else self.evaluator.evaluate(candidate))
             record = dict(**candidate.payload, **result,
                 candidate_id=candidate.candidate_id, timestamp=datetime.now(timezone.utc).isoformat(),
                 evaluation_number=len(records), sequence_index=sequence_index, phase_id=phase_id,
@@ -112,9 +132,11 @@ class OptimizationCampaign:
                 cache_source_evaluation=None if cached is None else cached['evaluation_number'])
             self.history.save(record)
             records.append(record); phase.append(record)
-            if cached is None: cache[candidate.candidate_id] = record
+            if cached is None and record['status'] != 'budget_exhausted': cache[candidate.candidate_id] = record
             pending = None
             save_state()
+            if record['status'] == 'budget_exhausted':
+                break
         report = make_report(self.definition.space, before, phase, requested_seconds=budget,
             elapsed_seconds=self.clock()-started, elite_size=self.definition.elite_size)
         report.update(phase_id=phase_id, next_sequence_index=strategy.index,

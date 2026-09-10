@@ -1496,3 +1496,13 @@ The initial comparison holds hardware and gas inventory fixed across piecewise-l
 four-bar waveforms at 2, 5 and 10 Hz. The 1 litre seed and exchanger parameters
 are exploratory, not selected hardware. No new thermodynamic equation or Doty
 closure is introduced. See [MOTOR_FOUR_BAR.md](MOTOR_FOUR_BAR.md).
+
+## 2026-09-10: dynamic-wall microtube campaigns
+
+Persistent campaigns may construct the existing lumped-wall microtube motor
+directly. Its efficiency boundary is external-air heat input, matching hardware
+screening. Cooperative deadlines classify unfinished calculations as unknown
+`budget_exhausted` results and retain only complete-cycle states. Warm starts
+rescale gas inventory and wall capacity without changing convergence
+tolerances. These are orchestration changes; thermodynamic, valve, correlation
+and periodic-convergence equations are unchanged.

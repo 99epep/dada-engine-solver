@@ -14,6 +14,8 @@ from dada_solver.campaign.runner import OptimizationCampaign, parse_budget, esti
 from dada_solver.campaign.history import CampaignHistory, atomic_json
 from dada_solver.campaign.report import make_report, elite_records
 from dada_solver.campaign.evaluator import rejected, MachineEvaluator
+from dada_solver.campaign.evaluator import (EvaluationControl, rescale_wall_state,
+    select_warm_start)
 from dada_solver.campaign.adapters import validate_ownership, microtube_design
 from dada_solver.free_kinematics import FreeKinematics
 
@@ -301,3 +303,105 @@ def test_candidate_tampering_is_rejected(definition):
     c=Candidate.create(definition.space,definition.space.initial_coordinates,families=definition.families,
         numerical_settings=definition.numerical_settings,definition_id=definition.definition_id)
     with pytest.raises(ValueError,match='identity'):Candidate(c.payload_json,'wrong')
+
+
+def test_unavailable_constraints_are_not_reported_as_violations():
+    space=ParameterSpace((ContinuousParameter('x',0,1,.5),))
+    record=dict(candidate_id='x',normalized=[.5],physical={'x':.5},status='periodic_non_convergence',
+        objective=dict(available=False,value=None),constraints=[dict(name='power',margin=None,available=False,satisfied=False)],
+        integrated=True,converged=False,duration_seconds=1,metrics={},reason='maximum cycles',
+        periodic_convergence=dict(improving=True))
+    report=make_report(space,[],[record],requested_seconds=2,elapsed_seconds=1)
+    assert report['violated_constraints']=={}
+    assert report['unavailable_constraints']=={'power':1}
+    assert 'power' not in ' '.join(report['suggestions'])
+    assert 'converge' in ' '.join(report['suggestions'])
+
+
+def test_microtube_campaign_builds_dynamic_wall_and_snapshots_hardware(tmp_path):
+    definition=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+    physical=definition.space.decode(definition.space.initial_coordinates)
+    design=definition.adapter.build(physical)
+    from dada_solver.exchangers.air_wall import AirWallMotor
+    assert isinstance(design.build(),AirWallMotor)
+    changed=dict(physical);changed['microtube.heat_in.tube_length_m']*=1.05
+    assert definition.adapter.build(changed).heat_in.build().gas_volume_m3 != design.heat_in.build().gas_volume_m3
+    OptimizationCampaign(definition,tmp_path,evaluator=Evaluator(Clock()))
+    assert (tmp_path/'hardware.toml').read_text()==definition.hardware_source
+    assert json.loads((tmp_path/'definition.json').read_text())['hardware_configuration']==definition.hardware_source
+
+
+def test_wall_energy_rescaling_preserves_specific_energy_and_temperature():
+    old=np.array([1.,10.,2.,30.,3.,60.,4.,100.,600.,1200.])
+    new=rescale_wall_state(old,20.,[2.,4.],[3.,2.])
+    assert new[:8:2].sum()==pytest.approx(20.)
+    assert new[1:8:2]/new[:8:2] == pytest.approx(old[1:8:2]/old[:8:2])
+    assert new[8:10]/[3.,2.] == pytest.approx(old[8:10]/[2.,4.])
+
+
+def test_warm_start_prefers_converged_then_nearest_compatible():
+    def record(cid,u,status,converged=True,family='wall'):
+        return dict(candidate_id=cid,normalized=[u],status=status,converged=converged,
+            initial_guess_state=dict(state_layout='layout',evaluator_family=family,
+                operating_direction='motor',values=[1]*10))
+    records=[record('near',.49,'periodic_non_convergence',False),record('far',.2,'converged_infeasible'),record('bad',.5,'feasible',True,'other')]
+    selected,distance=select_warm_start(records,[.5],'layout','wall','motor')
+    assert selected['candidate_id']=='far' and distance==pytest.approx(.3)
+
+
+def test_budget_exhausted_result_is_retried_not_cached(tmp_path,definition):
+    class Controlled:
+        def __init__(self): self.calls=0
+        def evaluate_with_control(self,candidate,control):
+            self.calls+=1
+            result=rejected('budget_exhausted' if self.calls==1 else 'feasible','deadline')
+            result.update(integrated=True,converged=self.calls>1,
+                objective=dict(name='fixture',value=0.,available=True),
+                constraints=[dict(name='ok',margin=1.,available=True,satisfied=True)])
+            return result
+    evaluator=Controlled();campaign=OptimizationCampaign(definition,tmp_path,evaluator=evaluator)
+    first=campaign.run(100,maximum_candidates=1)
+    second=campaign.run(100,maximum_candidates=1,retry_incomplete=True)
+    records=CampaignHistory(tmp_path).load()
+    assert first['status_counts']=={'budget_exhausted':1}
+    assert evaluator.calls==2 and records[0]['candidate_id']==records[1]['candidate_id']
+    assert second['cache_hits']==0 and second['next_sequence_index']==1
+
+
+def test_deadline_control_uses_injected_clock_and_grace(tmp_path,definition):
+    clock=Clock();definition.initial_evaluation_seconds=1;definition.deadline_grace_seconds=2
+    class DeadlineEvaluator:
+        def evaluate_with_control(self,candidate,control):
+            assert control.deadline==pytest.approx(5)
+            clock.advance(7)
+            try: control.check()
+            except Exception as error: return rejected('budget_exhausted',str(error)) | {'integrated':True}
+    report=OptimizationCampaign(definition,tmp_path,evaluator=DeadlineEvaluator(),clock=clock).run(5,maximum_candidates=1)
+    assert report['actual_duration_seconds']==7
+    assert report['status_counts']=={'budget_exhausted':1}
+
+
+def test_wall_solver_retains_only_last_complete_cycle_on_interrupt():
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.integration import IntegrationInterrupted
+    class Wrapper:
+        heat_in=type('Heat',(),{'wall_capacity_j_k':1})()
+        heat_out=type('Heat',(),{'wall_capacity_j_k':1})()
+        calls=0
+        def integrate_cycle(self,state,**kwargs):
+            self.calls+=1
+            if self.calls==2: raise IntegrationInterrupted('deadline')
+            trajectory=np.zeros((15,2));trajectory[:10,0]=state
+            trajectory[:10,1]=np.asarray(state)+1
+            return np.array([0.,2*np.pi]),trajectory
+    result=solve_periodic_wall_motor(Wrapper(),np.ones(10),maximum_cycles=5)
+    assert result.status=='interrupted' and len(result.history)==1
+    assert result.last_complete_state==pytest.approx(np.full(10,2.))
+
+
+def test_changed_hardware_snapshot_refuses_resume(tmp_path):
+    definition=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+    OptimizationCampaign(definition,tmp_path,evaluator=Evaluator(Clock()))
+    (tmp_path/'hardware.toml').write_text((tmp_path/'hardware.toml').read_text()+'\n# changed\n')
+    with pytest.raises(ValueError,match='changed'):
+        OptimizationCampaign.resume(tmp_path)
