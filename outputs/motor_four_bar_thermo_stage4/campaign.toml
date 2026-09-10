@@ -1,0 +1,154 @@
+# Stage-4 thermodynamic/hydraulic exploration.
+# Mechanical geometry fixed at the Stage-3 champion.
+#
+# Active coupling:
+#   cylinder swept volumes
+#   clearance ratios
+#   charge pressure
+#   cycle frequency
+#   H_i and H_o microtube lengths
+#
+# Source temperatures remain 25/325 deg C.
+
+[campaign]
+base_configuration = "motor_demonstrator_stage3_champion_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 256
+elite_size = 16
+initial_evaluation_seconds = 35.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 211
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+# First coupled scaling step.
+# Final demonstrator target remains >=100 W useful mechanical output.
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 60.0
+
+# Screening ceiling, not yet a final mechanical design rating.
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+
+# ----------------------------------------------------------------------
+# Cylinder swept volumes
+#
+# They are deliberately independent. This lets both overall machine scale
+# and S/L swept-volume ratio move simultaneously.
+# ----------------------------------------------------------------------
+
+[[parameters]]
+name = "common.small_swept_volume"
+lower = 0.00035
+upper = 0.0030
+initial = 0.0008316831683168317
+transform = "log"
+
+[[parameters]]
+name = "common.large_swept_volume"
+lower = 0.00035
+upper = 0.0035
+initial = 0.0009900990099009901
+transform = "log"
+
+
+# ----------------------------------------------------------------------
+# Clearance ratios
+# ----------------------------------------------------------------------
+
+[[parameters]]
+name = "common.small_clearance_ratio"
+lower = 0.003
+upper = 0.030
+initial = 0.010
+transform = "log"
+
+[[parameters]]
+name = "common.large_clearance_ratio"
+lower = 0.003
+upper = 0.030
+initial = 0.010
+transform = "log"
+
+
+# ----------------------------------------------------------------------
+# Charge and cycle time
+# ----------------------------------------------------------------------
+
+[[parameters]]
+name = "common.charge_pressure"
+lower = 70000.0
+upper = 250000.0
+initial = 100000.0
+transform = "log"
+
+[[parameters]]
+name = "operation.frequency_hz"
+lower = 2.0
+upper = 5.0
+initial = 2.0
+transform = "linear"
+
+
+# ----------------------------------------------------------------------
+# Heat exchanger intensity / hydraulic compromise
+#
+# Tube count stays fixed at 3708.
+# Changing length changes exchange area, gas hold-up, wall capacity and
+# hydraulic resistance through the existing physical microtube model.
+# H_i and H_o remain independent.
+# ----------------------------------------------------------------------
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+lower = 0.020
+upper = 0.085
+initial = 0.042333333333333334
+transform = "log"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+lower = 0.020
+upper = 0.085
+initial = 0.042333333333333334
+transform = "log"

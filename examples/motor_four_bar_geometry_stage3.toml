@@ -1,0 +1,131 @@
+# Stage-3 four-bar geometry exploration at 25/325 deg C.
+# Refined from the elite region of stage 2.
+# Thermodynamic scale and exchanger hardware remain fixed.
+
+[campaign]
+base_configuration = "motor_demonstrator_original_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 128
+elite_size = 12
+initial_evaluation_seconds = 30.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 137
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 30.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 600000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.05
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+# Shared crank.
+# Elite remains broad here, so do not tighten it yet.
+[[parameters]]
+name = "four_bar.crank_ratio"
+lower = 0.36
+upper = 0.44
+initial = 0.395198
+transform = "linear"
+
+# Small loop.
+
+[[parameters]]
+name = "four_bar.small_coupler_ratio"
+lower = 0.96
+upper = 1.10
+initial = 1.042266
+transform = "linear"
+
+# Elite is clearly biased toward shorter rockers.
+# Extend below the previous 1.08 lower bound.
+[[parameters]]
+name = "four_bar.small_rocker_ratio"
+lower = 1.02
+upper = 1.20
+initial = 1.123804
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_along_ratio"
+lower = 0.54
+upper = 0.78
+initial = 0.672162
+transform = "linear"
+
+# Stage-2 champion was almost on the -1.08 bound.
+[[parameters]]
+name = "four_bar.small_output_normal_ratio"
+lower = -1.18
+upper = -0.84
+initial = -0.957988
+transform = "linear"
+
+# Large loop.
+
+[[parameters]]
+name = "four_bar.large_coupler_ratio"
+lower = 0.96
+upper = 1.09
+initial = 1.019821
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_rocker_ratio"
+lower = 1.02
+upper = 1.20
+initial = 1.120227
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_along_ratio"
+lower = 0.54
+upper = 0.78
+initial = 0.664871
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_normal_ratio"
+lower = 0.84
+upper = 1.10
+initial = 0.948216
+transform = "linear"

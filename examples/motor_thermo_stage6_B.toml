@@ -1,0 +1,126 @@
+# Stage 6: thermodynamic re-optimization
+# Mechanical geometry B frozen.
+# All branches use identical thermodynamic bounds and Sobol sequence.
+
+[campaign]
+base_configuration = "motor_demonstrator_stage3_champion_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 128
+elite_size = 16
+initial_evaluation_seconds = 35.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 701
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 30.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+[fixed_parameters]
+"four_bar.crank_ratio" = 0.37570513736456634
+"four_bar.large_coupler_ratio" = 1.0021614287234843
+"four_bar.large_output_along_ratio" = 0.7390631589107215
+"four_bar.large_output_normal_ratio" = 0.95980812504887592
+"four_bar.large_rocker_ratio" = 1.0915642044320701
+"four_bar.small_coupler_ratio" = 0.91577817367389802
+"four_bar.small_output_along_ratio" = 0.81715041439980263
+"four_bar.small_output_normal_ratio" = -0.93237328827381127
+"four_bar.small_rocker_ratio" = 0.92700333099812271
+
+[[parameters]]
+name = "common.small_swept_volume"
+lower = 0.00055
+upper = 0.00125
+initial = 0.0005538374768640508
+transform = "log"
+
+[[parameters]]
+name = "common.large_swept_volume"
+lower = 0.00065
+upper = 0.00140
+initial = 0.0010241434078940297
+transform = "log"
+
+[[parameters]]
+name = "common.small_clearance_ratio"
+lower = 0.005
+upper = 0.020
+initial = 0.0080671867642603413
+transform = "log"
+
+[[parameters]]
+name = "common.large_clearance_ratio"
+lower = 0.005
+upper = 0.020
+initial = 0.0090538258469053893
+transform = "log"
+
+[[parameters]]
+name = "common.charge_pressure"
+lower = 80000.0
+upper = 200000.0
+initial = 176693.42640097524
+transform = "log"
+
+[[parameters]]
+name = "operation.frequency_hz"
+lower = 2.0
+upper = 3.5
+initial = 2.0085489531047642
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+lower = 0.020
+upper = 0.075
+initial = 0.039520694352544697
+transform = "log"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+lower = 0.020
+upper = 0.075
+initial = 0.033008767166446934
+transform = "log"

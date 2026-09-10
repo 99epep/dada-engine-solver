@@ -1,0 +1,126 @@
+# Four-bar geometry search around the best known 25/325 deg C reference.
+# Thermodynamic scale and exchanger hardware are fixed in this stage.
+
+[campaign]
+base_configuration = "motor_demonstrator_original_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 64
+elite_size = 8
+initial_evaluation_seconds = 70.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 91
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+# Deliberately lower than the final target:
+# an efficient low-power waveform may later be scalable.
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 15.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 600000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.05
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+# Common crank
+[[parameters]]
+name = "four_bar.crank_ratio"
+lower = 0.36
+upper = 0.44
+initial = 0.40
+transform = "linear"
+
+# Small loop
+[[parameters]]
+name = "four_bar.small_coupler_ratio"
+lower = 0.92
+upper = 1.08
+initial = 1.0
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_rocker_ratio"
+lower = 1.08
+upper = 1.26
+initial = 1.17
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_along_ratio"
+lower = 0.55
+upper = 0.76
+initial = 0.6542556970607737
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_normal_ratio"
+lower = -1.08
+upper = -0.86
+initial = -0.9699739598893987
+transform = "linear"
+
+# Large loop
+[[parameters]]
+name = "four_bar.large_coupler_ratio"
+lower = 0.92
+upper = 1.08
+initial = 1.0
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_rocker_ratio"
+lower = 1.08
+upper = 1.26
+initial = 1.17
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_along_ratio"
+lower = 0.55
+upper = 0.76
+initial = 0.6542556970607737
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_normal_ratio"
+lower = 0.86
+upper = 1.08
+initial = 0.9699739598893987
+transform = "linear"

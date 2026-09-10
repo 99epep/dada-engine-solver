@@ -1,0 +1,142 @@
+# Mechanical re-optimization at fixed thermodynamic anchor.
+# Anchor: A_reference
+# Fixed swept-volume ratio S/L = 0.84000000
+#
+# All three branches use identical mechanical bounds and identical Sobol
+# sequence, allowing paired comparison of each sampled geometry.
+
+[campaign]
+base_configuration = "motor_demonstrator_stage3_champion_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 96
+elite_size = 12
+initial_evaluation_seconds = 35.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 503
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+# Keep this loose enough to study mechanical adaptation rather than
+# making the power threshold dominate the experiment.
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 30.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+[fixed_parameters]
+"common.small_swept_volume" = 0.00083168316831683166
+"common.large_swept_volume" = 0.00099009900990099011
+"common.small_clearance_ratio" = 0.01
+"common.large_clearance_ratio" = 0.01
+"common.charge_pressure" = 100000
+"operation.frequency_hz" = 2
+"microtube.heat_in.tube_length_m" = 0.042333333333333334
+"microtube.heat_out.tube_length_m" = 0.042333333333333334
+
+
+# Shared crank.
+[[parameters]]
+name = "four_bar.crank_ratio"
+lower = 0.34
+upper = 0.46
+initial = 0.37769683420658107
+transform = "linear"
+
+# Small mechanism.
+[[parameters]]
+name = "four_bar.small_coupler_ratio"
+lower = 0.90
+upper = 1.12
+initial = 1.0535716178640724
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_rocker_ratio"
+lower = 0.92
+upper = 1.22
+initial = 1.083007834497839
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_along_ratio"
+lower = 0.48
+upper = 0.90
+initial = 0.6936068420112134
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_normal_ratio"
+lower = -1.20
+upper = -0.72
+initial = -0.8709663633070887
+transform = "linear"
+
+# Large mechanism.
+[[parameters]]
+name = "four_bar.large_coupler_ratio"
+lower = 0.90
+upper = 1.12
+initial = 1.0105247422773391
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_rocker_ratio"
+lower = 0.92
+upper = 1.22
+initial = 1.0263298945873975
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_along_ratio"
+lower = 0.48
+upper = 0.90
+initial = 0.7577473468333483
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_normal_ratio"
+lower = 0.72
+upper = 1.12
+initial = 0.8755956188030541
+transform = "linear"
+
