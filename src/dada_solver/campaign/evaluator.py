@@ -102,7 +102,10 @@ class MachineEvaluator:
                 for c in self.definition.constraints]
 
     def evaluate_with_control(self, candidate, control):
-        try: design = self.definition.adapter.build(candidate.payload['physical'])
+        try:
+            physical = dict(self.definition.fixed_parameters)
+            physical.update(candidate.payload['physical'])
+            design = self.definition.adapter.build(physical)
         except PreflightRejection as error: return rejected(error.status, str(error), error.diagnostics)
         try: built = design.build()
         except KinematicConstraintViolation as error:

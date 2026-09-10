@@ -64,7 +64,28 @@ class CampaignDefinition:
         else:
             self.wall_numerical_settings = None
         self.free_settings = raw.get('free', {})
-        validate_ownership({p.name for p in self.space.parameters}, self.families, self.free_settings)
+        self.fixed_parameters = dict(raw.get('fixed_parameters', {}))
+
+        active_names = {p.name for p in self.space.parameters}
+        fixed_names = set(self.fixed_parameters)
+
+        overlap = active_names & fixed_names
+        if overlap:
+            raise ValueError(
+                f'Parameters cannot be both active and fixed: {sorted(overlap)}'
+            )
+
+        for name, value in self.fixed_parameters.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError(
+                    f'Fixed parameter {name} must be a finite numeric value.'
+                )
+
+        validate_ownership(
+            active_names | fixed_names,
+            self.families,
+            self.free_settings,
+        )
         if self.families['kinematics'] == 'free':
             from dada_solver.free_kinematics import FreeMotionDefinition
             for side in ('small','large'):
