@@ -18,8 +18,9 @@ loss, not combined shell/tube loss. The tube and shell pressures must not be
 assumed equal. These distinctions prevent direct reuse as a gas/liquid rating.
 
 The three transcribed nitrogen anchors at 322 kPa remain separate: their
-boundary temperatures differ. The reported uncertainties are retained in the
-source CSV; the screening factors below are not statistical confidence bounds.
+boundary temperatures differ. The three helium measurements span 749–825 kPa
+and 79–213 mg/s flow. The reported uncertainties are retained in the source CSV;
+the screening factors below are not statistical confidence bounds.
 
 ## Implemented calculation
 
@@ -42,6 +43,46 @@ No geometry resizing, real-gas correction, wall dynamics or motor-cycle coupling
 has been implemented here. In particular, this module does not replace the
 cycle's constant UA or orifice CdA. Zero or reverse flow is rejected rather than
 inventing a steady-map thermal closure during idle intervals or local reflux.
+
+## Helium measurements and hydraulic validation
+
+### Absolute Poiseuille comparison (Doty Eq. 7)
+
+The uncalibrated laminar pressure-drop law is algebraically consistent with
+Doty's Eq. 7 but systematically overpredicts absolute helium pressure drops:
+
+| Flow (mg/s) | Measured ΔP (Pa) | Theoretical ΔP (Pa) | Ratio | Overprediction |
+|---|---|---|---|---|
+| 117 | 2300 | ~3000 | 0.767 | +30.4 % |
+| 79 | 1500 | ~2000 | 0.750 | +33.3 % |
+| 213 | 4400 | ~5500 | 0.800 | +25.0 % |
+
+**Status:** The present microtube laminar pressure-drop law is NOT experimentally 
+validated in absolute magnitude by the helium data. The model is uncalibrated 
+screening physics. Measured pressure drops are approximately 0.75–0.80 of the 
+theoretical predictions. Do not introduce a hidden calibration multiplier (such as 
+0.77) in response to this discrepancy. Doty themselves note that helium pressure 
+drops were somewhat lower than expected, plausibly because of slight tube-side 
+flow maldistribution.
+
+### Relative scaling between helium measurements
+
+Using the 117 mg/s anchor and applying the scaling law 
+`dp ~ mass_flow * viscosity / density` with `viscosity_ratio = 1.0` and ideal-gas 
+representative tube density proportional to `pressure / tube_mean_temperature`:
+
+| Flow (mg/s) | Measured ΔP (Pa) | Predicted from 117 mg/s anchor (Pa) | Relative Error |
+|---|---|---|---|
+| 117 | 2300 | 2300 (anchor) | — |
+| 79 | 1500 | ~1530 | +2.0 % |
+| 213 | 4400 | ~3800 | −13.6 % |
+
+**Status:** The relative scaling between helium measurements is reasonably 
+consistent. The 79 mg/s case tracks well (+2 %). The 213 mg/s case underestimates 
+by about −14 %, suggesting possible secondary effects at higher flow or pressure, 
+but the prediction remains within a physically plausible envelope. This consistency 
+supports the algebraic correctness of the flow-scaling law while emphasizing that 
+the absolute Poiseuille prediction is uncalibrated.
 
 ## Reproducible illustrative comparison
 
@@ -68,7 +109,7 @@ and assess whether wall response or gas residence time defeats this assumption.
 ## Next calculation boundary
 
 Use this reference to screen plausible thermal/hydraulic requirements for the
-25/175-degree, 100 W demonstrator, then rerun the cycle with explicit candidate
+25/325-degree, 100 W demonstrator, then rerun the cycle with explicit candidate
 hardware closures. Do not certify useful power from indicated gas power, or
 compactness from cylinder volume alone. A robust ranking must survive property,
 flow distribution, pulse-response and unmeasured shell-side-loss scenarios.
