@@ -51,12 +51,24 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
                     phase_count=count, phase_total=len(unique_phase), elite_count=elite_count, elite_total=len(end)))
     failures = Counter(r['status'] for r in unique_phase if r['status'] != 'feasible')
     reasons = Counter(r.get('reason') or r['status'] for r in unique_phase if r['status'] != 'feasible')
-    violations = Counter(c['name'] for r in unique_phase for c in r.get('constraints', []) if not c['available'] or not c['satisfied'])
+    violations = Counter(c['name'] for r in unique_phase for c in r.get('constraints', [])
+                         if c['available'] and not c['satisfied'])
+    unavailable = Counter(c['name'] for r in unique_phase for c in r.get('constraints', [])
+                          if not c['available'])
     gain = start_best['objective']['value']-end_best['objective']['value'] if start_best and end_best else None
     suggestions = []
-    if unique_phase and sum(r['status']=='feasible' for r in unique_phase)/len(unique_phase) < .2:
-        dominant = violations.most_common(1) or reasons.most_common(1)
-        suggestions.append('Few feasible candidates: inspect '+str(dominant)+' before changing bounds or assumptions.')
+    interrupted = [r for r in unique_phase if r['status'] == 'budget_exhausted']
+    numerical = [r for r in unique_phase if r['status'] in ('periodic_non_convergence','integration_failure')]
+    preflight = [r for r in unique_phase if not r['integrated']]
+    if interrupted:
+        suggestions.append(f'{len(interrupted)} evaluation(s) reached the campaign deadline; retry them with a larger phase budget or review evaluation cost.')
+    elif numerical:
+        improving = sum(bool(r.get('periodic_convergence',{}).get('improving')) for r in numerical)
+        suggestions.append(f'{len(numerical)} evaluation(s) did not converge or failed numerically; {improving} show a lower last than first periodic error. Review convergence histories before changing physical constraints.')
+    elif preflight:
+        suggestions.append('Preflight/model validity rejection dominates: inspect '+str(reasons.most_common(1))+'.')
+    elif violations:
+        suggestions.append('Converged evaluations violate physical constraints: inspect '+str(violations.most_common(1))+'.')
     for item in bound_pressure:
         if len(end) >= 3 and item['elite_count']/len(end) >= .6 and gain is not None and gain > 0:
             suggestions.append(f"Objective improved and {item['elite_count']}/{len(end)} elites are near the {item['side']} bound of {item['parameter']}; consider reviewing that bound.")
@@ -84,6 +96,9 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
         parameter_changes=changes, bound_pressure=bound_pressure,
         status_counts=dict(failures), dominant_reasons=dict(reasons.most_common()),
         violated_constraints=dict(violations.most_common()),
+        unavailable_constraints=dict(unavailable.most_common()),
+        convergence_histories=[dict(candidate_id=r['candidate_id'], status=r['status'],
+            convergence=r.get('periodic_convergence')) for r in unique_phase if r.get('integrated')],
         top_distinct_feasible=[summary(r) for r in end], evaluation_time=time_statistics(unique_phase),
         suggestions=suggestions or ['No further deterministic suggestion is supported by this phase.'])
 
@@ -109,6 +124,9 @@ def readable_report(report):
     lines.append('Top distinct feasible candidates:')
     lines.extend('  '+brief(r) for r in report['top_distinct_feasible'])
     lines.extend([f"Bound pressure: {report['bound_pressure']}", f"Failure reasons: {report['dominant_reasons']}",
-        f"Violated/unavailable constraints: {report['violated_constraints']}", f"Evaluation timing: {report['evaluation_time']}",
+        f"Violated constraints: {report['violated_constraints']}",
+        f"Unavailable constraints: {report['unavailable_constraints']}",
+        f"Convergence histories: {report['convergence_histories']}",
+        f"Evaluation timing: {report['evaluation_time']}",
         'Suggestions (no automatic changes):', *['  '+x for x in report['suggestions']]])
     return '\n'.join(lines)+'\n'

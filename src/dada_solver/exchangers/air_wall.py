@@ -5,6 +5,7 @@ capacity are explicit inputs; Doty's overall UA does not identify their split.
 """
 from dataclasses import dataclass, replace
 import math
+import time
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -15,6 +16,7 @@ from dada_solver.exchangers.base import LumpedWallThermalModel
 from dada_solver.state import ThermodynamicState
 from dada_solver.dynamics import ValveTopology
 from dada_solver.valves import ValveState
+from dada_solver.integration import IntegrationInterrupted
 
 
 @dataclass(frozen=True)
@@ -80,7 +82,9 @@ class AirWallMotor:
                      incoming['air_heat_w'], outgoing['air_heat_w'],
                      incoming['gas_heat_w'], outgoing['gas_heat_w'], rates.gas_work_rate] / self.model.angular_speed
 
-    def integrate_cycle(self, state, *, rtol=1e-7, atol=1e-10, maximum_step_angle=math.pi/360):
+    def integrate_cycle(self, state, *, rtol=1e-7, atol=1e-10,
+                        maximum_step_angle=math.pi/360, progress_callback=None,
+                        progress_interval_seconds=10.0):
         initial = np.asarray(state, dtype=float)
         if initial.shape != (10,):
             raise ValueError('Expected eight gas states and two wall energies.')
@@ -92,7 +96,20 @@ class AirWallMotor:
         values = np.r_[initial, np.zeros(5)]
         angles, histories = [], []
         for lower, upper in zip(edges[:-1], edges[1:]):
-            solution = solve_ivp(self.derivative, (lower, upper), values, method='LSODA',
+            last_progress = time.perf_counter()
+            evaluations = 0
+            def derivative(angle, state):
+                nonlocal last_progress, evaluations
+                evaluations += 1
+                now = time.perf_counter()
+                if progress_callback is not None and now-last_progress >= progress_interval_seconds:
+                    progress_callback(dict(phase='running', start_angle=lower,
+                        current_angle=float(angle), target_angle=upper,
+                        elapsed_seconds=now-last_progress,
+                        right_hand_side_evaluations=evaluations))
+                    last_progress = now
+                return self.derivative(angle, state)
+            solution = solve_ivp(derivative, (lower, upper), values, method='LSODA',
                                  rtol=rtol, atol=atol, max_step=maximum_step_angle)
             if not solution.success:
                 raise RuntimeError(solution.message)

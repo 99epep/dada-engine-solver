@@ -13,6 +13,7 @@ from dada_solver.integration import (
     CycleIntegrationResult,
     CycleIntegrator,
     IntegrationStatistics,
+    IntegrationInterrupted,
 )
 from dada_solver.state import ThermodynamicState
 
@@ -23,6 +24,7 @@ class PeriodicStatus(Enum):
     MAXIMUM_CYCLE_COUNT_REACHED = "maximum_cycle_count_reached"
     INVALID_PHYSICAL_STATE = "invalid_physical_state"
     NUMERICAL_INTEGRATION_FAILURE = "numerical_integration_failure"
+    INTERRUPTED = "interrupted"
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,7 +78,12 @@ class SuccessiveCycleSolver:
         final_cycle: CycleIntegrationResult | None = None
 
         for cycle_number in range(1, self.maximum_cycles + 1):
-            final_cycle = self.integrator.integrate_cycle(state, topology)
+            try:
+                candidate_cycle = self.integrator.integrate_cycle(state, topology)
+            except IntegrationInterrupted as error:
+                return PeriodicResult(PeriodicStatus.INTERRUPTED, str(error),
+                    tuple(history), final_cycle)
+            final_cycle = candidate_cycle
             if not final_cycle.completed:
                 status = (
                     PeriodicStatus.INVALID_PHYSICAL_STATE

@@ -156,3 +156,9 @@ history, exact-cache resume, feasible archives and human phase reports. See
 [small free-motion campaign](examples/free_kinematics_campaign.toml).
 Run `dada-optimize campaign.toml --budget 30m`, or resume using the campaign
 directory as the first argument.
+
+The dynamic-wall composition example is
+[`examples/microtube_free_campaign.toml`](examples/microtube_free_campaign.toml).
+Use `--retry-incomplete` with a larger budget to deliberately revisit the most
+recent deadline-interrupted candidate. Interrupted records are reusable initial
+guesses, not periodic solutions or cached feasibility verdicts.

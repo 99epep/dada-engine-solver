@@ -93,18 +93,20 @@ volume and equivalent inlet hydraulic-resistance coordinates. Its geometry
 adapter derives components with the existing `MicrotubeExchanger`; it does not
 fit independently free UA or hold-up values.
 
-### First physical-evaluator capability
+### Physical evaluators
 
-The first production campaign uses the existing **eight-gas-state evaluator
-with reservoir heat-transfer closures**. Free and shared-crank four-bar motion
-are supported. The microtube parameter adapter and its invalid-geometry checks
-are implemented and tested, but a dynamic-wall microtube campaign is rejected
-at definition loading: the ten-state wall model needs a compatible periodic
-performance/constraint evaluator adapter. It is not silently replaced by a
-static closure. The existing wall-model screening runner remains available.
-This is a declared evaluator capability limit, not an invalid physical verdict
-on microtubes. No new wall convergence or thermal equations are introduced as
-part of campaign orchestration.
+Reservoir closures use the existing eight-state periodic solver. Microtube
+exchangers construct the existing `AirWallMotor` and use the reusable ten-state
+wall-cycle evaluator factored from hardware screening. The extra states remain
+H_i and H_o wall energies. The wall convergence rule, correlations, valve
+equations and integration tolerances are unchanged.
+
+For wall cycles, indicated thermal efficiency is indicated gas work divided by
+external heat supplied through the incoming air stream. Wall-to-gas heat is a
+separate diagnostic. Useful shaft power remains unavailable and mechanical
+losses remain unknown. Peak tube Reynolds and Mach numbers use the actual
+candidate geometries; leaving the declared laminar/Mach domain prevents
+feasibility.
 
 ## Candidate identity and reproducibility
 
@@ -215,8 +217,22 @@ candidate, the runner compares remaining time with 1.1 times the 75th percentile
 of the last ten uncached integrations. Until such timings exist, it uses explicit
 `initial_evaluation_seconds`. Cheap preflight rejections do not make the next
 periodic solve appear artificially cheap. A zero or insufficient budget starts
-nothing. A solve already running is allowed to finish and persist, even when
-it overruns. An optional per-run candidate cap is useful for smoke work.
+nothing. A cooperative deadline is checked from the RHS progress boundary.
+`deadline_grace_seconds` is configurable; the default is 12 seconds and the
+microtube smoke uses 3 seconds with one-second progress checks. An interrupted
+partial `solve_ivp` cycle is discarded, while the last complete cycle and its
+error history are retained. Its status is `budget_exhausted`, never physical
+infeasibility or periodic non-convergence, and it is excluded from the exact
+result cache. Exploration advances normally; `--retry-incomplete` deliberately
+retries the latest unfinished candidate with a later, larger budget.
+
+Warm-start selection searches compatible prior states in normalized space and
+prefers converged states before distance. Compatibility includes state layout,
+evaluator family and operating direction. Gas inventory is rescaled while
+preserving specific internal energies. Wall energy is scaled by the new/old
+wall-capacity ratio to preserve wall temperature. Source identity, status and
+normalized distance are persisted. Every candidate must still satisfy the
+original periodic criterion.
 
 JSON and readable text reports include requested/actual duration, attempted and
 cached counts, preflight rejection/integration/convergence/feasibility counts,
@@ -277,19 +293,20 @@ budgets, crash recovery and changed-definition rejection. Injection tests cover
 both motion families in both directions. The physical example is a separate
 CLI smoke run, not a slow full campaign in the ordinary test suite.
 
-Next review: local refinement strategy and compatible periodic-state warm
-starts; family-specific bounds and robustness studies; and the dedicated
-wall-model evaluator adapter before geometry-connected microtube campaigns.
+Next review: local refinement, robustness studies and optional frozen external
+reference warm starts. Local SLSQP is deliberately absent.
 Do not infer an optimal waveform or useful shaft efficiency from these tests.
 
 ### Recorded fast-suite verification
 
-The complete suite passes: **275 tests**, including 43 new campaign/injection
-checks. The last full run took 54.17 seconds while an independent physical
-smoke calculation was also running. The fixture budget tests use a simulated
+The complete suite passes: **284 tests**. The last full run took 40.61 seconds.
+The fixture budget tests use a simulated
 clock and do not sleep. Exact duplicate lookup, interrupted in-flight recovery,
 completed-file recovery after a torn append, feasible-best preservation and
-cross-process candidate hashing are covered explicitly.
+cross-process candidate hashing are covered explicitly. Added wall-campaign
+checks cover hardware snapshots, actual exchanger composition, deadline grace,
+retry semantics, last-complete-cycle retention, warm-start compatibility and
+wall-capacity rescaling, external-heat efficiency and report availability.
 
 ### Recorded physical smoke verification
 
@@ -315,3 +332,27 @@ unfamiliar candidate integrates much more slowly. The runner deliberately
 does not terminate an in-flight solve at the deadline. Numerical-cost
 diagnostics and a more representative smoke region need review before long
 physical exploration; no solver equation was changed to hide this limitation.
+
+### Dynamic-wall microtube smoke
+
+`examples/microtube_free_campaign.toml` composes independent free motion with
+the parallel 3708-tube hardware snapshot at 25/325 deg C. It varies two free
+coordinates, both exchanger lengths, speed, charge pressure and large swept
+volume. The base maximum of 100 periodic cycles is retained; wall-clock
+deadlines control interactive runtime.
+
+Two distinct Sobol candidates were evaluated across resumed processes in
+`outputs/microtube_free_campaign_verified3`. Point 0 completed nine cycles in
+31.49 s for 30 s requested with a 3 s grace. Its normalized periodic error fell
+from 464423.79 to 7638.90. Point 1 used point 0 as a compatible non-periodic
+initial guess at normalized distance 1.5255, completed thirteen cycles in
+42.29 s for 40 s requested with the same grace, and fell from 127809.71 to
+3276.41.
+Both statuses are `budget_exhausted`; neither is feasible or presented as an
+optimum. Their hashes are distinct, sequence indices are 0 and 1, and the next
+persisted Sobol index is 2.
+
+The established parallel-microtube regression was rerun from its saved state:
+37.6261105666 W indicated power, 353.5945084 W external heat input and
+0.1064103363 indicated thermal efficiency. This agrees with the recorded
+37.626110567 W result.

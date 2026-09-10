@@ -23,6 +23,11 @@ class IntegrationStatus(Enum):
     INVALID_PHYSICAL_STATE = "invalid_physical_state"
     NUMERICAL_FAILURE = "numerical_integration_failure"
     MAXIMUM_EVENT_COUNT_REACHED = "maximum_event_count_reached"
+    INTERRUPTED = "interrupted"
+
+
+class IntegrationInterrupted(RuntimeError):
+    """Cooperative interruption requested at an integration progress boundary."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -334,6 +339,8 @@ class CycleIntegrator:
                         counters,
                     )
 
+        except IntegrationInterrupted:
+            raise
         except ValueError as error:
             return self._result(
                 IntegrationStatus.INVALID_PHYSICAL_STATE,
