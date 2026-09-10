@@ -214,9 +214,9 @@ class MachineEvaluator:
             status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
             periodic=SimpleNamespace(message=periodic.message), performance=performance,
             diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle)
-        domain = dict(name='microtube_model_domain', margin=min(2300-max_re,
-            design.configuration.validity.maximum_mach_number-max_mach),
-            satisfied=max_re < 2300 and max_mach <= design.configuration.validity.maximum_mach_number, available=True)
+        domain = dict(name='microtube_model_domain', margin=float(min(2300-max_re,
+            design.configuration.validity.maximum_mach_number-max_mach)),
+            satisfied=bool(max_re < 2300 and max_mach <= design.configuration.validity.maximum_mach_number), available=True)
         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
             maximum_tube_mach_number=max_mach), source, distance, convergence, guess, [domain])
 
@@ -236,7 +236,7 @@ class MachineEvaluator:
                 density = pressures[index]/(gas.gas_constant*temps[index])
                 speed = math.sqrt(gas.heat_capacity_cp/gas.heat_capacity_cv*gas.gas_constant*temps[index])
                 max_mach = max(max_mach, abs(flow)/(density*area*speed))
-        return max_re, max_mach
+        return float(max_re), float(max_mach)
 
     def _assessment(self, evaluation, derived, source, distance, convergence, guess, extra=()):
         objective = self.definition.objective.evaluate(evaluation)
