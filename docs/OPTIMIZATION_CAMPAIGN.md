@@ -1,0 +1,317 @@
+# Persistent optimization campaigns
+
+## Scope
+
+The campaign is a sequential orchestration layer above the existing physical
+and sizing evaluators. It reuses `evaluate_configuration`, objective objects,
+constraint objects and `SizingAssessment`. `SizingProblem`, its local SLSQP
+optimizer and the existing Latin-hypercube feasibility tools remain available
+and unchanged. No physical equation, sign convention, valve rule, exchanger
+correlation, four-bar mathematics or periodic stopping tolerance is replaced.
+No mechanical efficiency is assumed; indicated power remains distinct from
+unknown useful mechanical output.
+
+New code lives in `dada_solver.campaign`:
+
+- `parameters`: immutable named continuous parameters and parameter spaces;
+- `candidate`: canonical JSON and SHA-256 candidate identities;
+- `adapters`: family-specific construction and parameter ownership;
+- `definition`: TOML loading, snapshots and runtime/model fingerprints;
+- `strategy`: the minimal strategy protocol and incremental Sobol exploration;
+- `evaluator`: preflight, existing physical evaluation and raw sizing assessment;
+- `history`: durable records and recovery;
+- `runner`: budgets, cache, sequence continuation and feasible archives;
+- `report`: JSON/text phase summaries and deterministic human suggestions;
+- `cli`: the `dada-optimize` command.
+
+There is no database, plugin discovery, distributed execution, Bayesian search
+or new external optimization dependency. The first strategy is Sobol, not
+SLSQP. A later strategy can implement the same incremental protocol, but local
+refinement is not implemented here.
+
+## Kinematics injection
+
+`MachineDesign(configuration=..., kinematics=..., heat_in=..., heat_out=...)`
+now accepts a `KinematicsModel` directly. Existing positional exchanger
+arguments remain compatible; injection is an optional additional field.
+`build_model(configuration, kinematics=...)` skips the family selector when
+an implementation is supplied, checks its cylinder ranges and calls its
+optional feasibility validator. Without injection, the existing configuration
+and `kinematics_type` path is unchanged.
+
+**Inject study-angle motion, before the operation-direction transformation.**
+For negative-speed motor operation, the construction boundary reverses it
+exactly once. Existing four-bar objects retain their concrete type through
+the historical crank-direction replacement; other implementations use the
+generic reversal wrapper. Do not inject a kinematics object extracted from an
+already motor-transformed model. Explicit `ReversedVolumeKinematics` injection
+is rejected to catch that mistake. A future mechanism can be injected without
+changing the thermodynamic integrator or adding a family switch there.
+
+`evaluate_configuration(..., model=...)` accepts the already constructed model
+instead of rebuilding it. This preserves the physical evaluator while allowing
+injected motion to reach it. Configuration-only charging-pressure objectives
+use the evaluated model when available, so they do not rebuild another motion
+family merely to obtain the initial filling volume.
+
+## Parameters and ownership
+
+Each `ContinuousParameter` has a stable name, lower/upper bounds, an initial
+value and `linear` or `log` transform. Bounds are finite, strictly ordered and
+contain the initial value. Log bounds must be positive. `ParameterSpace`
+requires unique names and normalized coordinates in `[0,1]`; invalid values
+are rejected, not clipped. Endpoint decoding is exact. Interior decoding is:
+
+```text
+linear: x = (1-u)*lower + u*upper
+log:    x = exp((1-u)*log(lower) + u*log(upper))
+```
+
+The initial values are available as a reference but are not automatically
+inserted into or substituted for the Sobol sequence. If there is no feasible
+candidate at phase start, parameter-change reporting explicitly uses these
+unevaluated configured initial values; objective improvement is unavailable.
+
+Adapters avoid expanding the legacy enum:
+
+- `common.<existing DesignParameter value>` uses `DesignPoint` for operating,
+  charge, cylinder ranges and compatible legacy exchanger inputs;
+- `operation.frequency_hz` maps positive frequency to the base configuration's
+  existing signed angular-speed convention;
+- `free.small.<index>` and `free.large.<index>` vary independent stereographic
+  shape coordinates; other coordinates remain explicitly fixed in `[free]`;
+- `four_bar.<dimensionless field>` updates the shared-crank design while keeping
+  discrete assembly branches fixed;
+- `microtube.heat_in.<geometry field>` and `microtube.heat_out.<geometry field>`
+  are owned by the separate microtube geometry adapter. Integer tube count is
+  fixed in this first continuous parameter representation.
+
+Wrong-family or unknown names are rejected. Frequency and angular speed cannot
+both vary; neither can pressure and inventory, or clearance volume and ratio.
+Microtube ownership explicitly forbids independent legacy UA, exchanger gas
+volume and equivalent inlet hydraulic-resistance coordinates. Its geometry
+adapter derives components with the existing `MicrotubeExchanger`; it does not
+fit independently free UA or hold-up values.
+
+### First physical-evaluator capability
+
+The first production campaign uses the existing **eight-gas-state evaluator
+with reservoir heat-transfer closures**. Free and shared-crank four-bar motion
+are supported. The microtube parameter adapter and its invalid-geometry checks
+are implemented and tested, but a dynamic-wall microtube campaign is rejected
+at definition loading: the ten-state wall model needs a compatible periodic
+performance/constraint evaluator adapter. It is not silently replaced by a
+static closure. The existing wall-model screening runner remains available.
+This is a declared evaluator capability limit, not an invalid physical verdict
+on microtubes. No new wall convergence or thermal equations are introduced as
+part of campaign orchestration.
+
+## Candidate identity and reproducibility
+
+A `Candidate` stores immutable canonical JSON containing normalized coordinates,
+decoded physical values, fixed family identifiers, numerical settings and a
+campaign definition identifier. Canonical JSON uses sorted keys and rejects
+nonfinite numbers. SHA-256 replaces Python's randomized `hash()`. Reconstructed
+candidate payloads are checked against their identities.
+
+The definition identifier covers the parsed campaign, the complete base TOML
+snapshot and Python/NumPy/SciPy versions plus a digest of the package's Python
+sources. Resume refuses changed definitions or runtimes rather than silently
+mixing records or treating changed physics as cached evaluations. Move deliberate
+bounds, frozen-parameter, fidelity or model changes to a new campaign directory.
+Nearest-state transfer between compatible campaigns is a later feature.
+
+Candidate identity includes normalized coordinates as well as decoded values.
+No approximate/geometric-equivalence cache is attempted. Exact duplicates reuse
+the persisted result, including rejection results, without integration.
+
+## Sobol continuation
+
+`SobolStrategy` uses `scipy.stats.qmc.Sobol` with explicit dimension, seed and
+scrambling. Every active coordinate varies in the same sampled vector. The
+state stores the number of consumed points; resume reconstructs the same engine
+and calls `fast_forward(index)`. The journal also records each sequence index,
+allowing recovery when the state snapshot lags a completed evaluation.
+
+Arbitrary budget endpoints use incremental `random(1)`. Power-of-two prefixes
+have the usual Sobol balance property; stopping at an arbitrary count does not
+claim that property. No initial point is skipped, thinned or replaced. Runtime
+versions are pinned by the campaign fingerprint because implementation changes
+must not silently alter sequence continuation. See the
+[SciPy Sobol documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html).
+
+## Evaluation and statuses
+
+Each candidate is decoded and constructed through its family adapter. Cheap
+parameter, geometric and free-motion derivative-limit checks happen before the
+periodic solve. `MachineDesign` then builds the injected model, which is passed
+to the existing evaluator. Raw objective values and every raw constraint margin,
+availability flag and satisfaction flag are retained separately.
+
+Statuses distinguish:
+
+- `invalid_parameterization`;
+- `invalid_kinematics`;
+- `invalid_exchanger`;
+- `integration_failure`;
+- `periodic_non_convergence`;
+- `converged_infeasible`;
+- `feasible`.
+
+A feasible record requires periodic convergence, all requested constraints and
+an available finite objective. No fabricated penalty replaces an unavailable
+objective or a failed solve. Unexpected programming errors propagate, leaving
+the pending candidate recoverable, rather than masquerading as physical
+infeasibility. Geometry-definition errors and derivative-limit margins remain
+explicit in the record.
+
+For every converged evaluation, the final eight conservative state values,
+valve topology and inventory are persisted. They are marked as initial guesses
+only. All campaign evaluations currently start from the configured fill; no
+nearest-neighbour warm-start selector is implemented and convergence tolerances
+are never relaxed. The record's `warm_start_source` is therefore `null`.
+
+## Files, durability and crash recovery
+
+```text
+campaign_directory/
+    campaign.toml             # original campaign definition snapshot
+    base.toml                 # complete thermodynamic configuration snapshot
+    definition.json           # immutable content/runtime identity
+    state.json                # Sobol index, pending candidate, phase and archive IDs
+    history.jsonl             # append-only attempt/result journal
+    candidates/<sha256>.json  # durable original result for each unique candidate
+    report.json
+    report.txt
+    reports/phase_0001.json
+    reports/phase_0001.txt
+    ...
+```
+
+Before integration, `state.json` records the pending candidate and advanced
+sequence index. After evaluation, its full candidate record is written using
+an atomic rename and filesystem sync, then the journal is appended and synced,
+then the state/archive snapshot is updated. Completed candidate files absent
+from the journal are recovered on restart. An unfinished pending candidate may
+be retried; a completed result is not silently re-integrated.
+
+The sole journal-edit exception is recovery of a torn final append: its bytes
+are saved to `history_torn_tail_*.bin`, the incomplete tail is removed, and any
+completed candidate file is recovered. Non-final corruption fails explicitly.
+Thus a process crash loses at most the in-flight evaluation. This assumes a
+local filesystem honoring the sync/atomic-rename operations; it is not a
+replicated storage system. A POSIX advisory lock prevents concurrent writers.
+
+Cache hits append an attempt referring to the original evaluation without
+rewriting its candidate file. Archives are reconstructed from history on resume.
+They contain distinct feasible candidate identities ranked by minimum objective,
+not the last iterate. The phase report also preserves the best at phase start,
+best at phase end, and the best candidates evaluated in that phase.
+
+## Time budget and human reports
+
+The budget is a per-run approximate elapsed-time allowance. Before starting a
+candidate, the runner compares remaining time with 1.1 times the 75th percentile
+of the last ten uncached integrations. Until such timings exist, it uses explicit
+`initial_evaluation_seconds`. Cheap preflight rejections do not make the next
+periodic solve appear artificially cheap. A zero or insufficient budget starts
+nothing. A solve already running is allowed to finish and persist, even when
+it overruns. An optional per-run candidate cap is useful for smoke work.
+
+JSON and readable text reports include requested/actual duration, attempted and
+cached counts, preflight rejection/integration/convergence/feasibility counts,
+phase-start/end bests, objective improvement, physical metrics, individual
+constraint margins, top distinct feasible candidates and timing statistics.
+Parameter changes include physical start/end values and normalized deltas.
+Repeated proximity to either bound uses a declared 0.05 normalized threshold.
+Failure statuses, detailed reasons and violated/unavailable constraints are
+counted separately.
+
+Suggestions are deterministic observations, never campaign edits. Rules cover
+few feasible points and dominant failures; improving elites at a bound; tight
+elite clustering; competitive distant regions; and a phase with little
+improvement and positive listed margins. Positive margins are not automatically
+called comfortable engineering margins. Thresholds and evidence are exposed in
+the report. Bounds, assumptions, freezing and eventual local refinement remain
+human decisions. No evidence of global optimality is inferred from a small run.
+
+## Running the small physical example
+
+`examples/free_kinematics_campaign.toml` varies eight parameters simultaneously:
+two shape coordinates per cylinder, speed, charge pressure, large swept volume
+and small clearance volume. Each cylinder has six spline control points (four
+chart coordinates), with the remaining chart coordinates explicitly fixed.
+The small initial region uses the smooth independent laws from the existing
+free-motion integration example; this smoke seed does not impose a preferred
+shape on the free-kinematics family.
+
+The example retains 25/325 deg C, roughly 1 L, and 2–2.2 Hz. It caps each
+physical evaluation at three complete cycles to keep the architecture smoke
+modest. The periodic tolerances are unchanged; failure to converge within this
+cap is recorded as non-convergence, not admitted as a feasible result. Increase
+the cycle cap in a new campaign definition for a substantive physical search. Its objective is
+the existing indicated thermal efficiency. The 1 W minimum motor-power
+constraint is only a smoke-test feasibility condition; it does not replace the
+project's approximately 100 W useful-output goal. UA/CdA values are legacy
+screening inputs, not the latest geometry-connected exchanger design.
+
+Installed command:
+
+```sh
+dada-optimize examples/free_kinematics_campaign.toml --directory outputs/free_campaign_final_smoke --budget 3m --max-candidates 1
+dada-optimize outputs/free_campaign_final_smoke --budget 3m --max-candidates 1
+```
+
+From a source checkout, replace `dada-optimize` with
+`PYTHONPATH=src python3 -m dada_solver.campaign.cli`. General budgets can be
+`30m`, `1h30m`, `45s`, or seconds. The example definition itself caps each run
+at two candidates unless `--max-candidates` overrides it. An uncapped production
+campaign can omit `maximum_candidates` in its definition.
+
+## Verification boundary and next steps
+
+Fast tests use a lightweight evaluator and simulated clock for transforms,
+hashing across processes, sequence continuation, cache hits, durable history,
+preflight rejection, feasibility archives, report deltas, bound pressure,
+budgets, crash recovery and changed-definition rejection. Injection tests cover
+both motion families in both directions. The physical example is a separate
+CLI smoke run, not a slow full campaign in the ordinary test suite.
+
+Next review: local refinement strategy and compatible periodic-state warm
+starts; family-specific bounds and robustness studies; and the dedicated
+wall-model evaluator adapter before geometry-connected microtube campaigns.
+Do not infer an optimal waveform or useful shaft efficiency from these tests.
+
+### Recorded fast-suite verification
+
+The complete suite passes: **275 tests**, including 43 new campaign/injection
+checks. The last full run took 54.17 seconds while an independent physical
+smoke calculation was also running. The fixture budget tests use a simulated
+clock and do not sleep. Exact duplicate lookup, interrupted in-flight recovery,
+completed-file recovery after a torn append, feasible-best preservation and
+cross-process candidate hashing are covered explicitly.
+
+### Recorded physical smoke verification
+
+The source CLI completed Sobol point 0 in
+`outputs/free_campaign_final_smoke`: 81.52 seconds of evaluation, three
+integrated cycles, and explicit `periodic_non_convergence`. The requested
+phase budget was 180 seconds. No objective or feasible optimum is claimed;
+the cycle cap did not relax any convergence tolerance. The completed record,
+candidate payload and first phase report are durable.
+
+A separate process resumed this directory and selected Sobol point 1 rather
+than repeating point 0. At this verification checkpoint it was still in flight
+after 738 seconds; its pending payload and advanced sequence index were
+persisted. Completed physical evaluation after resume is therefore not yet
+verified by this run. Automated continuation and interrupted-state recovery
+tests pass independently. Inspect `state.json` and the append-only history for
+the subsequent outcome; `reports/phase_0001.json` retains the completed first
+phase even if the latest report changes.
+
+This second point demonstrates substantial integration-time variability. A
+budget based on recent durations cannot guarantee a modest overrun when an
+unfamiliar candidate integrates much more slowly. The runner deliberately
+does not terminate an in-flight solve at the deadline. Numerical-cost
+diagnostics and a more representative smoke region need review before long
+physical exploration; no solver equation was changed to hide this limitation.

@@ -52,5 +52,8 @@ Architecture handoff: read docs/PLUGGABLE_MODELS.md before implementing the
 global optimization campaign. Preserve generic KinematicsModel and
 ExchangerModel boundaries, independent free spline motions, explicit validity
 margins, and family-specific parameter ownership. Do not independently optimize
-geometrically derived exchanger UA, hold-up or losses. The current task adds
-no optimizer, dynamic plugin registry, or assumed mechanical efficiency.
+geometrically derived exchanger UA, hold-up or losses. The first persistent Sobol orchestration layer is documented in
+docs/OPTIMIZATION_CAMPAIGN.md. Preserve its append-only history, exact identity
+cache, explicit rejection states and single motor-direction transform on
+injected study-angle kinematics. No local refinement, dynamic plugin registry
+or assumed mechanical efficiency is introduced.

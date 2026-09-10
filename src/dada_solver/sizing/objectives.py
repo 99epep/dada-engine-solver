@@ -69,7 +69,8 @@ class MinimizeChargingPressure:
 
     def evaluate(self, evaluation: DesignEvaluation) -> ObjectiveValue:
         configuration = evaluation.configuration
-        filling_volume = build_model(configuration).volumes(0.0).total
+        model = getattr(evaluation, "model", None) or build_model(configuration)
+        filling_volume = model.volumes(0.0).total
         pressure = configuration.charge.resolved_pressure(
             configuration.gas,
             filling_volume,
