@@ -34,7 +34,9 @@ class CycleDiagnostics:
     temperature_extrema: dict[str, Extrema]
     mass_flow_extrema: dict[str, Extrema]
     cold_heat_rate_extrema: Extrema
+    """Heat rate into working gas C/H_i from its exchanger boundary."""
     hot_heat_rate_extrema: Extrema
+    """Heat rate into working gas H/H_o from its exchanger boundary."""
     valve_events: tuple[ValveEventDiagnostic, ...]
     topology: CycleTopologyDiagnostic
     orifice_pressure_regularization: float = 0.0
@@ -44,6 +46,7 @@ class CycleDiagnostics:
 def extract_cycle_diagnostics(
     cycle: CycleIntegrationResult,
     model: ThermodynamicModel,
+    heat_rate_provider=None,
 ) -> CycleDiagnostics:
     """Re-evaluate sampled states to obtain diagnostic histories and extrema."""
 
@@ -87,8 +90,12 @@ def extract_cycle_diagnostics(
             )
         rates = model.evaluate(float(angle), state, topology)
         flow_values[:, index] = _flow_array(rates.flows)
-        cold_heat_rates[index] = rates.cold_heat_rate
-        hot_heat_rates[index] = rates.hot_heat_rate
+        if heat_rate_provider is None:
+            cold_heat_rates[index] = rates.cold_heat_rate
+            hot_heat_rates[index] = rates.hot_heat_rate
+        else:
+            cold_heat_rates[index], hot_heat_rates[index] = heat_rate_provider(
+                index, float(angle), state)
 
     names = ("S", "L", "C", "H")
     flow_names = ("large_to_hot", "small_to_cold", "hot_to_small", "cold_to_large")

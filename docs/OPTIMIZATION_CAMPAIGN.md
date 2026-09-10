@@ -108,6 +108,26 @@ losses remain unknown. Peak tube Reynolds and Mach numbers use the actual
 candidate geometries; leaving the declared laminar/Mach domain prevents
 feasibility.
 
+`WallCycleNumericalSettings` records the wall integration method, relative
+tolerance, fifteen-component absolute-tolerance vector, maximum angle step,
+periodic relative/absolute scales, progress interval and bounded Aitken option.
+The method and angle step default from unambiguous generic numerical settings;
+wall-specific values remain explicit. These values are stored in candidate
+payloads and the immutable campaign identity. Historical defaults remain LSODA,
+relative tolerance 1e-8, the established componentwise absolute tolerances and
+maximum step pi/360.
+
+In wall-cycle diagnostics, `cold_heat_rate_extrema` and
+`hot_heat_rate_extrema` mean heat into the working gas from the H_i and H_o
+walls. They are evaluated with the actual wall states and exchanger `rates()`
+functions. Cycle efficiency continues to use heat delivered by the external
+source air. These are deliberately different thermodynamic boundaries.
+
+The optional `wall_numerical.accelerate_walls` applies only the existing bounded
+Aitken update to a subsequent wall-energy initial guess. It cannot declare
+convergence; the next ordinary complete physical cycle must satisfy the same
+periodic test.
+
 ## Candidate identity and reproducibility
 
 A `Candidate` stores immutable canonical JSON containing normalized coordinates,
@@ -167,11 +187,11 @@ the pending candidate recoverable, rather than masquerading as physical
 infeasibility. Geometry-definition errors and derivative-limit margins remain
 explicit in the record.
 
-For every converged evaluation, the final eight conservative state values,
-valve topology and inventory are persisted. They are marked as initial guesses
-only. All campaign evaluations currently start from the configured fill; no
-nearest-neighbour warm-start selector is implemented and convergence tolerances
-are never relaxed. The record's `warm_start_source` is therefore `null`.
+Reusable states are persisted after convergence, maximum-cycle exhaustion and
+deadline interruption whenever at least one complete cycle exists. They carry
+an explicit `periodic_solution` flag. Compatible nearest-state selection and
+inventory/wall-capacity rescaling are described below; convergence tolerances
+are never relaxed.
 
 ## Files, durability and crash recovery
 
@@ -299,7 +319,7 @@ Do not infer an optimal waveform or useful shaft efficiency from these tests.
 
 ### Recorded fast-suite verification
 
-The complete suite passes: **284 tests**. The last full run took 40.61 seconds.
+The complete suite passes: **287 tests**. The last full run took 46.44 seconds.
 The fixture budget tests use a simulated
 clock and do not sleep. Exact duplicate lookup, interrupted in-flight recovery,
 completed-file recovery after a torn append, feasible-best preservation and
@@ -326,12 +346,11 @@ tests pass independently. Inspect `state.json` and the append-only history for
 the subsequent outcome; `reports/phase_0001.json` retains the completed first
 phase even if the latest report changes.
 
-This second point demonstrates substantial integration-time variability. A
-budget based on recent durations cannot guarantee a modest overrun when an
-unfamiliar candidate integrates much more slowly. The runner deliberately
-does not terminate an in-flight solve at the deadline. Numerical-cost
-diagnostics and a more representative smoke region need review before long
-physical exploration; no solver equation was changed to hide this limitation.
+This second point demonstrated substantial integration-time variability and
+motivated cooperative in-flight deadlines. The current runner interrupts at a
+progress boundary, discards the partial cycle and retains the preceding complete
+cycle. Numerical-cost diagnostics still deserve review before long physical
+exploration; no solver equation was changed to hide this limitation.
 
 ### Dynamic-wall microtube smoke
 
@@ -342,12 +361,14 @@ volume. The base maximum of 100 periodic cycles is retained; wall-clock
 deadlines control interactive runtime.
 
 Two distinct Sobol candidates were evaluated across resumed processes in
-`outputs/microtube_free_campaign_verified3`. Point 0 completed nine cycles in
-31.49 s for 30 s requested with a 3 s grace. Its normalized periodic error fell
-from 464423.79 to 7638.90. Point 1 used point 0 as a compatible non-periodic
-initial guess at normalized distance 1.5255, completed thirteen cycles in
-42.29 s for 40 s requested with the same grace, and fell from 127809.71 to
-3276.41.
+`outputs/microtube_free_campaign_correction_smoke`. Point 0 completed eight
+cycles in 31.19 s for 30 s requested with a 3 s grace. Its normalized periodic
+error fell from 464423.79 to 8159.15. Point 1 used point 0 as a compatible
+non-periodic initial guess at normalized distance 1.5255 and completed thirteen
+cycles in 42.50 s for 40 s requested with the same grace. Its error started at
+127870.87 and reached 4207.97 at cycle 10. The configured bounded Aitken update
+then changed the wall-energy guess: the next errors were 63529.05, 1939.03 and
+27.36. The ordinary cycle-13 error remains above the convergence threshold 1.
 Both statuses are `budget_exhausted`; neither is feasible or presented as an
 optimum. Their hashes are distinct, sequence indices are 0 and 1, and the next
 persisted Sobol index is 2.

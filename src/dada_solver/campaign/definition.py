@@ -7,6 +7,7 @@ import platform
 import tomllib
 import numpy as np
 import scipy
+import math
 from dada_solver.configuration import load_simulation_configuration
 from dada_solver.campaign.parameters import ParameterSpace, ContinuousParameter
 from dada_solver.campaign.candidate import content_hash
@@ -50,6 +51,18 @@ class CampaignDefinition:
             (self.hardware_data, self.hardware_bank, self.heat_in_inputs,
              self.heat_out_inputs) = load_hardware_definition(
                 self.hardware_source, self.configuration.gas.heat_capacity_cp)
+            from dada_solver.exchangers.wall_cycle import WallCycleNumericalSettings
+            wall = dict(raw.get('wall_numerical', {}))
+            wall.setdefault('integration_method', self.configuration.numerical.integration_method)
+            wall.setdefault('maximum_step_angle_radians',
+                math.radians(self.configuration.numerical.maximum_step_angle_degrees))
+            if 'integration_absolute_tolerances' in wall:
+                wall['integration_absolute_tolerances'] = tuple(wall['integration_absolute_tolerances'])
+            self.wall_numerical_settings = WallCycleNumericalSettings(**wall)
+            self.numerical_settings = dict(self.numerical_settings,
+                wall_cycle=asdict(self.wall_numerical_settings))
+        else:
+            self.wall_numerical_settings = None
         self.free_settings = raw.get('free', {})
         validate_ownership({p.name for p in self.space.parameters}, self.families, self.free_settings)
         if self.families['kinematics'] == 'free':

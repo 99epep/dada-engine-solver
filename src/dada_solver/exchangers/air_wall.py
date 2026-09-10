@@ -82,7 +82,7 @@ class AirWallMotor:
                      incoming['air_heat_w'], outgoing['air_heat_w'],
                      incoming['gas_heat_w'], outgoing['gas_heat_w'], rates.gas_work_rate] / self.model.angular_speed
 
-    def integrate_cycle(self, state, *, rtol=1e-7, atol=1e-10,
+    def integrate_cycle(self, state, *, integration_method='LSODA', rtol=1e-7, atol=1e-10,
                         maximum_step_angle=math.pi/360, progress_callback=None,
                         progress_interval_seconds=10.0):
         initial = np.asarray(state, dtype=float)
@@ -109,7 +109,7 @@ class AirWallMotor:
                         right_hand_side_evaluations=evaluations))
                     last_progress = now
                 return self.derivative(angle, state)
-            solution = solve_ivp(derivative, (lower, upper), values, method='LSODA',
+            solution = solve_ivp(derivative, (lower, upper), values, method=integration_method,
                                  rtol=rtol, atol=atol, max_step=maximum_step_angle)
             if not solution.success:
                 raise RuntimeError(solution.message)

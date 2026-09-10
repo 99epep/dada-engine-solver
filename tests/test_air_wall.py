@@ -5,7 +5,7 @@ import pytest
 from scipy.integrate import solve_ivp
 
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
-from dada_solver.exchangers.wall_cycle import wall_cycle_performance
+from dada_solver.exchangers.wall_cycle import wall_cycle_performance, WallDiagnosticCycle
 from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state
 
@@ -76,3 +76,27 @@ def test_wall_efficiency_uses_external_air_heat_boundary():
     performance=wall_cycle_performance(SimpleNamespace(model=SimpleNamespace(signed_angular_speed=-2*np.pi)),trajectory)
     assert performance.thermal_efficiency==pytest.approx(.2)
     assert performance.gas_power==pytest.approx(20)
+
+
+def test_wall_heat_diagnostics_do_not_use_legacy_reservoir_closure():
+    from dada_solver.results import extract_cycle_diagnostics
+    config=load_simulation_configuration(Path(__file__).resolve().parents[1]/'examples/motor_demonstrator_piecewise.toml')
+    model=build_model(config)
+    hot=AirWallExchanger(7,20,100,.05,1005,448.15)
+    cold=replace(hot,gas_wall_conductance_w_k=11,air_inlet_temperature_k=298.15)
+    wrapper=AirWallMotor(model,hot,cold)
+    gas=build_initial_state(config,model).as_array()
+    trajectory=np.zeros((15,2));trajectory[:8]=np.column_stack((gas,gas))
+    trajectory[8]=[42000,43000];trajectory[9]=[31000,32000]
+    cycle=WallDiagnosticCycle(np.array([0.,.1]),trajectory)
+    expected=[]
+    def provider(index,angle,state):
+        temperatures=state.temperatures(model.gas)
+        values=(hot.rates(temperatures[2],trajectory[8,index])['gas_heat_w'],
+                cold.rates(temperatures[3],trajectory[9,index])['gas_heat_w'])
+        expected.append(values);return values
+    actual=extract_cycle_diagnostics(cycle,model,heat_rate_provider=provider)
+    legacy=extract_cycle_diagnostics(cycle,model)
+    assert actual.cold_heat_rate_extrema.maximum==pytest.approx(max(x[0] for x in expected))
+    assert actual.hot_heat_rate_extrema.minimum==pytest.approx(min(x[1] for x in expected))
+    assert actual.cold_heat_rate_extrema != legacy.cold_heat_rate_extrema
