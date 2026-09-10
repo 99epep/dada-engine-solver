@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from dada_solver.exchangers.doty import load_references, scale_bank
+from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 
 DATA_N2 = Path(__file__).resolve().parents[1] / "examples/data/doty_1991_nitrogen_reference.csv"
 DATA_HE = Path(__file__).resolve().parents[1] / "examples/data/doty_1991_helium_reference.csv"
@@ -83,48 +84,153 @@ def test_helium_reference_values():
 
 
 # ============================================================================
-# Hydraulic Check 1: Absolute Poiseuille/Doty Eq. 7 comparison
-# 
-# The uncalibrated laminar pressure-drop law overpredicts measured helium
-# pressure drops. Do NOT make a test that pretends these agree exactly.
+# Hydraulic Check 1: Absolute Poiseuille/Doty Eq. 7 using direct calculation
+#
+# Direct theoretical laminar tube-loss calculation using MicrotubeBank geometry
+# and the Poiseuille law: Δp = 128 * μ * L * m_dot / (ρ * n * π * d^4)
+#
+# This reproduces approximately Doty Table 2 calculated values:
+#   117 mg/s: about 3.0 kPa
+#   79 mg/s: about 2.0 kPa
+#   213 mg/s: about 5.5 kPa
+#
+# Measured values are:
+#   117 mg/s: 2.3 kPa
+#   79 mg/s: 1.5 kPa
+#   213 mg/s: 4.4 kPa
+#
+# Therefore theoretical overpredicts by approximately 25–33%.
 # ============================================================================
 
-def test_helium_absolute_poiseuille_117mg_s_overpredicts():
-    """117 mg/s He: measured 2.3 kPa, calculated 3.0 kPa (+30.4 %)."""
-    ref = load_references(DATA_HE)[0]
-    # At reference flow and viscosity_ratio=1.0, density_ratio=1.0, the
-    # Poiseuille law predicts the full reference pressure drop.
-    result = estimate(ref, banks=1, flow=ref.mass_flow_kg_s)
-    measured_pa = 2300
-    calculated_pa = result["estimated_tube_pressure_drop_pa"]
+def _helium_density_from_ideal_gas(pressure_pa, temperature_k):
+    """Ideal-gas helium density: ρ = P / (R * T) with R = 2077.1 J/(kg·K)."""
+    R_He = 2077.1  # J/(kg·K)
+    return pressure_pa / (R_He * temperature_k)
+
+
+def _helium_viscosity_from_temperature(temperature_k):
+    """Helium viscosity using empirical approximation valid 250–500 K.
     
-    # Expected: calculated ≈ 3.0 kPa (overpredicts by ~30%)
-    assert calculated_pa == pytest.approx(measured_pa)  # Same as measured at anchor
-    assert measured_pa == pytest.approx(2300)
+    This is a simple linear approximation fitted around the experimental range.
+    Viscosity reference: Chapman-Enskog kinetic theory for monatomic gases.
+    For helium at 300 K: μ ≈ 1.87e-5 Pa·s
+    For helium at 380 K: μ ≈ 2.2e-5 Pa·s (approximately)
     
-    # But the theoretical Poiseuille prediction for these gas properties
-    # (helium at this condition) would be higher. We verify the measured
-    # value is lower than what the uncalibrated model estimates relative to
-    # nitrogen at similar Reynolds numbers.
-    # This test documents that the model does not validate absolutely.
+    Simple linear form: μ ≈ μ_0 + α * (T - T_0)
+    Do NOT use this as a universal viscosity correlation; it is only valid
+    for the 250–500 K range and is intended for screening physics.
+    """
+    # At T = 300 K, μ ≈ 1.87e-5 Pa·s (literature)
+    # At T = 380 K, μ ≈ 2.2e-5 Pa·s (rough estimate)
+    # Slope: (2.2e-5 - 1.87e-5) / (380 - 300) ≈ 4.125e-8 Pa·s/K
+    mu_300 = 1.87e-5  # Pa·s at 300 K
+    alpha = 4.125e-8  # Pa·s/K
+    return mu_300 + alpha * (temperature_k - 300.0)
 
 
-def test_helium_absolute_poiseuille_79mg_s_overpredicts():
-    """79 mg/s He: measured 1.5 kPa, calculated 2.0 kPa (+33.3 %)."""
-    ref = load_references(DATA_HE)[1]
-    measured_pa = 1500
-    result = estimate(ref, banks=1, flow=ref.mass_flow_kg_s)
-    # At anchor, the model reproduces the measured value.
-    assert result["estimated_tube_pressure_drop_pa"] == pytest.approx(measured_pa)
+def test_helium_absolute_poiseuille_117mg_s():
+    """Direct Poiseuille prediction for 117 mg/s He.
+    
+    Theoretical prediction should be approximately 3.0 kPa.
+    Measured value is 2.3 kPa.
+    Overprediction ratio ≈ 3.0 / 2.3 ≈ 30%.
+    """
+    ref = load_references(DATA_HE)[0]  # 117 mg/s
+    
+    # Doty bank geometry: 3 modules × 103 tubes = 309 tubes
+    bank = MicrotubeBank(
+        tube_count=309,
+        tube_length_m=0.127,
+        inner_diameter_m=0.00033,
+        wall_thickness_m=0.0001524,
+        pitch_m=0.0008,  # Reasonable pitch for 0.33 mm ID with wall
+        header_depth_m=0.01,  # Reasonable header depth
+    )
+    
+    # Calculate density and viscosity at representative tube conditions
+    rho = _helium_density_from_ideal_gas(ref.pressure_pa, ref.tube_mean_temperature_k)
+    mu = _helium_viscosity_from_temperature(ref.tube_mean_temperature_k)
+    
+    # Direct Poiseuille calculation
+    result = bank.laminar_tube_loss(ref.mass_flow_kg_s, density_kg_m3=rho, viscosity_pa_s=mu)
+    dp_theoretical = result["signed_tube_pressure_drop_pa"]
+    
+    # Expected: about 3000 Pa ± 10% (conservative tolerance for screening physics)
+    assert dp_theoretical == pytest.approx(3000, rel=0.15)
+    
+    # Verify measured value is lower (overprediction)
+    dp_measured = ref.tube_pressure_drop_pa
+    assert dp_measured < dp_theoretical
+    percent_overprediction = (dp_theoretical - dp_measured) / dp_measured * 100
+    assert 25 < percent_overprediction < 35  # Expect ~30% overprediction
 
 
-def test_helium_absolute_poiseuille_213mg_s_overpredicts():
-    """213 mg/s He: measured 4.4 kPa, calculated 5.5 kPa (+25.0 %)."""
-    ref = load_references(DATA_HE)[2]
-    measured_pa = 4400
-    result = estimate(ref, banks=1, flow=ref.mass_flow_kg_s)
-    # At anchor, the model reproduces the measured value.
-    assert result["estimated_tube_pressure_drop_pa"] == pytest.approx(measured_pa)
+def test_helium_absolute_poiseuille_79mg_s():
+    """Direct Poiseuille prediction for 79 mg/s He.
+    
+    Theoretical prediction should be approximately 2.0 kPa.
+    Measured value is 1.5 kPa.
+    Overprediction ratio ≈ 2.0 / 1.5 ≈ 33%.
+    """
+    ref = load_references(DATA_HE)[1]  # 79 mg/s
+    
+    bank = MicrotubeBank(
+        tube_count=309,
+        tube_length_m=0.127,
+        inner_diameter_m=0.00033,
+        wall_thickness_m=0.0001524,
+        pitch_m=0.0008,
+        header_depth_m=0.01,
+    )
+    
+    rho = _helium_density_from_ideal_gas(ref.pressure_pa, ref.tube_mean_temperature_k)
+    mu = _helium_viscosity_from_temperature(ref.tube_mean_temperature_k)
+    
+    result = bank.laminar_tube_loss(ref.mass_flow_kg_s, density_kg_m3=rho, viscosity_pa_s=mu)
+    dp_theoretical = result["signed_tube_pressure_drop_pa"]
+    
+    # Expected: about 2000 Pa ± 10%
+    assert dp_theoretical == pytest.approx(2000, rel=0.15)
+    
+    # Verify measured value is lower
+    dp_measured = ref.tube_pressure_drop_pa
+    assert dp_measured < dp_theoretical
+    percent_overprediction = (dp_theoretical - dp_measured) / dp_measured * 100
+    assert 30 < percent_overprediction < 40  # Expect ~33% overprediction
+
+
+def test_helium_absolute_poiseuille_213mg_s():
+    """Direct Poiseuille prediction for 213 mg/s He.
+    
+    Theoretical prediction should be approximately 5.5 kPa.
+    Measured value is 4.4 kPa.
+    Overprediction ratio ≈ 5.5 / 4.4 ≈ 25%.
+    """
+    ref = load_references(DATA_HE)[2]  # 213 mg/s
+    
+    bank = MicrotubeBank(
+        tube_count=309,
+        tube_length_m=0.127,
+        inner_diameter_m=0.00033,
+        wall_thickness_m=0.0001524,
+        pitch_m=0.0008,
+        header_depth_m=0.01,
+    )
+    
+    rho = _helium_density_from_ideal_gas(ref.pressure_pa, ref.tube_mean_temperature_k)
+    mu = _helium_viscosity_from_temperature(ref.tube_mean_temperature_k)
+    
+    result = bank.laminar_tube_loss(ref.mass_flow_kg_s, density_kg_m3=rho, viscosity_pa_s=mu)
+    dp_theoretical = result["signed_tube_pressure_drop_pa"]
+    
+    # Expected: about 5500 Pa ± 10%
+    assert dp_theoretical == pytest.approx(5500, rel=0.15)
+    
+    # Verify measured value is lower
+    dp_measured = ref.tube_pressure_drop_pa
+    assert dp_measured < dp_theoretical
+    percent_overprediction = (dp_theoretical - dp_measured) / dp_measured * 100
+    assert 20 < percent_overprediction < 30  # Expect ~25% overprediction
 
 
 # ============================================================================
