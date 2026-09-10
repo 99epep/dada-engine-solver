@@ -1,5 +1,7 @@
 # Experimental reference data
 
+## Nitrogen reference
+
 `doty_1991_nitrogen_reference.csv`: three nitrogen rows at 322 kPa, transcribed
 from Tables 1 and 2, printed page 38 (PDF page 8), of Doty et al. (1991),
 *The Microtube Strip Heat Exchanger*, Heat Transfer Engineering 12(3).
@@ -19,3 +21,20 @@ property corrections, geometric scaling, flow regime, and uncertainty scenarios.
 Do not silently treat other conditions as fixed or substitute these measurements
 for the motor UA. See `docs/EXCHANGER_LITERATURE.md` and
 `docs/MOTOR_DEMONSTRATOR.md`.
+
+## Helium reference
+
+`doty_1991_helium_reference.csv`: three helium rows, transcribed from Tables 1 
+and 2, printed page 38 (PDF page 8), of Doty et al. (1991), same source as above.
+
+The three measurements span 79–213 mg/s helium flow at elevated operating 
+pressures (749–825 kPa). Same units and uncertainties convention as nitrogen.
+Helium provides a higher-speed test of the microtube model at different fluid 
+properties and Reynolds numbers.
+
+**Important: The uncalibrated Poiseuille laminar model systematically overpredicts 
+absolute helium pressure drops by approximately 25–33 %, while relative scaling 
+between helium measurements is reasonably consistent.** This indicates that the 
+present model preserves the flow-scaling law without hidden calibration factors, 
+but is not experimentally validated in absolute magnitude by the helium data. 
+See `docs/DOTY_SCREENING.md` for detailed comparisons.
