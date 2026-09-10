@@ -75,6 +75,19 @@ def rescale_wall_state(values, target_gas_mass, old_wall_capacities, new_wall_ca
     return state
 
 
+def finalize_microtube_validity(validity, maximum_reynolds, maximum_mach, mach_limit):
+    """Replace generic Mach unavailability and recompute the global verdict."""
+    failed = list(validity.failed_criteria)
+    if maximum_reynolds >= 2300: failed.append('microtube_internal_laminar_reynolds')
+    if maximum_mach > mach_limit: failed.append('microtube_mach_number')
+    unavailable = tuple(x for x in validity.unavailable_criteria if x != 'mach_number')
+    verdict = (ValidityVerdict.INVALID if failed else
+        ValidityVerdict.INDETERMINATE if unavailable else ValidityVerdict.VALID)
+    return replace(validity, verdict=verdict, maximum_mach_number=maximum_mach,
+        mach_number_status='available', failed_criteria=tuple(failed),
+        unavailable_criteria=unavailable)
+
+
 def _gas_trend(history):
     return convergence_summary([dict(cycle=x.cycle_number,
         normalized_state_error=x.normalized_state_error) for x in history])
@@ -166,7 +179,9 @@ class MachineEvaluator:
             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
         try:
             periodic = solve_periodic_wall_motor(wrapper, state,
-                maximum_cycles=design.configuration.numerical.maximum_cycles, progress_callback=control.check)
+                maximum_cycles=design.configuration.numerical.maximum_cycles,
+                progress_callback=control.check,
+                settings=self.definition.wall_numerical_settings)
         except (ValueError, RuntimeError, ArithmeticError) as error:
             result = rejected('integration_failure', f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
             return result
@@ -184,16 +199,17 @@ class MachineEvaluator:
             return result
         cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
         performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
-        diagnostics = extract_cycle_diagnostics(cycle, wrapper.model) if periodic.converged else None
+        def wall_heat_rates(index, _angle, gas_state):
+            temperatures = gas_state.temperatures(wrapper.model.gas)
+            return (wrapper.heat_in.rates(temperatures[2], periodic.trajectory[8,index])['gas_heat_w'],
+                    wrapper.heat_out.rates(temperatures[3], periodic.trajectory[9,index])['gas_heat_w'])
+        diagnostics = (extract_cycle_diagnostics(cycle, wrapper.model,
+            heat_rate_provider=wall_heat_rates) if periodic.converged else None)
         validity = assess_cycle_validity(cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
         max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory)
         if validity is not None:
-            failed = list(validity.failed_criteria)
-            if max_re >= 2300: failed.append('microtube_internal_laminar_reynolds')
-            if max_mach > design.configuration.validity.maximum_mach_number: failed.append('microtube_mach_number')
-            validity = replace(validity, verdict=ValidityVerdict.INVALID if failed else ValidityVerdict.INDETERMINATE,
-                maximum_mach_number=max_mach, mach_number_status='available', failed_criteria=tuple(failed),
-                unavailable_criteria=tuple(x for x in validity.unavailable_criteria if x != 'mach_number'))
+            validity = finalize_microtube_validity(validity, max_re, max_mach,
+                design.configuration.validity.maximum_mach_number)
         evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
             status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
             periodic=SimpleNamespace(message=periodic.message), performance=performance,

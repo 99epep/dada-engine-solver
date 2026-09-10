@@ -15,6 +15,30 @@ from dada_solver.valves import ValveState
 
 
 @dataclass(frozen=True)
+class WallCycleNumericalSettings:
+    """Numerical controls specific to the ten-state wall-cycle calculation."""
+    integration_method: str = 'LSODA'
+    integration_relative_tolerance: float = 1e-8
+    integration_absolute_tolerances: tuple[float, ...] = tuple([1e-13, 1e-8]*4 + [1e-7]*2 + [1e-8]*5)
+    maximum_step_angle_radians: float = math.pi/360
+    periodic_relative_tolerance: float = 1e-6
+    periodic_absolute_tolerance: float = 1e-12
+    progress_interval_seconds: float = 1.0
+    accelerate_walls: bool = False
+
+    def __post_init__(self):
+        if self.integration_method not in {'RK45','Radau','BDF','LSODA'}:
+            raise ValueError('Unsupported wall integration method.')
+        if len(self.integration_absolute_tolerances) != 15:
+            raise ValueError('Wall integration requires 15 absolute tolerances.')
+        values = (self.integration_relative_tolerance, *self.integration_absolute_tolerances,
+            self.maximum_step_angle_radians, self.periodic_relative_tolerance,
+            self.periodic_absolute_tolerance, self.progress_interval_seconds)
+        if any(not math.isfinite(x) or x <= 0 for x in values):
+            raise ValueError('Wall numerical tolerances, step and progress interval must be positive.')
+
+
+@dataclass(frozen=True)
 class WallCycleResult:
     status: str
     message: str
@@ -29,24 +53,27 @@ class WallCycleResult:
 
 
 def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
-        progress_callback=None, accelerate_walls=False, cycle_callback=None) -> WallCycleResult:
+        progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None) -> WallCycleResult:
     """Repeat unmodified complete cycles using the screening convergence rule."""
     from dada_solver.exchangers.wall_iteration import extrapolate_wall_energies
     state = np.asarray(initial_state, dtype=float)
     history, wall_history = [], []
     last_angles = last_trajectory = None
-    atol = np.array([1e-13, 1e-8]*4 + [1e-7]*2 + [1e-8]*5)
+    atol = np.asarray(settings.integration_absolute_tolerances)
     for cycle in range(1, maximum_cycles+1):
         try:
-            angles, trajectory = wrapper.integrate_cycle(state, rtol=1e-8,
-                atol=atol, maximum_step_angle=math.pi/360,
-                progress_callback=progress_callback, progress_interval_seconds=1.0)
+            angles, trajectory = wrapper.integrate_cycle(state,
+                integration_method=settings.integration_method,
+                rtol=settings.integration_relative_tolerance, atol=atol,
+                maximum_step_angle=settings.maximum_step_angle_radians,
+                progress_callback=progress_callback,
+                progress_interval_seconds=settings.progress_interval_seconds)
         except IntegrationInterrupted as error:
             return WallCycleResult('interrupted', str(error), tuple(history),
                 last_angles, last_trajectory, state.copy() if history else None)
         end = trajectory[:10, -1]
         error = float(np.max(np.abs(end-state) /
-            (1e-12 + 1e-6*np.maximum(np.abs(end), np.abs(state)))))
+            (settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))))
         history.append(dict(cycle=cycle, normalized_state_error=error))
         last_angles, last_trajectory = angles, trajectory
         state = end
@@ -56,7 +83,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             return WallCycleResult('converged', 'Periodic steady state converged.',
                 tuple(history), angles, trajectory, end.copy())
         wall_history.append(end[8:10].copy())
-        if accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
+        if settings.accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
             proposed = extrapolate_wall_energies(*wall_history[-3:], np.array([
                 wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]))
             if proposed is not None:

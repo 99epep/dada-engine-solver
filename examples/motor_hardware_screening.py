@@ -17,7 +17,7 @@ from dada_solver.state import ThermodynamicState
 from dada_solver.exchangers.hardware import HardwareInputs, connect_hardware
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.exchangers.duty import summarize_port
-from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor, WallCycleNumericalSettings
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--hardware', type=Path, default=Path('examples/motor_hardware.toml'))
@@ -91,7 +91,8 @@ def completed_cycle(cycle, end, error, history_item):
             scaled_periodic_error=error, status='initial_guess_only')))
         checkpoint_seconds += timer.perf_counter()-checkpoint_start
 periodic = solve_periodic_wall_motor(wrapper, state, maximum_cycles=args.maximum_cycles,
-    accelerate_walls=args.accelerate_walls, cycle_callback=completed_cycle)
+    settings=WallCycleNumericalSettings(accelerate_walls=args.accelerate_walls),
+    cycle_callback=completed_cycle)
 if periodic.trajectory is None:
     raise RuntimeError(periodic.message)
 angles, trajectory = periodic.angles, periodic.trajectory

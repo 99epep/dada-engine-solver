@@ -15,7 +15,7 @@ from dada_solver.campaign.history import CampaignHistory, atomic_json
 from dada_solver.campaign.report import make_report, elite_records
 from dada_solver.campaign.evaluator import rejected, MachineEvaluator
 from dada_solver.campaign.evaluator import (EvaluationControl, rescale_wall_state,
-    select_warm_start)
+    select_warm_start, finalize_microtube_validity)
 from dada_solver.campaign.adapters import validate_ownership, microtube_design
 from dada_solver.free_kinematics import FreeKinematics
 
@@ -405,3 +405,26 @@ def test_changed_hardware_snapshot_refuses_resume(tmp_path):
     (tmp_path/'hardware.toml').write_text((tmp_path/'hardware.toml').read_text()+'\n# changed\n')
     with pytest.raises(ValueError,match='changed'):
         OptimizationCampaign.resume(tmp_path)
+
+
+def test_valid_microtube_cycle_can_satisfy_global_validity_constraint():
+    from types import SimpleNamespace
+    from dada_solver.validity import ValidityReport, ValidityVerdict
+    from dada_solver.sizing.constraints import RequireValidThermodynamicModel
+    generic=ValidityReport(ValidityVerdict.INDETERMINATE,.01,None,None,None,'unavailable',
+        0.,0.,(),('mach_number',))
+    actual=finalize_microtube_validity(generic,maximum_reynolds=500,maximum_mach=.06,mach_limit=.2)
+    constraint=RequireValidThermodynamicModel().evaluate(SimpleNamespace(validity=actual))
+    assert actual.verdict is ValidityVerdict.VALID
+    assert constraint.available and constraint.satisfied
+
+
+def test_wall_numerical_settings_are_in_candidate_identity(definition):
+    wall=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+    settings=wall.numerical_settings['wall_cycle']
+    assert settings['integration_method']=='LSODA'
+    assert len(settings['integration_absolute_tolerances'])==15
+    assert settings['accelerate_walls'] is True
+    candidate=Candidate.create(wall.space,wall.space.initial_coordinates,families=wall.families,
+        numerical_settings=wall.numerical_settings,definition_id=wall.definition_id)
+    assert candidate.payload['numerical_settings']['wall_cycle']['integration_absolute_tolerances']==list(settings['integration_absolute_tolerances'])
