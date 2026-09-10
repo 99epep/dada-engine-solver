@@ -1,4 +1,4 @@
-"""Explicit whole-bank scaling of Doty's steady nitrogen measurements.
+"""Explicit whole-bank scaling of Doty's steady fluid measurements.
 
 This screening model is not a DADA thermal closure. UA is gas/gas overall
 conductance; pressure drop is tube-side only. Property and pulse corrections
@@ -22,11 +22,25 @@ class DotyReference:
 
 
 def load_references(path: str | Path) -> tuple[DotyReference, ...]:
-    """Load measured anchors without fitting across differing temperatures."""
+    """Load measured anchors from homogeneous nitrogen or helium reference file.
+    
+    Raises ValueError if the file is empty, contains mixed fluids, or
+    lists an unsupported fluid.
+    """
     with Path(path).open(newline="") as stream:
         rows = tuple(csv.DictReader(stream))
-    if not rows or any(row["fluid"] != "nitrogen" for row in rows):
-        raise ValueError("Expected nitrogen reference measurements.")
+    
+    if not rows:
+        raise ValueError("Expected non-empty reference measurements.")
+    
+    fluids = {row["fluid"] for row in rows}
+    if len(fluids) > 1:
+        raise ValueError("Expected homogeneous fluid (all nitrogen or all helium).")
+    
+    fluid = fluids.pop()
+    if fluid not in ("nitrogen", "helium"):
+        raise ValueError(f"Unsupported fluid: {fluid}. Expected nitrogen or helium.")
+    
     return tuple(DotyReference(
         float(row["mass_flow_kg_s"]), float(row["UA_W_K"]),
         float(row["pressure_drop_Pa"]), float(row["pressure_Pa"]),
