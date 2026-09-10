@@ -1,0 +1,203 @@
+# Stage-1 four-bar motor exploration at 25/325 deg C.
+# Objective: discover efficient four-bar geometry before final 100 W scaling.
+
+[campaign]
+base_configuration = "motor_demonstrator_original_325c.toml"
+hardware_configuration = "motor_hardware_parallel_325c.toml"
+maximum_candidates = 64
+elite_size = 8
+initial_evaluation_seconds = 120.0
+deadline_grace_seconds = 3.0
+
+[families]
+kinematics = "four_bar"
+exchanger = "microtube"
+
+[search]
+type = "sobol"
+seed = 73
+scramble = true
+
+[wall_numerical]
+integration_method = "LSODA"
+integration_relative_tolerance = 1.0e-8
+integration_absolute_tolerances = [
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-13, 1.0e-8,
+  1.0e-7, 1.0e-7,
+  1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8, 1.0e-8
+]
+maximum_step_angle_radians = 0.008726646259971648
+periodic_relative_tolerance = 1.0e-6
+periodic_absolute_tolerance = 1.0e-12
+progress_interval_seconds = 1.0
+accelerate_walls = true
+
+[objective]
+type = "maximize_thermal_efficiency"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 30.0
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 600000.0
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.05
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+
+# ---- Shared crank ----
+
+[[parameters]]
+name = "four_bar.crank_ratio"
+lower = 0.32
+upper = 0.48
+initial = 0.40
+transform = "linear"
+
+# ---- Small-cylinder loop ----
+
+[[parameters]]
+name = "four_bar.small_coupler_ratio"
+lower = 0.85
+upper = 1.15
+initial = 1.0
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_rocker_ratio"
+lower = 1.00
+upper = 1.35
+initial = 1.17
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_along_ratio"
+lower = 0.45
+upper = 0.85
+initial = 0.6542556970607737
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_output_normal_ratio"
+lower = -1.20
+upper = -0.75
+initial = -0.9699739598893987
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.small_slider_rod_ratio"
+lower = 3.0
+upper = 8.0
+initial = 5.0
+transform = "linear"
+
+# ---- Large-cylinder loop ----
+
+[[parameters]]
+name = "four_bar.large_coupler_ratio"
+lower = 0.85
+upper = 1.15
+initial = 1.0
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_rocker_ratio"
+lower = 1.00
+upper = 1.35
+initial = 1.17
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_along_ratio"
+lower = 0.45
+upper = 0.85
+initial = 0.6542556970607737
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_output_normal_ratio"
+lower = 0.75
+upper = 1.20
+initial = 0.9699739598893987
+transform = "linear"
+
+[[parameters]]
+name = "four_bar.large_slider_rod_ratio"
+lower = 3.0
+upper = 8.0
+initial = 5.0
+transform = "linear"
+
+# ---- Operating point ----
+
+[[parameters]]
+name = "operation.frequency_hz"
+lower = 2.0
+upper = 5.0
+initial = 2.0
+transform = "linear"
+
+[[parameters]]
+name = "common.charge_pressure"
+lower = 70000.0
+upper = 200000.0
+initial = 100000.0
+transform = "log"
+
+# ---- Cylinders ----
+
+[[parameters]]
+name = "common.small_swept_volume"
+lower = 0.0004
+upper = 0.0025
+initial = 0.0008316831683168317
+transform = "log"
+
+[[parameters]]
+name = "common.large_swept_volume"
+lower = 0.0005
+upper = 0.0030
+initial = 0.0009900990099009901
+transform = "log"
+
+[[parameters]]
+name = "common.small_clearance_ratio"
+lower = 0.003
+upper = 0.03
+initial = 0.01
+transform = "log"
+
+[[parameters]]
+name = "common.large_clearance_ratio"
+lower = 0.003
+upper = 0.03
+initial = 0.01
+transform = "log"
+
+# ---- Microtube exchangers ----
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+lower = 0.025
+upper = 0.070
+initial = 0.042333333333333334
+transform = "log"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+lower = 0.025
+upper = 0.070
+initial = 0.042333333333333334
+transform = "log"
