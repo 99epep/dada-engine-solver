@@ -48,41 +48,64 @@ inventing a steady-map thermal closure during idle intervals or local reflux.
 
 ### Absolute Poiseuille comparison (Doty Eq. 7)
 
-The uncalibrated laminar pressure-drop law is algebraically consistent with
-Doty's Eq. 7 but systematically overpredicts absolute helium pressure drops:
+Doty's Table 2 gives both measured helium tube-side pressure drops and values
+calculated from Eq. 7:
 
-| Flow (mg/s) | Measured ΔP (Pa) | Theoretical ΔP (Pa) | Ratio | Overprediction |
-|---|---|---|---|---|
-| 117 | 2300 | ~3000 | 0.767 | +30.4 % |
-| 79 | 1500 | ~2000 | 0.750 | +33.3 % |
-| 213 | 4400 | ~5500 | 0.800 | +25.0 % |
+| Flow (mg/s) | Measured dP (Pa) | Doty Eq. 7 (Pa) | Doty overprediction |
+|---|---:|---:|---:|
+| 117 | 2300 | 3000 | +30.4 % |
+| 79 | 1500 | 2000 | +33.3 % |
+| 213 | 4400 | 5500 | +25.0 % |
 
-**Status:** The present microtube laminar pressure-drop law is NOT experimentally 
-validated in absolute magnitude by the helium data. The model is uncalibrated 
-screening physics. Measured pressure drops are approximately 0.75–0.80 of the 
-theoretical predictions. Do not introduce a hidden calibration multiplier (such as 
-0.77) in response to this discrepancy. Doty themselves note that helium pressure 
-drops were somewhat lower than expected, plausibly because of slight tube-side 
-flow maldistribution.
+Doty explicitly states that the helium pressure drops are somewhat lower than
+expected and notes minor tube-side flow maldistribution as a possible
+explanation.
+
+The project also performs an independent reproduction of Eq. 7 rather than
+using the Table 2 calculated column as an input. The assumptions are:
+
+- 309 tubes, 0.33 mm internal diameter and 127 mm length;
+- representative tube temperature `(T3 + T4) / 2`;
+- ideal-gas helium density at the reported pressure;
+- dilute-gas helium viscosity linearly interpolated from the NIST values
+  21.0 uPa.s at 325 K and 22.1 uPa.s at 350 K.
+
+NIST source:
+https://www.nist.gov/pml/sensor-science/fluid-metrology/database-thermophysical-properties-gases-used-semiconductor-9
+
+The NIST table attributes these viscosity values to Hurly and Moldover (2000)
+and gives an estimated viscosity uncertainty of 0.1 %. Doty's paper does not
+state enough detail about the density/viscosity evaluation used for Table 2 to
+require exact numerical reproduction of its calculated column.
+
+| Flow (mg/s) | Measured dP (Pa) | Doty Eq. 7 (Pa) | Independent Eq. 7 (Pa) | Independent vs measured | Independent vs Doty |
+|---|---:|---:|---:|---:|---:|
+| 117 | 2300 | 3000 | 3319 | +44.3 % | +10.6 % |
+| 79 | 1500 | 2000 | 2206 | +47.1 % | +10.3 % |
+| 213 | 4400 | 5500 | 5477 | +24.5 % | -0.4 % |
+
+Thus `MicrotubeBank.laminar_tube_loss()` is consistent with the algebraic form
+of Doty's Eq. 7 and reproduces the published calculated values to about 11 %
+under an explicit independent property convention. It does **not** validate
+the absolute helium pressure drop experimentally. No empirical multiplier is
+introduced to force agreement.
 
 ### Relative scaling between helium measurements
 
-Using the 117 mg/s anchor and applying the scaling law 
-`dp ~ mass_flow * viscosity / density` with `viscosity_ratio = 1.0` and ideal-gas 
-representative tube density proportional to `pressure / tube_mean_temperature`:
+Using the 117 mg/s measurement as a single anchor and applying
+`dp ~ mass_flow * viscosity / density`, with the same NIST viscosity
+interpolation and ideal-gas representative density:
 
-| Flow (mg/s) | Measured ΔP (Pa) | Predicted from 117 mg/s anchor (Pa) | Relative Error |
-|---|---|---|---|
-| 117 | 2300 | 2300 (anchor) | — |
-| 79 | 1500 | ~1530 | +2.0 % |
-| 213 | 4400 | ~3800 | −13.6 % |
+| Flow (mg/s) | Measured dP (Pa) | Predicted from 117 mg/s anchor (Pa) | Relative error |
+|---|---:|---:|---:|
+| 117 | 2300 | 2300 (anchor) | - |
+| 79 | 1500 | 1529 | +1.9 % |
+| 213 | 4400 | 3796 | -13.7 % |
 
-**Status:** The relative scaling between helium measurements is reasonably 
-consistent. The 79 mg/s case tracks well (+2 %). The 213 mg/s case underestimates 
-by about −14 %, suggesting possible secondary effects at higher flow or pressure, 
-but the prediction remains within a physically plausible envelope. This consistency 
-supports the algebraic correctness of the flow-scaling law while emphasizing that 
-the absolute Poiseuille prediction is uncalibrated.
+The relative scaling is therefore substantially more successful than the
+absolute prediction: it tracks the 79 mg/s point closely and remains within
+about 14 % at 213 mg/s. This supports use of the laminar scaling as screening
+physics while retaining an explicit uncertainty on absolute loss.
 
 ## Reproducible illustrative comparison
 
