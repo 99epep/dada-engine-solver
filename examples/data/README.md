@@ -32,9 +32,12 @@ pressures (749–825 kPa). Same units and uncertainties convention as nitrogen.
 Helium provides a higher-speed test of the microtube model at different fluid 
 properties and Reynolds numbers.
 
-**Important: The uncalibrated Poiseuille laminar model systematically overpredicts 
-absolute helium pressure drops by approximately 25–33 %, while relative scaling 
-between helium measurements is reasonably consistent.** This indicates that the 
-present model preserves the flow-scaling law without hidden calibration factors, 
-but is not experimentally validated in absolute magnitude by the helium data. 
-See `docs/DOTY_SCREENING.md` for detailed comparisons.
+**Important:** Doty's own Eq. 7 values overpredict the measured helium pressure
+drops by about 25–33 %. An independent project reconstruction using NIST
+dilute-gas helium viscosity, ideal-gas density and mean tube temperature gives
+approximately 3.319, 2.206 and 5.477 kPa, versus Doty's published 3.0, 2.0 and
+5.5 kPa and measured 2.3, 1.5 and 4.4 kPa. The independent reproduction is
+within about 11 % of Doty's Eq. 7 values but remains clearly above experiment.
+Relative scaling from a measured helium anchor is much closer. No hidden
+calibration factor is introduced. See `docs/DOTY_SCREENING.md` for assumptions
+and detailed comparisons.

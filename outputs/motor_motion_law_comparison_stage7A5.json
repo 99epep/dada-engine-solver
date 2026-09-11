@@ -1,0 +1,4863 @@
+{
+  "experiment": "Stage 7A5 controlled motion-law comparison",
+  "comparison_basis": {
+    "same_total_working_gas_mass": true,
+    "total_mass_kg": 0.0014978232852577687,
+    "same_cylinder_volume_limits": true,
+    "same_operation": true,
+    "same_microtube_hardware": true,
+    "mechanical_losses_modeled": false,
+    "stage7A5_candidate_id": "1f8c5f8c71690cf0bbf16527cddf1c2daada4c0e9ddb9024165f58e57ba5f417",
+    "stage7A5_physical": {
+      "four_bar.crank_ratio": 0.13651867766864598,
+      "four_bar.large_coupler_ratio": 0.9115846671164036,
+      "four_bar.large_rocker_ratio": 0.7980102372914553,
+      "four_bar.small_coupler_ratio": 1.124135262146592,
+      "four_bar.small_rocker_ratio": 1.0841788304969668
+    },
+    "piecewise_reference_source": "examples/motor_demonstrator_piecewise.toml"
+  },
+  "stage7A5_four_bar": {
+    "label": "stage7A5_four_bar",
+    "status": "converged",
+    "message": "Periodic steady state converged.",
+    "convergence": {
+      "cycles_completed": 1,
+      "first_normalized_periodic_error": 0.8333068932311422,
+      "last_normalized_periodic_error": 0.8333068932311422,
+      "normalized_periodic_error_ratio": 1.0,
+      "improving": false,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 0.8333068932311422
+        }
+      ]
+    },
+    "indicated_power_w": 50.09171015581626,
+    "heat_input_w": 285.52465989567634,
+    "heat_out_w": -235.35889478706275,
+    "indicated_thermal_efficiency": 0.17543742167180423,
+    "maximum_tube_reynolds": 688.3915039470915,
+    "maximum_tube_mach_number": 0.04189510595892088,
+    "maximum_absolute_mass_flow_kg_s": 0.013231498870309256,
+    "validity": {
+      "verdict": "valid",
+      "maximum_pressure_equalization_error": 0.02341697272730659,
+      "cold_isothermality_error": 0.03565182997500763,
+      "hot_isothermality_error": 0.036940335290961294,
+      "maximum_mach_number": 0.04189510595892088,
+      "mach_number_status": "available",
+      "maximum_compressibility_deviation": 0.0,
+      "maximum_cp_variation": 0.0,
+      "failed_criteria": [],
+      "unavailable_criteria": []
+    },
+    "diagnostics": {
+      "pressure_extrema": {
+        "S": {
+          "minimum": 92048.90626204146,
+          "maximum": 443702.582547018
+        },
+        "L": {
+          "minimum": 96687.73771669593,
+          "maximum": 439564.8140084095
+        },
+        "C": {
+          "minimum": 92049.2541548708,
+          "maximum": 441851.7215735089
+        },
+        "H": {
+          "minimum": 94460.00757424098,
+          "maximum": 439544.5649979958
+        }
+      },
+      "temperature_extrema": {
+        "S": {
+          "minimum": 304.57557909264466,
+          "maximum": 472.0129849582481
+        },
+        "L": {
+          "minimum": 365.07892870448126,
+          "maximum": 582.8284833079252
+        },
+        "C": {
+          "minimum": 557.9756331903801,
+          "maximum": 579.3007752899309
+        },
+        "H": {
+          "minimum": 311.80718458851885,
+          "maximum": 322.82094555551896
+        }
+      },
+      "mass_flow_extrema": {
+        "large_to_hot": {
+          "minimum": -0.001207029512859993,
+          "maximum": 0.005172441926780175
+        },
+        "small_to_cold": {
+          "minimum": -0.0005350472853557842,
+          "maximum": 0.013231498870309256
+        },
+        "hot_to_small": {
+          "minimum": 0.0,
+          "maximum": 0.004972657696774904
+        },
+        "cold_to_large": {
+          "minimum": 0.0,
+          "maximum": 0.013203180759180408
+        }
+      },
+      "cold_heat_rate_extrema": {
+        "minimum": 0.10362430608652634,
+        "maximum": 1144.6437596456951
+      },
+      "hot_heat_rate_extrema": {
+        "minimum": -486.195557116042,
+        "maximum": 107.71027539554201
+      },
+      "valve_events": [],
+      "topology": {
+        "classification": "non_nominal",
+        "reasons": [
+          "observed_event_sequence_differs_from_nominal_sequence"
+        ]
+      },
+      "orifice_pressure_regularization": 0.0,
+      "regularization_sample_fraction": 0.0
+    },
+    "total_mass_kg": 0.0014978232852577713
+  },
+  "best_harmonic": {
+    "label": "harmonic_250.000_deg",
+    "status": "converged",
+    "message": "Periodic steady state converged.",
+    "convergence": {
+      "cycles_completed": 24,
+      "first_normalized_periodic_error": 381092.60820095445,
+      "last_normalized_periodic_error": 0.9698333386467918,
+      "normalized_periodic_error_ratio": 2.544875754019841e-06,
+      "improving": true,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 381092.60820095445
+        },
+        {
+          "cycle": 2,
+          "normalized_state_error": 3125.7988074643195
+        },
+        {
+          "cycle": 3,
+          "normalized_state_error": 2927.938894971647
+        },
+        {
+          "cycle": 4,
+          "normalized_state_error": 2736.364289366486
+        },
+        {
+          "cycle": 5,
+          "normalized_state_error": 2557.7688874574073
+        },
+        {
+          "cycle": 6,
+          "normalized_state_error": 2391.2632848479893
+        },
+        {
+          "cycle": 7,
+          "normalized_state_error": 2235.9771038119397
+        },
+        {
+          "cycle": 8,
+          "normalized_state_error": 2091.1085286702028
+        },
+        {
+          "cycle": 9,
+          "normalized_state_error": 1955.9185952620167
+        },
+        {
+          "cycle": 10,
+          "normalized_state_error": 1829.7259354935707,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 11,
+          "normalized_state_error": 25893.6558277096
+        },
+        {
+          "cycle": 12,
+          "normalized_state_error": 304.8286056990427
+        },
+        {
+          "cycle": 13,
+          "normalized_state_error": 5.211805361145354
+        },
+        {
+          "cycle": 14,
+          "normalized_state_error": 4.925082408422142
+        },
+        {
+          "cycle": 15,
+          "normalized_state_error": 4.64966935094851
+        },
+        {
+          "cycle": 16,
+          "normalized_state_error": 4.389849506255289
+        },
+        {
+          "cycle": 17,
+          "normalized_state_error": 4.144760333139626
+        },
+        {
+          "cycle": 18,
+          "normalized_state_error": 3.913584797828073
+        },
+        {
+          "cycle": 19,
+          "normalized_state_error": 3.6954737276611462
+        },
+        {
+          "cycle": 20,
+          "normalized_state_error": 3.4897188785352613,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 21,
+          "normalized_state_error": 42.735322943993296
+        },
+        {
+          "cycle": 22,
+          "normalized_state_error": 1.0893925612664943
+        },
+        {
+          "cycle": 23,
+          "normalized_state_error": 1.028424727011046
+        },
+        {
+          "cycle": 24,
+          "normalized_state_error": 0.9698333386467918
+        }
+      ]
+    },
+    "indicated_power_w": 50.224056758830095,
+    "heat_input_w": 283.3163923226137,
+    "heat_out_w": -233.00713393165225,
+    "indicated_thermal_efficiency": 0.17727197620686813,
+    "maximum_tube_reynolds": 738.9083799109283,
+    "maximum_tube_mach_number": 0.038769059734999244,
+    "maximum_absolute_mass_flow_kg_s": 0.014202478296136732,
+    "validity": {
+      "verdict": "valid",
+      "maximum_pressure_equalization_error": 0.02138908251911219,
+      "cold_isothermality_error": 0.03771863395820046,
+      "hot_isothermality_error": 0.03796303784919919,
+      "maximum_mach_number": 0.038769059734999244,
+      "mach_number_status": "available",
+      "maximum_compressibility_deviation": 0.0,
+      "maximum_cp_variation": 0.0,
+      "failed_criteria": [],
+      "unavailable_criteria": []
+    },
+    "diagnostics": {
+      "pressure_extrema": {
+        "S": {
+          "minimum": 92965.46185300565,
+          "maximum": 445545.4001808235
+        },
+        "L": {
+          "minimum": 97178.928278511,
+          "maximum": 441082.1301560889
+        },
+        "C": {
+          "minimum": 92965.73576815012,
+          "maximum": 443550.6072666647
+        },
+        "H": {
+          "minimum": 95140.7247055978,
+          "maximum": 441060.07418503443
+        }
+      },
+      "temperature_extrema": {
+        "S": {
+          "minimum": 304.7671860783895,
+          "maximum": 471.6911432129374
+        },
+        "L": {
+          "minimum": 364.5134245234289,
+          "maximum": 581.9181465711649
+        },
+        "C": {
+          "minimum": 556.8788178884561,
+          "maximum": 579.4402187905537
+        },
+        "H": {
+          "minimum": 311.54914096112435,
+          "maximum": 322.8678206958631
+        }
+      },
+      "mass_flow_extrema": {
+        "large_to_hot": {
+          "minimum": -0.0012783153364251867,
+          "maximum": 0.004957111855834973
+        },
+        "small_to_cold": {
+          "minimum": -0.0005614120772387295,
+          "maximum": 0.014202478296136732
+        },
+        "hot_to_small": {
+          "minimum": 0.0,
+          "maximum": 0.004723739920558506
+        },
+        "cold_to_large": {
+          "minimum": 0.0,
+          "maximum": 0.014153576536490327
+        }
+      },
+      "cold_heat_rate_extrema": {
+        "minimum": 0.08816514119360533,
+        "maximum": 1212.5198698036763
+      },
+      "hot_heat_rate_extrema": {
+        "minimum": -497.2361544625972,
+        "maximum": 113.9727053310935
+      },
+      "valve_events": [],
+      "topology": {
+        "classification": "non_nominal",
+        "reasons": [
+          "observed_event_sequence_differs_from_nominal_sequence"
+        ]
+      },
+      "orifice_pressure_regularization": 0.0,
+      "regularization_sample_fraction": 0.0
+    },
+    "total_mass_kg": 0.001497823285257778,
+    "small_phase_offset_degrees": 250.0,
+    "shape_rms_vs_stage7A5": {
+      "small_normalized_volume_rms": 0.04548889603267528,
+      "large_normalized_volume_rms": 0.0450692758005524,
+      "combined_normalized_volume_rms": 0.045279572013534976
+    }
+  },
+  "historical_ideal_piecewise_linear": {
+    "label": "historical_ideal_piecewise_linear",
+    "status": "converged",
+    "message": "Periodic steady state converged.",
+    "convergence": {
+      "cycles_completed": 22,
+      "first_normalized_periodic_error": 354645.9690244135,
+      "last_normalized_periodic_error": 0.7165507212008413,
+      "normalized_periodic_error_ratio": 2.0204676883033022e-06,
+      "improving": true,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 354645.9690244135
+        },
+        {
+          "cycle": 2,
+          "normalized_state_error": 6651.315781893057
+        },
+        {
+          "cycle": 3,
+          "normalized_state_error": 6249.383668910236
+        },
+        {
+          "cycle": 4,
+          "normalized_state_error": 5843.412863911466
+        },
+        {
+          "cycle": 5,
+          "normalized_state_error": 5464.048962902605
+        },
+        {
+          "cycle": 6,
+          "normalized_state_error": 5109.615118333097
+        },
+        {
+          "cycle": 7,
+          "normalized_state_error": 4778.425872616629
+        },
+        {
+          "cycle": 8,
+          "normalized_state_error": 4468.925118808714
+        },
+        {
+          "cycle": 9,
+          "normalized_state_error": 4179.659060825843
+        },
+        {
+          "cycle": 10,
+          "normalized_state_error": 3909.278794768857,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 11,
+          "normalized_state_error": 55367.63565230923
+        },
+        {
+          "cycle": 12,
+          "normalized_state_error": 398.43172510955327
+        },
+        {
+          "cycle": 13,
+          "normalized_state_error": 8.416234535851283
+        },
+        {
+          "cycle": 14,
+          "normalized_state_error": 7.996174944937946
+        },
+        {
+          "cycle": 15,
+          "normalized_state_error": 7.4876321786922135
+        },
+        {
+          "cycle": 16,
+          "normalized_state_error": 7.0083599476718454
+        },
+        {
+          "cycle": 17,
+          "normalized_state_error": 6.562263695397605
+        },
+        {
+          "cycle": 18,
+          "normalized_state_error": 6.144494005682666
+        },
+        {
+          "cycle": 19,
+          "normalized_state_error": 5.753692529700446
+        },
+        {
+          "cycle": 20,
+          "normalized_state_error": 5.384431223017268,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 21,
+          "normalized_state_error": 79.42511825985024
+        },
+        {
+          "cycle": 22,
+          "normalized_state_error": 0.7165507212008413
+        }
+      ]
+    },
+    "indicated_power_w": 52.64846955258033,
+    "heat_input_w": 390.41500823307916,
+    "heat_out_w": -337.7738360157186,
+    "indicated_thermal_efficiency": 0.1348525759571953,
+    "maximum_tube_reynolds": 453.4085130230182,
+    "maximum_tube_mach_number": 0.03975269900256363,
+    "maximum_absolute_mass_flow_kg_s": 0.00871491613922324,
+    "validity": {
+      "verdict": "valid",
+      "maximum_pressure_equalization_error": 0.01518103229836169,
+      "cold_isothermality_error": 0.030664323671439623,
+      "hot_isothermality_error": 0.0658331851866646,
+      "maximum_mach_number": 0.03975269900256363,
+      "mach_number_status": "available",
+      "maximum_compressibility_deviation": 0.0,
+      "maximum_cp_variation": 0.0,
+      "failed_criteria": [],
+      "unavailable_criteria": []
+    },
+    "diagnostics": {
+      "pressure_extrema": {
+        "S": {
+          "minimum": 157260.64204924263,
+          "maximum": 353494.1788656867
+        },
+        "L": {
+          "minimum": 157281.4150510856,
+          "maximum": 351050.0129976802
+        },
+        "C": {
+          "minimum": 157267.4661775236,
+          "maximum": 352456.4687621181
+        },
+        "H": {
+          "minimum": 156946.00210426707,
+          "maximum": 351046.9481914735
+        }
+      },
+      "temperature_extrema": {
+        "S": {
+          "minimum": 332.62135131655697,
+          "maximum": 419.2319840234948
+        },
+        "L": {
+          "minimum": 435.8540138861911,
+          "maximum": 588.7893525822356
+        },
+        "C": {
+          "minimum": 554.0402934534287,
+          "maximum": 572.3821586575003
+        },
+        "H": {
+          "minimum": 317.93110135341135,
+          "maximum": 337.5592655168154
+        }
+      },
+      "mass_flow_extrema": {
+        "large_to_hot": {
+          "minimum": -0.001838540037096028,
+          "maximum": 0.008284005981753986
+        },
+        "small_to_cold": {
+          "minimum": -0.0024283812118711277,
+          "maximum": 0.00871491613922324
+        },
+        "hot_to_small": {
+          "minimum": 0.0,
+          "maximum": 0.008411809213197972
+        },
+        "cold_to_large": {
+          "minimum": 0.0,
+          "maximum": 0.007563498759071845
+        }
+      },
+      "cold_heat_rate_extrema": {
+        "minimum": 2.81680222939414,
+        "maximum": 996.3003778167384
+      },
+      "hot_heat_rate_extrema": {
+        "minimum": -934.3982382050282,
+        "maximum": 135.8272945008959
+      },
+      "valve_events": [],
+      "topology": {
+        "classification": "non_nominal",
+        "reasons": [
+          "observed_event_sequence_differs_from_nominal_sequence"
+        ]
+      },
+      "orifice_pressure_regularization": 0.0,
+      "regularization_sample_fraction": 0.0
+    },
+    "total_mass_kg": 0.001497823285257789,
+    "parameters": {
+      "small_lambda_target": 0.49,
+      "large_lambda_target": 0.44,
+      "adiabatic_sector_fraction": 0.15
+    },
+    "shape_rms_vs_stage7A5": {
+      "small_normalized_volume_rms": 0.1728129617828005,
+      "large_normalized_volume_rms": 0.15126273580439203,
+      "combined_normalized_volume_rms": 0.1623957126945982
+    }
+  },
+  "harmonic_phase_scan": [
+    {
+      "label": "harmonic_0.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 654388.2921666757,
+        "last_normalized_periodic_error": 0.5439967703406889,
+        "normalized_periodic_error_ratio": 8.313057810669548e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 654388.2921666757
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 43214.286595713595
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 5673.245515881985
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2182.9836785745783
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2060.77076519136
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 1945.4560022809442
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1836.5746529461483
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1733.9196054755564
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1637.1642862348278
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1545.9589705267051,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 17624.783310026527
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1013.312215119135
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 110.59678465745434
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 14.371797446737505
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 5.01521220987687
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.7559584328042
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.5149631940387405
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.287275361418682
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.071918869008741
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.867562894360679,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 49.21909376181287
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 5.2573429303642
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.5439967703406889
+          }
+        ]
+      },
+      "indicated_power_w": -94.02916978008034,
+      "heat_input_w": 142.1613356496039,
+      "heat_out_w": -236.18991557634624,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 702.2976104182887,
+      "maximum_tube_mach_number": 0.009885635621822304,
+      "maximum_absolute_mass_flow_kg_s": 0.013498786643341082,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.0017829900213201346,
+        "cold_isothermality_error": 0.06894041044274248,
+        "hot_isothermality_error": 0.28666656383852523,
+        "maximum_mach_number": 0.009885635621822304,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 42106.824254104205,
+            "maximum": 2121278.4433338777
+          },
+          "L": {
+            "minimum": 42106.3807430559,
+            "maximum": 2121137.8801785777
+          },
+          "C": {
+            "minimum": 42106.74604890655,
+            "maximum": 2121195.0546146603
+          },
+          "H": {
+            "minimum": 42106.62965836465,
+            "maximum": 2120976.988623276
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 185.17521267657813,
+            "maximum": 567.4643643602965
+          },
+          "L": {
+            "minimum": 182.3494564491025,
+            "maximum": 589.09337035737
+          },
+          "C": {
+            "minimum": 562.2535508304401,
+            "maximum": 603.4902573367665
+          },
+          "H": {
+            "minimum": 293.59223037164,
+            "maximum": 379.0618663800963
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.008627635743495348,
+            "maximum": 0.013498786643341082
+          },
+          "small_to_cold": {
+            "minimum": -0.004485529232045507,
+            "maximum": 0.010441651888003974
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006401563629705848
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.004803583326037693
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -792.1501008527173,
+          "maximum": 1435.3727306487428
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -3511.5256820520185,
+          "maximum": 1123.3131258306228
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257765,
+      "small_phase_offset_degrees": 0.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.6035137399834989,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.4279369544512699
+      }
+    },
+    {
+      "label": "harmonic_30.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 30,
+        "first_normalized_periodic_error": 581479.2594409086,
+        "last_normalized_periodic_error": 0.9738813793445411,
+        "normalized_periodic_error_ratio": 1.674834249945435e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 581479.2594409086
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 9117.20390839345
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 8578.659099627324
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 8037.505123318207
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 7533.079469662029
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 7063.495532328821
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 6625.976445706178
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 6218.006336819187
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 5837.303268784361
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 5481.795674052386,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 55770.85077012264
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1268.035741172251
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 46.264095700855954
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 13.440051764935186
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 12.727161319117917
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 12.048111704039997
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 11.405526787920879
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 10.79753809909257
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 10.222249031243038
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 9.67761281410576,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 153.96395938418274
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 8.983863815951203
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 1.4279575313502677
+          },
+          {
+            "cycle": 24,
+            "normalized_state_error": 1.352175640396295
+          },
+          {
+            "cycle": 25,
+            "normalized_state_error": 1.2800064999049143
+          },
+          {
+            "cycle": 26,
+            "normalized_state_error": 1.2122626632712328
+          },
+          {
+            "cycle": 27,
+            "normalized_state_error": 1.1476494577931469
+          },
+          {
+            "cycle": 28,
+            "normalized_state_error": 1.086694454344712
+          },
+          {
+            "cycle": 29,
+            "normalized_state_error": 1.0288054381971081
+          },
+          {
+            "cycle": 30,
+            "normalized_state_error": 0.9738813793445411
+          }
+        ]
+      },
+      "indicated_power_w": -346.13690418276826,
+      "heat_input_w": 450.3949625764241,
+      "heat_out_w": -796.6207767899426,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 819.4583225934103,
+      "maximum_tube_mach_number": 0.019806149832290038,
+      "maximum_absolute_mass_flow_kg_s": 0.015750720058993604,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.005733306959798238,
+        "cold_isothermality_error": 0.05057557170991663,
+        "hot_isothermality_error": 0.4892961590945675,
+        "maximum_mach_number": 0.019806149832290038,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 55216.54273681379,
+            "maximum": 1954546.083817028
+          },
+          "L": {
+            "minimum": 54026.18462822468,
+            "maximum": 1956233.0622012871
+          },
+          "C": {
+            "minimum": 54924.110514954154,
+            "maximum": 1954530.5662923986
+          },
+          "H": {
+            "minimum": 54026.229813639155,
+            "maximum": 1955275.05213738
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 185.92251894144084,
+            "maximum": 488.41568574703996
+          },
+          "L": {
+            "minimum": 296.78563522197817,
+            "maximum": 933.6697409824963
+          },
+          "C": {
+            "minimum": 546.2110508135686,
+            "maximum": 576.4628290318552
+          },
+          "H": {
+            "minimum": 337.67303350777837,
+            "maximum": 483.55668334182366
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004360144558130415,
+            "maximum": 0.015750720058993604
+          },
+          "small_to_cold": {
+            "minimum": -0.007868732551356958,
+            "maximum": 0.0084401080812134
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.01438281112659148
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.00421682318191893
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -449.72909358180084,
+          "maximum": 1188.6465306321984
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -7136.704480227292,
+          "maximum": 788.732247654946
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257785,
+      "small_phase_offset_degrees": 30.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.6788946843406931,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.4811076969074781
+      }
+    },
+    {
+      "label": "harmonic_60.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 42,
+        "first_normalized_periodic_error": 439849.9070726597,
+        "last_normalized_periodic_error": 0.5741402266490238,
+        "normalized_periodic_error_ratio": 1.3053094190018332e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 439849.9070726597
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 31455.816389872118
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 11276.796593351854
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 10502.110677655783
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 9788.503329937186
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 9129.170442033901
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 8519.234647042718
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 7954.366176084625
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 7430.693381765495
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 6944.746668018544,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 68201.16352778915
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1051.8516272265917
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 843.5575322659847
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 797.1174886094736
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 753.2789537554231
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 711.9038629755779
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 672.8492794081535
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 635.98140627375
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 601.1739767298593
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 568.3091251437412,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 5578.196495163618
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 89.49030332995561
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 22.044563345248605
+          },
+          {
+            "cycle": 24,
+            "normalized_state_error": 20.827590554351126
+          },
+          {
+            "cycle": 25,
+            "normalized_state_error": 19.67669662479519
+          },
+          {
+            "cycle": 26,
+            "normalized_state_error": 18.590178766116935
+          },
+          {
+            "cycle": 27,
+            "normalized_state_error": 17.56409890948019
+          },
+          {
+            "cycle": 28,
+            "normalized_state_error": 16.595582073562678
+          },
+          {
+            "cycle": 29,
+            "normalized_state_error": 15.680655783413831
+          },
+          {
+            "cycle": 30,
+            "normalized_state_error": 14.816861729005305,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 31,
+            "normalized_state_error": 150.22840854779403
+          },
+          {
+            "cycle": 32,
+            "normalized_state_error": 11.469352516645095
+          },
+          {
+            "cycle": 33,
+            "normalized_state_error": 5.13345069819433
+          },
+          {
+            "cycle": 34,
+            "normalized_state_error": 4.854999710782346
+          },
+          {
+            "cycle": 35,
+            "normalized_state_error": 4.591909735079808
+          },
+          {
+            "cycle": 36,
+            "normalized_state_error": 4.343429523960837
+          },
+          {
+            "cycle": 37,
+            "normalized_state_error": 4.1082896112575105
+          },
+          {
+            "cycle": 38,
+            "normalized_state_error": 3.8859412469414902
+          },
+          {
+            "cycle": 39,
+            "normalized_state_error": 3.6761797482767475
+          },
+          {
+            "cycle": 40,
+            "normalized_state_error": 3.477545263947987,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 41,
+            "normalized_state_error": 34.458458489905084
+          },
+          {
+            "cycle": 42,
+            "normalized_state_error": 0.5741402266490238
+          }
+        ]
+      },
+      "indicated_power_w": -407.06961577644375,
+      "heat_input_w": 581.9359702130776,
+      "heat_out_w": -988.9766931959458,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 922.7943746276061,
+      "maximum_tube_mach_number": 0.031266701168002606,
+      "maximum_absolute_mass_flow_kg_s": 0.01773693117274635,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.009576841356610497,
+        "cold_isothermality_error": 0.04099466019151027,
+        "hot_isothermality_error": 0.4819891681131814,
+        "maximum_mach_number": 0.031266701168002606,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 73135.107454636,
+            "maximum": 1236092.5336636014
+          },
+          "L": {
+            "minimum": 70839.60201170071,
+            "maximum": 1239519.5346840937
+          },
+          "C": {
+            "minimum": 72474.70098604172,
+            "maximum": 1236084.9101078247
+          },
+          "H": {
+            "minimum": 70839.69950818333,
+            "maximum": 1237722.9709357847
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 226.57802748883347,
+            "maximum": 490.7891680864815
+          },
+          "L": {
+            "minimum": 391.98529634499795,
+            "maximum": 939.0070925539702
+          },
+          "C": {
+            "minimum": 538.3353463332355,
+            "maximum": 562.8563023267874
+          },
+          "H": {
+            "minimum": 358.31496202531304,
+            "maximum": 502.02003249825805
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0025718001391407345,
+            "maximum": 0.01727137060011861
+          },
+          "small_to_cold": {
+            "minimum": -0.00393156572978454,
+            "maximum": 0.006665578105200391
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.01773693117274635
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.005083137471007428
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -190.0416027040696,
+          "maximum": 1133.5628295415756
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -7453.513335277628,
+          "maximum": 370.23616392635387
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257755,
+      "small_phase_offset_degrees": 60.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.70804131537773,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.5016740694430062
+      }
+    },
+    {
+      "label": "harmonic_90.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 42,
+        "first_normalized_periodic_error": 407400.7583072816,
+        "last_normalized_periodic_error": 0.15971726312271284,
+        "normalized_periodic_error_ratio": 3.920396805011498e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 407400.7583072816
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 37298.64057643327
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 11202.168486504514
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 10408.909601401121
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 9679.635308040442
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 9007.328387196449
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 8386.76502422064
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 7813.304108235791
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 7282.807133002503
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 6791.572337591207,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 78714.47429254174
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1387.9446255421194
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 542.2625002003684
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 511.8524011227793
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 483.15664873086234
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 456.1015378232068
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 430.5909373986723
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 406.53452392304297
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 383.8475378993226
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 362.4500103675149,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 3994.976649814645
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 19.207296241828786
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 16.925001252228643
+          },
+          {
+            "cycle": 24,
+            "normalized_state_error": 15.976296771506082
+          },
+          {
+            "cycle": 25,
+            "normalized_state_error": 15.082097525617073
+          },
+          {
+            "cycle": 26,
+            "normalized_state_error": 14.238413203236126
+          },
+          {
+            "cycle": 27,
+            "normalized_state_error": 13.442698753460894
+          },
+          {
+            "cycle": 28,
+            "normalized_state_error": 12.69197514696555
+          },
+          {
+            "cycle": 29,
+            "normalized_state_error": 11.983738208296993
+          },
+          {
+            "cycle": 30,
+            "normalized_state_error": 11.315433046588858,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 31,
+            "normalized_state_error": 130.25674782135403
+          },
+          {
+            "cycle": 32,
+            "normalized_state_error": 9.539635624924252
+          },
+          {
+            "cycle": 33,
+            "normalized_state_error": 3.9454669402948075
+          },
+          {
+            "cycle": 34,
+            "normalized_state_error": 3.7264869135359024
+          },
+          {
+            "cycle": 35,
+            "normalized_state_error": 3.5196736084265714
+          },
+          {
+            "cycle": 36,
+            "normalized_state_error": 3.324648848244172
+          },
+          {
+            "cycle": 37,
+            "normalized_state_error": 3.1404792913119426
+          },
+          {
+            "cycle": 38,
+            "normalized_state_error": 2.96680747351269
+          },
+          {
+            "cycle": 39,
+            "normalized_state_error": 2.802704304949283
+          },
+          {
+            "cycle": 40,
+            "normalized_state_error": 2.647871139440992,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 41,
+            "normalized_state_error": 29.408498689939716
+          },
+          {
+            "cycle": 42,
+            "normalized_state_error": 0.15971726312271284
+          }
+        ]
+      },
+      "indicated_power_w": -323.2081982146409,
+      "heat_input_w": 617.7741032590112,
+      "heat_out_w": -940.9564482693953,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 825.6328010380764,
+      "maximum_tube_mach_number": 0.040198632287442394,
+      "maximum_absolute_mass_flow_kg_s": 0.015869399043404234,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.012104876345132413,
+        "cold_isothermality_error": 0.03820934836860434,
+        "hot_isothermality_error": 0.36379365697916544,
+        "maximum_mach_number": 0.040198632287442394,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 90725.77686210701,
+            "maximum": 715549.9407600734
+          },
+          "L": {
+            "minimum": 87499.27527705558,
+            "maximum": 720157.0745025931
+          },
+          "C": {
+            "minimum": 89697.93984335188,
+            "maximum": 715548.3923531506
+          },
+          "H": {
+            "minimum": 87499.35270110347,
+            "maximum": 717734.9267780565
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 260.8104255297695,
+            "maximum": 454.52333031874747
+          },
+          "L": {
+            "minimum": 451.05983451825614,
+            "maximum": 842.2333775343141
+          },
+          "C": {
+            "minimum": 534.7517474107505,
+            "maximum": 557.6066691374311
+          },
+          "H": {
+            "minimum": 358.8963787167095,
+            "maximum": 467.36145754504764
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0013637143176936136,
+            "maximum": 0.015487345790886313
+          },
+          "small_to_cold": {
+            "minimum": -0.0016160403335522598,
+            "maximum": 0.0060067381640691005
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.015869399043404234
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.0053820771764046494
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -37.56758853874889,
+          "maximum": 1196.793677804194
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -5762.053377398454,
+          "maximum": 155.4731497523609
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577594,
+      "small_phase_offset_degrees": 90.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.6889634639151939,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.4882119899342954
+      }
+    },
+    {
+      "label": "harmonic_120.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 438785.39546516974,
+        "last_normalized_periodic_error": 0.07122899248449843,
+        "normalized_periodic_error_ratio": 1.6233218612252674e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 438785.39546516974
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 41129.6433189567
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 10043.49407328912
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 9482.923035216985
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 8867.977012930392
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 8294.596721677239
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 7759.440570776645
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 7259.801182724429
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 6793.171966519967
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 6357.259737185969,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 89551.53644196919
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1613.6047644628939
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 27.8540891086904
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 22.432471124526515
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 21.001516697988045
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 19.674103553901297
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 18.432180728074137
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 17.270290851368433
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 16.180093269715094
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 15.162000693230546,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 224.1091140417866
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 4.668020209702343
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.07122899248449843
+          }
+        ]
+      },
+      "indicated_power_w": -206.38150613715823,
+      "heat_input_w": 604.2715482142447,
+      "heat_out_w": -810.6474806218594,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 684.1455469451711,
+      "maximum_tube_mach_number": 0.04608658860009349,
+      "maximum_absolute_mass_flow_kg_s": 0.013149887788603331,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.013083182122069898,
+        "cold_isothermality_error": 0.04040392039254627,
+        "hot_isothermality_error": 0.24737307661202904,
+        "maximum_mach_number": 0.04608658860009349,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 111215.08572666551,
+            "maximum": 432341.5832293589
+          },
+          "L": {
+            "minimum": 107348.1897406662,
+            "maximum": 437527.85208027664
+          },
+          "C": {
+            "minimum": 109890.11468271542,
+            "maximum": 432341.5781152923
+          },
+          "H": {
+            "minimum": 107348.2829729665,
+            "maximum": 434767.6824708804
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 290.8064711146941,
+            "maximum": 414.3303836049059
+          },
+          "L": {
+            "minimum": 487.67572167543983,
+            "maximum": 735.1404239234573
+          },
+          "C": {
+            "minimum": 533.6785119722458,
+            "maximum": 557.8461169550474
+          },
+          "H": {
+            "minimum": 351.58017161052453,
+            "maximum": 425.334454402401
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0006695180901724238,
+            "maximum": 0.012898443328267168
+          },
+          "small_to_cold": {
+            "minimum": -0.0006504242269786293,
+            "maximum": 0.006249812186427443
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.013149887788603331
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.005974125354070433
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -1.3943610812770195,
+          "maximum": 1305.052591172851
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -3963.175988974868,
+          "maximum": 67.67782410958141
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257787,
+      "small_phase_offset_degrees": 120.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.6229637108267181,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.441653158387994
+      }
+    },
+    {
+      "label": "harmonic_150.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 486643.33120262396,
+        "last_normalized_periodic_error": 0.08447274263605088,
+        "normalized_periodic_error_ratio": 1.735824519105121e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 486643.33120262396
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 28465.009403951935
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 10229.266522392203
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 9586.153959324689
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 8964.302483950349
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 8383.724526015247
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 7841.534132516541
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 7335.08509799993
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 6861.924233809681
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 6419.78761410293,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 90041.92909195359
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 1019.5713605018883
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 28.73453499748515
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 20.959456239427254
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 19.639788773172008
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 18.410965778833397
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 17.2568157847547
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 16.17563297886884
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 15.163974896504207
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 14.213179046579862,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 213.65810621469188
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 1.3431615152771863
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.08447274263605088
+          }
+        ]
+      },
+      "indicated_power_w": -98.90170042771582,
+      "heat_input_w": 561.905691713424,
+      "heat_out_w": -660.8272496823653,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 552.7835883969566,
+      "maximum_tube_mach_number": 0.04863256223863109,
+      "maximum_absolute_mass_flow_kg_s": 0.010624993747688643,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.012510371834082233,
+        "cold_isothermality_error": 0.0442689163846639,
+        "hot_isothermality_error": 0.1584807623779905,
+        "maximum_mach_number": 0.04863256223863109,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 137790.03993224216,
+            "maximum": 281821.8387892388
+          },
+          "L": {
+            "minimum": 133914.01444769575,
+            "maximum": 286702.06842768705
+          },
+          "C": {
+            "minimum": 136389.36062821516,
+            "maximum": 281821.93657930475
+          },
+          "H": {
+            "minimum": 133914.07953936676,
+            "maximum": 284050.282877058
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 319.9945081048403,
+            "maximum": 379.52710164815426
+          },
+          "L": {
+            "minimum": 510.73391499958075,
+            "maximum": 638.2382045375626
+          },
+          "C": {
+            "minimum": 534.1608330861814,
+            "maximum": 560.6402854216681
+          },
+          "H": {
+            "minimum": 342.1221606835567,
+            "maximum": 389.37319998655454
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.00028832621535436134,
+            "maximum": 0.010458668466030632
+          },
+          "small_to_cold": {
+            "minimum": -0.00024180528252851043,
+            "maximum": 0.007253166311816406
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.010624993747688643
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.00711153016687845
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.28161030172099166,
+          "maximum": 1434.8034087902295
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -2559.2355829961216,
+          "maximum": 27.865106310223847
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577748,
+      "small_phase_offset_degrees": 150.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.5145510443658747,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.3652355519929561
+      }
+    },
+    {
+      "label": "harmonic_180.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 481510.1493079827,
+        "last_normalized_periodic_error": 0.09975342841664626,
+        "normalized_periodic_error_ratio": 2.0716786252586785e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 481510.1493079827
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 7032.596633358852
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 9320.16753858342
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 8718.241934055175
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 8148.161522003719
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 7616.338689862024
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 7120.0503314208645
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 6656.796168763713
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 6224.284832072856
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 5820.398066887587,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 81451.57453817324
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 210.1674443451635
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 17.523522139513837
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 17.201407135459178
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 16.119288707774473
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 15.105457358856857
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 14.16272437556789
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 13.268832131851013
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 12.437394013480155
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 11.65572232275791,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 175.07584574272664
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 1.2586254481492425
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.09975342841664626
+          }
+        ]
+      },
+      "indicated_power_w": -14.645258674269154,
+      "heat_input_w": 499.3301812445654,
+      "heat_out_w": -513.9983062964501,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 460.62730384108556,
+      "maximum_tube_mach_number": 0.04776848661805419,
+      "maximum_absolute_mass_flow_kg_s": 0.008853667739158149,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.01578946251657365,
+        "cold_isothermality_error": 0.048094803187887974,
+        "hot_isothermality_error": 0.09709064476846024,
+        "maximum_mach_number": 0.04776848661805419,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 162136.31454906455,
+            "maximum": 217566.145532205
+          },
+          "L": {
+            "minimum": 161844.64520428382,
+            "maximum": 217293.96284029953
+          },
+          "C": {
+            "minimum": 162087.11393801868,
+            "maximum": 217361.2751614189
+          },
+          "H": {
+            "minimum": 161844.64284063154,
+            "maximum": 217270.50654756033
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 343.1807109284627,
+            "maximum": 373.2985029917283
+          },
+          "L": {
+            "minimum": 519.3143338991007,
+            "maximum": 564.6299632763994
+          },
+          "C": {
+            "minimum": 536.5698030246891,
+            "maximum": 565.3377095515243
+          },
+          "H": {
+            "minimum": 331.9542665817932,
+            "maximum": 360.9018423195096
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -9.8721421386273e-06,
+            "maximum": 0.008352945568093762
+          },
+          "small_to_cold": {
+            "minimum": -7.997346545210226e-05,
+            "maximum": 0.008853667739158149
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.008461517494829195
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.008765686772544858
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.5301600373139492,
+          "maximum": 1532.39947228016
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1548.5833047674203,
+          "maximum": 0.6744269979056844
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577615,
+      "small_phase_offset_degrees": 180.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.3711487515797511,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.26436966110012894
+      }
+    },
+    {
+      "label": "harmonic_210.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 400450.04550329887,
+        "last_normalized_periodic_error": 0.01293631728308669,
+        "normalized_periodic_error_ratio": 3.230444702991081e-08,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 400450.04550329887
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 5209.786853508971
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 5712.146927597303
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 5361.332948411574
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 5021.4714029358265
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 4702.916606295483
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 4404.431910135959
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 4124.784223660206
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 3862.781171474234
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 3617.3393599191663,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 51808.89582781955
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 607.4824154949558
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 7.6095602574677645
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 8.892995957281602
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 8.343350689654423
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 7.818473744220742
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 7.304889813489653
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 6.851489082617864
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 6.407633555236981
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 6.005742934609592,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 88.04536313745935
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 1.0508206080360087
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.01293631728308669
+          }
+        ]
+      },
+      "indicated_power_w": 39.10677237188006,
+      "heat_input_w": 419.39793617428796,
+      "heat_out_w": -380.2922497996883,
+      "indicated_thermal_efficiency": 0.09324502816730261,
+      "maximum_tube_reynolds": 566.192685760945,
+      "maximum_tube_mach_number": 0.043609450598611585,
+      "maximum_absolute_mass_flow_kg_s": 0.01088272856226171,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.019606960770307286,
+        "cold_isothermality_error": 0.04733322962290354,
+        "hot_isothermality_error": 0.05364728820935419,
+        "maximum_mach_number": 0.043609450598611585,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 132945.9112264809,
+            "maximum": 266860.90878464084
+          },
+          "L": {
+            "minimum": 138147.48848800245,
+            "maximum": 261974.11723366188
+          },
+          "C": {
+            "minimum": 132946.0800557358,
+            "maximum": 264824.87621565285
+          },
+          "H": {
+            "minimum": 135485.90649322525,
+            "maximum": 261970.6203005146
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 329.7173727945767,
+            "maximum": 403.2128032359433
+          },
+          "L": {
+            "minimum": 461.6691204874718,
+            "maximum": 566.6154845375958
+          },
+          "C": {
+            "minimum": 542.1864606964981,
+            "maximum": 570.4988319954379
+          },
+          "H": {
+            "minimum": 322.5485485751213,
+            "maximum": 338.54348755474024
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0003672458357422736,
+            "maximum": 0.006566801426189343
+          },
+          "small_to_cold": {
+            "minimum": -0.00021591442472404838,
+            "maximum": 0.01088272856226171
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006618144963282552
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.010820724694626768
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.12226975290197332,
+          "maximum": 1517.7099946742028
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -820.9480947555676,
+          "maximum": 34.10581775677798
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577676,
+      "small_phase_offset_degrees": 210.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.20268753716503807,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.1468221327716209
+      }
+    },
+    {
+      "label": "harmonic_220.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 357515.6509826376,
+        "last_normalized_periodic_error": 0.7273215830050415,
+        "normalized_periodic_error_ratio": 2.034376903517332e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 357515.6509826376
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 4642.116265218382
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 4804.794200684195
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 4510.656370436544
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 4225.603129495709
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 3958.309274204663
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 3707.7812671603147
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 3472.97746804344
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 3252.925593607221
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 3046.7346240009356,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 43863.22615072972
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 532.8212347764676
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 5.241995812055183
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 6.654906388323894
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 6.2487302576332695
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 5.843970590908311
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 5.473209652056751
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 5.116138966301985
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.789784894939509
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 4.480421610336826,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 65.2997947481505
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.7273215830050415
+          }
+        ]
+      },
+      "indicated_power_w": 48.84648503658235,
+      "heat_input_w": 388.50206352625696,
+      "heat_out_w": -339.64815933388206,
+      "indicated_thermal_efficiency": 0.1257303103958444,
+      "maximum_tube_reynolds": 606.2085950471712,
+      "maximum_tube_mach_number": 0.0416009512208807,
+      "maximum_absolute_mass_flow_kg_s": 0.011651870039864542,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.02048788701212368,
+        "cold_isothermality_error": 0.04599721357201367,
+        "hot_isothermality_error": 0.043306523015989085,
+        "maximum_mach_number": 0.0416009512208807,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 121123.2430961537,
+            "maximum": 298765.46595450205
+          },
+          "L": {
+            "minimum": 126184.42662773856,
+            "maximum": 293853.0621316306
+          },
+          "C": {
+            "minimum": 121123.36982780613,
+            "maximum": 296683.56403062853
+          },
+          "H": {
+            "minimum": 123625.55516116577,
+            "maximum": 293847.0079666912
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 323.12481706144206,
+            "maximum": 418.2945542169305
+          },
+          "L": {
+            "minimum": 436.7207307170115,
+            "maximum": 570.4950353268028
+          },
+          "C": {
+            "minimum": 544.9882971551034,
+            "maximum": 572.5015304532034
+          },
+          "H": {
+            "minimum": 319.66117731394627,
+            "maximum": 332.5730171511634
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.000516593302218036,
+            "maximum": 0.0060400708916302495
+          },
+          "small_to_cold": {
+            "minimum": -0.0002854796235710921,
+            "maximum": 0.011651870039864542
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006060488854781864
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.011595801038553186
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.11680783159100099,
+          "maximum": 1477.5890245895464
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -636.5883920888815,
+          "maximum": 47.44236534930052
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577626,
+      "small_phase_offset_degrees": 220.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.14305643671612328,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.1060574931513574
+      }
+    },
+    {
+      "label": "harmonic_225.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 334048.3189395734,
+        "last_normalized_periodic_error": 0.5726490975701475,
+        "normalized_periodic_error_ratio": 1.7142702570334892e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 334048.3189395734
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 4368.536541621479
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 4405.617698112632
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 4135.720954832043
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 3874.4839396017196
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 3629.521822164216
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 3399.920641757824
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 3184.724925991184
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 2983.054748944707
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 2794.0687666755466,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 40319.87507085435
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 494.60373481365997
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 4.649127992725668
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 5.733556514173941
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 5.379652096891798
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 5.037375881842899
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.7103437802665455
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.406128938341815
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.121331261677672
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.8558973344332244,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 56.134528458800155
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.5726490975701475
+          }
+        ]
+      },
+      "indicated_power_w": 52.05666940335732,
+      "heat_input_w": 372.2586873667634,
+      "heat_out_w": -320.19032496296205,
+      "indicated_thermal_efficiency": 0.13984003911792958,
+      "maximum_tube_reynolds": 627.0804209008618,
+      "maximum_tube_mach_number": 0.0404983033110921,
+      "maximum_absolute_mass_flow_kg_s": 0.01205304515405599,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.020830875891920404,
+        "cold_isothermality_error": 0.04508792998998061,
+        "hot_isothermality_error": 0.04033420487888758,
+        "maximum_mach_number": 0.0404983033110921,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 115695.84144736073,
+            "maximum": 317421.05586392636
+          },
+          "L": {
+            "minimum": 120645.16223222378,
+            "maximum": 312545.92423695367
+          },
+          "C": {
+            "minimum": 115695.91684103319,
+            "maximum": 315338.1910677321
+          },
+          "H": {
+            "minimum": 118158.53804862864,
+            "maximum": 312538.12396620057
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 319.92785683008884,
+            "maximum": 426.3519145414478
+          },
+          "L": {
+            "minimum": 424.3749014341568,
+            "maximum": 572.3926497420526
+          },
+          "C": {
+            "minimum": 546.5893849337632,
+            "maximum": 573.5587302572701
+          },
+          "H": {
+            "minimum": 318.2586680896043,
+            "maximum": 330.28431127424466
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0006033789855152741,
+            "maximum": 0.0057944110163259946
+          },
+          "small_to_cold": {
+            "minimum": -0.00032424149643554324,
+            "maximum": 0.01205304515405599
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.0057936279447197165
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.011999463990227449
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.11277474052389237,
+          "maximum": 1449.5035063787534
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -581.7587682522385,
+          "maximum": 54.93048784381063
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577633,
+      "small_phase_offset_degrees": 225.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.11292573868063165,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.0859751768760977
+      }
+    },
+    {
+      "label": "harmonic_230.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 309497.81429285975,
+        "last_normalized_periodic_error": 0.4255905660659233,
+        "normalized_periodic_error_ratio": 1.375100392997321e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 309497.81429285975
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 4102.497513835739
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 4036.011264617599
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 3788.2963635381684
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 3549.034444327613
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 3324.7012627159374
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 3114.4301598826323
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 2917.3679550498023
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 2732.6890865801247
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 2559.6306993083613,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 37023.04913421517
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 455.9431018774647
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 4.722001160990145
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 4.931532874831838
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.628258475283788
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.330018705476908
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.048825069788499
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 3.7828657050131858
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.543265381478399
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.311726921600158,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 48.34444754782137
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.4255905660659233
+          }
+        ]
+      },
+      "indicated_power_w": 54.12046355562724,
+      "heat_input_w": 355.4893118860198,
+      "heat_out_w": -301.35256587624366,
+      "indicated_thermal_efficiency": 0.15224216803733281,
+      "maximum_tube_reynolds": 648.5236484863988,
+      "maximum_tube_mach_number": 0.040059083206779506,
+      "maximum_absolute_mass_flow_kg_s": 0.012465203119322836,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.02110032027909195,
+        "cold_isothermality_error": 0.044002054500470664,
+        "hot_isothermality_error": 0.038421338404376254,
+        "maximum_mach_number": 0.040059083206779506,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 110584.19654955529,
+            "maximum": 338090.10716236243
+          },
+          "L": {
+            "minimum": 115405.7312204485,
+            "maximum": 333267.2830745901
+          },
+          "C": {
+            "minimum": 110584.45593215733,
+            "maximum": 336010.9248248323
+          },
+          "H": {
+            "minimum": 112999.47306281167,
+            "maximum": 333257.4536802158
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 316.79190324953805,
+            "maximum": 434.7422205467321
+          },
+          "L": {
+            "minimum": 412.1478428641655,
+            "maximum": 574.2758185200483
+          },
+          "C": {
+            "minimum": 548.3343150041234,
+            "maximum": 574.6541439035799
+          },
+          "H": {
+            "minimum": 316.88317590883673,
+            "maximum": 328.3384979541015
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0007031394760108123,
+            "maximum": 0.005565087249652317
+          },
+          "small_to_cold": {
+            "minimum": -0.0003653474745870836,
+            "maximum": 0.012465203119322836
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.005537192621291503
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.012413452906015053
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.10828476109373851,
+          "maximum": 1415.5173869235086
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -544.3933903201483,
+          "maximum": 63.74554029855018
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577702,
+      "small_phase_offset_degrees": 230.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.08277943610589528,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.0666471104519778
+      }
+    },
+    {
+      "label": "harmonic_235.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 310714.3785953709,
+        "last_normalized_periodic_error": 0.26716642119362827,
+        "normalized_periodic_error_ratio": 8.59845696235213e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 310714.3785953709
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 3844.563961119697
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 3692.345493512937
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 3465.1164282055834
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 3246.265981986781
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 3041.086532562034
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 2848.784107387314
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 2668.56761795668
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 2499.687265409045
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 2341.4327898524666,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 33948.896054130804
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 417.1483977873651
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 4.808258020700882
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 4.530203255229162
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.264323282582509
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.0142723733304
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 3.7789979822518625
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 3.5577507674061923
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.3496287360551964
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.153846639264893,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 41.91818091535414
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.26716642119362827
+          }
+        ]
+      },
+      "indicated_power_w": 55.00491640684918,
+      "heat_input_w": 338.19956060460345,
+      "heat_out_w": -283.1725426705265,
+      "indicated_thermal_efficiency": 0.1626404135727327,
+      "maximum_tube_reynolds": 670.4717816260008,
+      "maximum_tube_mach_number": 0.03985880649888417,
+      "maximum_absolute_mass_flow_kg_s": 0.012887065819802014,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.021293751702136696,
+        "cold_isothermality_error": 0.04272906550036785,
+        "hot_isothermality_error": 0.037331506695038444,
+        "maximum_mach_number": 0.03985880649888417,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 105774.19347789229,
+            "maximum": 360970.98398384656
+          },
+          "L": {
+            "minimum": 110455.84456648701,
+            "maximum": 356223.1303836165
+          },
+          "C": {
+            "minimum": 105774.23114495147,
+            "maximum": 358905.85811453237
+          },
+          "H": {
+            "minimum": 108135.84266110869,
+            "maximum": 356211.45181095385
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 313.7124326818708,
+            "maximum": 443.46350895093735
+          },
+          "L": {
+            "minimum": 400.0483826465998,
+            "maximum": 576.1549205046199
+          },
+          "C": {
+            "minimum": 550.2303346512285,
+            "maximum": 575.7887251802736
+          },
+          "H": {
+            "minimum": 315.5296624968105,
+            "maximum": 326.6600512179362
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0008178357941165575,
+            "maximum": 0.005362671595425888
+          },
+          "small_to_cold": {
+            "minimum": -0.00040918027701416105,
+            "maximum": 0.012887065819802014
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.005291924094037121
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.01283692263172454
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.10345313815205688,
+          "maximum": 1375.1558705748382
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -519.552053729872,
+          "maximum": 73.8414617257021
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577691,
+      "small_phase_offset_degrees": 235.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.0530158729708291,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.0492032641602432
+      }
+    },
+    {
+      "label": "harmonic_240.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 335463.52564308397,
+        "last_normalized_periodic_error": 0.2947448441724233,
+        "normalized_periodic_error_ratio": 8.786196460774598e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 335463.52564308397
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 3595.347033586732
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 3371.9466779754803
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 3163.752203102551
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2963.9344063144586
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 2776.620357028438
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 2601.066645099119
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 2436.561559178401
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 2282.409125493192
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 2137.966455074488,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 31078.4828386398
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 378.6734178724809
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 4.913579079568549
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 4.634424071494391
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.367081421359926
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.115326126179187
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 3.8783031550381364
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 3.6550727279478203
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.4449220730019996
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.247066715324802,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 39.94969740243882
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.2947448441724233
+          }
+        ]
+      },
+      "indicated_power_w": 54.674914427059996,
+      "heat_input_w": 320.3980846163882,
+      "heat_out_w": -265.69174986357734,
+      "indicated_thermal_efficiency": 0.17064682047810034,
+      "maximum_tube_reynolds": 692.8959486244499,
+      "maximum_tube_mach_number": 0.03957778763091853,
+      "maximum_absolute_mass_flow_kg_s": 0.01331807831575288,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.0214082546346842,
+        "cold_isothermality_error": 0.04125912867306616,
+        "hot_isothermality_error": 0.03694918031074838,
+        "maximum_mach_number": 0.03957778763091853,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 101246.6983456748,
+            "maximum": 386313.8870339922
+          },
+          "L": {
+            "minimum": 105779.86275898511,
+            "maximum": 381649.2976321522
+          },
+          "C": {
+            "minimum": 101246.96744319401,
+            "maximum": 384266.38921766763
+          },
+          "H": {
+            "minimum": 103550.36107751388,
+            "maximum": 381634.51277962286
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 310.68510650578804,
+            "maximum": 452.52360515467876
+          },
+          "L": {
+            "minimum": 388.0780383648326,
+            "maximum": 578.0446878233262
+          },
+          "C": {
+            "minimum": 552.2844831194229,
+            "maximum": 576.9636309352175
+          },
+          "H": {
+            "minimum": 314.18804410444784,
+            "maximum": 325.20444221409747
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0009499125635763895,
+            "maximum": 0.005192920063638678
+          },
+          "small_to_cold": {
+            "minimum": -0.0004561739042848933,
+            "maximum": 0.01331807831575288
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.005071947500835861
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.013268645083407093
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.09842911613991984,
+          "maximum": 1328.0606390654032
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -504.42779318745613,
+          "maximum": 85.41065425855808
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577583,
+      "small_phase_offset_degrees": 240.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.025646166697032985,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.03666718892578392
+      }
+    },
+    {
+      "label": "harmonic_245.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 358925.0535347271,
+        "last_normalized_periodic_error": 0.5994693246428044,
+        "normalized_periodic_error_ratio": 1.6701796621305066e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 358925.0535347271
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 3355.514817073804
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 3143.2246252586006
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2936.493080945741
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2743.8619241846704
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 2564.3624243635827
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 2397.0396073744673
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 2241.0143880535566
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 2095.47798602549
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1959.685110071593,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 28397.098879254816
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 341.04274931059155
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 5.045105404132398
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 4.763208153935091
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.4928282010423475
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.23796190928837
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 3.9978001889574446
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 3.7713961184333975
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.5580579382934756
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.3569417342827257,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 41.72417257218063
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.5994693246428044
+          }
+        ]
+      },
+      "indicated_power_w": 53.09406089636592,
+      "heat_input_w": 302.0977327172856,
+      "heat_out_w": -248.94793707416565,
+      "indicated_thermal_efficiency": 0.17575127234090607,
+      "maximum_tube_reynolds": 715.7414873596384,
+      "maximum_tube_mach_number": 0.03921481428056224,
+      "maximum_absolute_mass_flow_kg_s": 0.013757189952420442,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.021440977653563124,
+        "cold_isothermality_error": 0.039587357461635886,
+        "hot_isothermality_error": 0.03717433659000789,
+        "maximum_mach_number": 0.03921481428056224,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 96983.72268431328,
+            "maximum": 414396.59985623363
+          },
+          "L": {
+            "minimum": 101360.32710751964,
+            "maximum": 409826.3242092689
+          },
+          "C": {
+            "minimum": 96983.81734907262,
+            "maximum": 412371.9905238888
+          },
+          "H": {
+            "minimum": 99224.62769504637,
+            "maximum": 409807.21308410243
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 307.70474140084343,
+            "maximum": 461.92871707208315
+          },
+          "L": {
+            "minimum": 376.2346201313647,
+            "maximum": 579.9590070740646
+          },
+          "C": {
+            "minimum": 554.5010562362539,
+            "maximum": 578.1802341019314
+          },
+          "H": {
+            "minimum": 312.8612327036914,
+            "maximum": 323.9447611580023
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0011022551325379681,
+            "maximum": 0.0050577974721222226
+          },
+          "small_to_cold": {
+            "minimum": -0.0005067682291947056,
+            "maximum": 0.013757189952420442
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.004882978173475768
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.013708274853892057
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.09351392449604135,
+          "maximum": 1273.8846053265445
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -497.3196394034151,
+          "maximum": 98.69410607316125
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577759,
+      "small_phase_offset_degrees": 245.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.020247211717802204,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.034937009055811895
+      }
+    },
+    {
+      "label": "harmonic_250.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 24,
+        "first_normalized_periodic_error": 381092.60820095445,
+        "last_normalized_periodic_error": 0.9698333386467918,
+        "normalized_periodic_error_ratio": 2.544875754019841e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 381092.60820095445
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 3125.7988074643195
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 2927.938894971647
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2736.364289366486
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2557.7688874574073
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 2391.2632848479893
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 2235.9771038119397
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 2091.1085286702028
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1955.9185952620167
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1829.7259354935707,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 25893.6558277096
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 304.8286056990427
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 5.211805361145354
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 4.925082408422142
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.64966935094851
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.389849506255289
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.144760333139626
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 3.913584797828073
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.6954737276611462
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.4897188785352613,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 42.735322943993296
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 1.0893925612664943
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 1.028424727011046
+          },
+          {
+            "cycle": 24,
+            "normalized_state_error": 0.9698333386467918
+          }
+        ]
+      },
+      "indicated_power_w": 50.224056758830095,
+      "heat_input_w": 283.3163923226137,
+      "heat_out_w": -233.00713393165225,
+      "indicated_thermal_efficiency": 0.17727197620686813,
+      "maximum_tube_reynolds": 738.9083799109283,
+      "maximum_tube_mach_number": 0.038769059734999244,
+      "maximum_absolute_mass_flow_kg_s": 0.014202478296136732,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.02138908251911219,
+        "cold_isothermality_error": 0.03771863395820046,
+        "hot_isothermality_error": 0.03796303784919919,
+        "maximum_mach_number": 0.038769059734999244,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 92965.46185300565,
+            "maximum": 445545.4001808235
+          },
+          "L": {
+            "minimum": 97178.928278511,
+            "maximum": 441082.1301560889
+          },
+          "C": {
+            "minimum": 92965.73576815012,
+            "maximum": 443550.6072666647
+          },
+          "H": {
+            "minimum": 95140.7247055978,
+            "maximum": 441060.07418503443
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 304.7671860783895,
+            "maximum": 471.6911432129374
+          },
+          "L": {
+            "minimum": 364.5134245234289,
+            "maximum": 581.9181465711649
+          },
+          "C": {
+            "minimum": 556.8788178884561,
+            "maximum": 579.4402187905537
+          },
+          "H": {
+            "minimum": 311.54914096112435,
+            "maximum": 322.8678206958631
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0012783153364251867,
+            "maximum": 0.004957111855834973
+          },
+          "small_to_cold": {
+            "minimum": -0.0005614120772387295,
+            "maximum": 0.014202478296136732
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.004723739920558506
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.014153576536490327
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.08816514119360533,
+          "maximum": 1212.5198698036763
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -497.2361544625972,
+          "maximum": 113.9727053310935
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257778,
+      "small_phase_offset_degrees": 250.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.04548889603267528,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.045279572013534976
+      }
+    },
+    {
+      "label": "harmonic_255.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 401997.7261606787,
+        "last_normalized_periodic_error": 0.7085802287098555,
+        "normalized_periodic_error_ratio": 1.7626473549420913e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 401997.7261606787
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 2906.9979351608904
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 2722.9894226978045
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2545.808055219042
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2380.547867488166
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 2226.3942336987775
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 2082.5557210081624
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1948.3023926587714
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1822.9609851319751
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1705.9094138139044,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 23559.779172297935
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 270.5969175077669
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 5.422818674356122
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 5.128676119122097
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 4.845873929726337
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.578832107699017
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.32673321418722
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.088789380511245
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 3.8640641502076254
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.6518636979287122,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 57.629689984892394
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.7085802287098555
+          }
+        ]
+      },
+      "indicated_power_w": 46.0179972527106,
+      "heat_input_w": 264.0747506061073,
+      "heat_out_w": -218.10209216234352,
+      "indicated_thermal_efficiency": 0.17426125423611907,
+      "maximum_tube_reynolds": 762.3246877498462,
+      "maximum_tube_mach_number": 0.03823862187174737,
+      "maximum_absolute_mass_flow_kg_s": 0.014652560624202874,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.02124962486950148,
+        "cold_isothermality_error": 0.03569344090420861,
+        "hot_isothermality_error": 0.04001245630147514,
+        "maximum_mach_number": 0.03823862187174737,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 89175.7417946965,
+            "maximum": 480133.9032849248
+          },
+          "L": {
+            "minimum": 93220.24734781185,
+            "maximum": 475787.76350345736
+          },
+          "C": {
+            "minimum": 89176.03074020921,
+            "maximum": 478174.7960719528
+          },
+          "H": {
+            "minimum": 91281.14201820373,
+            "maximum": 475762.47453849163
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 301.8782508851181,
+            "maximum": 481.83748143080726
+          },
+          "L": {
+            "minimum": 352.91158416554094,
+            "maximum": 583.9433945059027
+          },
+          "C": {
+            "minimum": 559.3959808475389,
+            "maximum": 580.7460125243913
+          },
+          "H": {
+            "minimum": 310.2615557924396,
+            "maximum": 322.1912696387244
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0014821425095863522,
+            "maximum": 0.004890034836372035
+          },
+          "small_to_cold": {
+            "minimum": -0.0006205331903631786,
+            "maximum": 0.014652560624202874
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.004591161383926084
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.014601690176687512
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.08304083074287313,
+          "maximum": 1144.7710405373273
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -509.7926616834438,
+          "maximum": 131.57927682273387
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577967,
+      "small_phase_offset_degrees": 255.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.07498645148701939,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.06186358996938898
+      }
+    },
+    {
+      "label": "harmonic_260.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 421699.4202326473,
+        "last_normalized_periodic_error": 0.3530636065186734,
+        "normalized_periodic_error_ratio": 8.372399618759063e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 421699.4202326473
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 2699.979459824019
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 2529.1677797573507
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2365.5740620802753
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 2212.908467413788
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 2070.426314647078
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1937.409566816984
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1813.195106517243
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1697.1704656000056
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1588.7693303030035,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 21389.341053617973
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 238.89455981856563
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 5.692171714867022
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 5.387311098152511
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 5.093989450845253
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 4.816857481449931
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 4.554993871598532
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.307526578335467
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.073827388833
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 3.8529008150180366,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 60.89145320647058
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.3530636065186734
+          }
+        ]
+      },
+      "indicated_power_w": 40.45807238374783,
+      "heat_input_w": 244.41202361122518,
+      "heat_out_w": -203.97099148068747,
+      "indicated_thermal_efficiency": 0.1655322507705374,
+      "maximum_tube_reynolds": 785.86683207863,
+      "maximum_tube_mach_number": 0.03762265902650755,
+      "maximum_absolute_mass_flow_kg_s": 0.015105061641872173,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.021022073461759695,
+        "cold_isothermality_error": 0.033600551028626593,
+        "hot_isothermality_error": 0.04599354432459596,
+        "maximum_mach_number": 0.03762265902650755,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 85593.03411810992,
+            "maximum": 518575.665142061
+          },
+          "L": {
+            "minimum": 89463.32115035852,
+            "maximum": 514352.7294111326
+          },
+          "C": {
+            "minimum": 85593.31311566154,
+            "maximum": 516654.5535398458
+          },
+          "H": {
+            "minimum": 87626.0463391409,
+            "maximum": 514321.59368585265
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 299.01171532269854,
+            "maximum": 492.3544135537101
+          },
+          "L": {
+            "minimum": 341.41852337420323,
+            "maximum": 586.0569833439977
+          },
+          "C": {
+            "minimum": 562.0012366660974,
+            "maximum": 582.0994062638704
+          },
+          "H": {
+            "minimum": 308.97494671401813,
+            "maximum": 322.6879219543964
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0017185566277922145,
+            "maximum": 0.004855553992844424
+          },
+          "small_to_cold": {
+            "minimum": -0.0006845166878100517,
+            "maximum": 0.015105061641872173
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.00448174695245342
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.015051537597235154
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": 0.07804266377046935,
+          "maximum": 1073.7898872658777
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -587.3516610685073,
+          "maximum": 151.89190241551782
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577707,
+      "small_phase_offset_degrees": 260.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.10509085734561778,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.08085582205018772
+      }
+    },
+    {
+      "label": "harmonic_270.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 457817.8796309965,
+        "last_normalized_periodic_error": 0.33885959936190047,
+        "normalized_periodic_error_ratio": 7.401624410890702e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 457817.8796309965
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 2325.0714180132386
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 2178.3575300064213
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 2039.3411037597118
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 1909.4699655634356
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 1788.123778669041
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1674.71386755218
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1568.6957334386223
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1469.5651026348437
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 1376.8548892801323,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 17521.98451745432
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 184.93551879583825
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 6.466720477981733
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 6.127435436150224
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 5.8008037611586305
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 5.491704071060094
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 5.199363149466098
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.922736430578023
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.661010184506013
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 4.413358783253305,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 72.98556384997197
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.33885959936190047
+          }
+        ]
+      },
+      "indicated_power_w": 25.136813199798347,
+      "heat_input_w": 204.01116656299527,
+      "heat_out_w": -178.87826881478327,
+      "indicated_thermal_efficiency": 0.12321292811213114,
+      "maximum_tube_reynolds": 832.4996985281961,
+      "maximum_tube_mach_number": 0.03612679645609086,
+      "maximum_absolute_mass_flow_kg_s": 0.016001386939626196,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.02029694177193628,
+        "cold_isothermality_error": 0.02963018968168126,
+        "hot_isothermality_error": 0.0605984439752475,
+        "maximum_mach_number": 0.03612679645609086,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 78987.30777751093,
+            "maximum": 608946.143347685
+          },
+          "L": {
+            "minimum": 82495.82746668677,
+            "maximum": 604999.3359906579
+          },
+          "C": {
+            "minimum": 78987.59508155753,
+            "maximum": 607119.4406778747
+          },
+          "H": {
+            "minimum": 80866.0486691733,
+            "maximum": 604954.2999263917
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 293.35305445440946,
+            "maximum": 514.5900693914746
+          },
+          "L": {
+            "minimum": 318.7416015640606,
+            "maximum": 590.6549968364576
+          },
+          "C": {
+            "minimum": 567.2385153570923,
+            "maximum": 584.9618133151899
+          },
+          "H": {
+            "minimum": 306.42838213049515,
+            "maximum": 324.4958082017152
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0023120043477088625,
+            "maximum": 0.0048828417416931875
+          },
+          "small_to_cold": {
+            "minimum": -0.0008281131020900805,
+            "maximum": 0.016001386939626196
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.004319559977333764
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.01593570106737496
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -8.738995121695375,
+          "maximum": 935.0590842543579
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -774.9512673196125,
+          "maximum": 202.4409541818971
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.001497823285257763,
+      "small_phase_offset_degrees": 270.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.16525609077445616,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.1211214579652209
+      }
+    },
+    {
+      "label": "harmonic_300.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 23,
+        "first_normalized_periodic_error": 546985.0792651064,
+        "last_normalized_periodic_error": 0.2272702665332126,
+        "normalized_periodic_error_ratio": 4.154962816144056e-07,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 546985.0792651064
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 1971.4788616012306
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 1484.7314968037522
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 1395.3562652090604
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 1311.552969696181
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 1232.9224718202502
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1159.131072947421
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1089.8689504923182
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1024.8470089267287
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 963.7961506781503,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 9590.424858138409
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 137.43006282019738
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 12.85015797726336
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 12.050610231682255
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 11.41848470234257
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 10.819702694342693
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 10.252588284440282
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 9.715583082803436
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 9.206981005447679
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 8.725264975615493,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 139.86416885278683
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 1.2538170878718675
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 0.2272702665332126
+          }
+        ]
+      },
+      "indicated_power_w": -52.662917989438775,
+      "heat_input_w": 81.91773202673305,
+      "heat_out_w": -134.58234771215078,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 941.137964169654,
+      "maximum_tube_mach_number": 0.029377260526664582,
+      "maximum_absolute_mass_flow_kg_s": 0.018089511329403365,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.01600465480655518,
+        "cold_isothermality_error": 0.025603305314717176,
+        "hot_isothermality_error": 0.13193212857690115,
+        "maximum_mach_number": 0.029377260526664582,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 62578.19576393025,
+            "maximum": 1030367.6245566361
+          },
+          "L": {
+            "minimum": 64927.67122387553,
+            "maximum": 1027450.8974181056
+          },
+          "C": {
+            "minimum": 62578.50833850584,
+            "maximum": 1028944.4164750588
+          },
+          "H": {
+            "minimum": 63928.12432478271,
+            "maximum": 1027342.79577717
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 275.8448154797392,
+            "maximum": 590.900989570092
+          },
+          "L": {
+            "minimum": 252.99001659421614,
+            "maximum": 608.9001637682753
+          },
+          "C": {
+            "minimum": 579.7393503306705,
+            "maximum": 595.0539674046686
+          },
+          "H": {
+            "minimum": 298.72105601951654,
+            "maximum": 338.0566201547196
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.005581241775026314,
+            "maximum": 0.00578647434681417
+          },
+          "small_to_cold": {
+            "minimum": -0.0013380307033250523,
+            "maximum": 0.018089511329403365
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.004030422430455186
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.017865434195480815
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -123.43134387306199,
+          "maximum": 703.5505350371685
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1664.7642075056458,
+          "maximum": 469.4615255761867
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577715,
+      "small_phase_offset_degrees": 300.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.3374854739704856,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.24075681170246208
+      }
+    },
+    {
+      "label": "harmonic_330.000_deg",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 28,
+        "first_normalized_periodic_error": 621021.1616223021,
+        "last_normalized_periodic_error": 0.9768713992524816,
+        "normalized_periodic_error_ratio": 1.573008231636724e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 621021.1616223021
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 6333.743301321679
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 1365.4797627271716
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 1288.0694899623018
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 1215.4342334645723
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 1147.0011691213
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1082.519704954778
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1021.7533906167707
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 964.4788132030534
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 910.4893286049772,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 7850.229258927606
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 243.45394136958333
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 24.632074682501226
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 23.383325179499042
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 22.153099324498484
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 20.986163284241798
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 19.88126944919015
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 18.834894462077827
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 17.843735609667576
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 16.90568133845393,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 222.1238180541713
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 5.113028775413688
+          },
+          {
+            "cycle": 23,
+            "normalized_state_error": 1.2997018898472144
+          },
+          {
+            "cycle": 24,
+            "normalized_state_error": 1.2275812755074373
+          },
+          {
+            "cycle": 25,
+            "normalized_state_error": 1.1593287388159614
+          },
+          {
+            "cycle": 26,
+            "normalized_state_error": 1.0948735399786513
+          },
+          {
+            "cycle": 27,
+            "normalized_state_error": 1.0343598417741784
+          },
+          {
+            "cycle": 28,
+            "normalized_state_error": 0.9768713992524816
+          }
+        ]
+      },
+      "indicated_power_w": -129.84369011389293,
+      "heat_input_w": 10.590584140689385,
+      "heat_out_w": -140.49685349204938,
+      "indicated_thermal_efficiency": null,
+      "maximum_tube_reynolds": 854.214557977598,
+      "maximum_tube_mach_number": 0.018804579474375863,
+      "maximum_absolute_mass_flow_kg_s": 0.016418765911659194,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.009139193668805804,
+        "cold_isothermality_error": 0.06896994226247453,
+        "hot_isothermality_error": 0.22725815378448114,
+        "maximum_mach_number": 0.018804579474375863,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 49381.73652522611,
+            "maximum": 1714354.9979082644
+          },
+          "L": {
+            "minimum": 50532.74431118342,
+            "maximum": 1712798.0597159446
+          },
+          "C": {
+            "minimum": 49381.92744363865,
+            "maximum": 1713549.3179473812
+          },
+          "H": {
+            "minimum": 50100.48081402645,
+            "maximum": 1712644.043862714
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 247.600534956575,
+            "maximum": 663.3570630014715
+          },
+          "L": {
+            "minimum": 194.19824131894654,
+            "maximum": 622.6738951654702
+          },
+          "C": {
+            "minimum": 579.0645022668077,
+            "maximum": 620.3188732311069
+          },
+          "H": {
+            "minimum": 291.44656126586614,
+            "maximum": 359.2035798167092
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.011397580482091666,
+            "maximum": 0.009919389314064057
+          },
+          "small_to_cold": {
+            "minimum": -0.0019450332509034275,
+            "maximum": 0.016418765911659194
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.003649165274939009
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.01503338784636642
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -1228.0432183700827,
+          "maximum": 1004.9915472100114
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -2783.495328850739,
+          "maximum": 891.0257520039313
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014978232852577726,
+      "small_phase_offset_degrees": 330.0,
+      "shape_rms_vs_stage7A5": {
+        "small_normalized_volume_rms": 0.487049743753208,
+        "large_normalized_volume_rms": 0.0450692758005524,
+        "combined_normalized_volume_rms": 0.3458675270325705
+      }
+    }
+  ]
+}
