@@ -592,7 +592,13 @@ def _plot_results(
         key=lambda row: float(row["indicated_thermal_efficiency"]),
         reverse=True,
     )
-    top = feasible[:3]
+
+    selected = [
+        (1, feasible[0]),
+        (2, feasible[1]),
+        (3, feasible[2]),
+        (9, feasible[8]),
+    ]
 
     cache = Path(tempfile.gettempdir()) / "dada_solver_matplotlib"
     os.environ.setdefault("MPLCONFIGDIR", str(cache))
@@ -652,7 +658,7 @@ def _plot_results(
         label="F3 champion reproduced in F4",
     )
 
-    for rank, row in enumerate(top, 1):
+    for rank, row in selected:
         values = {name: float(row[name]) for name in PARAMETERS}
         kin = _make_kinematics(small_limits, large_limits, values)
         small = np.array([
