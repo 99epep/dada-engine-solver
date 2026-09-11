@@ -41,13 +41,13 @@ from compare_motor_motion_laws_stage7A5 import (
     _same_inventory_design,
 )
 
-DEFAULT_JSON = ROOT / "outputs" / "motor_piecewise_stageP1.json"
-DEFAULT_CSV = ROOT / "outputs" / "motor_piecewise_stageP1.csv"
+DEFAULT_JSON = ROOT / "outputs" / "motor_piecewise_stageP3.json"
+DEFAULT_CSV = ROOT / "outputs" / "motor_piecewise_stageP3.csv"
 
 BOUNDS = {
-    "small_lambda_target": (0.45, 0.65),
-    "large_lambda_target": (0.50, 0.82),
-    "adiabatic_sector_fraction": (0.08, 0.27),
+    "small_lambda_target": (0.54, 0.72),
+    "large_lambda_target": (0.50, 0.68),
+    "adiabatic_sector_fraction": (0.02, 0.16),
 }
 
 MINIMUM_POWER_W = 40.0
@@ -181,7 +181,9 @@ def main() -> None:
     points = sampler.random_base2(args.sobol_power)
 
     parameter_sets: list[tuple[float, float, float]] = [
-        (0.49, 0.44, 0.15)
+        (0.619035229459405, 0.5974640518426895, 0.08983197969384492),
+        (0.5898326434195041, 0.5798693427443504, 0.12454577540047468),
+        (0.5845900582149625, 0.6278566133975982, 0.15438122472725807),
     ]
     parameter_sets.extend(_scale(point) for point in points)
 
