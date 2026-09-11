@@ -80,7 +80,7 @@ TAU = 2.0 * math.pi
 LARGE_MIN_DEG = 180.0
 MINIMUM_POWER_W = 40.0
 
-F3_JSON = ROOT / "outputs" / "motor_two_extrema_stageF4.json"
+F3_JSON = ROOT / "outputs" / "motor_two_extrema_stageF3.json"
 OUTPUT_CSV = ROOT / "outputs" / "motor_two_extrema_stageF5.csv"
 OUTPUT_JSON = ROOT / "outputs" / "motor_two_extrema_stageF5.json"
 OUTPUT_PLOT = ROOT / "outputs" / "motor_two_extrema_stageF5_motion_overlay.png"
@@ -148,8 +148,8 @@ class TwoExtremaCrossedFlatnessKinematics:
             "h_s_high_after",
         ):
             value = getattr(self, name)
-            if not math.isfinite(value) or not -1.5 <= value <= 1.0:
-                raise ValueError(f"{name} must lie in [-1.5, 1].")
+            if not math.isfinite(value) or not -2.5 <= value <= 1.0:
+                raise ValueError(f"{name} must lie in [-2.5, 1].")
 
     @property
     def small_volume_limits(self):
@@ -473,22 +473,35 @@ def _verify_exact_harmonic(small_limits, large_limits) -> None:
             "F4 h=0 baseline does not reproduce the exact harmonic law."
         )
 
-
 def _verify_monotone_flatness_domain() -> None:
-    # dE/dy is affine in h0 and h1, so the four corners of the complete
-    # permitted endpoint domain prove monotonicity for all F4 branch pairs.
     y = np.linspace(0.0, 1.0, 10001)
-    for h0 in (-1.5, 1.0):
-        for h1 in (-1.5, 1.0):
-            derivative = (
-                1.0
-                - h0 * (1.0 - 4.0 * y + 3.0 * y * y)
-                + h1 * (2.0 * y - 3.0 * y * y)
-            )
-            if float(np.min(derivative)) < -1e-12:
-                raise RuntimeError(
-                    "Allowed F4 flatness domain can create a non-monotone branch."
+
+    # Actual start/end flatness pairs used by the four branches:
+    #
+    # S min -> max : low_after  -> high_before
+    # S max -> min : high_after -> low_before
+    # L min -> max : low_before -> high_after
+    # L max -> min : high_before -> low_after
+    branch_pairs = (
+        ("h_s_low_after",  "h_s_high_before"),
+        ("h_s_high_after", "h_s_low_before"),
+        ("h_s_low_before", "h_s_high_after"),
+        ("h_s_high_before","h_s_low_after"),
+    )
+
+    for start_name, end_name in branch_pairs:
+        for h0 in BOUNDS[start_name]:
+            for h1 in BOUNDS[end_name]:
+                derivative = (
+                    1.0
+                    - h0 * (1.0 - 4.0 * y + 3.0 * y * y)
+                    + h1 * (2.0 * y - 3.0 * y * y)
                 )
+                if float(np.min(derivative)) < -1e-12:
+                    raise RuntimeError(
+                        f"F5 bounds can create a non-monotone branch: "
+                        f"{start_name}={h0}, {end_name}={h1}"
+                    )
 
 
 def _load_f3_champion() -> tuple[dict, dict[str, float]]:
@@ -547,7 +560,7 @@ def _control_candidates(f3_values: dict[str, float]):
     # the F3 mean high flatness appreciably.
     for sign, label in ((1.0, "f3_high_split_A"), (-1.0, "f3_high_split_B")):
         values = dict(f3_values)
-        delta = 0.30 * sign
+        delta = 0.50 * sign
         values["h_s_high_before"] = _clamp_h(
             f3_values["h_s_high_before"] + delta
         )
