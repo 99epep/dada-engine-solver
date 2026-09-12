@@ -26,6 +26,9 @@ common-crank geometric compatibility where a shared crank is used. Independent
 loop parameters do not imply two independent crank speeds. Do not constrain
 all candidate waveforms to what the present four-bar seed can reproduce.
 
+The distinction between best-found motion, parameterization-independent
+evidence and certified optimality is defined in MOTION_OPTIMALITY.md
+
 ## 2. Map Lambdas and cylinder volume ratio
 
 Immediately after the motion-law objective, seek design maps for `Lambda_S`,
