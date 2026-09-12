@@ -20,6 +20,7 @@ from dada_solver.four_bar import (
     shared_crank_rocker_kinematics,
 )
 from dada_solver.periodic import SuccessiveCycleSolver
+from dada_solver.coupler_projection import shared_crank_coupler_projection_kinematics
 from dada_solver.state import ThermodynamicState, UniformCharge
 from dada_solver.valves import PassiveCheckValve, ValveState
 
@@ -57,6 +58,13 @@ def build_model(configuration: SimulationConfiguration, *, kinematics: Kinematic
             configuration.small_lambda_target,
             configuration.large_lambda_target,
             configuration.adiabatic_sector_fraction,
+        )
+    elif configuration.kinematics_type == "shared_crank_coupler_projection":
+        assert configuration.shared_coupler_projection_design is not None
+        kinematics = shared_crank_coupler_projection_kinematics(
+            configuration.shared_coupler_projection_design,
+            configuration.machine_volumes.small_cylinder,
+            configuration.machine_volumes.large_cylinder,
         )
     elif configuration.kinematics_type == "published_f65_opposed":
         assert configuration.four_bar_ground_distance is not None
