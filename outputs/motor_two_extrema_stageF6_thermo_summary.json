@@ -1,0 +1,191 @@
+{
+  "candidate": {
+    "index": 154,
+    "parameters": {
+      "small_min_deg": 70.22567113116384,
+      "small_max_deg": 234.63794903829694,
+      "large_max_deg": 369.03589606657624,
+      "h_s_low_before": -0.08207017509266734,
+      "h_s_low_after": -0.14985595881007613,
+      "h_s_high_before": -1.4965100169181824,
+      "h_s_high_after": -0.7012899326160551
+    },
+    "recorded_efficiency": 0.19916663456045972,
+    "recorded_indicated_power_w": 54.29699922222233
+  },
+  "reevaluated": {
+    "thermal_efficiency": 0.19916663456045972,
+    "indicated_power_w": 54.29699922222233,
+    "heat_input_w": 272.6209605441706,
+    "heat_out_w": -218.28744390069073
+  },
+  "valve_events": [
+    {
+      "valve": "H_o -> S",
+      "transition": "closing",
+      "angle_radians": 2.955749886068878,
+      "angle_degrees": 169.3519937680206,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_i -> L",
+      "transition": "opening",
+      "angle_radians": 2.976579971109466,
+      "angle_degrees": 170.54546972774492,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_o -> S",
+      "transition": "opening",
+      "angle_radians": 5.07965219282481,
+      "angle_degrees": 291.0426320432354,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    },
+    {
+      "valve": "H_i -> L",
+      "transition": "closing",
+      "angle_radians": 5.387221348155999,
+      "angle_degrees": 308.6650465521162,
+      "method": "linear_interpolation_of_sampled_pressure_zero_crossing"
+    }
+  ],
+  "motion_sectors": [
+    {
+      "sector": "Smin_to_Lmin",
+      "start_deg_unwrapped": 70.22567113116384,
+      "end_deg_unwrapped": 180.0,
+      "duration_deg": 109.77432886883616,
+      "ports": {
+        "S_to_H_i": {
+          "forward_g": 0.06208625480388184,
+          "reverse_g": 1.0964883536329604e-06,
+          "signed_g": 0.06208515831552822,
+          "absolute_g": 0.06208735129223547
+        },
+        "H_i_to_L": {
+          "forward_g": 0.012771020652183237,
+          "reverse_g": 0.0,
+          "signed_g": 0.012771020652183237,
+          "absolute_g": 0.012771020652183237
+        },
+        "L_to_H_o": {
+          "forward_g": 0.604067191532688,
+          "reverse_g": 0.0,
+          "signed_g": 0.604067191532688,
+          "absolute_g": 0.604067191532688
+        },
+        "H_o_to_S": {
+          "forward_g": 0.5186601784841445,
+          "reverse_g": 0.0,
+          "signed_g": 0.5186601784841445,
+          "absolute_g": 0.5186601784841445
+        }
+      },
+      "delta_H_i_storage_g": 0.04931378234745614,
+      "delta_H_o_storage_g": 0.08540604043349055
+    },
+    {
+      "sector": "Lmin_to_Smax",
+      "start_deg_unwrapped": 180.0,
+      "end_deg_unwrapped": 234.63794903829694,
+      "duration_deg": 54.63794903829694,
+      "ports": {
+        "S_to_H_i": {
+          "forward_g": 0.6444930135147844,
+          "reverse_g": 0.0,
+          "signed_g": 0.6444930135147844,
+          "absolute_g": 0.6444930135147844
+        },
+        "H_i_to_L": {
+          "forward_g": 0.6096624032268737,
+          "reverse_g": 0.0,
+          "signed_g": 0.6096624032268737,
+          "absolute_g": 0.6096624032268737
+        },
+        "L_to_H_o": {
+          "forward_g": 0.06406710180895384,
+          "reverse_g": 0.00014845264525550615,
+          "signed_g": 0.06391864916369834,
+          "absolute_g": 0.06421555445420934
+        },
+        "H_o_to_S": {
+          "forward_g": 0.0,
+          "reverse_g": 0.0,
+          "signed_g": 0.0,
+          "absolute_g": 0.0
+        }
+      },
+      "delta_H_i_storage_g": 0.03483020837103533,
+      "delta_H_o_storage_g": 0.06391809398411673
+    },
+    {
+      "sector": "Smax_to_Lmax",
+      "start_deg_unwrapped": 234.63794903829694,
+      "end_deg_unwrapped": 369.03589606657624,
+      "duration_deg": 134.3979470282793,
+      "ports": {
+        "S_to_H_i": {
+          "forward_g": 0.59405717715395,
+          "reverse_g": 0.041281539477136545,
+          "signed_g": 0.5527756376768135,
+          "absolute_g": 0.6353387166310865
+        },
+        "H_i_to_L": {
+          "forward_g": 0.6374087077735582,
+          "reverse_g": 0.0,
+          "signed_g": 0.6374087077735582,
+          "absolute_g": 0.6374087077735582
+        },
+        "L_to_H_o": {
+          "forward_g": 0.20409285451241888,
+          "reverse_g": 0.07896248683004223,
+          "signed_g": 0.12513036768237665,
+          "absolute_g": 0.2830553413424611
+        },
+        "H_o_to_S": {
+          "forward_g": 0.2753502584193845,
+          "reverse_g": 0.0,
+          "signed_g": 0.2753502584193845,
+          "absolute_g": 0.2753502584193845
+        }
+      },
+      "delta_H_i_storage_g": -0.08463168565953405,
+      "delta_H_o_storage_g": -0.15021861470808767
+    },
+    {
+      "sector": "Lmax_to_next_Smin",
+      "start_deg_unwrapped": 369.03589606657624,
+      "end_deg_unwrapped": 430.22567113116384,
+      "duration_deg": 61.18977506458759,
+      "ports": {
+        "S_to_H_i": {
+          "forward_g": 0.000826816080259572,
+          "reverse_g": 0.00033914734943019277,
+          "signed_g": 0.0004876687308293792,
+          "absolute_g": 0.0011659634296897648
+        },
+        "H_i_to_L": {
+          "forward_g": 0.0,
+          "reverse_g": 0.0,
+          "signed_g": 0.0,
+          "absolute_g": 0.0
+        },
+        "L_to_H_o": {
+          "forward_g": 0.46672936953193056,
+          "reverse_g": 0.0,
+          "signed_g": 0.46672936953193056,
+          "absolute_g": 0.46672936953193056
+        },
+        "H_o_to_S": {
+          "forward_g": 0.46583493682543053,
+          "reverse_g": 0.0,
+          "signed_g": 0.46583493682543053,
+          "absolute_g": 0.46583493682543053
+        }
+      },
+      "delta_H_i_storage_g": 0.00048769494104259535,
+      "delta_H_o_storage_g": 0.0008944802904803964
+    }
+  ],
+  "interpretation_note": "Sector port integrals report actual simulated port traffic. Forward/reverse values on the bidirectional S-H_i and L-H_o links quantify reflux explicitly. Exchanger-control-volume mass changes show storage effects. These values are more informative than V_S+V_L alone for deciding whether gas moves through the exchangers during the short common-compression/common-expansion sectors."
+}
