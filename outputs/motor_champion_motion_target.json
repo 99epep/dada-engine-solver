@@ -1,0 +1,264 @@
+{
+  "purpose": "Mechanism-synthesis target for the current thermodynamic champion.",
+  "angle_convention": "Study angle before motor-operation direction transformation; physical crank direction/sign may be chosen later.",
+  "source": {
+    "stage7A5_candidate_id": "1f8c5f8c71690cf0bbf16527cddf1c2daada4c0e9ddb9024165f58e57ba5f417",
+    "total_working_gas_mass_kg": 0.0014978232852577687,
+    "F6_crossed_motion": {
+      "index": 154,
+      "label": "sobol",
+      "feasible": true,
+      "small_min_deg": 70.22567113116384,
+      "small_max_deg": 234.63794903829694,
+      "large_max_deg": 369.03589606657624,
+      "h_s_low_before": -0.08207017509266734,
+      "h_s_low_after": -0.14985595881007613,
+      "h_s_high_before": -1.4965100169181824,
+      "h_s_high_after": -0.7012899326160551,
+      "sector_smin_to_lmin_deg": 109.77432886883616,
+      "sector_lmin_to_smax_deg": 54.63794903829694,
+      "sector_smax_to_lmax_deg": 134.3979470282793,
+      "sector_lmax_to_next_smin_deg": 61.18977506458759,
+      "indicated_thermal_efficiency": 0.19916663456045972,
+      "indicated_power_w": 54.29699922222233,
+      "heat_input_w": 272.6209605441706,
+      "heat_out_w": -218.28744390069073,
+      "maximum_tube_reynolds": 531.5349058866414,
+      "maximum_tube_mach_number": 0.041017615729250105,
+      "maximum_absolute_mass_flow_kg_s": 0.01021657511233546,
+      "cold_isothermality_error": 0.028950451698851104,
+      "hot_isothermality_error": 0.05262100500222575,
+      "pressure_equalization_error": 0.018802355778432037,
+      "small_max_abs_dV_dtheta": 0.0005414685867423855,
+      "large_max_abs_dV_dtheta": 0.0006199023554334921,
+      "small_max_abs_d2V_dtheta2": 0.0012443325977985697,
+      "large_max_abs_d2V_dtheta2": 0.001369988702076761,
+      "convergence_cycles": 22
+    },
+    "K2_exchanger_champion": {
+      "k_i": 1.0941096737980842,
+      "k_o": 0.5951122685149313,
+      "indicated_thermal_efficiency": 0.20561604223540905,
+      "indicated_power_w": 51.31259070077389
+    },
+    "motion_parameters_11D_coordinates": {
+      "small_min_deg": 70.22567113116384,
+      "small_max_deg": 234.63794903829694,
+      "large_max_deg": 369.03589606657624,
+      "h_s_low_before": -0.08207017509266734,
+      "h_s_low_after": -0.14985595881007613,
+      "h_s_high_before": -1.4965100169181824,
+      "h_s_high_after": -0.7012899326160551,
+      "h_l_low_before": -0.14985595881007613,
+      "h_l_low_after": -0.08207017509266734,
+      "h_l_high_before": -0.7012899326160551,
+      "h_l_high_after": -1.4965100169181824
+    }
+  },
+  "cylinder_limits": {
+    "small": {
+      "minimum_m3": 8.316831683168316e-06,
+      "maximum_m3": 0.0008399999999999999,
+      "swept_m3": 0.0008316831683168317
+    },
+    "large": {
+      "minimum_m3": 9.900990099009901e-06,
+      "maximum_m3": 0.001,
+      "swept_m3": 0.0009900990099009901
+    }
+  },
+  "csv_sampling": {
+    "step_deg": 0.25,
+    "rows_including_360_deg": 1441
+  },
+  "recommended_mechanism_fit_coordinates": {
+    "small": "small_centered_minus1_plus1",
+    "large": "large_centered_minus1_plus1",
+    "derivative_small": "small_dq_dtheta_per_rad",
+    "derivative_large": "large_dq_dtheta_per_rad",
+    "note": "Fit normalized shape first; absolute piston stroke and area can be chosen during physical mechanism sizing."
+  },
+  "fourier": {
+    "convention": "f(theta)=a0+sum[a_n*cos(n*theta)+b_n*sin(n*theta)]",
+    "sample_count": 4096,
+    "maximum_harmonic": 12,
+    "small_centered_motion": {
+      "a0": -0.11892994552424926,
+      "harmonics": [
+        {
+          "n": 1,
+          "a_cos": -0.3713658170550059,
+          "b_sin": -0.851526017308561,
+          "amplitude": 0.9289828460366273,
+          "phase_deg_cosine_convention": 113.56288204254265
+        },
+        {
+          "n": 2,
+          "a_cos": -0.05354479837168258,
+          "b_sin": 0.11325264098799853,
+          "amplitude": 0.12527252740892802,
+          "phase_deg_cosine_convention": -115.3043501092102
+        },
+        {
+          "n": 3,
+          "a_cos": 0.07483746462266233,
+          "b_sin": -0.018927494154772323,
+          "amplitude": 0.07719388671473394,
+          "phase_deg_cosine_convention": 14.193311287317584
+        },
+        {
+          "n": 4,
+          "a_cos": -0.022537713105154532,
+          "b_sin": 0.01282433374613369,
+          "amplitude": 0.02593090912487408,
+          "phase_deg_cosine_convention": -150.35940364389407
+        },
+        {
+          "n": 5,
+          "a_cos": 0.005719597330503666,
+          "b_sin": -0.0022154475510694285,
+          "amplitude": 0.006133677646782898,
+          "phase_deg_cosine_convention": 21.173541638117662
+        },
+        {
+          "n": 6,
+          "a_cos": -0.0006216953629980086,
+          "b_sin": -0.003080252140468469,
+          "amplitude": 0.003142365092288579,
+          "phase_deg_cosine_convention": 101.41085973419514
+        },
+        {
+          "n": 7,
+          "a_cos": -0.00021359221438115722,
+          "b_sin": 0.0020105836199348012,
+          "amplitude": 0.0020218971602913873,
+          "phase_deg_cosine_convention": -96.06401239725872
+        },
+        {
+          "n": 8,
+          "a_cos": 0.0009451001806910601,
+          "b_sin": 9.576882801170389e-05,
+          "amplitude": 0.0009499400086116017,
+          "phase_deg_cosine_convention": -5.7861416741502305
+        },
+        {
+          "n": 9,
+          "a_cos": -0.0008088512123406201,
+          "b_sin": -0.0005116526022827025,
+          "amplitude": 0.000957093866414132,
+          "phase_deg_cosine_convention": 147.68390422107603
+        },
+        {
+          "n": 10,
+          "a_cos": -0.0001122325390813814,
+          "b_sin": 0.00037170657047481265,
+          "amplitude": 0.0003882807197927817,
+          "phase_deg_cosine_convention": -106.80108900141673
+        },
+        {
+          "n": 11,
+          "a_cos": 0.0004480040770667472,
+          "b_sin": -0.00026944193243308434,
+          "amplitude": 0.0005227873449326244,
+          "phase_deg_cosine_convention": 31.023854441375097
+        },
+        {
+          "n": 12,
+          "a_cos": -0.00019374080771247717,
+          "b_sin": -8.016961777302517e-05,
+          "amplitude": 0.00020967276453310766,
+          "phase_deg_cosine_convention": 157.52031116292895
+        }
+      ]
+    },
+    "large_centered_motion": {
+      "a0": -0.12058481460492682,
+      "harmonics": [
+        {
+          "n": 1,
+          "a_cos": 0.9286017410256463,
+          "b_sin": 0.0030405959910444202,
+          "amplitude": 0.9286067190473275,
+          "phase_deg_cosine_convention": -0.18760754711628116
+        },
+        {
+          "n": 2,
+          "a_cos": 0.12256127798021953,
+          "b_sin": 0.0161244876230639,
+          "amplitude": 0.12361741770984777,
+          "phase_deg_cosine_convention": -7.494940266227082
+        },
+        {
+          "n": 3,
+          "a_cos": 0.06750767533813147,
+          "b_sin": 0.03987617454655354,
+          "amplitude": 0.07840532842878581,
+          "phase_deg_cosine_convention": -30.569963178496042
+        },
+        {
+          "n": 4,
+          "a_cos": -0.008024011248114398,
+          "b_sin": 0.01793066525709308,
+          "amplitude": 0.0196441724964884,
+          "phase_deg_cosine_convention": -114.10861851863172
+        },
+        {
+          "n": 5,
+          "a_cos": -0.0033233713794714945,
+          "b_sin": 0.0015658705035772047,
+          "amplitude": 0.0036737920136914928,
+          "phase_deg_cosine_convention": -154.77162683358029
+        },
+        {
+          "n": 6,
+          "a_cos": -0.0018936031108649012,
+          "b_sin": 0.0021104303073488234,
+          "amplitude": 0.002835427449901281,
+          "phase_deg_cosine_convention": -131.90033531862952
+        },
+        {
+          "n": 7,
+          "a_cos": -0.0012149214923496618,
+          "b_sin": 0.00021229537221615497,
+          "amplitude": 0.0012333302711105105,
+          "phase_deg_cosine_convention": -170.088209800925
+        },
+        {
+          "n": 8,
+          "a_cos": -0.0008290372431096812,
+          "b_sin": 0.0005079595083532784,
+          "amplitude": 0.0009722785673814912,
+          "phase_deg_cosine_convention": -148.50377683938504
+        },
+        {
+          "n": 9,
+          "a_cos": -0.0005863357112070762,
+          "b_sin": -7.07346802903755e-05,
+          "amplitude": 0.0005905869633106453,
+          "phase_deg_cosine_convention": 173.12116339556337
+        },
+        {
+          "n": 10,
+          "a_cos": -0.0004234815296161043,
+          "b_sin": 0.00010906528243255498,
+          "amplitude": 0.0004373006308686147,
+          "phase_deg_cosine_convention": -165.55765094095386
+        },
+        {
+          "n": 11,
+          "a_cos": -0.0003092268742940791,
+          "b_sin": -0.00013243614900939824,
+          "amplitude": 0.0003363935096730104,
+          "phase_deg_cosine_convention": 156.8154450545839
+        },
+        {
+          "n": 12,
+          "a_cos": -0.0002264816371577317,
+          "b_sin": -1.4369673275553552e-05,
+          "amplitude": 0.00022693703858051156,
+          "phase_deg_cosine_convention": 176.36959745568842
+        }
+      ]
+    }
+  }
+}
