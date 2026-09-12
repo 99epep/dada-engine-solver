@@ -1,0 +1,51 @@
+schema_version = 1
+description = "Compact coupler-point four-bars fitted to motor_champion_motion_target"
+angle_convention = "study_angle_radians"
+method = "projection_only"
+
+# All lengths are normalized by the common crank radius r.
+# The physical crank radius is deliberately not fixed at this synthesis stage.
+
+[small]
+ground_ratio = 5.022706788451722
+coupler_ratio = 1.6563469344036357
+rocker_ratio = 5.1468443338063725
+phase_rad = 2.7064039666740163
+assembly_branch = -1
+
+# Equivalent fixed-pivot coordinates after absorbing phase into the ground frame:
+rocker_pivot_x_ratio = -4.554542857952098
+rocker_pivot_y_ratio = -2.117480304002033
+
+# Point F in the local coupler frame from crank pin B toward joint C:
+output_along_ratio = 1.5159800513453636
+output_normal_ratio = -0.4124220620237704
+
+# Projection axis. canonical is used by the temporary bridge;
+# shared_crank is the equivalent angle after absorbing phase into the ground frame.
+axis_angle_canonical_rad = 0.4015987346746661
+axis_angle_shared_crank_rad = -2.3048052319993504
+
+position_rms = 0.004552238459089386
+derivative_rms = 0.024907510954867273
+output_to_coupler_ratio = 0.9485201500558249
+
+[large]
+ground_ratio = 8.359076059286378
+coupler_ratio = 1.8978981818881382
+rocker_ratio = 8.562558314779313
+phase_rad = -0.6741270855205765
+assembly_branch = 1
+
+rocker_pivot_x_ratio = 6.5305460224395135
+rocker_pivot_y_ratio = 5.217865580266911
+
+output_along_ratio = 1.8306390741406238
+output_normal_ratio = 0.33169924587809335
+
+axis_angle_canonical_rad = -0.2658858024055341
+axis_angle_shared_crank_rad = 0.40824128311504243
+
+position_rms = 0.003139916965537827
+derivative_rms = 0.017814897701556507
+output_to_coupler_ratio = 0.9802671316129091

@@ -155,6 +155,10 @@ def main():
                 "large_dq_dtheta_per_rad": dq_l,
                 "small_d2q_dtheta2_per_rad2": d2q_s,
                 "large_d2q_dtheta2_per_rad2": d2q_l,
+                "small_centered_dq_dtheta_per_rad": 2.0 * dq_s,
+                "large_centered_dq_dtheta_per_rad": 2.0 * dq_l,
+                "small_centered_d2q_dtheta2_per_rad2": 2.0 * d2q_s,
+                "large_centered_d2q_dtheta2_per_rad2": 2.0 * d2q_l,
                 "total_cylinder_volume_l": 1000.0 * (v_s + v_l),
                 "dtotal_volume_dtheta_l_per_rad": 1000.0 * (dv_s + dv_l),
             }
@@ -244,8 +248,10 @@ def main():
         "recommended_mechanism_fit_coordinates": {
             "small": "small_centered_minus1_plus1",
             "large": "large_centered_minus1_plus1",
-            "derivative_small": "small_dq_dtheta_per_rad",
-            "derivative_large": "large_dq_dtheta_per_rad",
+            "derivative_small": "small_centered_dq_dtheta_per_rad",
+            "derivative_large": "large_centered_dq_dtheta_per_rad",
+            "second_derivative_small": "small_centered_d2q_dtheta2_per_rad2",
+            "second_derivative_large": "large_centered_d2q_dtheta2_per_rad2",
             "note": (
                 "Fit normalized shape first; absolute piston stroke and area "
                 "can be chosen during physical mechanism sizing."

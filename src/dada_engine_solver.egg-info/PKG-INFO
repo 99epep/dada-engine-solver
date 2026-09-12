@@ -1,13 +1,19 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: dada-engine-solver
 Version: 0.2.3
 Summary: Thermodynamic simulation and sizing solver for the DADA engine
 License: GPL-3.0-or-later
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
-Provides-Extra: plot
-Provides-Extra: test
 License-File: LICENSE
+Requires-Dist: numpy>=1.24
+Requires-Dist: scipy>=1.10
+Provides-Extra: test
+Requires-Dist: pytest>=7.2; extra == "test"
+Provides-Extra: plot
+Requires-Dist: matplotlib>=3.6; extra == "plot"
+Requires-Dist: Pillow>=9.0; extra == "plot"
+Dynamic: license-file
 
 # DADA Engine Solver
 
@@ -148,6 +154,28 @@ orifice closure remains the default reference model. See the exchanger
 documentation for the low-Mach and hydraulic-inertia validity limits.
 
 The current motor design brief targets approximately 100 W useful mechanical
-output, 2–10 Hz, reservoirs at 25/175 degrees Celsius, and a large-cylinder
+output, 2–10 Hz, reservoirs at 25/325 degrees Celsius, and a large-cylinder
 maximum enclosed volume of 66 litres. See [the motor demonstrator design
 brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
+
+## Interchangeable models
+
+The thermodynamic solver accepts four-bar or independent periodic free motion.
+Exchanger families are assembled through an explicit protocol; microtubes are
+one implementation. See [architecture and validation](docs/PLUGGABLE_MODELS.md)
+and the [free-motion example](examples/motor_free_kinematics.toml).
+
+## Persistent exploration campaigns
+
+The first Sobol campaign layer supports bounded linear/log parameters, durable
+history, exact-cache resume, feasible archives and human phase reports. See
+[campaign documentation](docs/OPTIMIZATION_CAMPAIGN.md) and the
+[small free-motion campaign](examples/free_kinematics_campaign.toml).
+Run `dada-optimize campaign.toml --budget 30m`, or resume using the campaign
+directory as the first argument.
+
+The dynamic-wall composition example is
+[`examples/microtube_free_campaign.toml`](examples/microtube_free_campaign.toml).
+Use `--retry-incomplete` with a larger budget to deliberately revisit the most
+recent deadline-interrupted candidate. Interrupted records are reusable initial
+guesses, not periodic solutions or cached feasibility verdicts.

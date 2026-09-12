@@ -10,6 +10,9 @@ import tomllib
 from dada_solver.free_kinematics import FreeKinematicsConfiguration, FreeMotionDefinition
 from dada_solver.fluids import CaloricallyPerfectGas
 from dada_solver.four_bar import SharedCrankRockerDesign
+from dada_solver.coupler_projection import (
+    CouplerProjectionSideDesign, SharedCrankCouplerProjectionDesign,
+)
 from dada_solver.geometry import CylinderVolumeLimits, MachineVolumes
 from dada_solver.hydraulics import HydraulicNetworkModels
 from dada_solver.humidity import HumidityScreeningConfiguration
@@ -166,6 +169,7 @@ class SimulationConfiguration:
     humidity_screening: HumidityScreeningConfiguration | None = None
     shared_four_bar_design: SharedCrankRockerDesign | None = None
     free_kinematics: FreeKinematicsConfiguration | None = None
+    shared_coupler_projection_design: SharedCrankCouplerProjectionDesign | None = None
 
     @property
     def motor_operation(self) -> bool:
@@ -240,6 +244,9 @@ class SimulationConfiguration:
                 raise ValueError("Four-bar crank angle offset must be finite.")
             if self.four_bar_crank_direction not in (-1, 1):
                 raise ValueError("Four-bar crank direction must be -1 or 1.")
+        elif self.kinematics_type == "shared_crank_coupler_projection":
+            if self.shared_coupler_projection_design is None:
+                raise ValueError("Shared-crank coupler-projection design is required.")
         elif self.kinematics_type == "shared_crank_rocker":
             if self.shared_four_bar_design is None:
                 raise ValueError("Shared-crank rocker design is required.")
@@ -382,6 +389,7 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
             ),
             shared_four_bar_design=_load_shared_four_bar_design(kinematics_data),
             free_kinematics=_load_free_kinematics(kinematics_data, machine_volumes),
+            shared_coupler_projection_design=_load_shared_coupler_projection_design(kinematics_data),
         )
     except KeyError as error:
         raise ValueError(f"Missing required configuration field: {error.args[0]}") from error
@@ -443,3 +451,30 @@ def _load_free_kinematics(data, volumes):
             definition.get('maximum_absolute_first_derivative'),
             definition.get('maximum_absolute_second_derivative'))
     return FreeKinematicsConfiguration(motion('small'), motion('large'))
+
+
+def _load_shared_coupler_projection_design(
+    data: dict[str, object],
+) -> SharedCrankCouplerProjectionDesign | None:
+    if data.get("type") != "shared_crank_coupler_projection":
+        return None
+
+    def side(name: str) -> CouplerProjectionSideDesign:
+        raw = data[name]
+        if not isinstance(raw, dict):
+            raise ValueError(f"{name} must be a table.")
+        return CouplerProjectionSideDesign(
+            coupler_ratio=float(raw["coupler_ratio"]),
+            rocker_ratio=float(raw["rocker_ratio"]),
+            pivot_x_ratio=float(raw["pivot_x_ratio"]),
+            pivot_y_ratio=float(raw["pivot_y_ratio"]),
+            output_along_ratio=float(raw["output_along_ratio"]),
+            output_normal_ratio=float(raw["output_normal_ratio"]),
+            axis_angle_degrees=float(raw["axis_angle_degrees"]),
+            assembly_branch=int(raw["assembly_branch"]),
+        )
+
+    return SharedCrankCouplerProjectionDesign(
+        small=side("small_four_bar"),
+        large=side("large_four_bar"),
+    )
