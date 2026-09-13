@@ -213,6 +213,12 @@ def make_animation(result_json: Path, output_gif: Path, frames: int, fps: int, d
     perpendicular_hint, = ax.plot([], [], "--", lw=1.0, alpha=0.5)
     slider_axis_line, = ax.plot([], [], "--", lw=1.6, alpha=0.7)
 
+    coupler_plate_be, = ax.plot([], [], "-", lw=1.4)
+    coupler_plate_ce, = ax.plot([], [], "-", lw=1.4)
+
+    second_plate_eh, = ax.plot([], [], "-", lw=1.4)
+    second_plate_fh, = ax.plot([], [], "-", lw=1.4)
+
     h_trail_line, = ax.plot([], [], "-", lw=1.2, alpha=0.6)
     p_trail_line, = ax.plot([], [], "-", lw=1.2, alpha=0.6)
 
@@ -240,9 +246,13 @@ def make_animation(result_json: Path, output_gif: Path, frames: int, fps: int, d
             primary_ground_line,
             crank_line,
             coupler_line,
+            coupler_plate_be,
+            coupler_plate_ce,
             rocker_line,
             second_input_line,
             second_ground_line,
+            second_plate_eh,
+            second_plate_fh,
             piston_rod_line,
             perpendicular_hint,
             slider_axis_line,
@@ -277,6 +287,12 @@ def make_animation(result_json: Path, output_gif: Path, frames: int, fps: int, d
         piston_rod_line.set_data([H[0], P[0]], [H[1], P[1]])
         perpendicular_hint.set_data([H[0], Q[0]], [H[1], Q[1]])
         slider_axis_line.set_data([axis_start[0], axis_end[0]], [axis_start[1], axis_end[1]])
+
+        coupler_plate_be.set_data([B[0], E[0]], [B[1], E[1]])
+        coupler_plate_ce.set_data([C[0], E[0]], [C[1], E[1]])
+
+        second_plate_eh.set_data([E[0], H[0]], [E[1], H[1]])
+        second_plate_fh.set_data([F[0], H[0]], [F[1], H[1]])
 
         h_trail.append(H.copy())
         p_trail.append(P.copy())
@@ -313,8 +329,12 @@ def make_animation(result_json: Path, output_gif: Path, frames: int, fps: int, d
             crank_line,
             coupler_line,
             rocker_line,
+            coupler_plate_be,
+            coupler_plate_ce,
             second_input_line,
             second_ground_line,
+            second_plate_eh,
+            second_plate_fh,
             piston_rod_line,
             perpendicular_hint,
             slider_axis_line,
