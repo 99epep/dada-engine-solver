@@ -287,3 +287,25 @@ this correction relative to the small resulting piston stroke.
 
 Outputs: `outputs/f_opposite_slider.json`, `f_opposite_slider_comparison.png`,
 and `f_lower_piston_layout.png`. No efficiency is inferred from this shape check.
+
+## F refit with the chamber away from the mechanism
+
+The user requires maximum volume at the piston endpoint toward the mechanism.
+Search now exposes `--slider-branch` and `--volume-sign`, and freezes branch -1
+with positive volume direction for this chamber arrangement. The fixed head lies
+beyond the low-coordinate endpoint; the rod connects on the opposite, dry side.
+This is a refit, not a post-fit branch reversal. Reproduction:
+
+```sh
+PYTHONPATH=src python3 examples/search_small_rocker_e.py --family F --slider-branch -1 --volume-sign 1 --iterations 200 --restarts 2 --seed 1727 --output outputs/small_f_chamber_away_search.json
+PYTHONPATH=src python3 examples/report_small_f.py --input outputs/small_f_chamber_away_search.json --plot outputs/small_f_chamber_away_comparison.png
+PYTHONPATH=src python3 examples/draw_chamber_away_f.py
+```
+
+Four searches completed in 256.79 seconds. All four winners passed the fine
+0.05-degree geometric screen. Best position RMS is 0.0143236, derivative RMS
+0.0436161 per radian, and stroke/envelope 0.179666. Stroke is 2.55144 crank radii.
+The same compaction and transmission floors apply. The drawing shows actual
+relative linkage scale and schematic bore/clearance; body collisions and guide
+loads remain unverified. Fourteen targeted tests passed, including fixed slider
+branch and volume-direction checks. No thermodynamic solve was run.
