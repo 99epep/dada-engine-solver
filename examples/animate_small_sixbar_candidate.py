@@ -201,23 +201,26 @@ def make_animation(result_json: Path, output_gif: Path, frames: int, fps: int, d
     ax.grid(True, alpha=0.25)
     ax.set_title(result_json.stem)
 
+    primary_color_plate = "C0"
+    secondary_color_plate = "C1"
+
     primary_ground_line, = ax.plot([], [], "-", lw=2.0)
     crank_line, = ax.plot([], [], "-", lw=2.5)
-    coupler_line, = ax.plot([], [], "-", lw=2.0)
+    coupler_line, = ax.plot([], [], "-", lw=2.0, color=primary_color_plate)
     rocker_line, = ax.plot([], [], "-", lw=2.0)
 
-    second_input_line, = ax.plot([], [], "-", lw=2.0)
+    second_input_line, = ax.plot([], [], "-", lw=2.0, color=secondary_color_plate)
     second_ground_line, = ax.plot([], [], "-", lw=2.0)
 
     piston_rod_line, = ax.plot([], [], "-", lw=2.4)
     perpendicular_hint, = ax.plot([], [], "--", lw=1.0, alpha=0.5)
     slider_axis_line, = ax.plot([], [], "--", lw=1.6, alpha=0.7)
 
-    coupler_plate_be, = ax.plot([], [], "-", lw=1.4)
-    coupler_plate_ce, = ax.plot([], [], "-", lw=1.4)
+    coupler_plate_be, = ax.plot([], [], "-", lw=2.0, color=primary_color_plate)
+    coupler_plate_ce, = ax.plot([], [], "-", lw=2.0, color=primary_color_plate)
 
-    second_plate_eh, = ax.plot([], [], "-", lw=1.4)
-    second_plate_fh, = ax.plot([], [], "-", lw=1.4)
+    second_plate_eh, = ax.plot([], [], "-", lw=2.0, color=secondary_color_plate)
+    second_plate_fh, = ax.plot([], [], "-", lw=2.0, color=secondary_color_plate)
 
     h_trail_line, = ax.plot([], [], "-", lw=1.2, alpha=0.6)
     p_trail_line, = ax.plot([], [], "-", lw=1.2, alpha=0.6)

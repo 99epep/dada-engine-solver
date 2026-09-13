@@ -1,0 +1,131 @@
+{
+  "description": "Stage 2B: frozen primary four-bar + second RR dyad + free point H + finite piston rod",
+  "length_unit": "crank_radius",
+  "primary": {
+    "ground": 2.045193376592419,
+    "coupler": 2.1152136168766678,
+    "rocker": 1.8202134329709354,
+    "branch": -1,
+    "e_along": 1.873315626010214,
+    "e_normal": -1.5362965718510164,
+    "phase": -3.0863675667472057
+  },
+  "primary_minimum_transmission_sine": 0.49405227294485493,
+  "objective": {
+    "motion": "sqrt(position_RMS^2 + 0.1 * derivative_RMS^2)",
+    "straightening": "motion_score + lateral_weight * (H lateral span / piston stroke)",
+    "lateral_weight": 0.002
+  },
+  "constraints": {
+    "stroke_over_crank_minimum": 1.5,
+    "minimum_secondary_transmission_sine": 0.3,
+    "minimum_rod_axis_cosine": 0.95,
+    "H_lateral_span_over_piston_stroke_maximum": null
+  },
+  "bounds": {
+    "second_pivot_x": [
+      -8.0,
+      8.0
+    ],
+    "second_pivot_y": [
+      -8.0,
+      8.0
+    ],
+    "link_EF": [
+      0.4,
+      5.0
+    ],
+    "link_GF": [
+      0.4,
+      5.0
+    ],
+    "H_along_over_EF": [
+      -1.5,
+      1.5
+    ],
+    "H_normal_over_EF": [
+      -1.5,
+      1.5
+    ],
+    "piston_rod": [
+      2.0,
+      30.0
+    ],
+    "slider_axis_offset": [
+      -10.0,
+      10.0
+    ],
+    "slider_axis_angle": [
+      -3.141592653589793,
+      3.141592653589793
+    ]
+  },
+  "runs": [
+    {
+      "restart": 0,
+      "seed": 2200,
+      "second_branch": 1,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 23300,
+      "best_dense": {
+        "score": 0.01425935138414609,
+        "motion_score": 0.013771881467997262,
+        "position_rms": 0.009618291202675357,
+        "derivative_rms": 0.03116940703784791,
+        "stroke_over_crank": 1.7217017256618021,
+        "H_transverse_span_over_crank": 0.41963889792082565,
+        "H_lateral_span_over_piston_stroke": 0.24373495807441403,
+        "minimum_secondary_transmission_sine": 0.9689091039280804,
+        "minimum_rod_axis_cosine": 0.9500015269638602,
+        "parameters": {
+          "second_pivot_x": 2.1597872985460054,
+          "second_pivot_y": 4.514625278269437,
+          "link_EF": 4.789791465020492,
+          "link_GF": 5.0,
+          "H_along_over_EF": 1.2641569079717825,
+          "H_normal_over_EF": -1.2626961534564847,
+          "piston_rod": 24.175067549499335,
+          "slider_axis_offset": -2.93269669580201,
+          "slider_axis_angle": -1.2583846712038098
+        },
+        "second_branch": 1,
+        "feasible": true
+      }
+    },
+    {
+      "restart": 0,
+      "seed": 2201,
+      "second_branch": -1,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 23750,
+      "best_dense": null
+    }
+  ],
+  "best": {
+    "score": 0.01425935138414609,
+    "motion_score": 0.013771881467997262,
+    "position_rms": 0.009618291202675357,
+    "derivative_rms": 0.03116940703784791,
+    "stroke_over_crank": 1.7217017256618021,
+    "H_transverse_span_over_crank": 0.41963889792082565,
+    "H_lateral_span_over_piston_stroke": 0.24373495807441403,
+    "minimum_secondary_transmission_sine": 0.9689091039280804,
+    "minimum_rod_axis_cosine": 0.9500015269638602,
+    "parameters": {
+      "second_pivot_x": 2.1597872985460054,
+      "second_pivot_y": 4.514625278269437,
+      "link_EF": 4.789791465020492,
+      "link_GF": 5.0,
+      "H_along_over_EF": 1.2641569079717825,
+      "H_normal_over_EF": -1.2626961534564847,
+      "piston_rod": 24.175067549499335,
+      "slider_axis_offset": -2.93269669580201,
+      "slider_axis_angle": -1.2583846712038098
+    },
+    "second_branch": 1,
+    "feasible": true
+  },
+  "elapsed_seconds": 20.604940038989298
+}
