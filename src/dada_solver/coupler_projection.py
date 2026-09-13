@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
+from pathlib import Path
+import tomllib
 
 import numpy as np
 from scipy.optimize import brentq
@@ -239,4 +241,52 @@ def shared_crank_coupler_projection_kinematics(
         design=design,
         small_volume_limits=small_volume_limits,
         large_volume_limits=large_volume_limits,
+    )
+
+
+def load_shared_crank_coupler_projection_geometry(
+    path: str | Path,
+    small_volume_limits: CylinderVolumeLimits,
+    large_volume_limits: CylinderVolumeLimits,
+) -> SharedCrankCouplerProjectionKinematics:
+    """Load a projection-only synthesis export in the common study-angle frame.
+
+    The synthesis file contains dimensionless geometry normalized by the shared
+    crank radius.  Piston volume ranges remain thermodynamic design inputs: the
+    projected point travel is normalized to zero through one and mapped onto the
+    supplied cylinder limits.
+    """
+
+    with Path(path).open("rb") as stream:
+        data = tomllib.load(stream)
+    if int(data.get("schema_version", 0)) != 1:
+        raise ValueError("Unsupported coupler-projection geometry schema.")
+    if data.get("angle_convention") != "study_angle_radians":
+        raise ValueError("Geometry must use the study_angle_radians convention.")
+    if data.get("method") != "projection_only":
+        raise ValueError("Geometry must be a projection_only synthesis result.")
+
+    def side(name: str) -> CouplerProjectionSideDesign:
+        raw = data.get(name)
+        if not isinstance(raw, dict):
+            raise ValueError(f"Missing [{name}] geometry table.")
+        axis = float(raw["axis_angle_shared_crank_rad"])
+        return CouplerProjectionSideDesign(
+            coupler_ratio=float(raw["coupler_ratio"]),
+            rocker_ratio=float(raw["rocker_ratio"]),
+            pivot_x_ratio=float(raw["rocker_pivot_x_ratio"]),
+            pivot_y_ratio=float(raw["rocker_pivot_y_ratio"]),
+            output_along_ratio=float(raw["output_along_ratio"]),
+            output_normal_ratio=float(raw["output_normal_ratio"]),
+            axis_angle_degrees=math.degrees(axis),
+            assembly_branch=int(raw["assembly_branch"]),
+        )
+
+    return shared_crank_coupler_projection_kinematics(
+        SharedCrankCouplerProjectionDesign(
+            small=side("small"),
+            large=side("large"),
+        ),
+        small_volume_limits,
+        large_volume_limits,
     )
