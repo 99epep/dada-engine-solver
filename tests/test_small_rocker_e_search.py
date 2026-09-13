@@ -42,3 +42,23 @@ def test_f_output_uses_coupler_frame_with_finite_rod():
     t=.7;h=1e-6
     numerical=(state(t+h).coordinate-state(t-h).coordinate)/(2*h)
     assert state(t).coordinate_derivative == pytest.approx(numerical,abs=1e-8)
+
+
+def test_opposite_slider_preserves_explicit_positive_volume_direction():
+    v=[2.5,2.5,2.925,1.2,.3,10.,0.,0.,.3]
+    assembly,phase=build(v,1,'F',-1)
+    assert assembly.slider.assembly_branch == -1
+    theta=np.linspace(0,2*np.pi,360,endpoint=False)
+    states=[]
+    for t in theta:
+        a=t+phase
+        states.append(assembly.evaluate(np.array([np.cos(a),np.sin(a)]),np.array([-np.sin(a),np.cos(a)])))
+    _,q,_=assess(v,1,1,theta,np.zeros_like(theta),np.zeros_like(theta),'F',-1)
+    coordinates=np.array([s.coordinate for s in states])
+    assert q[np.argmax(coordinates)] == pytest.approx(1.)
+    assert q[np.argmin(coordinates)] == pytest.approx(0.)
+    # Piston lies below F along the guide; increasing coordinate approaches
+    # the mechanism side, while the fixed head is beyond the low endpoint.
+    for s in states:
+        longitudinal=s.output_point[0]
+        assert s.coordinate < longitudinal
