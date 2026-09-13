@@ -1,0 +1,245 @@
+{
+  "description": "Stage 2C locally free primary + compact second RR dyad + free H + finite rod",
+  "length_unit": "crank_radius",
+  "primary_branch": -1,
+  "base_primary": {
+    "ground": 2.045193376592419,
+    "coupler": 2.1152136168766678,
+    "rocker": 1.8202134329709354,
+    "e_along": 1.873315626010214,
+    "e_normal": -1.5362965718510164,
+    "phase": -3.0863675667472057
+  },
+  "bounds": {
+    "primary_ground": [
+      1.5338950324443141,
+      2.5564917207405236
+    ],
+    "primary_coupler": [
+      1.5864102126575008,
+      2.6440170210958347
+    ],
+    "primary_rocker": [
+      1.3651600747282016,
+      2.275266791213669
+    ],
+    "primary_E_along": [
+      1.3113209382071498,
+      2.4353103138132783
+    ],
+    "primary_E_normal": [
+      -1.9971855434063215,
+      -1.0754076002957114
+    ],
+    "primary_phase_delta": [
+      -0.7853981633974483,
+      0.7853981633974483
+    ],
+    "second_pivot_x": [
+      -8.0,
+      8.0
+    ],
+    "second_pivot_y": [
+      -8.0,
+      8.0
+    ],
+    "link_EF": [
+      0.4,
+      5.0
+    ],
+    "link_GF": [
+      0.4,
+      5.0
+    ],
+    "H_along_over_EF": [
+      -2.0,
+      2.0
+    ],
+    "H_normal_over_EF": [
+      -2.0,
+      2.0
+    ],
+    "piston_rod": [
+      2.0,
+      30.0
+    ],
+    "slider_axis_offset": [
+      -10.0,
+      10.0
+    ],
+    "slider_axis_angle": [
+      -3.141592653589793,
+      3.141592653589793
+    ]
+  },
+  "constraints": {
+    "stroke_over_crank_minimum": 1.5,
+    "primary_sine_minimum": 0.3,
+    "secondary_sine_minimum": 0.3,
+    "rod_axis_cosine_minimum": 0.95,
+    "EH_over_crank_maximum": 6.0,
+    "H_lateral_span_over_stroke_maximum": 0.8
+  },
+  "lateral_weight": 0.0,
+  "warm_start": "outputs/small_sixbar_stage2c.json",
+  "runs": [
+    {
+      "restart": 0,
+      "seed": 2300,
+      "second_branch": 1,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 55604,
+      "best_dense": {
+        "score": 0.006294081963041039,
+        "motion_score": 0.006294081963041039,
+        "position_rms": 0.003740250752154763,
+        "derivative_rms": 0.016008120460717513,
+        "stroke_over_crank": 1.9840768514503004,
+        "H_transverse_span_over_crank": 1.5870808523436126,
+        "H_lateral_span_over_piston_stroke": 0.7999089607761435,
+        "minimum_primary_transmission_sine": 0.6944127768806498,
+        "minimum_secondary_transmission_sine": 0.8450640185995582,
+        "minimum_rod_axis_cosine": 0.9589795380031766,
+        "EF_over_crank": 3.489982394006214,
+        "GF_over_crank": 4.701262693116619,
+        "EH_over_EF": 1.6520100430224447,
+        "EH_over_crank": 5.76548596486978,
+        "piston_rod_over_crank": 9.296420610153227,
+        "piston_rod_over_stroke": 4.6855143757953845,
+        "primary": {
+          "ground": 2.4850498039482227,
+          "coupler": 2.047640710212871,
+          "rocker": 1.9018651131148665,
+          "assembly_branch": -1,
+          "E_along": 1.385398099100616,
+          "E_normal": -1.75293991033117,
+          "phase": -3.0900096951645337,
+          "phase_delta": -0.003642128417327845
+        },
+        "parameters": {
+          "primary_ground": 2.4850498039482227,
+          "primary_coupler": 2.047640710212871,
+          "primary_rocker": 1.9018651131148665,
+          "primary_E_along": 1.385398099100616,
+          "primary_E_normal": -1.75293991033117,
+          "primary_phase_delta": -0.003642128417327845,
+          "second_pivot_x": -2.9778040214356016,
+          "second_pivot_y": -7.766589131517034,
+          "link_EF": 3.489982394006214,
+          "link_GF": 4.701262693116619,
+          "H_along_over_EF": 1.1709491570939252,
+          "H_normal_over_EF": -1.1653391153428454,
+          "piston_rod": 9.296420610153227,
+          "slider_axis_offset": -4.54297399792328,
+          "slider_axis_angle": -1.5930364515049449
+        },
+        "second_branch": 1,
+        "feasible": true
+      }
+    },
+    {
+      "restart": 0,
+      "seed": 2301,
+      "second_branch": -1,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 54516,
+      "best_dense": {
+        "score": 0.008053120619602137,
+        "motion_score": 0.008053120619602137,
+        "position_rms": 0.005097040485895276,
+        "derivative_rms": 0.019716219211351235,
+        "stroke_over_crank": 2.331815423250071,
+        "H_transverse_span_over_crank": 1.8213558672909054,
+        "H_lateral_span_over_piston_stroke": 0.7810892102052871,
+        "minimum_primary_transmission_sine": 0.6330036519053293,
+        "minimum_secondary_transmission_sine": 0.5230906655252142,
+        "minimum_rod_axis_cosine": 0.9500115706241656,
+        "EF_over_crank": 3.4440505258259724,
+        "GF_over_crank": 4.340163423261321,
+        "EH_over_EF": 1.1160710239079417,
+        "EH_over_crank": 3.843804996749278,
+        "piston_rod_over_crank": 5.40513450131231,
+        "piston_rod_over_stroke": 2.3179941462856712,
+        "primary": {
+          "ground": 2.3117263760177,
+          "coupler": 2.0425685674420277,
+          "rocker": 1.8023818612543945,
+          "assembly_branch": -1,
+          "E_along": 1.3174301255758174,
+          "E_normal": -1.1500075107274956,
+          "phase": -2.9719803658176995,
+          "phase_delta": 0.11438720092950633
+        },
+        "parameters": {
+          "primary_ground": 2.3117263760177,
+          "primary_coupler": 2.0425685674420277,
+          "primary_rocker": 1.8023818612543945,
+          "primary_E_along": 1.3174301255758174,
+          "primary_E_normal": -1.1500075107274956,
+          "primary_phase_delta": 0.11438720092950633,
+          "second_pivot_x": -2.905411836339449,
+          "second_pivot_y": -0.38571712274934966,
+          "link_EF": 3.4440505258259724,
+          "link_GF": 4.340163423261321,
+          "H_along_over_EF": 0.226455696939671,
+          "H_normal_over_EF": -1.092855135747867,
+          "piston_rod": 5.40513450131231,
+          "slider_axis_offset": 0.7819559818665596,
+          "slider_axis_angle": -0.7849783030910238
+        },
+        "second_branch": -1,
+        "feasible": true
+      }
+    }
+  ],
+  "best": {
+    "score": 0.006294081963041039,
+    "motion_score": 0.006294081963041039,
+    "position_rms": 0.003740250752154763,
+    "derivative_rms": 0.016008120460717513,
+    "stroke_over_crank": 1.9840768514503004,
+    "H_transverse_span_over_crank": 1.5870808523436126,
+    "H_lateral_span_over_piston_stroke": 0.7999089607761435,
+    "minimum_primary_transmission_sine": 0.6944127768806498,
+    "minimum_secondary_transmission_sine": 0.8450640185995582,
+    "minimum_rod_axis_cosine": 0.9589795380031766,
+    "EF_over_crank": 3.489982394006214,
+    "GF_over_crank": 4.701262693116619,
+    "EH_over_EF": 1.6520100430224447,
+    "EH_over_crank": 5.76548596486978,
+    "piston_rod_over_crank": 9.296420610153227,
+    "piston_rod_over_stroke": 4.6855143757953845,
+    "primary": {
+      "ground": 2.4850498039482227,
+      "coupler": 2.047640710212871,
+      "rocker": 1.9018651131148665,
+      "assembly_branch": -1,
+      "E_along": 1.385398099100616,
+      "E_normal": -1.75293991033117,
+      "phase": -3.0900096951645337,
+      "phase_delta": -0.003642128417327845
+    },
+    "parameters": {
+      "primary_ground": 2.4850498039482227,
+      "primary_coupler": 2.047640710212871,
+      "primary_rocker": 1.9018651131148665,
+      "primary_E_along": 1.385398099100616,
+      "primary_E_normal": -1.75293991033117,
+      "primary_phase_delta": -0.003642128417327845,
+      "second_pivot_x": -2.9778040214356016,
+      "second_pivot_y": -7.766589131517034,
+      "link_EF": 3.489982394006214,
+      "link_GF": 4.701262693116619,
+      "H_along_over_EF": 1.1709491570939252,
+      "H_normal_over_EF": -1.1653391153428454,
+      "piston_rod": 9.296420610153227,
+      "slider_axis_offset": -4.54297399792328,
+      "slider_axis_angle": -1.5930364515049449
+    },
+    "second_branch": 1,
+    "feasible": true
+  },
+  "elapsed_seconds": 79.04861453798367
+}
