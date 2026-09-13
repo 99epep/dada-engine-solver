@@ -1,0 +1,420 @@
+{
+  "family": "coupler_F",
+  "side": "small",
+  "length_unit": "crank_radius",
+  "bounds": {
+    "ground": [
+      1.5,
+      5.0
+    ],
+    "coupler": [
+      1.2,
+      6.0
+    ],
+    "rocker": [
+      1.2,
+      6.0
+    ],
+    "output_radius": [
+      0.5,
+      6.0
+    ],
+    "output_angle": [
+      -3.141592653589793,
+      3.141592653589793
+    ],
+    "rod": [
+      2.0,
+      12.0
+    ],
+    "axis_offset": [
+      -4.0,
+      4.0
+    ],
+    "axis_angle": [
+      -3.141592653589793,
+      3.141592653589793
+    ],
+    "phase": [
+      -3.141592653589793,
+      3.141592653589793
+    ]
+  },
+  "floors": {
+    "stroke_to_envelope": 0.12384,
+    "minimum_transmission_sine": 0.48733,
+    "minimum_rod_axis_cosine": 0.94927
+  },
+  "derivative_weight": 0.1,
+  "iterations": 200,
+  "restarts": 1,
+  "warm_start": null,
+  "runs": [
+    {
+      "seed": 827,
+      "branch": 1,
+      "volume_sign": 1,
+      "nfev": 14472,
+      "best": {
+        "position_rms": 0.02092666036819944,
+        "derivative_rms": 0.05965349808447374,
+        "score": 0.028174085567013535,
+        "metrics": {
+          "stroke_to_envelope": 0.3281014587333158,
+          "minimum_transmission_sine": 0.5254681654394424,
+          "minimum_rod_axis_cosine": 0.949603531062081,
+          "stroke_over_crank": 3.68358103863451,
+          "envelope_diagonal_over_crank": 11.226957212733888
+        },
+        "margins": {
+          "stroke_to_envelope": 0.2042614587333158,
+          "minimum_transmission_sine": 0.03813816543944243,
+          "minimum_rod_axis_cosine": 0.000333531062081005
+        },
+        "parameters": [
+          3.193030270568044,
+          1.9191522859644878,
+          3.5802508399705277,
+          2.725544233790408,
+          3.067782767472361,
+          6.73306848242823,
+          -1.6944446925112389,
+          0.6577762016936567,
+          2.0015535036046153
+        ]
+      },
+      "assembly": {
+        "loop": {
+          "coupler_length": 1.9191522859644878,
+          "rocker_length": 3.5802508399705277,
+          "rocker_pivot_x": 3.193030270568044,
+          "rocker_pivot_y": 0.0,
+          "assembly_branch": 1,
+          "singularity_tolerance": 1e-10
+        },
+        "output": {
+          "along_coupler": -2.7181233584771705,
+          "normal_to_coupler": 0.20098949835483848
+        },
+        "slider": {
+          "axis_origin_x": 1.0359132570782912,
+          "axis_origin_y": -1.3409051196072572,
+          "axis_angle": 0.6577762016936567,
+          "connecting_rod_length": 6.73306848242823,
+          "assembly_branch": 1
+        }
+      },
+      "phase": 2.0015535036046153,
+      "fine_geometry_check": {
+        "step_degrees": 0.05,
+        "metrics": {
+          "stroke_to_envelope": 0.3281017505007477,
+          "minimum_transmission_sine": 0.5254676562415374,
+          "minimum_rod_axis_cosine": 0.9496035115753486,
+          "stroke_over_crank": 3.6835876655738495,
+          "envelope_diagonal_over_crank": 11.226967426878922
+        },
+        "margins": {
+          "stroke_to_envelope": 0.20426175050074769,
+          "minimum_transmission_sine": 0.038137656241537365,
+          "minimum_rod_axis_cosine": 0.00033351157534866616
+        },
+        "passed": true
+      }
+    },
+    {
+      "seed": 828,
+      "branch": 1,
+      "volume_sign": -1,
+      "nfev": 14472,
+      "best": {
+        "position_rms": 0.025966369502373514,
+        "derivative_rms": 0.07962289357701192,
+        "score": 0.03616950183913804,
+        "metrics": {
+          "stroke_to_envelope": 0.13437002215670596,
+          "minimum_transmission_sine": 0.4892228220587689,
+          "minimum_rod_axis_cosine": 0.9509279074405455,
+          "stroke_over_crank": 2.4980816699469433,
+          "envelope_diagonal_over_crank": 18.591063913300637
+        },
+        "margins": {
+          "stroke_to_envelope": 0.010530022156705954,
+          "minimum_transmission_sine": 0.0018928220587688949,
+          "minimum_rod_axis_cosine": 0.001657907440545503
+        },
+        "parameters": [
+          4.290953506000486,
+          1.8171324799790738,
+          4.753437519446632,
+          1.529747632613224,
+          1.4577416977356292,
+          11.656745148687712,
+          2.679952169624439,
+          2.762258763034919,
+          1.789337506375811
+        ]
+      },
+      "assembly": {
+        "loop": {
+          "coupler_length": 1.8171324799790738,
+          "rocker_length": 4.753437519446632,
+          "rocker_pivot_x": 4.290953506000486,
+          "rocker_pivot_y": 0.0,
+          "assembly_branch": 1,
+          "singularity_tolerance": 1e-10
+        },
+        "output": {
+          "along_coupler": 0.17257687468061186,
+          "normal_to_coupler": 1.5199819215409227
+        },
+        "slider": {
+          "axis_origin_x": -0.9923910986167553,
+          "axis_origin_y": -2.489438398286041,
+          "axis_angle": 2.762258763034919,
+          "connecting_rod_length": 11.656745148687712,
+          "assembly_branch": 1
+        }
+      },
+      "phase": 1.789337506375811,
+      "fine_geometry_check": {
+        "step_degrees": 0.05,
+        "metrics": {
+          "stroke_to_envelope": 0.13437003180169327,
+          "minimum_transmission_sine": 0.4892228220587689,
+          "minimum_rod_axis_cosine": 0.9509278938539638,
+          "stroke_over_crank": 2.498082002629541,
+          "envelope_diagonal_over_crank": 18.59106505471603
+        },
+        "margins": {
+          "stroke_to_envelope": 0.010530031801693263,
+          "minimum_transmission_sine": 0.0018928220587688949,
+          "minimum_rod_axis_cosine": 0.0016578938539638655
+        },
+        "passed": true
+      }
+    },
+    {
+      "seed": 829,
+      "branch": -1,
+      "volume_sign": 1,
+      "nfev": 14472,
+      "best": {
+        "position_rms": 0.011005013498287872,
+        "derivative_rms": 0.032540628429114024,
+        "score": 0.015066504968096106,
+        "metrics": {
+          "stroke_to_envelope": 0.1241640841195266,
+          "minimum_transmission_sine": 0.49048885372370377,
+          "minimum_rod_axis_cosine": 0.9812467905018367,
+          "stroke_over_crank": 1.5457715789896396,
+          "envelope_diagonal_over_crank": 12.449426015188111
+        },
+        "margins": {
+          "stroke_to_envelope": 0.0003240841195265992,
+          "minimum_transmission_sine": 0.0031588537237037806,
+          "minimum_rod_axis_cosine": 0.03197679050183677
+        },
+        "parameters": [
+          2.115187204091981,
+          2.2162081851735116,
+          1.6822743269282214,
+          2.768176349636134,
+          -0.9078180603137885,
+          10.266398377884514,
+          -0.9835054026716312,
+          1.3056815738124332,
+          -3.071687641567785
+        ]
+      },
+      "assembly": {
+        "loop": {
+          "coupler_length": 2.2162081851735116,
+          "rocker_length": 1.6822743269282214,
+          "rocker_pivot_x": 2.115187204091981,
+          "rocker_pivot_y": 0.0,
+          "assembly_branch": -1,
+          "singularity_tolerance": 1e-10
+        },
+        "output": {
+          "along_coupler": 1.7037210181158362,
+          "normal_to_coupler": -2.1817733601625924
+        },
+        "slider": {
+          "axis_origin_x": 0.9491441233185702,
+          "axis_origin_y": -0.2576980990502457,
+          "axis_angle": 1.3056815738124332,
+          "connecting_rod_length": 10.266398377884514,
+          "assembly_branch": 1
+        }
+      },
+      "phase": -3.071687641567785,
+      "fine_geometry_check": {
+        "step_degrees": 0.05,
+        "metrics": {
+          "stroke_to_envelope": 0.12416409997135443,
+          "minimum_transmission_sine": 0.49048885372370365,
+          "minimum_rod_axis_cosine": 0.9812467905018367,
+          "stroke_over_crank": 1.5457720465812743,
+          "envelope_diagonal_over_crank": 12.449428191706744
+        },
+        "margins": {
+          "stroke_to_envelope": 0.0003240999713544218,
+          "minimum_transmission_sine": 0.0031588537237036696,
+          "minimum_rod_axis_cosine": 0.03197679050183677
+        },
+        "passed": true
+      }
+    },
+    {
+      "seed": 830,
+      "branch": -1,
+      "volume_sign": -1,
+      "nfev": 14472,
+      "best": {
+        "position_rms": 0.0193533386728364,
+        "derivative_rms": 0.06178594166988148,
+        "score": 0.02750094501265192,
+        "metrics": {
+          "stroke_to_envelope": 0.19007571995646877,
+          "minimum_transmission_sine": 0.49519808317880754,
+          "minimum_rod_axis_cosine": 0.9566427226930595,
+          "stroke_over_crank": 2.379714936833815,
+          "envelope_diagonal_over_crank": 12.519825979766475
+        },
+        "margins": {
+          "stroke_to_envelope": 0.06623571995646876,
+          "minimum_transmission_sine": 0.00786808317880755,
+          "minimum_rod_axis_cosine": 0.007372722693059552
+        },
+        "parameters": [
+          2.3747206778930736,
+          2.7562119123413527,
+          2.230256677416886,
+          4.540437556072428,
+          0.9809152441114876,
+          9.661290865062794,
+          -1.818559100186242,
+          -3.1193384894847487,
+          2.2747705711362247
+        ]
+      },
+      "assembly": {
+        "loop": {
+          "coupler_length": 2.7562119123413527,
+          "rocker_length": 2.230256677416886,
+          "rocker_pivot_x": 2.3747206778930736,
+          "rocker_pivot_y": 0.0,
+          "assembly_branch": -1,
+          "singularity_tolerance": 1e-10
+        },
+        "output": {
+          "along_coupler": 2.525673809980885,
+          "normal_to_coupler": 3.7731346392846365
+        },
+        "slider": {
+          "axis_origin_x": -0.0404671722441235,
+          "axis_origin_y": 1.818108800055915,
+          "axis_angle": -3.1193384894847487,
+          "connecting_rod_length": 9.661290865062794,
+          "assembly_branch": 1
+        }
+      },
+      "phase": 2.2747705711362247,
+      "fine_geometry_check": {
+        "step_degrees": 0.05,
+        "metrics": {
+          "stroke_to_envelope": 0.19007597334792473,
+          "minimum_transmission_sine": 0.4951973656746159,
+          "minimum_rod_axis_cosine": 0.9566426810190971,
+          "stroke_over_crank": 2.3797189990907732,
+          "envelope_diagonal_over_crank": 12.519830661263086
+        },
+        "margins": {
+          "stroke_to_envelope": 0.06623597334792472,
+          "minimum_transmission_sine": 0.007867365674615934,
+          "minimum_rod_axis_cosine": 0.00737268101909716
+        },
+        "passed": true
+      }
+    }
+  ],
+  "limitations": [
+    "Sampled slider clearance and transmission screens",
+    "Cylinder collisions not evaluated",
+    "No thermodynamic evaluation"
+  ],
+  "best": {
+    "seed": 829,
+    "branch": -1,
+    "volume_sign": 1,
+    "nfev": 14472,
+    "best": {
+      "position_rms": 0.011005013498287872,
+      "derivative_rms": 0.032540628429114024,
+      "score": 0.015066504968096106,
+      "metrics": {
+        "stroke_to_envelope": 0.1241640841195266,
+        "minimum_transmission_sine": 0.49048885372370377,
+        "minimum_rod_axis_cosine": 0.9812467905018367,
+        "stroke_over_crank": 1.5457715789896396,
+        "envelope_diagonal_over_crank": 12.449426015188111
+      },
+      "margins": {
+        "stroke_to_envelope": 0.0003240841195265992,
+        "minimum_transmission_sine": 0.0031588537237037806,
+        "minimum_rod_axis_cosine": 0.03197679050183677
+      },
+      "parameters": [
+        2.115187204091981,
+        2.2162081851735116,
+        1.6822743269282214,
+        2.768176349636134,
+        -0.9078180603137885,
+        10.266398377884514,
+        -0.9835054026716312,
+        1.3056815738124332,
+        -3.071687641567785
+      ]
+    },
+    "assembly": {
+      "loop": {
+        "coupler_length": 2.2162081851735116,
+        "rocker_length": 1.6822743269282214,
+        "rocker_pivot_x": 2.115187204091981,
+        "rocker_pivot_y": 0.0,
+        "assembly_branch": -1,
+        "singularity_tolerance": 1e-10
+      },
+      "output": {
+        "along_coupler": 1.7037210181158362,
+        "normal_to_coupler": -2.1817733601625924
+      },
+      "slider": {
+        "axis_origin_x": 0.9491441233185702,
+        "axis_origin_y": -0.2576980990502457,
+        "axis_angle": 1.3056815738124332,
+        "connecting_rod_length": 10.266398377884514,
+        "assembly_branch": 1
+      }
+    },
+    "phase": -3.071687641567785,
+    "fine_geometry_check": {
+      "step_degrees": 0.05,
+      "metrics": {
+        "stroke_to_envelope": 0.12416409997135443,
+        "minimum_transmission_sine": 0.49048885372370365,
+        "minimum_rod_axis_cosine": 0.9812467905018367,
+        "stroke_over_crank": 1.5457720465812743,
+        "envelope_diagonal_over_crank": 12.449428191706744
+      },
+      "margins": {
+        "stroke_to_envelope": 0.0003240999713544218,
+        "minimum_transmission_sine": 0.0031588537237036696,
+        "minimum_rod_axis_cosine": 0.03197679050183677
+      },
+      "passed": true
+    }
+  },
+  "elapsed_seconds": 250.58252900198568
+}
