@@ -19,7 +19,7 @@ def main():
     for run in report['runs']:
         if not run['best']:continue
         try:
-            r,_,_=assess(run['best']['parameters'],run['branch'],run['volume_sign'],grid,np.zeros_like(grid),np.zeros_like(grid),'F')
+            r,_,_=assess(run['best']['parameters'],run['branch'],run['volume_sign'],grid,np.zeros_like(grid),np.zeros_like(grid),'F',report.get('slider_branch',1))
             run['fine_geometry_check']=dict(step_degrees=.05,metrics=r['metrics'],margins=r['margins'],passed=all(m>=0 for m in r['margins'].values()))
         except ValueError as exc:run['fine_geometry_check']=dict(passed=False,reason=str(exc))
     valid=[r for r in report['runs'] if r.get('fine_geometry_check',{}).get('passed')]
@@ -33,7 +33,7 @@ def main():
     import matplotlib.pyplot as plt
     fig,axes=plt.subplots(2,1,figsize=(10,7),sharex=True)
     for family,run in [('E',e),('F',report['best'])]:
-        _,q,dq=assess(run['best']['parameters'],run['branch'],run['volume_sign'],target['theta_rad'],target['small_fraction_0_1'],target['small_dq_dtheta_per_rad'],family)
+        _,q,dq=assess(run['best']['parameters'],run['branch'],run['volume_sign'],target['theta_rad'],target['small_fraction_0_1'],target['small_dq_dtheta_per_rad'],family,run.get('slider_branch',1))
         axes[0].plot(target['theta_deg'],q,label='Best '+family);axes[1].plot(target['theta_deg'],dq)
     for ax,key in zip(axes,['small_fraction_0_1','small_dq_dtheta_per_rad']):
         ax.plot(target['theta_deg'],target[key],'k--',label='Free-motion target');ax.grid(alpha=.2)
