@@ -1,0 +1,32 @@
+{
+  "reference_file": "motor_champion_sixbar_k2.json",
+  "reference_sha256": "110433d319e1c319f46528dbe1ca2cd3f90b0de07b5027828024f606342327cc",
+  "hydraulic_loss_multiplier": 1,
+  "files": [
+    {
+      "file": "champion-6bar_thermodynamic_cycle_raw.csv",
+      "rows": 1397,
+      "columns": 52
+    },
+    {
+      "file": "champion-6bar_thermodynamic_cycle.csv",
+      "rows": 1441,
+      "columns": 52
+    }
+  ],
+  "indicated_thermal_efficiency": 0.2038170952236293,
+  "indicated_power_W": 51.4066888197104,
+  "convergence_history": [
+    {
+      "cycle": 1,
+      "normalized_state_error": 0.9115596655634762
+    }
+  ],
+  "period_s": 0.5,
+  "sampling": "Main CSV: 0.25 degree grid, linear interpolation of conservative states and quadratures; rates recomputed. Raw CSV: original adaptive solver samples.",
+  "signs": "Heat positive into gas/wall as named; indicated work positive on expansion; signed flows positive in column-name direction.",
+  "angle_convention": "Motor angle increases with time; study angle is its negative. No additional motion transformation.",
+  "units": "SI units encoded in column names. Valve open: 1, closed: 0.",
+  "endpoint": "Both cycle endpoints retained, without forcing the final state equal to the initial state.",
+  "mechanical_losses": "unknown"
+}
