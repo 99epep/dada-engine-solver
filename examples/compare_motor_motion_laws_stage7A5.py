@@ -86,6 +86,7 @@ def _evaluate(
     definition: CampaignDefinition,
     *,
     initial_state: np.ndarray | None = None,
+    progress_callback=None,
 ) -> tuple[dict, np.ndarray | None]:
     wrapper = design.build()
     if not isinstance(wrapper, AirWallMotor):
@@ -99,6 +100,7 @@ def _evaluate(
         initial_state,
         maximum_cycles=design.configuration.numerical.maximum_cycles,
         settings=definition.wall_numerical_settings,
+        progress_callback=progress_callback,
     )
 
     result = {

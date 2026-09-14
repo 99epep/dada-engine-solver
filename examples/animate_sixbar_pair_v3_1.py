@@ -1,36 +1,25 @@
 #!/usr/bin/env python3
-"""DADA six-bar pair animation, V3.
+"""DADA six-bar pair animation, V3.1.
 
-Data sources
-------------
-- Mechanical champion:
-    outputs/motor_champion_sixbar_k2.json
-- Thermodynamic cycle:
-    outputs/champion-6bar_thermodynamic_cycle.csv
-- Thermodynamic metadata:
-    outputs/champion-6bar_thermodynamic_cycle_metadata.json
-
-The script uses the exact K2-selected six-bar parameters embedded in the model
-JSON and the exact CSV columns:
-    motor_angle_deg
-    study_angle_deg
-    S_temperature_K
-    L_temperature_K
-    Hi_temperature_K
-    Ho_temperature_K
-    Hi_to_L_valve_open
-    Ho_to_S_valve_open
-
-The gas color scale is global over S, L, Hi and Ho:
-pure blue = coldest internal gas state in the complete cycle
-vivid red = hottest internal gas state in the complete cycle.
+Main refinements over V3:
+- piston is drawn first, cylinder afterwards, so the piston visually passes under
+  the cylinder head;
+- a small head clearance is kept so the piston line does not visually cross the
+  closed cylinder head;
+- no T-manifolds in the exchanger block: just two direct colored transfer lines;
+- transfer lines/exchangers are drawn without black outlines, directly in gas
+  temperature colors;
+- thicker conduits, narrower spring exchangers;
+- cylinders moved a bit closer by default;
+- tighter margins to make the mechanisms appear larger;
+- thin black circles show the crank-pin trajectories.
 
 Run:
-    PYTHONPATH=src python3 examples/animate_sixbar_pair_v3.py
+    PYTHONPATH=src python3 examples/animate_sixbar_pair_v3_1.py
 
 or:
-    PYTHONPATH=src python3 examples/animate_sixbar_pair_v3.py \
-        --output outputs/sixbar_pair_v3.gif
+    PYTHONPATH=src python3 examples/animate_sixbar_pair_v3_1.py \
+        --output outputs/sixbar_pair_v3_1.gif
 """
 
 from __future__ import annotations
@@ -53,7 +42,7 @@ ROOT = Path.cwd()
 DEFAULT_MODEL = ROOT / "outputs" / "motor_champion_sixbar_k2.json"
 DEFAULT_CYCLE = ROOT / "outputs" / "champion-6bar_thermodynamic_cycle.csv"
 DEFAULT_METADATA = ROOT / "outputs" / "champion-6bar_thermodynamic_cycle_metadata.json"
-DEFAULT_OUTPUT = ROOT / "outputs" / "sixbar_pair_v3.gif"
+DEFAULT_OUTPUT = ROOT / "outputs" / "sixbar_pair_v3_1.gif"
 
 
 COLORS = {
@@ -67,7 +56,6 @@ COLORS = {
     "joint_fill": "#ffffff",
     "piston": "#555555",
     "cylinder": "#111111",
-    "pipe": "#202020",
 }
 
 
@@ -190,17 +178,6 @@ def rotate_point(p: np.ndarray, angle: float) -> np.ndarray:
 
 
 def orient_state(state: dict, side: str) -> dict:
-    """Put both piston axes on y=0.
-
-    S points toward +x (cylinder to its right).
-    L points toward -x (cylinder to its left).
-
-    For L this is a 180-degree reorientation, not a mathematical reflection.
-    A true reflection reverses handedness and therefore reverses the visible
-    crank rotation. The 180-degree reorientation satisfies both requirements:
-    mechanisms at opposite ends AND both cranks rotating in the same visible
-    direction, without time-reversing the L thermodynamic motion.
-    """
     target_axis = 0.0 if side == "left" else math.pi
     rot = target_axis - float(state["axis_angle"])
 
@@ -208,7 +185,6 @@ def orient_state(state: dict, side: str) -> dict:
     for key in POINT_KEYS:
         out[key] = rotate_point(state[key], rot)
 
-    # Slider axis exactly on y=0.
     dy = -out["axis_origin"][1]
     for key in POINT_KEYS:
         out[key] = out[key] + np.array((0.0, dy))
@@ -237,12 +213,14 @@ def place_samples(
     pmin = float(np.min(piston_x))
     pmax = float(np.max(piston_x))
 
-    # No clearance at the cylinder head at end of compression:
-    # the piston reaches the U head exactly.
+    # Visual clearance at the closed head so the piston line does not appear
+    # to cut through the cylinder head. Approximate screen-thickness-based gap.
+    head_clear = 0.035 * cylinder_width
+
     if side == "left":
-        shift_x = inner_head_x - pmax
+        shift_x = inner_head_x - head_clear - pmax
     else:
-        shift_x = inner_head_x - pmin
+        shift_x = inner_head_x + head_clear - pmin
 
     placed = []
     for s in samples:
@@ -253,8 +231,7 @@ def place_samples(
 
     px = np.asarray([s["P"][0] for s in placed])
 
-    # Open rod end is placed only slightly beyond the outermost piston position.
-    rod_side_extra = 0.55
+    rod_side_extra = 0.50
     if side == "left":
         outer_x = float(np.min(px)) - rod_side_extra
     else:
@@ -292,7 +269,6 @@ def load_cycle(path: Path) -> dict[str, np.ndarray]:
         missing = [c for c in REQUIRED_COLUMNS if c not in reader.fieldnames]
         if missing:
             raise ValueError(f"{path} is missing columns: {missing}")
-
         rows = list(reader)
 
     out = {
@@ -300,7 +276,6 @@ def load_cycle(path: Path) -> dict[str, np.ndarray]:
         for c in REQUIRED_COLUMNS
     }
 
-    # The published cycle contains both 0° and 360°. Use one unique cycle.
     if len(out["motor_angle_deg"]) >= 2:
         if abs(out["motor_angle_deg"][-1] - out["motor_angle_deg"][0] - 360.0) < 1e-9:
             for k in out:
@@ -326,15 +301,7 @@ def periodic_interp(
 
 
 def load_metadata(path: Path) -> dict:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    expected = (
-        "Motor angle increases with time; study angle is its negative. "
-        "No additional motion transformation."
-    )
-    # Not fatal: metadata is informative and may evolve.
-    if data.get("angle_convention") != expected:
-        print("Warning: angle convention metadata differs from the V3 reference.")
-    return data
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
@@ -342,7 +309,6 @@ def load_metadata(path: Path) -> dict:
 # ---------------------------------------------------------------------------
 
 def temperature_rgb(T: float, Tmin: float, Tmax: float) -> tuple[float, float, float]:
-    """Pure blue -> vivid red, no hidden rescaling per region/frame."""
     if Tmax <= Tmin:
         a = 0.5
     else:
@@ -351,45 +317,16 @@ def temperature_rgb(T: float, Tmin: float, Tmax: float) -> tuple[float, float, f
     return (a, 0.0, 1.0 - a)
 
 
-def colored_segment(
-    ax,
-    p0,
-    p1,
-    T0,
-    T1,
-    Tmin,
-    Tmax,
-    linewidth=3.0,
-    zorder=4,
-):
-    pts = np.linspace(np.asarray(p0, float), np.asarray(p1, float), 32)
-    segs = np.stack([pts[:-1], pts[1:]], axis=1)
-    temps = np.linspace(T0, T1, len(pts))
-    mids = 0.5 * (temps[:-1] + temps[1:])
-    colors = [temperature_rgb(t, Tmin, Tmax) for t in mids]
-    lc = LineCollection(
-        segs,
-        colors=colors,
-        linewidths=linewidth,
-        capstyle="round",
-        joinstyle="round",
-        zorder=zorder,
-    )
-    ax.add_collection(lc)
-
-
 def colored_polyline(
     ax,
     pts: np.ndarray,
-    T0: float,
-    T1: float,
+    temps: np.ndarray,
     Tmin: float,
     Tmax: float,
-    linewidth=3.0,
-    zorder=4,
+    linewidth=5.5,
+    zorder=3,
 ):
     segs = np.stack([pts[:-1], pts[1:]], axis=1)
-    temps = np.linspace(T0, T1, len(pts))
     mids = 0.5 * (temps[:-1] + temps[1:])
     lc = LineCollection(
         segs,
@@ -400,6 +337,14 @@ def colored_polyline(
         zorder=zorder,
     )
     ax.add_collection(lc)
+
+
+def spring_points(x0, x1, y, amplitude, turns=5, n=180):
+    s = np.linspace(0.0, 1.0, n)
+    return np.column_stack((
+        x0 + (x1-x0)*s,
+        y + amplitude*np.sin(2*math.pi*turns*s),
+    ))
 
 
 # ---------------------------------------------------------------------------
@@ -443,15 +388,25 @@ def draw_mechanism(ax, s, width, lw=2.5):
     A, B, C, D, E = s["A"], s["B"], s["C"], s["D"], s["E"]
     F, G, H, P = s["F"], s["G"], s["H"], s["P"]
 
-    # Primary four-bar / coupler plate.
+    # Thin crank-pin trajectory.
+    crank_radius = float(np.linalg.norm(B - A))
+    ax.add_patch(
+        Circle(
+            (A[0], A[1]),
+            crank_radius,
+            fill=False,
+            edgecolor="black",
+            lw=0.85,
+            zorder=0,
+        )
+    )
+
     ax.plot(*zip(A, B), color=COLORS["crank"], lw=lw, solid_capstyle="round")
     ax.plot(*zip(B, C), color=COLORS["coupler"], lw=lw, solid_capstyle="round")
     ax.plot(*zip(C, D), color=COLORS["rocker"], lw=lw, solid_capstyle="round")
     ax.plot(*zip(B, E), color=COLORS["coupler"], lw=lw*0.92, solid_capstyle="round")
     ax.plot(*zip(C, E), color=COLORS["coupler"], lw=lw*0.92, solid_capstyle="round")
 
-    # Secondary RR dyad + rigid EFH plate.
-    # Only GF is violet. EF, EH and FH all belong to the red plate.
     ax.plot(*zip(G, F), color=COLORS["secondary_dyad"], lw=lw, solid_capstyle="round")
     ax.plot(*zip(E, F), color=COLORS["secondary_plate"], lw=lw, solid_capstyle="round")
     ax.plot(*zip(E, H), color=COLORS["secondary_plate"], lw=lw, solid_capstyle="round")
@@ -482,9 +437,7 @@ def draw_cylinder(
     w = float(cyl["width"])
     head = float(cyl["x_inner"])
     outer = float(cyl["x_outer"])
-    side = cyl["side"]
 
-    # Gas only between closed head and piston.
     x0, x1 = sorted((head, float(piston_x)))
     if x1 > x0:
         ax.add_patch(
@@ -494,43 +447,33 @@ def draw_cylinder(
                 w,
                 facecolor=temperature_rgb(gas_T, Tmin, Tmax),
                 edgecolor="none",
-                alpha=0.90,
+                alpha=0.92,
                 zorder=1,
             )
         )
 
-    # U cylinder; open toward the mechanism.
+    # Draw piston first so it stays visually underneath the cylinder outline.
+    ax.plot(
+        [piston_x, piston_x], [-w/2, w/2],
+        color=COLORS["piston"], lw=piston_lw,
+        solid_capstyle="butt", zorder=4,
+    )
+
     ax.plot(
         [head, head], [-w/2, w/2],
         color=COLORS["cylinder"], lw=wall_lw,
-        solid_capstyle="round", zorder=5,
+        solid_capstyle="round", zorder=6,
     )
     ax.plot(
         [min(head, outer), max(head, outer)], [w/2, w/2],
         color=COLORS["cylinder"], lw=wall_lw,
-        solid_capstyle="round", zorder=5,
+        solid_capstyle="round", zorder=6,
     )
     ax.plot(
         [min(head, outer), max(head, outer)], [-w/2, -w/2],
         color=COLORS["cylinder"], lw=wall_lw,
-        solid_capstyle="round", zorder=5,
+        solid_capstyle="round", zorder=6,
     )
-
-    # Piston exactly spans the bore, no visible clearance.
-    ax.plot(
-        [piston_x, piston_x], [-w/2, w/2],
-        color=COLORS["piston"], lw=piston_lw,
-        solid_capstyle="butt", zorder=7,
-    )
-
-
-def spring_points(x0, x1, y, amplitude, turns=6, n=240):
-    s = np.linspace(0.0, 1.0, n)
-    # Rounded lead-in / lead-out: sinusoid naturally meets the centreline.
-    return np.column_stack((
-        x0 + (x1-x0)*s,
-        y + amplitude*np.sin(2*math.pi*turns*s),
-    ))
 
 
 def draw_check_valve(
@@ -539,16 +482,13 @@ def draw_check_valve(
     size,
     direction,
     is_open,
-    lw=2.5,
+    color="black",
+    lw=2.2,
 ):
-    """Simple readable check valve: triangle/poppet + seat.
-
-    No enclosing circle and no crossed lines. Open state adds a visible seat gap.
-    """
     x, y = map(float, center)
-    h = 0.17 * size
-    length = 0.30 * size
-    seat_h = 0.40 * size
+    h = 0.14 * size
+    length = 0.28 * size
+    seat_h = 0.34 * size
     gap = (0.085 if is_open else 0.025) * size
 
     if direction == "right":
@@ -564,7 +504,7 @@ def draw_check_valve(
         [(base_x, y-h), (base_x, y+h), (tip_x, y)],
         closed=True,
         facecolor="white",
-        edgecolor="black",
+        edgecolor=color,
         lw=lw,
         joinstyle="round",
         zorder=9,
@@ -572,7 +512,7 @@ def draw_check_valve(
     ax.add_patch(tri)
     ax.plot(
         [seat_x, seat_x], [y-seat_h/2, y+seat_h/2],
-        color="black", lw=lw, solid_capstyle="round", zorder=9,
+        color=color, lw=lw, solid_capstyle="round", zorder=9,
     )
 
 
@@ -590,79 +530,95 @@ def draw_transfer_block(
     Tmin,
     Tmax,
 ):
-    """Draw Ho on top and Hi on bottom.
+    """Two direct exchange lines, no T manifolds.
 
-    Ho path: L -> Ho -> valve -> S  (right to left)
-    Hi path: S -> Hi -> valve -> L  (left to right)
+    Top line represents Ho path: L -> Ho -> valve -> S
+    Bottom line represents Hi path: S -> Hi -> valve -> L
     """
     xL = float(left_head)
     xR = float(right_head)
     span = xR - xL
 
-    # Keep the block between cylinder heads.
-    xl = xL + 0.07*span
-    xr = xR - 0.07*span
-    y_top = 0.92*large_width
-    y_bot = -0.92*large_width
+    y_top = 0.88 * large_width
+    y_bot = -0.88 * large_width
+    path_lw = 6.0
+    coil_amp = 0.16 * large_width
 
-    pipe_lw = 3.0
-    gas_lw = 1.8
+    # Top branch geometry.
+    top_up_l = np.array([xL, 0.0])
+    top_plateau_l = np.array([xL + 0.10*span, y_top])
+    top_coil0 = np.array([xL + 0.36*span, y_top])
+    top_coil1 = np.array([xL + 0.63*span, y_top])
+    top_valve = np.array([xL + 0.80*span, y_top])
+    top_plateau_r = np.array([xR - 0.10*span, y_top])
+    top_down_r = np.array([xR, 0.0])
 
-    # Central manifolds.
-    ax.plot([xL, xl], [0, 0], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    ax.plot([xR, xr], [0, 0], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    ax.plot([xl, xl], [y_bot, y_top], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    ax.plot([xr, xr], [y_bot, y_top], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
+    top_spring = spring_points(top_coil0[0], top_coil1[0], y_top, coil_amp, turns=5, n=180)
 
-    # Colored gas in manifolds.
-    ax.plot([xL, xl], [0, 0], color=temperature_rgb(Ts, Tmin, Tmax), lw=gas_lw, solid_capstyle="round", zorder=4)
-    ax.plot([xR, xr], [0, 0], color=temperature_rgb(Tl, Tmin, Tmax), lw=gas_lw, solid_capstyle="round", zorder=4)
-
-    # --- TOP: Ho, flow allowed right -> left ---
-    valve_x = xl + 0.20*(xr-xl)
-    spring0 = xl + 0.39*(xr-xl)
-    spring1 = xl + 0.79*(xr-xl)
-
-    ax.plot([xl, valve_x-0.20*large_width], [y_top, y_top], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    draw_check_valve(
-        ax, (valve_x, y_top), 0.55*large_width,
-        direction="left", is_open=bool(round(ho_valve_open)), lw=2.3,
+    colored_polyline(
+        ax,
+        np.vstack([top_down_r, top_plateau_r, [top_coil1[0], y_top]]),
+        np.array([Tl, Tho, Tho]),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
     )
-    ax.plot([valve_x+0.20*large_width, spring0], [y_top, y_top], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    top_spring = spring_points(spring0, spring1, y_top, 0.25*large_width)
-    ax.plot(top_spring[:,0], top_spring[:,1], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round", solid_joinstyle="round")
-    ax.plot([spring1, xr], [y_top, y_top], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-
-    # L -> Ho, exchanger is lumped at Tho, then Ho -> S.
-    colored_segment(ax, (xr, y_top), (spring1, y_top), Tl, Tho, Tmin, Tmax, linewidth=gas_lw)
-    colored_polyline(ax, top_spring[::-1], Tho, Tho, Tmin, Tmax, linewidth=gas_lw)
-    colored_segment(ax, (spring0, y_top), (xl, y_top), Tho, Ts, Tmin, Tmax, linewidth=gas_lw)
-
-    # --- BOTTOM: Hi, flow allowed left -> right ---
-    spring0b = xl + 0.21*(xr-xl)
-    spring1b = xl + 0.61*(xr-xl)
-    valve_xb = xl + 0.80*(xr-xl)
-
-    ax.plot([xl, spring0b], [y_bot, y_bot], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    bot_spring = spring_points(spring0b, spring1b, y_bot, 0.25*large_width)
-    ax.plot(bot_spring[:,0], bot_spring[:,1], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round", solid_joinstyle="round")
-    ax.plot([spring1b, valve_xb-0.20*large_width], [y_bot, y_bot], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
-    draw_check_valve(
-        ax, (valve_xb, y_bot), 0.55*large_width,
-        direction="right", is_open=bool(round(hi_valve_open)), lw=2.3,
+    colored_polyline(
+        ax,
+        top_spring[::-1],
+        np.linspace(Tho, Tho, len(top_spring)),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
     )
-    ax.plot([valve_xb+0.20*large_width, xr], [y_bot, y_bot], color=COLORS["pipe"], lw=pipe_lw, solid_capstyle="round")
+    colored_polyline(
+        ax,
+        np.vstack([[top_coil0[0], y_top], top_plateau_l, top_up_l]),
+        np.array([Tho, Ts, Ts]),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
+    )
+    draw_check_valve(
+        ax,
+        top_valve,
+        0.56*large_width,
+        direction="left",
+        is_open=bool(round(ho_valve_open)),
+        lw=2.2,
+    )
 
-    # S -> Hi -> L.
-    colored_segment(ax, (xl, y_bot), (spring0b, y_bot), Ts, Thi, Tmin, Tmax, linewidth=gas_lw)
-    colored_polyline(ax, bot_spring, Thi, Thi, Tmin, Tmax, linewidth=gas_lw)
-    colored_segment(ax, (spring1b, y_bot), (xr, y_bot), Thi, Tl, Tmin, Tmax, linewidth=gas_lw)
+    # Bottom branch geometry.
+    bot_down_l = np.array([xL, 0.0])
+    bot_plateau_l = np.array([xL + 0.10*span, y_bot])
+    bot_coil0 = np.array([xL + 0.36*span, y_bot])
+    bot_coil1 = np.array([xL + 0.63*span, y_bot])
+    bot_valve = np.array([xL + 0.80*span, y_bot])
+    bot_plateau_r = np.array([xR - 0.10*span, y_bot])
+    bot_up_r = np.array([xR, 0.0])
 
-    # Colored vertical manifold legs: cylinder temperature at centre -> branch temperature.
-    colored_segment(ax, (xl, 0), (xl, y_top), Ts, Tho, Tmin, Tmax, linewidth=gas_lw)
-    colored_segment(ax, (xl, 0), (xl, y_bot), Ts, Thi, Tmin, Tmax, linewidth=gas_lw)
-    colored_segment(ax, (xr, 0), (xr, y_top), Tl, Tho, Tmin, Tmax, linewidth=gas_lw)
-    colored_segment(ax, (xr, 0), (xr, y_bot), Tl, Thi, Tmin, Tmax, linewidth=gas_lw)
+    bot_spring = spring_points(bot_coil0[0], bot_coil1[0], y_bot, coil_amp, turns=5, n=180)
+
+    colored_polyline(
+        ax,
+        np.vstack([bot_down_l, bot_plateau_l, [bot_coil0[0], y_bot]]),
+        np.array([Ts, Thi, Thi]),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
+    )
+    colored_polyline(
+        ax,
+        bot_spring,
+        np.linspace(Thi, Thi, len(bot_spring)),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
+    )
+    colored_polyline(
+        ax,
+        np.vstack([[bot_coil1[0], y_bot], bot_plateau_r, bot_up_r]),
+        np.array([Thi, Tl, Tl]),
+        Tmin, Tmax, linewidth=path_lw, zorder=3,
+    )
+    draw_check_valve(
+        ax,
+        bot_valve,
+        0.56*large_width,
+        direction="right",
+        is_open=bool(round(hi_valve_open)),
+        lw=2.2,
+    )
 
 
 def cloud(samples):
@@ -692,10 +648,10 @@ def make_animation(
     small_mech, large_mech = load_mechanisms(model_json)
     cycle = load_cycle(cycle_csv)
     metadata = load_metadata(metadata_json)
+    _ = metadata  # kept for compatibility / future display
 
     motor_query = np.linspace(0.0, 360.0, frames, endpoint=False)
 
-    # Exact physical timing from the recorded cycle.
     study_deg = periodic_interp(
         cycle["motor_angle_deg"],
         cycle["study_angle_deg"],
@@ -710,7 +666,6 @@ def make_animation(
     hi_open = periodic_interp(cycle["motor_angle_deg"], cycle["Hi_to_L_valve_open"], motor_query)
     ho_open = periodic_interp(cycle["motor_angle_deg"], cycle["Ho_to_S_valve_open"], motor_query)
 
-    # Global scale over every internal gas region and every recorded cycle sample.
     all_internal_T = np.concatenate([
         cycle["S_temperature_K"],
         cycle["L_temperature_K"],
@@ -752,18 +707,14 @@ def make_animation(
         large_cyl["x_inner"],
     )
 
-    # Exchange coils intentionally determine the vertical envelope too.
-    ymin = min(float(np.min(pts[:,1])), -1.22*large_width)
-    ymax = max(float(np.max(pts[:,1])), +1.22*large_width)
+    ymin = min(float(np.min(pts[:,1])), -1.10*large_width)
+    ymax = max(float(np.max(pts[:,1])), +1.10*large_width)
 
     xspan = xmax-xmin
     yspan = ymax-ymin
+    mx = 0.003*xspan + 0.02
+    my = 0.020*yspan + 0.04
 
-    # Very small side margins.
-    mx = 0.006*xspan + 0.03
-    my = 0.025*yspan + 0.05
-
-    # Exactly 1200 px wide at default 100 dpi.
     fig = plt.figure(figsize=(12.0, 6.0), dpi=dpi)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_aspect("equal", adjustable="box")
@@ -804,8 +755,8 @@ def make_animation(
             wall_lw=7.0, piston_lw=10.0,
         )
 
-        draw_mechanism(ax, sS, small_width, lw=2.45)
-        draw_mechanism(ax, sL, large_width, lw=2.55)
+        draw_mechanism(ax, sS, small_width, lw=2.55)
+        draw_mechanism(ax, sL, large_width, lw=2.65)
         return ()
 
     anim = FuncAnimation(
@@ -820,12 +771,7 @@ def make_animation(
     output.parent.mkdir(parents=True, exist_ok=True)
     anim.save(output, writer=PillowWriter(fps=fps), dpi=dpi)
     plt.close(fig)
-
-    print(
-        f"Wrote {output}\n"
-        f"Temperature scale: {Tmin:.3f} K -> {Tmax:.3f} K\n"
-        f"Cycle period: {metadata.get('period_s', 'unknown')} s"
-    )
+    print(f"Wrote {output}")
 
 
 def main():
@@ -841,7 +787,7 @@ def main():
 
     ap.add_argument("--large-cylinder-width", type=float, default=8.0)
     ap.add_argument("--small-width-ratio", type=float, default=0.8)
-    ap.add_argument("--exchanger-gap", type=float, default=15.0)
+    ap.add_argument("--exchanger-gap", type=float, default=12.0)
 
     args = ap.parse_args()
 
