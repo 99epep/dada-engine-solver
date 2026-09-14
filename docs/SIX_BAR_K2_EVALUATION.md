@@ -54,3 +54,25 @@ analytic derivatives, periodic wrap continuity, volume bounds, candidate
 selection, invalid geometry and exactly one motor reversal. The complete suite
 passes: 319 tests in 44.04 seconds. The K2 calculation above is the end-to-end
 dynamic-wall integration check; no thermodynamic equations were modified.
+
+## Doubled internal hydraulic losses
+
+Run `PYTHONPATH=src python3 examples/evaluate_motor_champion_sixbar.py
+--hydraulic-loss-multiplier 2` on one line. The result is saved separately in
+`outputs/motor_champion_sixbar_k2_hydraulic_x2.json`.
+
+Tube and header loss coefficients are multiplied by two; effective valve CdA
+is divided by sqrt(2), doubling its quadratic resistance. Thus both coefficients
+in the unchoked passage relation `dp = a*m_dot + b*m_dot**2` are doubled.
+The existing compressible flow cap remains active with the adjusted effective
+CdA. Exchanger geometry, thermal properties, gas inventory, kinematics and
+convergence settings are unchanged. External-air losses remain excluded.
+Actual pressure drops and dissipated powers respond to the new periodic flow;
+they are not forced to equal twice their previous trajectory values.
+
+The recomputed periodic state converged in 23 cycles (42.70 seconds), with final
+normalized periodic error 0.947689 and a valid model assessment. Indicated
+thermal efficiency is **17.8110425%**, indicated gas power **44.148917 W** and
+external heat input **247.873851 W**. Relative to the reference six-bars, this
+is a loss of **2.570774 percentage points** of efficiency and **14.12%** of
+indicated power. The 15 focused kinematics/hardware tests pass.

@@ -9,6 +9,7 @@ import argparse
 from dataclasses import asdict, replace
 import hashlib
 import json
+import math
 from pathlib import Path
 import time
 
@@ -29,8 +30,16 @@ LARGE = ROOT / 'outputs/large_sixbar_stageL1.json'
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT/'outputs/motor_champion_sixbar_k2.json')
+    parser.add_argument('--output', type=Path)
+    parser.add_argument('--hydraulic-loss-multiplier', type=float, default=1.0,
+                        help='Scale tube, header and valve loss coefficients at fixed flow.')
     args = parser.parse_args()
+    factor = args.hydraulic_loss_multiplier
+    if not math.isfinite(factor) or factor <= 0:
+        parser.error('Hydraulic loss multiplier must be finite and positive.')
+    if args.output is None:
+        suffix = '' if factor == 1 else f'_hydraulic_x{factor:g}'
+        args.output = ROOT/f'outputs/motor_champion_sixbar_k2{suffix}.json'
     definition = CampaignDefinition(A5_CAMPAIGN)
     base, mass, saved, _, candidate_id = _candidate_design_and_mass(definition)
     k2 = json.loads(K2_REPORT.read_text())['best_feasible']
@@ -43,6 +52,15 @@ def main():
     design = replace(inventory,
         heat_in=_scaled_exchanger(inventory.heat_in, float(k2['k_i'])),
         heat_out=_scaled_exchanger(inventory.heat_out, float(k2['k_o'])))
+    if factor != 1:
+        def scaled_losses(exchanger):
+            # dp = a*m_dot + b*m_dot**2. Valve b is proportional to 1/CdA**2.
+            return replace(exchanger, inputs=replace(exchanger.inputs,
+                core_loss_multiplier=exchanger.inputs.core_loss_multiplier*factor,
+                header_loss_coefficient=exchanger.inputs.header_loss_coefficient*factor),
+                outlet_valve_cda_m2=exchanger.outlet_valve_cda_m2/math.sqrt(factor))
+        design = replace(design, heat_in=scaled_losses(design.heat_in),
+                         heat_out=scaled_losses(design.heat_out))
     initial = _rescaled_initial_state(saved, base, design)
     report = {
         'experiment': 'Independent six-bar S/L mechanisms with Stage K2 thermodynamics',
@@ -54,6 +72,14 @@ def main():
         'selection': {'small': {'restart': 0, 'second_branch': 1}, 'large': 'global best'},
         'kinematics': asdict(kinematics),
         'configuration': asdict(design.configuration),
+        'hydraulic_sensitivity': {
+            'loss_multiplier': factor,
+            'scope': 'Internal tube, header and valve losses; external-air losses excluded',
+            'heat_in_inputs': asdict(design.heat_in.inputs),
+            'heat_out_inputs': asdict(design.heat_out.inputs),
+            'heat_in_valve_cda_m2': design.heat_in.outlet_valve_cda_m2,
+            'heat_out_valve_cda_m2': design.heat_out.outlet_valve_cda_m2,
+        },
         'wall_numerical_settings': asdict(definition.wall_numerical_settings),
         'thermodynamic_basis': {
             'stage_a5_candidate_id': candidate_id,
