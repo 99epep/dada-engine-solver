@@ -22,6 +22,17 @@ from optimize_motor_piecewise_stageP3 import _feasibility
 NAMES = ('t1','t2','t3','a_l','b_l','a_s','b_s')
 
 
+def _symmetry_diagnostics(parameters):
+    """Return passive diagnostics for S/L intermediate-volume symmetry."""
+    delta_a = float(parameters['a_l'] - parameters['a_s'])
+    delta_b = float(parameters['b_l'] - parameters['b_s'])
+    return {
+        'delta_a': delta_a,
+        'delta_b': delta_b,
+        'rms': math.sqrt((delta_a * delta_a + delta_b * delta_b) / 2.0),
+    }
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--budget-seconds',type=float,default=480)
@@ -102,7 +113,8 @@ def main():
         except (ValueError,RuntimeError) as exc:
             result={'status':'integration_failure','message':str(exc)};state=None
         feasible,reasons=_feasibility(result) if result['status']=='converged' else (False,[])
-        record=dict(index=index,candidate_id=candidate_id,kind=kind,parameters=mapping,result=result,
+        record=dict(index=index,candidate_id=candidate_id,kind=kind,parameters=mapping,
+                    symmetry=_symmetry_diagnostics(mapping),result=result,
                     feasible=feasible,physical_constraint_failures=reasons,
                     elapsed_seconds=time.monotonic()-before,
                     warm_start_source=source['candidate_id'] if source else 'sixbar_reference',
@@ -114,7 +126,9 @@ def main():
         print(json.dumps(dict(index=index,status=result['status'],feasible=feasible,
                               efficiency=result.get('indicated_thermal_efficiency'),power_W=result.get('indicated_power_w'),
                               elapsed_seconds=record['elapsed_seconds'])),flush=True)
-        report=dict(best_feasible=best,phase_start_best=initial_best,attempted_total=len(history),
+        report=dict(best_feasible=best,
+                    best_symmetry=_symmetry_diagnostics(best['parameters']) if best else None,
+                    phase_start_best=initial_best,attempted_total=len(history),
                     requested_duration_seconds=args.budget_seconds,actual_duration_seconds=time.monotonic()-start,
                     reference_efficiency=basis['reference_efficiency'],reference_sixbar_efficiency=reference['result']['indicated_thermal_efficiency'])
         (directory/'report.json').write_text(json.dumps(report,indent=2)+'\n')
