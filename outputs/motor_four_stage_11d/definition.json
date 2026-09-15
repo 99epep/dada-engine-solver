@@ -1,0 +1,46 @@
+{
+  "names": [
+    "t0_s",
+    "t1_l",
+    "t2_l",
+    "t3_l",
+    "t1_s",
+    "t2_s",
+    "t3_s",
+    "a_l",
+    "b_l",
+    "a_s",
+    "b_s"
+  ],
+  "seed": {
+    "t0_s": 0.0,
+    "t1_l": 0.5395244395962604,
+    "t2_l": 0.6990599161470307,
+    "t3_l": 0.9231798069375672,
+    "t1_s": 0.5395244395962604,
+    "t2_s": 0.6990599161470307,
+    "t3_s": 0.9231798069375672,
+    "a_l": 0.36318997017010785,
+    "b_l": 0.11296032485372168,
+    "a_s": 0.36025860498579815,
+    "b_s": 0.17851659838446757
+  },
+  "minimum_stage_fraction": 0.02,
+  "radii": [
+    0.1,
+    0.05,
+    0.025
+  ],
+  "evaluations_per_radius": 96,
+  "elite_centers": 4,
+  "elite_distance": 0.04,
+  "sobol_seed": 260918,
+  "charge_pressure_pa": 100000.0,
+  "frequency_hz": 2.0,
+  "K2_k_i": 1.0941096737980842,
+  "K2_k_o": 0.5951122685149313,
+  "swept_ratio": 0.84,
+  "source_thermo3d_sha256": "166534288426166b6578bfea0b4db8bc65f61cf580d185c2f04187c0b82fe3b8",
+  "strategy": "Exact shared-7D seed followed by cyclic-aware local scrambled Sobol refinement in all eleven coordinates simultaneously; diverse elite centers retained; no symmetry penalty.",
+  "mass_policy": "Each candidate is filled at 100 kPa at global t=0. Warm-start gas masses and gas energies are rescaled together to the candidate filling inventory; wall energies remain unchanged."
+}
