@@ -1,0 +1,43 @@
+{
+  "parameter_names": [
+    "k_i",
+    "k_o",
+    "swept_ratio"
+  ],
+  "bounds": {
+    "k_i": [
+      0.75,
+      1.5
+    ],
+    "k_o": [
+      0.4,
+      0.85
+    ],
+    "swept_ratio": [
+      0.5,
+      1.3
+    ]
+  },
+  "charge_pressure_pa": 100000.0,
+  "charge_temperature_k": 298.15,
+  "working_gas": "air_from_A5_configuration",
+  "frequency_hz": 2.0,
+  "total_swept_volume_m3": 0.0018217821782178217,
+  "reference_swept_ratio": 0.84,
+  "small_clearance_ratio": 0.009999999999999998,
+  "large_clearance_ratio": 0.01,
+  "motion_parameters": {
+    "t1": 0.5395244395962604,
+    "t2": 0.6990599161470307,
+    "t3": 0.9231798069375672,
+    "a_l": 0.36318997017010785,
+    "b_l": 0.11296032485372168,
+    "a_s": 0.36025860498579815,
+    "b_s": 0.17851659838446757
+  },
+  "motion_source_sha256": "743c0572ce037c1ac5f9869f948e40fcd64087643b6d83405bd853c5d7bffe7b",
+  "K2_source_sha256": "16dd75015f07ba3fd1788156238ec9dcaf93b4a43681c5445812b9f7933d732c",
+  "sobol_seed": 260917,
+  "strategy": "One atmospheric-pressure control followed by broad scrambled 3D Sobol search; final seven-variable motion frozen; total cylinder swept volume fixed; S/L swept-volume ratio, H_i tube length and H_o tube length varied simultaneously.",
+  "mass_policy": "Derived independently for every candidate from a uniform 100 kPa filling state at theta=0 using actual connected exchanger gas volumes; mass is not an optimization coordinate."
+}
