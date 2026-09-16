@@ -10,6 +10,7 @@ import tomllib
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.hydraulics import CompressibleOrifice, FlowResult
+from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError, compressible_poiseuille, darcy_smooth
 
 
 def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
@@ -28,6 +29,19 @@ def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
     bank = MicrotubeBank(**data['geometry'])
     heat_in = HardwareInputs(**data['properties'], **data['heat_in'])
     heat_out = HardwareInputs(**data['properties'], **data['heat_out'])
+    if 'gas_model' in data:
+        from dada_solver.exchangers.gas_transport import DiluteGasTransport
+        from dada_solver.exchangers.gas_correlations import GasSurfaceAccommodation, SecondOrderSlip
+        settings = dict(data['gas_model'])
+        mode = settings.pop('mode', 'variable_properties')
+        if mode != 'variable_properties': raise ValueError('gas_model.mode must be variable_properties; omit the section for legacy.')
+        transport = DiluteGasTransport(settings.pop('species', 'air'))
+        accommodation = GasSurfaceAccommodation(**settings.pop('accommodation', {}))
+        slip = settings.pop('slip', None)
+        model = MicrotubeGasModel(transport, accommodation,
+            SecondOrderSlip(**slip) if slip is not None else None, **settings)
+        heat_in = replace(heat_in, gas_model=model)
+        heat_out = replace(heat_out, gas_model=model)
     return data, bank, heat_in, heat_out
 
 
@@ -38,6 +52,7 @@ class TubeHalfLink:
     core_loss_multiplier: float
     header_loss_coefficient: float
     valve_cda_m2: float | None = None
+    gas_model: MicrotubeGasModel | None = None
 
     def __post_init__(self):
         for value in (self.viscosity_pa_s, self.core_loss_multiplier):
@@ -53,6 +68,8 @@ class TubeHalfLink:
             raise ValueError('Pressures and temperature must be positive.')
         if downstream_pressure >= upstream_pressure:
             return FlowResult(0, False)
+        if self.gas_model is not None:
+            return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas)
         rho = (upstream_pressure+downstream_pressure)/(2*gas.gas_constant*upstream_temperature)
         area = self.bank.dimensions()['tube_flow_area_m2']
         linear = self.core_loss_multiplier*64*self.viscosity_pa_s*self.bank.tube_length_m/(rho*self.bank.tube_count*math.pi*self.bank.inner_diameter_m**4)
@@ -65,6 +82,55 @@ class TubeHalfLink:
         cap = CompressibleOrifice(min(area, self.valve_cda_m2 or area)).directed_flow(
             upstream_pressure, downstream_pressure, upstream_temperature, gas)
         return FlowResult(min(flow, cap.mass_flow_rate), flow >= cap.mass_flow_rate and cap.is_choked)
+
+    def _gas_flow(self, pin, pout, temperature, gas):
+        """Isothermal pressure-squared Poiseuille; unchanged header/valve network.
+
+        Each link owns L/2 and half the total header K. The minor-loss terms
+        remain mean-density closures, explicitly separate from tube friction.
+        """
+        from scipy.optimize import brentq
+        tr = self.gas_model.transport
+        if not math.isclose(tr.gas_constant, gas.gas_constant, rel_tol=.005):
+            raise ValueError('Transport species does not match thermodynamic gas.')
+        mu = tr.viscosity(temperature)
+        length = self.bank.tube_length_m/2
+        diameter = self.bank.inner_diameter_m
+        area = self.bank.tube_count*math.pi*diameter**2/4
+        rho = (pin+pout)/(2*gas.gas_constant*temperature)
+        factor = self.gas_model.slip_factor(pin,pout,temperature,diameter)
+        nominal = compressible_poiseuille(pin,pout,temperature,mu,length,diameter,
+                                          self.bank.tube_count,gas.gas_constant)*factor/self.core_loss_multiplier
+        linear = (pin-pout)/nominal
+        quadratic = self.header_loss_coefficient/(4*rho*area**2)
+        if self.valve_cda_m2 is not None: quadratic += 1/(2*rho*self.valve_cda_m2**2)
+        dp = pin-pout
+        flow = 2*dp/(linear+math.sqrt(linear**2+4*quadratic*dp))
+        re = flow*diameter/(area*mu)
+        if re >= 2300:
+            # The transition bridge is only a root-bracketing device. A root in
+            # transition is rejected below, never certified as a correlation.
+            def residual(m):
+                reynolds = m*diameter/(area*mu)
+                if reynolds < 2300: loss = linear*m
+                else:
+                    f0 = 64/2300
+                    f = (f0+(darcy_smooth(4000)-f0)*(reynolds-2300)/1700
+                         if reynolds<4000 else darcy_smooth(reynolds))
+                    loss = self.core_loss_multiplier*f*length/diameter*m*m/(2*rho*area*area)
+                return loss+quadratic*m*m-dp
+            upper = min(flow,5e6*area*mu/diameter)
+            if residual(upper)<0: raise MicrotubeDomainError('Required flow exceeds turbulent domain.')
+            flow = brentq(residual,0,upper,xtol=1e-15)
+            re = flow*diameter/(area*mu)
+            if 2300<=re<4000: raise MicrotubeDomainError('Transition flow has no validated hydraulic closure.')
+        diagnostics = self.gas_model.diagnose(self.bank,flow,pin,pout,temperature)
+        failures = [x for x in diagnostics.issues if x in ('high_mach','beyond_continuum_model')]
+        if re>=4000:
+            failures += [x for x in diagnostics.issues if x in ('large_relative_pressure_drop','thermal_slip_not_implemented')]
+        if failures and self.gas_model.domain_policy=='reject': raise MicrotubeDomainError('; '.join(failures))
+        cap = CompressibleOrifice(min(area,self.valve_cda_m2 or area)).directed_flow(pin,pout,temperature,gas)
+        return FlowResult(min(flow,cap.mass_flow_rate),flow>=cap.mass_flow_rate and cap.is_choked)
 
     def bidirectional_flow(self, first_pressure, second_pressure, first_temperature, second_temperature, gas):
         if first_pressure >= second_pressure:
@@ -94,10 +160,14 @@ class HardwareInputs:
     fan_total_efficiency: float
     core_loss_multiplier: float
     header_loss_coefficient: float
+    gas_model: MicrotubeGasModel | None = None
 
     def __post_init__(self):
         nonnegative = {'extra_wall_capacity_j_k', 'air_minor_loss_coefficient', 'header_loss_coefficient'}
+        if self.gas_model is not None and not isinstance(self.gas_model, MicrotubeGasModel):
+            raise ValueError('gas_model must be MicrotubeGasModel or None (legacy).')
         for key, value in vars(self).items():
+            if key == 'gas_model': continue
             if not math.isfinite(value) or (value < 0 if key in nonnegative else value <= 0):
                 raise ValueError(f'Invalid hardware input: {key}')
         if self.fan_total_efficiency > 1:
@@ -120,6 +190,10 @@ def build_exchanger(bank: MicrotubeBank, inputs: HardwareInputs):
     exchanger = AirWallExchanger(1/(gas_resistance+metal_resistance/2),
         1/(air_resistance+metal_resistance/2), capacity, inputs.air_mass_flow_kg_s,
         inputs.air_cp_j_kg_k, inputs.air_inlet_temperature_k)
+    if inputs.gas_model is not None:
+        from dada_solver.exchangers.gas_film import MicrotubeGasFilm
+        exchanger = replace(exchanger, gas_film=MicrotubeGasFilm(
+            bank, inputs.gas_model, metal_resistance/2))
     velocity = inputs.air_mass_flow_kg_s/(inputs.air_density_kg_m3*free_area)
     pressure_drop = (inputs.air_poiseuille_number*inputs.air_viscosity_pa_s*bank.tube_length_m*velocity/(2*air_diameter**2)
                      +inputs.air_minor_loss_coefficient*inputs.air_density_kg_m3*velocity**2/2)
@@ -131,6 +205,9 @@ def build_exchanger(bank: MicrotubeBank, inputs: HardwareInputs):
         air_pressure_drop_pa=pressure_drop,
         fan_electrical_power_w=pressure_drop*inputs.air_mass_flow_kg_s/inputs.air_density_kg_m3/inputs.fan_total_efficiency,
         assumptions='constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated')
+    if inputs.gas_model is not None:
+        report['assumptions'] = 'variable_internal_transport; quasi_steady_gas_film; lumped_wall; legacy_external_air_film; not_Doty_calibrated'
+        report['static_conductance_role'] = 'Legacy reference only; dynamic internal conductance comes from instantaneous flow'
     return exchanger, report
 
 

@@ -121,15 +121,8 @@ def _evaluate(
     cycle = WallDiagnosticCycle(angles, trajectory)
 
     def wall_heat_rates(index: int, _angle: float, gas_state: ThermodynamicState):
-        temperatures = gas_state.temperatures(wrapper.model.gas)
-        return (
-            wrapper.heat_in.rates(
-                temperatures[2], trajectory[8, index]
-            )["gas_heat_w"],
-            wrapper.heat_out.rates(
-                temperatures[3], trajectory[9, index]
-            )["gas_heat_w"],
-        )
+        incoming, outgoing = wrapper.thermal_rates(_angle, trajectory[:, index])
+        return incoming['gas_heat_w'], outgoing['gas_heat_w']
 
     diagnostics = extract_cycle_diagnostics(
         cycle,
@@ -145,11 +138,15 @@ def _evaluate(
     maximum_reynolds, maximum_mach = helper._tube_validity(
         wrapper, angles, trajectory
     )
+    from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+    gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
     validity = finalize_microtube_validity(
         validity,
         maximum_reynolds,
         maximum_mach,
         design.configuration.validity.maximum_mach_number,
+        requires_laminar=gas_domains is None,
+        domain_failures=gas_domains['failed_criteria'] if gas_domains else (),
     )
 
     max_abs_flow = max(
@@ -168,6 +165,7 @@ def _evaluate(
             "maximum_absolute_mass_flow_kg_s": max_abs_flow,
             "validity": json_values(asdict(validity)),
             "diagnostics": json_values(asdict(diagnostics)),
+            "microtube_gas_domains": gas_domains,
             "total_mass_kg": float(trajectory[:8:2, -1].sum()),
         }
     )

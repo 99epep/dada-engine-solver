@@ -81,3 +81,47 @@ def scale_bank(reference: DotyReference, *, parallel_banks: int,
         "sum_bank_mass_kg": parallel_banks * 0.3,
         "status": "unvalidated_steady_scaling",
     }
+
+
+def validate_gas_hydraulics(path: str | Path) -> list[dict]:
+    """Uncalibrated absolute Doty checks with declared property conventions.
+
+    Reported pressure is treated as mean tube pressure; T=(T3+T4)/2.
+    Experimental output uncertainty is not inflated to hide model discrepancy.
+    Thermal measurements are retained, but no missing shell-side closure is
+    invented to turn this tube-hydraulic test into a complete UA prediction.
+    """
+    from .gas_transport import DiluteGasTransport
+    from .microtube_geometry import MicrotubeBank
+    from .gas_correlations import MicrotubeGasModel, compressible_poiseuille
+    import math
+    with Path(path).open(newline='') as stream:
+        rows=list(csv.DictReader(stream))
+    bank=MicrotubeBank(309,.127,.00033,.0001524,.00125,.001)
+    output=[]
+    for index,row in enumerate(rows):
+        tr=DiluteGasTransport(row['fluid'])
+        t=(float(row['T3_K'])+float(row['T4_K']))/2
+        p=float(row['pressure_Pa']); flow=float(row['mass_flow_kg_s'])
+        measured=float(row['pressure_drop_Pa']);uncertainty=float(row['pressure_drop_uncertainty_Pa'])
+        for model_id,mu in [('legacy_constant_300K',tr.viscosity(300)),('compressible_variable_transport',tr.viscosity(t))]:
+            predicted=128*mu*bank.tube_length_m*flow*tr.gas_constant*t/(p*bank.tube_count*math.pi*bank.inner_diameter_m**4)
+            recovered=compressible_poiseuille(p+predicted/2,p-predicted/2,t,mu,bank.tube_length_m,
+                bank.inner_diameter_m,bank.tube_count,tr.gas_constant)
+            diag=MicrotubeGasModel(tr).diagnose(bank,flow,p+predicted/2,p-predicted/2,t)
+            output.append(dict(fluid=row['fluid'],row=index,model_id=model_id,
+                quantity='tube_pressure_drop_Pa',measured=measured,predicted=predicted,
+                absolute_error=abs(predicted-measured),signed_error=predicted-measured,
+                relative_error=(predicted-measured)/measured,
+                inside_experimental_uncertainty=abs(predicted-measured)<=uncertainty,
+                experimental_output_uncertainty=uncertainty,
+                model_validity=dict(thermal_and_hydraulic_screen=diag.model_validity,issues=diag.issues,
+                    reynolds=diag.reynolds,knudsen=diag.knudsen,mach=diag.mach),
+                inverse_flow_residual_kg_s=recovered-flow,
+                source='Doty et al. 1991 Tables 1-2; '+str(path),
+                property_provenance=tr.provenance,
+                assumptions='Mean reported pressure; mean T3/T4; 309 tubes, 0.33 mm ID, 127 mm length; no fitted multiplier',
+                thermal_validation=dict(measured_UA_W_K=float(row['UA_W_K']),measured_effectiveness=float(row['effectiveness']),
+                    predicted_UA_W_K=None,inside_experimental_uncertainty=None,
+                    status='unavailable_without_independent_shell_side_and_axial_temperature_model')))
+    return output

@@ -75,10 +75,12 @@ def rescale_wall_state(values, target_gas_mass, old_wall_capacities, new_wall_ca
     return state
 
 
-def finalize_microtube_validity(validity, maximum_reynolds, maximum_mach, mach_limit):
+def finalize_microtube_validity(validity, maximum_reynolds, maximum_mach, mach_limit,
+                               *, requires_laminar=True, domain_failures=()):
     """Replace generic Mach unavailability and recompute the global verdict."""
     failed = list(validity.failed_criteria)
-    if maximum_reynolds >= 2300: failed.append('microtube_internal_laminar_reynolds')
+    if requires_laminar and maximum_reynolds >= 2300: failed.append('microtube_internal_laminar_reynolds')
+    failed.extend(domain_failures)
     if maximum_mach > mach_limit: failed.append('microtube_mach_number')
     unavailable = tuple(x for x in validity.unavailable_criteria if x != 'mach_number')
     verdict = (ValidityVerdict.INVALID if failed else
@@ -186,7 +188,9 @@ class MachineEvaluator:
                 progress_callback=control.check,
                 settings=self.definition.wall_numerical_settings)
         except (ValueError, RuntimeError, ArithmeticError) as error:
-            result = rejected('integration_failure', f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
+            from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
+            status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
+            result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
             return result
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         guess = (_state_record(periodic.last_complete_state, layout, family, direction,
@@ -203,16 +207,19 @@ class MachineEvaluator:
         cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
         performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
         def wall_heat_rates(index, _angle, gas_state):
-            temperatures = gas_state.temperatures(wrapper.model.gas)
-            return (wrapper.heat_in.rates(temperatures[2], periodic.trajectory[8,index])['gas_heat_w'],
-                    wrapper.heat_out.rates(temperatures[3], periodic.trajectory[9,index])['gas_heat_w'])
+            incoming, outgoing = wrapper.thermal_rates(_angle, periodic.trajectory[:,index])
+            return incoming['gas_heat_w'], outgoing['gas_heat_w']
         diagnostics = (extract_cycle_diagnostics(cycle, wrapper.model,
             heat_rate_provider=wall_heat_rates) if periodic.converged else None)
         validity = assess_cycle_validity(cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
         max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory)
+        from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+        gas_domains = cycle_microtube_diagnostics(wrapper, periodic.angles, periodic.trajectory)
         if validity is not None:
             validity = finalize_microtube_validity(validity, max_re, max_mach,
-                design.configuration.validity.maximum_mach_number)
+                design.configuration.validity.maximum_mach_number,
+                requires_laminar=gas_domains is None,
+                domain_failures=gas_domains['failed_criteria'] if gas_domains else ())
         evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
             status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
             periodic=SimpleNamespace(message=periodic.message), performance=performance,
@@ -220,10 +227,18 @@ class MachineEvaluator:
         domain = dict(name='microtube_model_domain', margin=float(min(2300-max_re,
             design.configuration.validity.maximum_mach_number-max_mach)),
             satisfied=bool(max_re < 2300 and max_mach <= design.configuration.validity.maximum_mach_number), available=True)
+        if gas_domains is not None:
+            satisfied = gas_domains['model_validity']=='valid' and max_mach<=design.configuration.validity.maximum_mach_number
+            domain.update(satisfied=satisfied, margin=1. if satisfied else -1.)
         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
-            maximum_tube_mach_number=max_mach), source, distance, convergence, guess, [domain])
+            maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
 
     def _tube_validity(self, wrapper, angles, trajectory):
+        if any(getattr(w,'requires_flow_context',False) for w in (wrapper.heat_in,wrapper.heat_out)):
+            from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+            domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)['passages'].values()
+            return (max(x['hydraulic_upstream_ranges']['reynolds']['maximum'] for x in domains),
+                    max(x['hydraulic_upstream_ranges']['mach']['maximum'] for x in domains))
         max_re = max_mach = 0.; gas = wrapper.model.gas
         for angle, values in zip(angles, trajectory.T):
             state = ThermodynamicState.from_array(values[:8]); temps = state.temperatures(gas)

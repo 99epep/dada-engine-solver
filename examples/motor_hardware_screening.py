@@ -8,14 +8,13 @@ import csv
 import json
 import math
 import time as timer
-import tomllib
 import numpy as np
 
 from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state, initial_valve_topology
 from dada_solver.state import ThermodynamicState
-from dada_solver.exchangers.hardware import HardwareInputs, connect_hardware
-from dada_solver.exchangers.microtube_geometry import MicrotubeBank
+from dada_solver.exchangers.hardware import connect_hardware, load_hardware_definition
+from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
 from dada_solver.exchangers.duty import summarize_port
 from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor, WallCycleNumericalSettings
 
@@ -41,20 +40,8 @@ def output_path(suffix):
     return Path(str(args.output_prefix)+suffix)
 run_start=timer.perf_counter()
 checkpoint_seconds=0.0
-data = tomllib.loads(args.hardware.read_text())
-if 'air_sizing' in data:
-    sizing=data['air_sizing']
-    factors=[sizing['reference_peak_internal_mass_flow_kg_s'],sizing['expected_peak_margin'],
-             sizing['capacity_rate_ratio_to_expected_peak'],sizing['working_gas_cp_j_kg_k']]
-    if not all(math.isfinite(value) and value>0 for value in factors):
-        raise ValueError('Air sizing factors must be finite and positive')
-    data['properties']['air_mass_flow_kg_s']=math.prod(factors)/data['properties']['air_cp_j_kg_k']
-bank = MicrotubeBank(**data['geometry'])
-hi = HardwareInputs(**data['properties'], **data['heat_in'])
-ho = HardwareInputs(**data['properties'], **data['heat_out'])
 config = load_simulation_configuration(args.configuration)
-if 'air_sizing' in data and not math.isclose(data['air_sizing']['working_gas_cp_j_kg_k'],config.gas.heat_capacity_cp):
-    raise ValueError('Air sizing heat capacity does not match the working gas')
+data, bank, hi, ho = load_hardware_definition(args.hardware.read_text(), config.gas.heat_capacity_cp)
 base = build_model(config)
 wrapper, hardware = connect_hardware(base, bank, bank, hi, ho,
     heat_in_valve_cda_m2=config.hydraulics.cold_to_large_valve_cda,
@@ -122,6 +109,11 @@ for angle, values in zip(angles, trajectory.T):
         mach=abs(flow)/(density*area*math.sqrt(config.gas.heat_capacity_cp/config.gas.heat_capacity_cv*config.gas.gas_constant*temperatures[index]))
         max_reynolds=max(max_reynolds,reynolds)
         max_mach=max(max_mach,mach)
+gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
+if gas_domains is not None:
+    passages = gas_domains['passages'].values()
+    max_reynolds = max(p['hydraulic_upstream_ranges']['reynolds']['maximum'] for p in passages)
+    max_mach = max(p['hydraulic_upstream_ranges']['mach']['maximum'] for p in passages)
 time=angles/wrapper.model.angular_speed
 port_history=np.asarray(port_history)
 port_names=['S_to_H_i','H_i_to_L','L_to_H_o','H_o_to_S']
@@ -136,13 +128,13 @@ mean_temperature_differences=dict(
     heat_in=float(np.trapz(hi.air_inlet_temperature_k-working_temperatures[2],time)/(time[-1]-time[0])),
     heat_out=float(np.trapz(working_temperatures[3]-ho.air_inlet_temperature_k,time)/(time[-1]-time[0])))
 air_capacity_diagnostics={}
+sampled_thermal = [wrapper.thermal_rates(float(angle), values) for angle, values in zip(angles, trajectory.T)]
 for name, exchanger, columns, gas_index, wall_index in (
     ('heat_in',wrapper.heat_in,(0,1),2,8),
     ('heat_out',wrapper.heat_out,(2,3),3,9)):
     peak=float(np.max(np.abs(port_history[:,columns])))
     capacity=exchanger.air_mass_flow_kg_s*exchanger.air_cp_j_kg_k
-    outlet_changes=[abs(exchanger.rates(float(t),float(e))['air_heat_w'])/capacity
-                    for t,e in zip(working_temperatures[gas_index],trajectory[wall_index])]
+    outlet_changes=[abs(rates[gas_index-2]['air_heat_w'])/capacity for rates in sampled_thermal]
     air_capacity_diagnostics[name]=dict(
         peak_internal_mass_flow_kg_s=peak,
         external_to_peak_internal_capacity_rate_ratio=capacity/(peak*config.gas.heat_capacity_cp) if peak else None,
@@ -169,7 +161,9 @@ report=dict(mean_inlet_air_gas_temperature_differences_k=mean_temperature_differ
     indicated_thermal_efficiency=power/qi if converged and power>0 and qi>0 and qo<0 else None,
     useful_shaft_power_w=None,
     maximum_tube_reynolds=max_reynolds, maximum_tube_mach_at_exchanger_state=max_mach,
-    applicability='screening_only; constant_Nusselt; entrance_pulse_and_distribution_unvalidated',
+    microtube_gas_domains=gas_domains,
+    applicability=('variable_transport_and_entry; pulse_and_distribution_unvalidated' if gas_domains is not None
+                   else 'screening_only; constant_Nusselt; entrance_pulse_and_distribution_unvalidated'),
     laminar_reynolds_screen_passed=bool(max_reynolds<2300),
     mach_screen_passed=bool(max_mach <= config.validity.maximum_mach_number),
     mechanical_losses='unavailable', calibration='Doty_geometry_reference; no_empirical_UA_fit')

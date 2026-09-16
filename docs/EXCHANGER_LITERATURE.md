@@ -1,5 +1,35 @@
 # Motor exchangers: duty envelope and initial literature comparison
 
+## Current gas-model source audit (2026-09-16)
+
+The implementation ledger is [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md);
+measured-versus-predicted errors are in [EXCHANGER_VALIDATION.md](EXCHANGER_VALIDATION.md).
+The older design survey below is retained as historical context, not as a
+statement of the current reservoir temperatures or current gas-model capability.
+
+| Source | Evidence and role | Calibration decision |
+| --- | --- | --- |
+| Ewart, Perrier, Graur et al., CFM 2007, [HAL](https://hal.science/hal-03361781v1), local `HAL_microtubes.pdf` | Steady isothermal N2/Ar/He in fused silica. Eq.3/5 and Tables 1–3 verify the second-order slip implementation and its VHS convention. | Published fits reproduced; metal accommodation remains unknown. |
+| Aubert (1999), local `50015150.pdf`, chapter III §3.4.3.2, PDF pp.181–186; annex A13–A22 | Experimental pressure transmission through silica microtubes, including parallel tubes. Gain agrees better than phase. | Unsteady diagnostic motivation only; no h(t) measurement or thermal multiplier. |
+| [Doty et al. 1991](https://dotynmr.com/download/pubs/1991_HTE_Doty_HeatExchanger.pdf), Eq.7, Tables 1–2 | Closest supplied integral gas/gas exchanger data. N2/He flow, pressure, four temperatures, UA, effectiveness and tube loss remain in the original CSVs. | Primary integral benchmark; discrepancies retained, no opaque calibration. |
+| [Yang, Hong, Morini & Asako 2014](https://cris.unibo.it/handle/11585/332323), DOI 10.1016/j.ijheatmasstransfer.2014.07.017, pp.732–740 | Experimental/numerical heated gas in stainless tubes, 750/510/170 micrometres, Re 3000–12000. | Low-compressibility conventional baseline and compressibility warning; no enhancement formula inferred from an abstract. |
+| [Turner 2003](https://digitalcommons.uri.edu/oa_diss/1625/), DOI 10.23860/diss-1625, abstract | Experimental etched silicon/glass microchannels, hydraulic diameters 5–96 micrometres; friction and heat transfer depend on Ma/Kn. | Different geometry/boundary; no tube Nu calibration. This is Turner, not Aubert. |
+| [Gavasane et al.](https://doi.org/10.1080/10407782.2024.2351199), abstract, pp.7410–7428 | **Numerical DSMC**, Kn 0.05–5, pressure ratios 1.2–4 and walls 323–723 K. | Domain warning, not experimental data. No DSMC in cycle integration. |
+| Lelea–Nishio–Takano, supplied [distilled-water paper](https://www.academia.edu/18316510/The_experimental_research_on_microtube_heat_transfer_and_fluid_flow_of_distilled_water) | Liquid-water experiments; entry/conjugate-conduction methodology. | `out_of_scope_liquid_calibration`; no gas coefficient inferred. Full linked text was not used to extract equations. |
+| Qi et al., [S001793100700542X](https://www.sciencedirect.com/science/article/abs/pii/S001793100700542X), DOI 10.1016/j.ijheatmasstransfer.2007.08.017 | Liquid nitrogen flow boiling, Part II. | **`out_of_scope_two_phase`**. |
+| [Wang & Dai 2014](https://doi.org/10.1007/s12209-014-2138-5), abstract, pp.21–26 | Micro-sized exchanger experiments, Re 500–1800. Available abstract does not establish a transferable DADA gas model. | No coefficients extracted from inaccessible full text. |
+| [Qpedia December 2007](https://www.qats.com/Qpedia-Article/Qpedia_Dec07_Flow_and_heat_transfer_correlations_for_mini_and_macrochannels) | Engineering survey, not a new gas experiment. | Background only. |
+| [Thermopedia 1121](https://www.thermopedia.com/content/1121/) | Access was blocked during this audit. | No equation extracted or calibration claimed. |
+| [S1738573323004746](https://www.sciencedirect.com/science/article/pii/S1738573323004746), [S2214157X24005896](https://www.sciencedirect.com/science/article/pii/S2214157X24005896) | Full source contents were not retrievable. | `unverified_source_not_used`; no invented identification or coefficients. |
+| Supplied ResearchGate records: [experimental uncertainty thesis](https://www.researchgate.net/publication/45351722_Analyse_d%27ecoulements_liquides_ou_gazeux_en_micro-conduites_decouplage_des_incertitudes_experimentales), [single-phase review](https://www.researchgate.net/publication/279392413_Single-phase_fluid_flow_and_heat_transfer_in_microtubes) | Methodological/review leads; no quantitative equation extracted from these records. | Not used as a calibration dataset. |
+
+Production equations are attributed individually in the model ledger, including
+transport tables and their temperature envelopes. Bibliographic presence here
+is not evidence that a source validates the DADA pulse waveform or a metal/gas
+surface pair.
+
+## Historical architecture survey
+
 Initial research: 2026-09-08. Updated user requirements: 2026-09-09.
 Motor efficiency guides sizing under explicit compactness and useful-power
 requirements. Ideal chronology remains the target; isothermality is deferred
