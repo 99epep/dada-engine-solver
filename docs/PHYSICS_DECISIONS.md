@@ -1506,3 +1506,19 @@ screening. Cooperative deadlines classify unfinished calculations as unknown
 rescale gas inventory and wall capacity without changing convergence
 tolerances. These are orchestration changes; thermodynamic, valve, correlation
 and periodic-convergence equations are unchanged.
+
+## 2026-09-16: instantaneous gas microtube closures
+
+The user authorizes variable internal transport, explicit compressible
+Poiseuille, optional documented second-order hydraulic slip, thermal entry and
+visible correlation domains. `HardwareInputs.gas_model` opts into the production
+closure; absent settings retain legacy regression behavior. Conservative gas
+energy/enthalpy still use the existing calorically perfect fluid. Transport cp(T)
+is separate. External-air film and lumped wall storage are unchanged.
+
+Do not transfer silica accommodation to metal. Do not infer a pulsed thermal
+multiplier from pressure-transmission experiments. Doty absolute discrepancies
+remain in the validation report. Mean-density Poiseuille at fixed T/mu was
+already algebraically equivalent to the pressure-squared isothermal expression.
+See MICROTUBE_GAS_MODEL.md and EXCHANGER_VALIDATION.md for per-equation provenance,
+limits and the same-champion comparison.

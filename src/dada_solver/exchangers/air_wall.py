@@ -27,6 +27,7 @@ class AirWallExchanger:
     air_mass_flow_kg_s: float
     air_cp_j_kg_k: float
     air_inlet_temperature_k: float
+    gas_film: object | None = None
 
     def __post_init__(self):
         for value in (self.wall_capacity_j_k, self.air_cp_j_kg_k, self.air_inlet_temperature_k):
@@ -36,7 +37,11 @@ class AirWallExchanger:
             if not math.isfinite(value) or value < 0:
                 raise ValueError('Conductances and air flow must be finite and nonnegative.')
 
-    def rates(self, gas_temperature_k, wall_energy_j):
+    @property
+    def requires_flow_context(self):
+        return self.gas_film is not None
+
+    def rates(self, gas_temperature_k, wall_energy_j, *, context=None):
         wall_temperature = wall_energy_j / self.wall_capacity_j_k
         if any(not math.isfinite(v) or v <= 0 for v in (wall_temperature, gas_temperature_k)):
             raise ValueError('Gas and wall temperatures must be positive.')
@@ -44,7 +49,11 @@ class AirWallExchanger:
         effective = (capacity_rate * -math.expm1(-self.air_wall_conductance_w_k/capacity_rate)
                      if capacity_rate > 0 else 0.0)
         air_heat = effective*(self.air_inlet_temperature_k-wall_temperature)
-        gas_heat = self.gas_wall_conductance_w_k*(wall_temperature-gas_temperature_k)
+        conductance = self.gas_wall_conductance_w_k
+        if self.gas_film is not None:
+            if context is None: raise ValueError('Variable gas film requires instantaneous flow context.')
+            conductance, _ = self.gas_film.evaluate(gas_temperature_k,wall_temperature,context)
+        gas_heat = conductance*(wall_temperature-gas_temperature_k)
         return dict(gas_heat_w=gas_heat, air_heat_w=air_heat,
                     wall_energy_rate_w=air_heat-gas_heat,
                     air_outlet_temperature_k=(self.air_inlet_temperature_k-air_heat/capacity_rate
@@ -69,9 +78,7 @@ class AirWallMotor:
 
     def derivative(self, angle, values):
         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
-        temperatures = gas.temperatures(self.model.gas)
-        incoming = self.heat_in.rates(temperatures[2], values[8])
-        outgoing = self.heat_out.rates(temperatures[3], values[9])
+        incoming, outgoing = self.thermal_rates(angle, values)
         # Reuse all existing conservative transport and passive-valve equations.
         instantaneous = replace(self.model,
             cold_heat_transfer=PrescribedHeatRate(incoming['gas_heat_w']),
@@ -81,6 +88,36 @@ class AirWallMotor:
                      incoming['wall_energy_rate_w'], outgoing['wall_energy_rate_w'],
                      incoming['air_heat_w'], outgoing['air_heat_w'],
                      incoming['gas_heat_w'], outgoing['gas_heat_w'], rates.gas_work_rate] / self.model.angular_speed
+
+    def flow_contexts(self, angle, values):
+        """Geometry-independent pressure/flow state for contextual wall closures."""
+        gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+        pressures = gas.pressures(self.model.gas,self.model.volumes(angle))
+        flows = self.model.evaluate(angle,gas,ValveTopology(ValveState.CLOSED,ValveState.CLOSED)).flows
+        frequency = self.model.angular_speed/(2*math.pi)
+        contexts = (
+            dict(frequency_hz=frequency,passages=((flows.small_to_cold,pressures[0],pressures[2]),
+                                                 (flows.cold_to_large,pressures[2],pressures[1]))),
+            dict(frequency_hz=frequency,passages=((flows.large_to_hot,pressures[1],pressures[3]),
+                                                 (flows.hot_to_small,pressures[3],pressures[0]))))
+        for index,context in zip((2,3),contexts):
+            context['port_pressure_ratios'] = tuple(max(p1,p2)/min(p1,p2) for _,p1,p2 in context['passages'])
+            # A closed valve supports a pressure jump; it is not an axial tube
+            # pressure gradient at zero flow. Retain the port ratio separately.
+            context['passages'] = tuple((flow,p1,p2) if flow else
+                (flow,pressures[index],pressures[index]) for flow,p1,p2 in context['passages'])
+        return contexts
+
+    def thermal_rates(self, angle, values):
+        """Single diagnostic/integration access path; never substitutes static UA."""
+        gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+        temperatures = gas.temperatures(self.model.gas)
+        contextual = any(getattr(x,'requires_flow_context',False) for x in (self.heat_in,self.heat_out))
+        contexts = self.flow_contexts(angle,values) if contextual else (None,None)
+        return tuple(exchanger.rates(temperatures[index],values[index+6],context=context)
+                     if getattr(exchanger,'requires_flow_context',False)
+                     else exchanger.rates(temperatures[index],values[index+6])
+                     for index,exchanger,context in zip((2,3),(self.heat_in,self.heat_out),contexts))
 
     def integrate_cycle(self, state, *, integration_method='LSODA', rtol=1e-7, atol=1e-10,
                         maximum_step_angle=math.pi/360, progress_callback=None,

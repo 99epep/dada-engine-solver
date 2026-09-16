@@ -16,7 +16,7 @@ def save_trial_plots(wrapper, angles, trajectory, ports, prefix, *, external_los
         t,p=gas.temperatures_and_pressures(wrapper.model.gas,volume)
         temperatures.append(t);pressures.append(p)
         volumes.append([volume.small_cylinder,volume.large_cylinder])
-        hi=wrapper.heat_in.rates(t[2],state[8]);ho=wrapper.heat_out.rates(t[3],state[9])
+        hi,ho=wrapper.thermal_rates(float(angle),state)
         heats.append([hi['gas_heat_w'],ho['gas_heat_w'],hi['air_heat_w'],ho['air_heat_w']])
     temperatures=np.asarray(temperatures);pressures=np.asarray(pressures)
     volumes=np.asarray(volumes);heats=np.asarray(heats)

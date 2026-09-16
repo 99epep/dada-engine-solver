@@ -1,5 +1,12 @@
 # Heat-exchanger screening and sizing
 
+For the current circular gas-microtube production closure, see
+[MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md). It provides variable transport
+and thermal-entry Nu through the existing hardware/wall architecture. The
+rectangular-channel screening correlations described below retain their
+historical fully developed assumptions for compatibility.
+
+
 The exchanger module translates a real gas-passage geometry into quantities
 that the thermodynamic sizing problem can constrain. It is a low-order design
 tool, not a CFD solver and not an experimental calibration.

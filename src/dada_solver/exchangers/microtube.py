@@ -15,10 +15,13 @@ class MicrotubeExchanger:
         thermal, report = build_exchanger(self.bank, self.inputs)
         def passage(valve=None):
             return TubeHalfLink(self.bank, self.inputs.gas_viscosity_pa_s,
-                self.inputs.core_loss_multiplier, self.inputs.header_loss_coefficient, valve)
+                self.inputs.core_loss_multiplier, self.inputs.header_loss_coefficient, valve,
+                self.inputs.gas_model)
         return ExchangerComponents(report['working_gas_volume_m3'], passage(),
             passage(self.outlet_valve_cda_m2), wall_thermal=thermal,
             metadata=tuple(report.items()),
-            validity_domain=('constant_properties_and_Nusselt', 'laminar_internal_tubes',
+            validity_domain=(('variable_internal_transport', 'instantaneous_correlation_domain',
+                'quasi_steady_not_pulse_calibrated') if self.inputs.gas_model is not None else
+                ('constant_properties_and_Nusselt', 'laminar_internal_tubes',
                 'equivalent_laminar_external_passage', 'pulse_and_distribution_unvalidated',
-                'not_empirically_Doty_calibrated'))
+                'not_empirically_Doty_calibrated')))
