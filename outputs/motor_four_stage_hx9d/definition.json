@@ -1,0 +1,94 @@
+{
+  "parameter_names": [
+    "t1",
+    "t2",
+    "t3",
+    "a_l",
+    "b_l",
+    "a_s",
+    "b_s",
+    "n_i",
+    "n_o"
+  ],
+  "minimum_stage_fraction": 0.02,
+  "H_i_tube_count_bounds": [
+    1600,
+    8000
+  ],
+  "H_o_tube_count_bounds": [
+    1600,
+    8000
+  ],
+  "charge_pressure_pa": 100000.0,
+  "frequency_hz": 2.0,
+  "retained_H_i_tube_length_m": 0.0463173095241189,
+  "retained_H_o_tube_length_m": 0.02519308603379876,
+  "tube_inner_diameter_m": 0.00033,
+  "retained_H_i_tube_count": 3708,
+  "retained_H_o_tube_count": 3708,
+  "sobol_seed": 26091603,
+  "objective": "Maximize indicated thermal efficiency among candidates satisfying the existing motor feasibility constraints, including >=40 W.",
+  "mass_policy": "Candidate-specific uniform 100 kPa filling at theta=0 using actual cylinder and exchanger volumes.",
+  "valve_policy": "Each exchanger outlet-valve CdA scales linearly with tube count relative to retained K2 hardware.",
+  "search_strategy": "Four explicit controls, then alternating broad 9D Sobol proposals and incumbent-centered Sobol proposals. Local radius decreases 0.12 -> 0.06 -> 0.03 in normalized coordinates.",
+  "fan_power_policy": "Reported by exchanger metadata but excluded from the efficiency objective under the current project decision.",
+  "seeds": [
+    {
+      "kind": "retained_K2_champion_control",
+      "parameters": {
+        "t1": 0.5395244395962604,
+        "t2": 0.6990599161470307,
+        "t3": 0.9231798069375672,
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "n_i": 3708,
+        "n_o": 3708
+      }
+    },
+    {
+      "kind": "120_60_120_60_Ho6050_control",
+      "parameters": {
+        "t1": 0.3333333333333333,
+        "t2": 0.5,
+        "t3": 0.8333333333333334,
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "n_i": 3708,
+        "n_o": 6050
+      }
+    },
+    {
+      "kind": "150_30_150_30_Ho4840_control",
+      "parameters": {
+        "t1": 0.4166666666666667,
+        "t2": 0.5,
+        "t3": 0.9166666666666666,
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "n_i": 3708,
+        "n_o": 4840
+      }
+    },
+    {
+      "kind": "150_30_150_30_current_hardware_control",
+      "parameters": {
+        "t1": 0.4166666666666667,
+        "t2": 0.5,
+        "t3": 0.9166666666666666,
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "n_i": 3708,
+        "n_o": 3708
+      }
+    }
+  ],
+  "thermo3d_source_sha256": "166534288426166b6578bfea0b4db8bc65f61cf580d185c2f04187c0b82fe3b8"
+}
