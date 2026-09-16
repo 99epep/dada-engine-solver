@@ -1,0 +1,520 @@
+{
+  "best_feasible": {
+    "index": 492,
+    "proposal_index": 579,
+    "candidate_id": "b08b1029071abdd0dea515f347de4fc109179bdd70be4e041482b144e74f7f35",
+    "kind": "adaptive_local_sobol_from_150_30",
+    "radius_index": 7,
+    "timing_radius": 0.001,
+    "level_radius": 0.0005,
+    "parameters": {
+      "t1": 0.4639541340225067,
+      "t2": 0.6192082431707531,
+      "t3": 0.8949516786045083,
+      "a_l": 0.3596051765014019,
+      "b_l": 0.11579141985445066,
+      "a_s": 0.35595731584136037,
+      "b_s": 0.14961511405242023
+    },
+    "phase_degrees": {
+      "low_pressure_exchange_deg": 167.0234882481024,
+      "compression_deg": 55.8914792933687,
+      "high_pressure_exchange_deg": 99.26763675615189,
+      "expansion_deg": 37.81739570237701
+    },
+    "symmetry": {
+      "delta_a": 0.003647860660041524,
+      "delta_b": -0.03382369419796957,
+      "rms": 0.024055656056246308
+    },
+    "result": {
+      "label": "four_stage_from_150_30_579",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 10,
+        "first_normalized_periodic_error": 689.694823983975,
+        "last_normalized_periodic_error": 0.9559214782314779,
+        "normalized_periodic_error_ratio": 0.0013860064553039022,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 689.694823983975
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 4.060881606060372
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 1.5092349905130806
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 1.4318149923002819
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 1.3481337772196007
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 1.2519394656106493
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 1.159024657528249
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 1.1020428234122226
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 1.0112191326410187
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 0.9559214782314779
+          }
+        ]
+      },
+      "indicated_power_w": 51.0826764174924,
+      "heat_input_w": 231.59409570116242,
+      "heat_out_w": -180.57988759675712,
+      "indicated_thermal_efficiency": 0.2205698563378186,
+      "maximum_tube_reynolds": 545.3387652888036,
+      "maximum_tube_mach_number": 0.027334522760335343,
+      "maximum_absolute_mass_flow_kg_s": 0.01048189760547834,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007197936880083142,
+        "cold_isothermality_error": 0.027267357415174026,
+        "hot_isothermality_error": 0.15351022191517968,
+        "maximum_mach_number": 0.027334522760335343,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 126896.34354863357,
+            "maximum": 496604.444627217
+          },
+          "L": {
+            "minimum": 128182.4420355532,
+            "maximum": 496358.4191721206
+          },
+          "C": {
+            "minimum": 126899.46657836677,
+            "maximum": 496129.18673759914
+          },
+          "H": {
+            "minimum": 127877.52057872414,
+            "maximum": 496039.7207801627
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 325.47036747652396,
+            "maximum": 479.43428732124494
+          },
+          "L": {
+            "minimum": 388.4177149354993,
+            "maximum": 572.8220587619855
+          },
+          "C": {
+            "minimum": 570.7970682643534,
+            "maximum": 587.1070381022397
+          },
+          "H": {
+            "minimum": 305.7283520305954,
+            "maximum": 351.4974246946062
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004831653654959039,
+            "maximum": 0.004479996045351933
+          },
+          "small_to_cold": {
+            "minimum": -0.004629566224051659,
+            "maximum": 0.01048189760547834
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.0049209774132187205
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.008998918275017833
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -167.7669002438675,
+          "maximum": 790.7575220316083
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1070.1816695808843,
+          "maximum": 395.48637506084555
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014093189631111027,
+      "maximum_pressure_pa": 496604.444627217,
+      "maximum_temperature_k": 587.1070381022397
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 21.158300318056718,
+    "warm_start_source": "b01feea6c129a6e66a1aaf38a00cc8091f8e8726232df75fa8c010163d7d9427",
+    "last_complete_state": [
+      0.000181727453577551,
+      42.51761667248821,
+      0.0011498670135786182,
+      320.456105088883,
+      3.06593058809854e-05,
+      12.811492834677244,
+      4.706519007394812e-05,
+      10.656652326914182,
+      93801.91033917933,
+      28065.325615567865
+    ]
+  },
+  "seed": {
+    "index": 0,
+    "proposal_index": 0,
+    "candidate_id": "6b23b2b88c72fcb955b8590ff15a28d2c2551ff93d404d9819e75f5f0a69f11e",
+    "kind": "150_30_seed",
+    "radius_index": -1,
+    "timing_radius": null,
+    "level_radius": null,
+    "parameters": {
+      "t1": 0.4166666666666667,
+      "t2": 0.5,
+      "t3": 0.9166666666666666,
+      "a_l": 0.36318997017010785,
+      "b_l": 0.11296032485372168,
+      "a_s": 0.36025860498579815,
+      "b_s": 0.17851659838446757
+    },
+    "phase_degrees": {
+      "low_pressure_exchange_deg": 150.0,
+      "compression_deg": 29.999999999999993,
+      "high_pressure_exchange_deg": 150.0,
+      "expansion_deg": 30.000000000000014
+    },
+    "symmetry": {
+      "delta_a": 0.0029313651843096977,
+      "delta_b": -0.06555627353074589,
+      "rms": 0.04640160504272324
+    },
+    "result": {
+      "label": "four_stage_from_150_30_0",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 22,
+        "first_normalized_periodic_error": 343235.12922493403,
+        "last_normalized_periodic_error": 0.7420947859550673,
+        "normalized_periodic_error_ratio": 2.162059541023106e-06,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 343235.12922493403
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 4377.208816263178
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 4881.443266714665
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 4594.546142374999
+          },
+          {
+            "cycle": 5,
+            "normalized_state_error": 4280.804687708947
+          },
+          {
+            "cycle": 6,
+            "normalized_state_error": 3989.2759418685596
+          },
+          {
+            "cycle": 7,
+            "normalized_state_error": 3720.4434387525116
+          },
+          {
+            "cycle": 8,
+            "normalized_state_error": 3470.0114703137247
+          },
+          {
+            "cycle": 9,
+            "normalized_state_error": 3236.674778064109
+          },
+          {
+            "cycle": 10,
+            "normalized_state_error": 3018.9625125210327,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 11,
+            "normalized_state_error": 41350.655216183484
+          },
+          {
+            "cycle": 12,
+            "normalized_state_error": 662.0439647453513
+          },
+          {
+            "cycle": 13,
+            "normalized_state_error": 10.782258282289968
+          },
+          {
+            "cycle": 14,
+            "normalized_state_error": 6.322110467390896
+          },
+          {
+            "cycle": 15,
+            "normalized_state_error": 6.034494762094794
+          },
+          {
+            "cycle": 16,
+            "normalized_state_error": 5.663432359029847
+          },
+          {
+            "cycle": 17,
+            "normalized_state_error": 5.265223991080441
+          },
+          {
+            "cycle": 18,
+            "normalized_state_error": 4.900476814173618
+          },
+          {
+            "cycle": 19,
+            "normalized_state_error": 4.594668815121686
+          },
+          {
+            "cycle": 20,
+            "normalized_state_error": 4.279594511981059,
+            "wall_initial_guess_extrapolated": true
+          },
+          {
+            "cycle": 21,
+            "normalized_state_error": 60.38389697449688
+          },
+          {
+            "cycle": 22,
+            "normalized_state_error": 0.7420947859550673
+          }
+        ]
+      },
+      "indicated_power_w": 51.52321495287581,
+      "heat_input_w": 241.16279416404802,
+      "heat_out_w": -189.62401674983695,
+      "indicated_thermal_efficiency": 0.21364495767878597,
+      "maximum_tube_reynolds": 460.22533289482556,
+      "maximum_tube_mach_number": 0.030121835099283543,
+      "maximum_absolute_mass_flow_kg_s": 0.008845941498943329,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007865770374686401,
+        "cold_isothermality_error": 0.032609863667868916,
+        "hot_isothermality_error": 0.2278501726829045,
+        "maximum_mach_number": 0.030121835099283543,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 126828.11548230716,
+            "maximum": 507250.9624986378
+          },
+          "L": {
+            "minimum": 128154.69678998431,
+            "maximum": 507879.62360213866
+          },
+          "C": {
+            "minimum": 126832.9355486957,
+            "maximum": 506779.8818404203
+          },
+          "H": {
+            "minimum": 127887.57740677938,
+            "maximum": 507271.00384319003
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 321.7151724144425,
+            "maximum": 481.8336274184121
+          },
+          "L": {
+            "minimum": 390.79868176206605,
+            "maximum": 579.1863166838109
+          },
+          "C": {
+            "minimum": 569.0516544121735,
+            "maximum": 588.5572443651093
+          },
+          "H": {
+            "minimum": 304.2431015999494,
+            "maximum": 372.1766305853574
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004925726794086223,
+            "maximum": 0.007092140477886937
+          },
+          "small_to_cold": {
+            "minimum": -0.00569773383192149,
+            "maximum": 0.008845941498943329
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.008101252801680002
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.007482820116254523
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -290.8539942545502,
+          "maximum": 842.5897721465376
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1702.7712955726831,
+          "maximum": 472.65709788634695
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "total_mass_kg": 0.0014374095847299075,
+      "maximum_pressure_pa": 507879.62360213866,
+      "maximum_temperature_k": 588.5572443651093
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 43.88235570699908,
+    "warm_start_source": null,
+    "last_complete_state": [
+      0.00021708838171117893,
+      50.173165711876585,
+      0.0011426138001924512,
+      320.38692746472424,
+      3.070234372055253e-05,
+      12.808471230042766,
+      4.7005059105724846e-05,
+      10.652730357031292,
+      93712.11034770602,
+      28147.792401105504
+    ]
+  },
+  "attempted_total": 512,
+  "completed_this_run": 512,
+  "requested_duration_seconds": 21600.0,
+  "actual_duration_seconds": 13100.52695036109,
+  "definition": {
+    "names": [
+      "t1",
+      "t2",
+      "t3",
+      "a_l",
+      "b_l",
+      "a_s",
+      "b_s"
+    ],
+    "only_search_seed": "150/30/150/30 with retained champion a/b levels",
+    "hardware": {
+      "H_i_tube_count": 3708,
+      "H_o_tube_count": 3708,
+      "H_i_tube_length_m": 0.0463173095241189,
+      "H_o_tube_length_m": 0.02519308603379876,
+      "tube_inner_diameter_m": 0.00033
+    },
+    "charge_pressure_pa": 100000.0,
+    "minimum_stage_fraction": 0.02,
+    "radii": [
+      [
+        0.15,
+        0.06
+      ],
+      [
+        0.08,
+        0.04
+      ],
+      [
+        0.04,
+        0.02
+      ],
+      [
+        0.02,
+        0.01
+      ],
+      [
+        0.01,
+        0.005
+      ],
+      [
+        0.005,
+        0.0025
+      ],
+      [
+        0.0025,
+        0.00125
+      ],
+      [
+        0.001,
+        0.0005
+      ]
+    ],
+    "evaluations_per_radius": 64,
+    "sobol_seed": 26091615,
+    "seed_parameters": {
+      "t1": 0.4166666666666667,
+      "t2": 0.5,
+      "t3": 0.9166666666666666,
+      "a_l": 0.36318997017010785,
+      "b_l": 0.11296032485372168,
+      "a_s": 0.36025860498579815,
+      "b_s": 0.17851659838446757
+    },
+    "strategy": "Adaptive incumbent-centered local Sobol climb. The only initial center is the 150/30/150/30 seed; no historical optimum is used."
+  },
+  "current_radius_index": 7,
+  "current_timing_radius": 0.001,
+  "current_level_radius": 0.0005,
+  "best_phase_degrees": {
+    "low_pressure_exchange_deg": 167.0234882481024,
+    "compression_deg": 55.8914792933687,
+    "high_pressure_exchange_deg": 99.26763675615189,
+    "expansion_deg": 37.81739570237701
+  }
+}

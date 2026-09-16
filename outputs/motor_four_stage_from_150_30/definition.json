@@ -1,0 +1,67 @@
+{
+  "names": [
+    "t1",
+    "t2",
+    "t3",
+    "a_l",
+    "b_l",
+    "a_s",
+    "b_s"
+  ],
+  "only_search_seed": "150/30/150/30 with retained champion a/b levels",
+  "hardware": {
+    "H_i_tube_count": 3708,
+    "H_o_tube_count": 3708,
+    "H_i_tube_length_m": 0.0463173095241189,
+    "H_o_tube_length_m": 0.02519308603379876,
+    "tube_inner_diameter_m": 0.00033
+  },
+  "charge_pressure_pa": 100000.0,
+  "minimum_stage_fraction": 0.02,
+  "radii": [
+    [
+      0.15,
+      0.06
+    ],
+    [
+      0.08,
+      0.04
+    ],
+    [
+      0.04,
+      0.02
+    ],
+    [
+      0.02,
+      0.01
+    ],
+    [
+      0.01,
+      0.005
+    ],
+    [
+      0.005,
+      0.0025
+    ],
+    [
+      0.0025,
+      0.00125
+    ],
+    [
+      0.001,
+      0.0005
+    ]
+  ],
+  "evaluations_per_radius": 64,
+  "sobol_seed": 26091615,
+  "seed_parameters": {
+    "t1": 0.4166666666666667,
+    "t2": 0.5,
+    "t3": 0.9166666666666666,
+    "a_l": 0.36318997017010785,
+    "b_l": 0.11296032485372168,
+    "a_s": 0.36025860498579815,
+    "b_s": 0.17851659838446757
+  },
+  "strategy": "Adaptive incumbent-centered local Sobol climb. The only initial center is the 150/30/150/30 seed; no historical optimum is used."
+}
