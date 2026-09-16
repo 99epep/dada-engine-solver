@@ -1,0 +1,1227 @@
+{
+  "experiment": "Causal gas-wall heat-transfer ablation during compression and expansion, with kinematics and hardware frozen.",
+  "interpretation_guardrail": "These are counterfactual diagnostics only. No kinematic or exchanger optimization is performed, and the heat gates are not proposed physical hardware.",
+  "source_report": "outputs/motor_four_stage_120deg_hx/report.json",
+  "phase_definition": "Retained champion timing; phase boundaries are the retained t1/t2/t3 values for each physical case.",
+  "external_air_policy": "External-air to wall heat exchange remains active during every phase; only selected wall-to-working-gas paths are suppressed.",
+  "cases": {
+    "A_current_hardware": {
+      "baseline": {
+        "label": "A_current_hardware_retained_timing",
+        "status": "converged",
+        "indicated_thermal_efficiency": 0.22028877353396062,
+        "indicated_power_w": 51.57574909477148,
+        "heat_input_w": 234.12790523716976,
+        "heat_out_w": -182.5556346252063,
+        "gas_work_per_cycle_j": 25.78787454738574,
+        "heat_input_per_cycle_j": 117.06395261858488,
+        "heat_out_per_cycle_j": -91.27781731260315,
+        "last_complete_state": [
+          0.0002154816483477916,
+          49.732466261256214,
+          0.001144771329221668,
+          317.6094089509108,
+          3.042670021058819e-05,
+          12.698393455342392,
+          4.672990694986457e-05,
+          10.560517825110857,
+          93770.92262379281,
+          28089.90085828753
+        ]
+      },
+      "motion_parameters": {
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "t1": 0.5395244395962604,
+        "t2": 0.6990599161470307,
+        "t3": 0.9231798069375672
+      },
+      "ablations": [
+        {
+          "label": "A_current_hardware__block_Ho_compression",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 32,
+            "first_normalized_periodic_error": 2166.6135705845536,
+            "last_normalized_periodic_error": 0.16908106286351202,
+            "normalized_periodic_error_ratio": 7.803932605198897e-05,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 2166.6135705845536
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 190.8183882967626
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 178.95087844499895
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 167.9982915500959
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 157.7304528422364
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 148.1018199780564
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 139.07198526109073
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 130.60309944702163
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 122.65914128237935
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 115.20748927199017,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 1546.1122947594554
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 17.806796357655493
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 7.3239100195751625
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 6.921453992762456
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 6.541222829200537
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 6.182331911018697
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 5.843510178444069
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 5.52360864045687
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 5.221583751225896
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 4.936406873190763,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 21,
+                "normalized_state_error": 75.82677449657317
+              },
+              {
+                "cycle": 22,
+                "normalized_state_error": 1.9214863618655174
+              },
+              {
+                "cycle": 23,
+                "normalized_state_error": 1.8098430897931816
+              },
+              {
+                "cycle": 24,
+                "normalized_state_error": 1.7000072991144717
+              },
+              {
+                "cycle": 25,
+                "normalized_state_error": 1.5965343825352716
+              },
+              {
+                "cycle": 26,
+                "normalized_state_error": 1.4998717922393998
+              },
+              {
+                "cycle": 27,
+                "normalized_state_error": 1.408866003819575
+              },
+              {
+                "cycle": 28,
+                "normalized_state_error": 1.323566828689169
+              },
+              {
+                "cycle": 29,
+                "normalized_state_error": 1.2435780301080288
+              },
+              {
+                "cycle": 30,
+                "normalized_state_error": 1.1685395362944375,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 31,
+                "normalized_state_error": 15.784214148384935
+              },
+              {
+                "cycle": 32,
+                "normalized_state_error": 0.16908106286351202
+              }
+            ]
+          },
+          "elapsed_seconds": 54.060500842984766,
+          "indicated_thermal_efficiency": 0.17617834638052549,
+          "indicated_power_w": 41.073601066715774,
+          "heat_input_w": 233.13648873739228,
+          "heat_out_w": -192.04494031384405,
+          "gas_work_per_cycle_j": 20.536800533357887,
+          "heat_input_per_cycle_j": 116.56824436869614,
+          "heat_out_per_cycle_j": -96.02247015692203,
+          "last_complete_state": [
+            0.00021466089474973013,
+            49.67984792627843,
+            0.0011458377284459008,
+            317.27370744940697,
+            3.0391157036806404e-05,
+            12.684985334343095,
+            4.651980449744483e-05,
+            10.54935495179157,
+            93781.08470703402,
+            28185.59064305787
+          ],
+          "ablation": "block_Ho_compression",
+          "gate_flags": {
+            "block_ho_compression": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -4.411042715343513,
+            "power_w": -10.502148028055707,
+            "heat_input_w": -0.9914164997774719,
+            "heat_out_w": -9.489305688637756,
+            "gas_work_per_cycle_j": -5.251074014027854,
+            "heat_input_per_cycle_j": -0.49570824988873596
+          }
+        },
+        {
+          "label": "A_current_hardware__block_both_compression",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 32,
+            "first_normalized_periodic_error": 2240.840180383241,
+            "last_normalized_periodic_error": 0.14248653990055815,
+            "normalized_periodic_error_ratio": 6.358621250543146e-05,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 2240.840180383241
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 188.006737941343
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 176.3124605936042
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 165.51444492051547
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 155.39120592733076
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 145.89779180749247
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 136.99500236670448
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 128.64477087533922
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 120.8124539505587
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 113.46540198048389,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 1524.1271242745563
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 17.447499092922605
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 5.4772151267075255
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 5.178161133525918
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 4.89552825001614
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 4.628586040679375
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 4.376475100182722
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 4.138377136383969
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 3.9134399707010847
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 3.7010137478868703,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 21,
+                "normalized_state_error": 56.85609068176497
+              },
+              {
+                "cycle": 22,
+                "normalized_state_error": 1.6538223861766672
+              },
+              {
+                "cycle": 23,
+                "normalized_state_error": 1.5575331051681964
+              },
+              {
+                "cycle": 24,
+                "normalized_state_error": 1.4629496485940021
+              },
+              {
+                "cycle": 25,
+                "normalized_state_error": 1.374403607675699
+              },
+              {
+                "cycle": 26,
+                "normalized_state_error": 1.2912939954941494
+              },
+              {
+                "cycle": 27,
+                "normalized_state_error": 1.21338889389476
+              },
+              {
+                "cycle": 28,
+                "normalized_state_error": 1.1400147525044073
+              },
+              {
+                "cycle": 29,
+                "normalized_state_error": 1.0709907522428932
+              },
+              {
+                "cycle": 30,
+                "normalized_state_error": 1.0067909171008926,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 31,
+                "normalized_state_error": 13.608886525700662
+              },
+              {
+                "cycle": 32,
+                "normalized_state_error": 0.14248653990055815
+              }
+            ]
+          },
+          "elapsed_seconds": 54.39833324798383,
+          "indicated_thermal_efficiency": 0.1795728520264446,
+          "indicated_power_w": 42.00363195471538,
+          "heat_input_w": 233.90858629638382,
+          "heat_out_w": -191.8910730898385,
+          "gas_work_per_cycle_j": 21.00181597735769,
+          "heat_input_per_cycle_j": 116.95429314819191,
+          "heat_out_per_cycle_j": -95.94553654491925,
+          "last_complete_state": [
+            0.00021464566347730051,
+            49.67304859105131,
+            0.0011458585165215291,
+            317.2303391719568,
+            3.0389527562895225e-05,
+            12.68325301855877,
+            4.6515877168220645e-05,
+            10.547913089806265,
+            93773.28854021798,
+            28184.092953506675
+          ],
+          "ablation": "block_both_compression",
+          "gate_flags": {
+            "block_hi_compression": true,
+            "block_ho_compression": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -4.071592150751602,
+            "power_w": -9.5721171400561,
+            "heat_input_w": -0.21931894078593928,
+            "heat_out_w": -9.335438464632205,
+            "gas_work_per_cycle_j": -4.78605857002805,
+            "heat_input_per_cycle_j": -0.10965947039296964
+          }
+        },
+        {
+          "label": "A_current_hardware__block_both_expansion",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 22,
+            "first_normalized_periodic_error": 302360.41371935996,
+            "last_normalized_periodic_error": 0.6008446078906747,
+            "normalized_periodic_error_ratio": 1.9871801354537008e-06,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 302360.41371935996
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 1813.7227613221107
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 86.50940191708891
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 78.8350155725163
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 73.97894958191681
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 69.42446159736873
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 65.15439644553332
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 61.150751457180256
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 57.39653181325305
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 53.876129075710715,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 619.985644609328
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 9.928435033809436
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 1.5236887920870223
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 1.441852992022161
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 1.3642340177711432
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 1.290839938257497
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 1.221514701507006
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 1.1559600013774847
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 1.0939608310307967
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 1.0353643160859451,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 21,
+                "normalized_state_error": 17.933004017722176
+              },
+              {
+                "cycle": 22,
+                "normalized_state_error": 0.6008446078906747
+              }
+            ]
+          },
+          "elapsed_seconds": 43.72285187791567,
+          "indicated_thermal_efficiency": 0.20062754911481032,
+          "indicated_power_w": 46.95102415665281,
+          "heat_input_w": 234.02082298171723,
+          "heat_out_w": -187.08210140286644,
+          "gas_work_per_cycle_j": 23.475512078326403,
+          "heat_input_per_cycle_j": 117.01041149085862,
+          "heat_out_per_cycle_j": -93.54105070143322,
+          "last_complete_state": [
+            0.00023302186154369357,
+            47.06161298991058,
+            0.0011007616616738687,
+            300.70876677415066,
+            4.412719905242827e-05,
+            12.01532023614399,
+            5.949886245992377e-05,
+            9.99449820229204,
+            93780.13791202681,
+            28141.912449551673
+          ],
+          "ablation": "block_both_expansion",
+          "gate_flags": {
+            "block_hi_expansion": true,
+            "block_ho_expansion": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -1.9661224419150303,
+            "power_w": -4.624724938118675,
+            "heat_input_w": -0.10708225545252503,
+            "heat_out_w": -4.526466777660147,
+            "gas_work_per_cycle_j": -2.3123624690593374,
+            "heat_input_per_cycle_j": -0.053541127726262516
+          }
+        },
+        {
+          "label": "A_current_hardware__block_both_compression_and_expansion",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 32,
+            "first_normalized_periodic_error": 300887.9577227277,
+            "last_normalized_periodic_error": 0.5029642286254226,
+            "normalized_periodic_error_ratio": 1.6715997291221303e-06,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 300887.9577227277
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 1527.0125575832692
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 250.28127338764298
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 234.87993657226227
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 220.4627267212988
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 206.9467635391246
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 194.2735553488986
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 182.39007537648388
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 171.2461896956005
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 160.79497039642354,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 1792.6306678289652
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 22.953022977502403
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 6.377116503879324
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 6.031151012039825
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 5.703743962390068
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 5.394409576306633
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 5.102182581087578
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 4.826059625801009
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 4.565165110065199
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 4.31862370327259,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 21,
+                "normalized_state_error": 84.45652764857911
+              },
+              {
+                "cycle": 22,
+                "normalized_state_error": 5.655082447541378
+              },
+              {
+                "cycle": 23,
+                "normalized_state_error": 5.303251537479286
+              },
+              {
+                "cycle": 24,
+                "normalized_state_error": 4.978282413233138
+              },
+              {
+                "cycle": 25,
+                "normalized_state_error": 4.673588912308719
+              },
+              {
+                "cycle": 26,
+                "normalized_state_error": 4.387831770067835
+              },
+              {
+                "cycle": 27,
+                "normalized_state_error": 4.119709996130865
+              },
+              {
+                "cycle": 28,
+                "normalized_state_error": 3.8682872201169753
+              },
+              {
+                "cycle": 29,
+                "normalized_state_error": 3.632448030348185
+              },
+              {
+                "cycle": 30,
+                "normalized_state_error": 3.4110975523784344,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 31,
+                "normalized_state_error": 38.25660519313887
+              },
+              {
+                "cycle": 32,
+                "normalized_state_error": 0.5029642286254226
+              }
+            ]
+          },
+          "elapsed_seconds": 53.476902274996974,
+          "indicated_thermal_efficiency": 0.16204017235930604,
+          "indicated_power_w": 37.88041773981494,
+          "heat_input_w": 233.77176898960172,
+          "heat_out_w": -195.9189354821624,
+          "gas_work_per_cycle_j": 18.94020886990747,
+          "heat_input_per_cycle_j": 116.88588449480086,
+          "heat_out_per_cycle_j": -97.9594677410812,
+          "last_complete_state": [
+            0.00023211879410610047,
+            47.007852443700834,
+            0.0011019674712857948,
+            300.3657621714081,
+            4.4029359262863025e-05,
+            12.001620787133842,
+            5.929396007518198e-05,
+            9.983093755379704,
+            93782.74986886895,
+            28231.116503641777
+          ],
+          "ablation": "block_both_compression_and_expansion",
+          "gate_flags": {
+            "block_hi_compression": true,
+            "block_ho_compression": true,
+            "block_hi_expansion": true,
+            "block_ho_expansion": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -5.824860117465458,
+            "power_w": -13.695331354956544,
+            "heat_input_w": -0.3561362475680312,
+            "heat_out_w": -13.363300856956101,
+            "gas_work_per_cycle_j": -6.847665677478272,
+            "heat_input_per_cycle_j": -0.1780681237840156
+          }
+        }
+      ]
+    },
+    "C_new_Ho": {
+      "baseline": {
+        "label": "C_new_Ho_retained_timing",
+        "status": "converged",
+        "indicated_thermal_efficiency": 0.19474301733261454,
+        "indicated_power_w": 54.114456791967676,
+        "heat_input_w": 277.87623676150605,
+        "heat_out_w": -223.7282764678142,
+        "gas_work_per_cycle_j": 27.057228395983838,
+        "heat_input_per_cycle_j": 138.93811838075302,
+        "heat_out_per_cycle_j": -111.8641382339071,
+        "last_complete_state": [
+          0.00022458493919269603,
+          49.084172211312556,
+          0.0011312009501878676,
+          313.2741338714548,
+          3.0156547019064394e-05,
+          12.528779454843562,
+          7.462411985920195e-05,
+          16.629080196530207,
+          93337.40374696754,
+          44776.02469392738
+        ]
+      },
+      "motion_parameters": {
+        "a_l": 0.36318997017010785,
+        "b_l": 0.11296032485372168,
+        "a_s": 0.36025860498579815,
+        "b_s": 0.17851659838446757,
+        "t1": 0.5395244395962604,
+        "t2": 0.6990599161470307,
+        "t3": 0.9231798069375672
+      },
+      "ablations": [
+        {
+          "label": "C_new_Ho__block_Ho_compression",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 14,
+            "first_normalized_periodic_error": 2729.383724180818,
+            "last_normalized_periodic_error": 0.9602837056606396,
+            "normalized_periodic_error_ratio": 0.000351831696347077,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 2729.383724180818
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 44.26212854476217
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 41.95743558796406
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 39.74786669167605
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 37.65563867875978
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 35.67484679548475
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 33.79953239506689
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 32.02397536754125
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 30.342801132432676
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 28.750933971628317,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 506.54088869704464
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 2.1543689039367355
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 1.0291728762866696
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 0.9602837056606396
+              }
+            ]
+          },
+          "elapsed_seconds": 23.159639048040845,
+          "indicated_thermal_efficiency": 0.15898975859789868,
+          "indicated_power_w": 42.836000947094824,
+          "heat_input_w": 269.42616508671756,
+          "heat_out_w": -226.60635681995947,
+          "gas_work_per_cycle_j": 21.418000473547412,
+          "heat_input_per_cycle_j": 134.71308254335878,
+          "heat_out_per_cycle_j": -113.30317840997974,
+          "last_complete_state": [
+            0.0002239853318289211,
+            48.99550076121298,
+            0.001132071376052776,
+            312.7085488323973,
+            3.007512080742203e-05,
+            12.506186861127468,
+            7.443472756969886e-05,
+            16.599068150784056,
+            93420.49442336646,
+            44807.791297063275
+          ],
+          "ablation": "block_Ho_compression",
+          "gate_flags": {
+            "block_ho_compression": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -3.575325873471585,
+            "power_w": -11.278455844872852,
+            "heat_input_w": -8.45007167478849,
+            "heat_out_w": -2.8780803521452754,
+            "gas_work_per_cycle_j": -5.639227922436426,
+            "heat_input_per_cycle_j": -4.225035837394245
+          }
+        },
+        {
+          "label": "C_new_Ho__block_both_compression",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 20,
+            "first_normalized_periodic_error": 2933.999121888595,
+            "last_normalized_periodic_error": 0.988674394991161,
+            "normalized_periodic_error_ratio": 0.0003369716056202356,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 2933.999121888595
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 42.20311953688975
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 39.97862543741972
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 37.84552555126308
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 35.82728552524781
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 33.91795963426826
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 32.11179261218195
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 30.40302744887258
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 28.786387597053135
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 27.256716287959318,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 462.21994483722864
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 2.660200598318077
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 1.5137511423863452
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 1.4187887368862548
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 1.3448070963939933
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 1.2576741500433295
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 1.1841697209226638
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 1.1150382581115568
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 1.0498309984729042
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 0.988674394991161
+              }
+            ]
+          },
+          "elapsed_seconds": 32.20997683494352,
+          "indicated_thermal_efficiency": 0.16311701216493915,
+          "indicated_power_w": 44.02100813704225,
+          "heat_input_w": 269.8738013453158,
+          "heat_out_w": -225.89631275960488,
+          "gas_work_per_cycle_j": 22.010504068521126,
+          "heat_input_per_cycle_j": 134.9369006726579,
+          "heat_out_per_cycle_j": -112.94815637980244,
+          "last_complete_state": [
+            0.0002239507658434156,
+            48.98159396072482,
+            0.0011321224601283028,
+            312.6198465708014,
+            3.0068071371604713e-05,
+            12.502643518176516,
+            7.442525891550939e-05,
+            16.59436138434072,
+            93415.84926374591,
+            44800.72884554181
+          ],
+          "ablation": "block_both_compression",
+          "gate_flags": {
+            "block_hi_compression": true,
+            "block_ho_compression": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -3.1626005167675384,
+            "power_w": -10.093448654925425,
+            "heat_input_w": -8.002435416190224,
+            "heat_out_w": -2.168036291790685,
+            "gas_work_per_cycle_j": -5.046724327462712,
+            "heat_input_per_cycle_j": -4.001217708095112
+          }
+        },
+        {
+          "label": "C_new_Ho__block_both_expansion",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 13,
+            "first_normalized_periodic_error": 290702.1076456271,
+            "last_normalized_periodic_error": 0.9582315471334055,
+            "normalized_periodic_error_ratio": 3.29626625308652e-06,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 290702.1076456271
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 2146.5338756788865
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 128.55505104484908
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 101.8274403956691
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 95.7991710032775
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 90.13151267826638
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 84.80287024704401
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 79.7926416659554
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 75.08167409518754
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 70.65184946177322,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 1047.7821990332345
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 17.0678027681251
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 0.9582315471334055
+              }
+            ]
+          },
+          "elapsed_seconds": 22.59095126995817,
+          "indicated_thermal_efficiency": 0.17261579429530435,
+          "indicated_power_w": 48.64016397977109,
+          "heat_input_w": 281.7828123917757,
+          "heat_out_w": -232.9188106649487,
+          "gas_work_per_cycle_j": 24.320081989885544,
+          "heat_input_per_cycle_j": 140.89140619588784,
+          "heat_out_per_cycle_j": -116.45940533247435,
+          "last_complete_state": [
+            0.0002453411698305951,
+            45.994370818699394,
+            0.00107033936557022,
+            293.6838001110078,
+            4.303125895439795e-05,
+            11.738806342160217,
+            0.00010185476190360851,
+            15.583558617830171,
+            93306.40874077241,
+            44879.093980048325
+          ],
+          "ablation": "block_both_expansion",
+          "gate_flags": {
+            "block_hi_expansion": true,
+            "block_ho_expansion": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -2.2127223037310184,
+            "power_w": -5.4742928121965875,
+            "heat_input_w": 3.9065756302696286,
+            "heat_out_w": -9.190534197134497,
+            "gas_work_per_cycle_j": -2.7371464060982937,
+            "heat_input_per_cycle_j": 1.9532878151348143
+          }
+        },
+        {
+          "label": "C_new_Ho__block_both_compression_and_expansion",
+          "status": "converged",
+          "message": "Periodic steady state converged.",
+          "convergence": {
+            "cycles_completed": 23,
+            "first_normalized_periodic_error": 288610.5633694466,
+            "last_normalized_periodic_error": 0.9964220309446866,
+            "normalized_periodic_error_ratio": 3.452479421791571e-06,
+            "improving": true,
+            "history": [
+              {
+                "cycle": 1,
+                "normalized_state_error": 288610.5633694466
+              },
+              {
+                "cycle": 2,
+                "normalized_state_error": 1944.454661754727
+              },
+              {
+                "cycle": 3,
+                "normalized_state_error": 117.5198180197433
+              },
+              {
+                "cycle": 4,
+                "normalized_state_error": 111.00035160933537
+              },
+              {
+                "cycle": 5,
+                "normalized_state_error": 104.8639811129878
+              },
+              {
+                "cycle": 6,
+                "normalized_state_error": 99.07215104299527
+              },
+              {
+                "cycle": 7,
+                "normalized_state_error": 93.60520073755288
+              },
+              {
+                "cycle": 8,
+                "normalized_state_error": 88.44425149935851
+              },
+              {
+                "cycle": 9,
+                "normalized_state_error": 83.57205375754485
+              },
+              {
+                "cycle": 10,
+                "normalized_state_error": 78.97220618591683,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 11,
+                "normalized_state_error": 758.3869531193764
+              },
+              {
+                "cycle": 12,
+                "normalized_state_error": 22.927836944943337
+              },
+              {
+                "cycle": 13,
+                "normalized_state_error": 17.55428999967025
+              },
+              {
+                "cycle": 14,
+                "normalized_state_error": 16.56452622923431
+              },
+              {
+                "cycle": 15,
+                "normalized_state_error": 15.631431956226091
+              },
+              {
+                "cycle": 16,
+                "normalized_state_error": 14.751618783259522
+              },
+              {
+                "cycle": 17,
+                "normalized_state_error": 13.921910433894789
+              },
+              {
+                "cycle": 18,
+                "normalized_state_error": 13.139453373372556
+              },
+              {
+                "cycle": 19,
+                "normalized_state_error": 12.401573561572715
+              },
+              {
+                "cycle": 20,
+                "normalized_state_error": 11.705601538942044,
+                "wall_initial_guess_extrapolated": true
+              },
+              {
+                "cycle": 21,
+                "normalized_state_error": 159.0371970164856
+              },
+              {
+                "cycle": 22,
+                "normalized_state_error": 1.6515463425910797
+              },
+              {
+                "cycle": 23,
+                "normalized_state_error": 0.9964220309446866
+              }
+            ]
+          },
+          "elapsed_seconds": 38.66255846293643,
+          "indicated_thermal_efficiency": 0.1430346837897535,
+          "indicated_power_w": 39.10587505535968,
+          "heat_input_w": 273.4013458780484,
+          "heat_out_w": -234.3984542683406,
+          "gas_work_per_cycle_j": 19.55293752767984,
+          "heat_input_per_cycle_j": 136.7006729390242,
+          "heat_out_per_cycle_j": -117.1992271341703,
+          "last_complete_state": [
+            0.0002446474221739588,
+            45.894297595044485,
+            0.0010714298388550408,
+            293.04546167116797,
+            4.2891435571794886e-05,
+            11.713308539664279,
+            0.00010159785965797233,
+            15.549687166152584,
+            93388.47016932566,
+            44896.83003195932
+          ],
+          "ablation": "block_both_compression_and_expansion",
+          "gate_flags": {
+            "block_hi_compression": true,
+            "block_ho_compression": true,
+            "block_hi_expansion": true,
+            "block_ho_expansion": true
+          },
+          "delta_vs_same_hardware_baseline": {
+            "efficiency_percentage_point": -5.170833354286103,
+            "power_w": -15.008581736607994,
+            "heat_input_w": -4.474890883457647,
+            "heat_out_w": -10.670177800526403,
+            "gas_work_per_cycle_j": -7.504290868303997,
+            "heat_input_per_cycle_j": -2.2374454417288234
+          }
+        }
+      ]
+    }
+  }
+}
