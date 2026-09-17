@@ -1,5 +1,10 @@
 # Instantaneous single-phase gas model for microtube exchangers
 
+The current motion/hardware search using this closure is documented in
+[FOUR_STAGE_OPTIMIZATION.md](FOUR_STAGE_OPTIMIZATION.md). Its results must be
+kept separate from the earlier constant-property campaigns. The planned
+[temperature map](MOTOR_RESEARCH_OBJECTIVES.md) adapts the whole machine.
+
 ## Architecture and selection
 
 The original geometry (`MicrotubeBank`), hydraulic links (`TubeHalfLink`),

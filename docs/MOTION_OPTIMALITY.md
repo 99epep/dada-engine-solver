@@ -93,7 +93,7 @@ This still does not prove global optimality, but it can establish that the remai
 
 ## Level 3 — certified global optimum in a finite-dimensional family
 
-For a bounded family such as the current 11-variable two-extrema law, a true global certificate is possible in principle with deterministic global optimization.
+For a bounded family such as an 11-variable motion family, a true global certificate is possible in principle with deterministic global optimization.
 
 The preferred concept is branch-and-bound:
 
@@ -216,28 +216,29 @@ The following scopes should remain distinct:
 - four-bar-realisable motion optimum;
 - complete machine optimum including mechanical losses.
 
-## Proposed project sequence
+## Agreed next project sequence
 
-The recommended sequence is:
+1. Finish the current piecewise-linear machine and temperature exploration,
+   using the production gas model and explicit design/feasibility conventions.
+2. Take the selected best linear candidate and construct a smooth C2 motion
+   approximating it.
+3. Allow limited thermodynamic reoptimization of that C2 law to measure whether
+   smoothing loses or gains efficiency.
+4. Synthesize a six-bar mechanism approximating the selected C2 target.
+5. Evaluate the **actual six-bar kinematics** in the periodic thermodynamic
+   solver; geometric RMS fit alone is not a performance result.
 
-1. complete the current independent timing/flatness search;
-2. locally refine the best region;
-3. repeat with `FreeKinematics` at increasing resolution;
-4. compare motion shapes and objective convergence across parameterizations;
-5. identify physically justified velocity, acceleration and mechanism bounds;
-6. formulate the motion problem explicitly as an optimal-control problem;
-7. derive necessary optimality conditions where tractable;
-8. construct a relaxed upper-bound problem;
-9. if useful, apply certified branch-and-bound or interval methods to the narrowed finite-dimensional family;
-10. report the numerical candidate and certified upper bound together.
+The [four-stage chronology](FOUR_STAGE_OPTIMIZATION.md) records the implemented
+experiments; [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md) defines
+the planned whole-machine temperature map. Existing spline and six-bar support
+are reusable capabilities. They do not establish that C2 smoothing, its
+reoptimization or mechanism synthesis for the newly selected four-stage target
+has already been completed.
 
-The target final result is therefore not merely one motion curve, but a bracket:
-
-```text
-eta_best_admissible <= eta_true_optimum <= eta_certified_upper_bound
-```
-
-with the smallest defensible gap between the two.
+Velocity/acceleration and mechanical bounds must be made explicit before
+claiming realizability. Certification, optimal-control bounds and branch-and-
+bound described above remain possible later research, not the immediate
+implementation plan or an achieved result.
 
 ## Reporting language
 
@@ -252,10 +253,27 @@ Use the following terminology consistently.
 | rigorous relaxed upper bound close to best admissible motion | certified near-optimal motion in the stated admissible class |
 | no explicit upper bound | do not claim global optimality |
 
-## Current status
+## Current status (2026-09-17)
 
-The project is presently in the **best-found / parameterization-comparison** stage.
+The project remains at the **best-found / parameterization-comparison** stage.
+Shared seven-parameter four-stage timing has been explored and finely refined.
+An 11D independent S/L timing search retained the shared seed; a focused 4D
+relative-event test then found a small gain from sub-degree RMS separation.
+Shared timing is therefore a useful reduced approximation, not exact physics.
 
-The reduced motion families have already shown that thermodynamic performance depends strongly on timing and asymmetric shaping around extrema. The next steps are to determine whether those features survive the removal of the remaining parameterization restrictions and, only then, to invest in a formal optimality bound.
+An independent local climb from 150/30/150/30 deg found another, more balanced
+timing basin. Those comparisons used the legacy gas model. The current physical
+9D refinement varies shared motion and independent H_i/H_o tube counts with the
+production variable-property model; its committed checkpoint is incomplete.
+See [the report-based chronology](FOUR_STAGE_OPTIMIZATION.md) for exact artifacts,
+parameters, filling rules, budgets and model generations. Efficiencies across
+those generations must not be ranked as optimization improvements.
 
-No current campaign result should yet be described as a proof of global kinematic optimality.
+The four-stage law is still only a thermodynamic design probe. Its piecewise
+constant velocities jump at stage boundaries with no acceleration, inertia,
+stress or mechanical-loss penalty. Those jumps are mechanically unrealizable
+as written, and the 2% minimum duration is only a search bound. Passive-valve
+behavior and thermal coupling remain part of the physical evaluation.
+
+No present result proves global optimality, a useful shaft efficiency or
+experimental validity of transient gas heat transfer.
