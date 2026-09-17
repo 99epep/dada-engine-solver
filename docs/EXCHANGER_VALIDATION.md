@@ -83,6 +83,10 @@ for integral Doty thermal validation.
 
 ## Same champion, unchanged thermodynamics
 
+This is the controlled six-bar A/B model comparison, not the latest four-stage
+optimization result. See [FOUR_STAGE_OPTIMIZATION.md](FOUR_STAGE_OPTIMIZATION.md)
+for the later production-model local search and its committed checkpoint.
+
 The comparison uses the selected independent S/L six-bars, K2 volume limits,
 fixed gas inventory, 2 Hz, 25/325 deg C reservoirs, asymmetric microtube geometry,
 normal hydraulic loss coefficients and the existing dynamic wall states.

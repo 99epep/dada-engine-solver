@@ -9,6 +9,65 @@ The project is distributed under `GPL-3.0-or-later`. This replaces the earlier
 CC0 dedication. Third-party dependencies and referenced scientific material
 retain their own terms.
 
+## 2026-09-17: four-stage design probe and whole-machine temperature map
+
+These decisions supersede contrary interpretations of the historical experiment
+records below. Detailed numerical results and their exact output artifacts are
+in [FOUR_STAGE_OPTIMIZATION.md](FOUR_STAGE_OPTIMIZATION.md); the
+study plan is specified as future work in
+[MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).
+
+- Four-stage piecewise-linear motion is a thermodynamic design probe, not a
+  final mechanism. Instantaneous velocity changes have no acceleration,
+  inertia, stress or mechanical-loss penalty. The 2% minimum stage duration
+  is a search bound, not evidence of mechanical feasibility.
+- Shared stage timing is allowed as a reduced approximation, not imposed as
+  exact physics. Independent timing and small-offset tests provide finite
+  numerical evidence, not an optimality proof. H_i/H_o geometry may differ.
+- Whole-machine design uses candidate-specific uniform 100000 Pa absolute
+  filling at theta=0 and the configured charge temperature. Gas inventory
+  follows actual connected volumes, including clearances and exchanger
+  hold-up. Fixed-mass experiments remain explicitly controlled historical
+  comparisons. Atmospheric filling is a stopped/equilibrated design convention,
+  not a leakage model or a periodic operating-pressure constraint.
+- The first temperature map varies the whole machine, not only kinematics.
+  Cold inlet is fixed at 298.15 K; hot inlet spans 508.15 to 658.15 K in 30 K
+  steps around the 598.15 K reference (delta T = 300 K).
+- Keep total swept volume fixed at 0.0018217821782178217 m^3 while allowing the
+  S/L swept-volume ratio to vary. Retain 1% clearance-to-swept ratios unless
+  another explicit campaign changes them. The value is sourced in the linked
+  research plan, not inferred from the large-cylinder size ceiling.
+- First evaluate the selected 300 K-delta-T machine at all six temperatures
+  without reoptimization. Then continue separately outward: 300 -> 270 ->
+  240 -> 210 K and 300 -> 330 -> 360 K, starting each next temperature from
+  its previous-temperature champion.
+- At each temperature, first adapt thermal/hardware design (including exchanger
+  sizing and cylinder ratio) with previous motion initially fixed; then freeze
+  that result and adapt the seven motion coordinates. This is a practical
+  two-pass best-found design map, not complete coupled global optimality.
+- The current 40 W indicated-power floor is a campaign guard. A lower floor may
+  be deliberately selected for the next lower-delta-T campaign if necessary.
+  Record every threshold; different floors define different feasible regions.
+- Report indicated efficiency, `eta_C = 1 - T_cold/T_hot`, `eta/eta_C`, power,
+  external heat input, hardware, inventory, cylinder ratio, stage durations
+  and intermediate levels. Useful shaft efficiency remains unavailable.
+- Use the production microtube validity verdict, not the historical blanket
+  laminar-only rejection. Static UA is reference metadata; internal thermal
+  conductance depends on instantaneous flow. Artificial zero-cost conductance
+  multipliers are diagnostic counterfactuals, not physical resizing. A tube-count
+  change also changes hydraulics, dead volume, headers and wall heat capacity.
+- Phase heat ablation establishes sensitivity around frozen cycles only; it
+  does not prove that compression/expansion heat transfer is globally beneficial.
+  External-air fan losses stay excluded from the indicated-efficiency objective,
+  not physically zero. External-air modelling remains screening and uncertain.
+- After linear machine/temperature exploration: selected linear target -> C2
+  smoothing -> limited thermodynamic readjustment -> six-bar synthesis -> full
+  thermodynamic evaluation of actual mechanism motion. That sequence is future
+  work for this target, despite existing spline and six-bar capabilities.
+
+No Julia migration is approved or implemented by these decisions. Language
+migration will be discussed separately after the temperature experiment.
+
 ## Authority and scope
 
 ### Persistent campaign orchestration and direct kinematics injection
@@ -17,10 +76,9 @@ The approved architecture now permits direct study-angle kinematics injection
 through MachineDesign; the factory applies the operation reversal once and
 retains backward-compatible TOML selection otherwise. The first persistent
 Sobol campaign layer reuses physical evaluation and sizing objectives/constraints.
-It does not alter physical equations or periodic tolerances. The first physical
-campaign uses the existing eight-state reservoir-closure evaluator; dynamic-wall
-microtube campaigns require a compatible evaluator adapter, not a static-model
-substitution. See [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
+It does not alter physical equations or periodic tolerances. The first architecture smoke used the eight-state reservoir-closure evaluator.
+Dynamic-wall microtube evaluation, interruption and warm starts are now
+implemented through the separate wall evaluator, not a static-model substitution. See [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
 
 ### Interchangeable motion and exchanger architecture
 
@@ -120,9 +178,10 @@ temperatures and useful-power requirements, with other design assumptions
 explicit. See [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).
 These decisions supersede any contrary interpretation of historical text.
 
-### Current motor design brief, 2026-09-09
+### Historical motor design brief, 2026-09-09
 
-All project content must be English. The motor is a small experimental
+The 448.15 K source below is historical; later decisions use a 598.15 K reference
+and the temperature map above. All project content must be English. The motor is a small experimental
 demonstrator, not a commercial product; commercial refers to purchased
 exchangers. Its name does not prescribe a permanent temperature difference. The motor targets approximately 100 W of
 useful mechanical output at 2–10 Hz, between reservoirs at 298.15 and 448.15 K.
@@ -1520,5 +1579,6 @@ Do not transfer silica accommodation to metal. Do not infer a pulsed thermal
 multiplier from pressure-transmission experiments. Doty absolute discrepancies
 remain in the validation report. Mean-density Poiseuille at fixed T/mu was
 already algebraically equivalent to the pressure-squared isothermal expression.
-See MICROTUBE_GAS_MODEL.md and EXCHANGER_VALIDATION.md for per-equation provenance,
+See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) and
+[EXCHANGER_VALIDATION.md](EXCHANGER_VALIDATION.md) for per-equation provenance,
 limits and the same-champion comparison.

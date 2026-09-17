@@ -141,9 +141,28 @@ output, 2–10 Hz, reservoirs at 25/325 degrees Celsius, and a large-cylinder
 maximum enclosed volume of 66 litres. See [the motor demonstrator design
 brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
 
+## Current motor design exploration
+
+The [four-stage optimization record](docs/FOUR_STAGE_OPTIMIZATION.md) traces
+shared and independent timing tests, exchanger saturation/physical sizing,
+phase diagnostics and the current local motion-plus-hardware search. It
+separates historical constant-property results from the production
+[variable-property microtube model](docs/MICROTUBE_GAS_MODEL.md). Output JSON
+reports, not earlier summary prose, are the numerical authority. The production
+campaign checkpoint is best found so far, not a final or globally optimal machine.
+
+The [whole-machine temperature-study plan](docs/MOTOR_RESEARCH_OBJECTIVES.md)
+fixes total swept volume and atmospheric filling while adapting hardware,
+cylinder ratio and then motion. The subsequent
+[motion-to-mechanism path](docs/MOTION_OPTIMALITY.md) is linear target, C2
+smoothing/readjustment, six-bar synthesis and evaluation of actual mechanism
+kinematics. Piecewise-linear velocity jumps have no mechanical-loss penalty and
+are not mechanically realizable as written.
+
 ## Interchangeable models
 
-The thermodynamic solver accepts four-bar or independent periodic free motion.
+The thermodynamic solver accepts interchangeable kinematics, including four-bar,
+independent periodic free motion, six-bar and the four-stage design probe.
 Exchanger families are assembled through an explicit protocol; microtubes are
 one implementation. See [architecture and validation](docs/PLUGGABLE_MODELS.md)
 and the [free-motion example](examples/motor_free_kinematics.toml).

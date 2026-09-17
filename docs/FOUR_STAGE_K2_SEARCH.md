@@ -1,6 +1,14 @@
-# Seven-variable four-stage motion search on K2
+# Historical first seven-variable four-stage search on K2
 
-The new `FourStageVolumeKinematics` implements four shared linear stages with
+This is the historical first-phase record, using the constant-property legacy
+exchanger model and fixed K2 gas inventory. The campaign subsequently continued;
+its current output files no longer describe only the first 12 attempts.
+The consolidated [four-stage optimization chronology](FOUR_STAGE_OPTIMIZATION.md)
+records the later refinements, filling-policy change, timing tests, physical
+exchanger sizing and production variable-property campaign. The initial
+18.829771% result below is **not** the current best-found motor.
+
+`FourStageVolumeKinematics` implements four shared linear stages with
 seven independent parameters. Time is expressed as a fraction of the forward
 motor cycle; T0=0 and T4=1 closes the cycle.
 
@@ -42,9 +50,11 @@ at least 2% of the cycle; intermediate levels lie in [0,1]. These are explicit
 search bounds, not claims of mechanical feasibility. The initial target-derived
 seed is not an imposed waveform shape for later candidates.
 
-The existing screening limits are retained: at least 40 W indicated power,
-at most 12 bar absolute, 850 K, 0.08 kg/s, Mach 0.2 and tube Reynolds below 2300,
-plus the existing thermodynamic validity verdict. Non-converged evaluations do
+The historical campaign retained these screening limits: at least 40 W indicated power,
+at most 1200000 Pa absolute, 850 K, 0.08 kg/s, Mach 0.2 and tube Reynolds below 2300,
+plus the then-current thermodynamic validity verdict. This laminar-only guard
+belongs to the historical campaign; the production campaign instead uses the
+current microtube model-domain verdict, including supported turbulent states. Non-converged evaluations do
 not generate invented physical constraint violations. The greatest efficiency
 among feasible candidates is archived independently of the latest evaluation.
 
@@ -65,14 +75,17 @@ initial exploration establishes only the best observed candidate, not a global
 optimum. Piecewise-linear velocity jumps have no mechanical acceleration or
 inertia-loss model attached to them.
 
-## Initial recorded results
+## Initial recorded results (historical first 12 attempts)
 
 The first phase requested 480 seconds and finished its in-flight candidate in
 506.74 seconds. Twelve candidates converged; nine met the screening constraints.
 The highest feasible efficiency was candidate 6: **18.829771%**, with
 **53.858662 W** indicated gas power. The initial target-derived candidate gave
-16.209185%. These are initial search results, not a certified optimum.
-The free K2 reference remains 20.561604% and the six-bar reference 20.381817%.
+16.209185%. These are initial search results, not a certified optimum. Candidate 6 and its
+parameters remain in [the append-only history](../outputs/motor_four_stage_k2/history.jsonl).
+The elapsed-time account above is the preserved first-run record; the overwritten
+report now describes the later 805-attempt checkpoint.
+The historical fixed-mass free K2 reference was 20.561604% and the six-bar reference 20.381817%.
 
 | Parameter | Best observed value |
 | --- | ---: |
@@ -87,10 +100,10 @@ The free K2 reference remains 20.561604% and the six-bar reference 20.381817%.
 The last segment occupies 2.8323% of the cycle (14.16 ms at 2 Hz), near the
 2% duration lower bound. This proximity should remain visible when interpreting
 future improvements. No acceleration penalty is included in this kinematic
-experiment. Full suite: 326 tests passed, including seven new chronology,
+experiment. At that implementation checkpoint, 326 tests passed, including seven new chronology,
 breakpoint, derivative, periodicity and parameter-validity checks.
 
 Artifacts in `outputs/motor_four_stage_k2/` include `best_motion.png`, its
 vector `best_motion.svg`, and `best_motion.csv` in forward motor time.
-Future runs also accept `--candidate-seconds 90` to bound difficult candidates
+The driver also accepts `--candidate-seconds 90` to bound difficult candidates
 cooperatively; callback checks may allow a short in-flight overrun.

@@ -1,8 +1,57 @@
-# Proposed next steps after the motor update
+# Exchanger design lessons and next steps
 
-Assessment dated 2026-09-08. These are recommendations, not implemented physics.
+## Current status and design lessons (2026-09-17)
 
-## Interpreting the existing diagnostics
+The implemented motor path now couples microtube geometry, hydraulic passages,
+dynamic wall storage and the opt-in production variable-property internal gas
+film. See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) for implemented
+closures and [EXCHANGER_VALIDATION.md](EXCHANGER_VALIDATION.md) for their evidence
+and limitations. Quasi-steady pulse response is not experimentally validated;
+there is no empirical pulsating heat-transfer multiplier.
+
+The [four-stage experiment chronology](FOUR_STAGE_OPTIMIZATION.md) separates
+legacy-gas-model controlled tests from the production local 9D campaign and
+links each conclusion to its exact report. Preserve these design lessons:
+
+1. Multiplying thermal conductance at fixed dead volume and wall capacity is a
+   sensitivity experiment, not a realizable redesign. The saturation study
+   multiplied both gas-wall and air-wall conductances at zero geometric cost.
+2. Physical tube-count changes simultaneously alter conductance, flow area,
+   hydraulic loss, tube hold-up, headers and wall thermal capacity. These
+   geometry-derived quantities must not become independent free coordinates.
+3. A larger physical H_o can help shorten LP exchange yet reduce efficiency,
+   even where an artificial multiplier improves it. The 120/60 and 150/30
+   comparisons demonstrate the coupled tradeoff; they do not separately identify
+   every storage/volume contribution.
+4. H_i and H_o need not have equal best-found geometry. The production 9D
+   checkpoint uses a smaller H_i and slightly larger H_o than its reference.
+5. Static UA is only reference metadata in the production model; the actual
+   internal gas-side conductance follows instantaneous flow and gas properties.
+6. External-air fan power is excluded by explicit project decision, not
+   physically zero. The objective is indicated thermal efficiency, not useful
+   shaft or complete-system efficiency.
+7. External-air-side modelling is still a screening model and a major future
+   hardware-design uncertainty. Improving the internal film does not validate
+   the external-air passage or its predicted fan requirements.
+
+Compression and expansion retain gas-wall heat exchange. The phase ablations
+measure local sensitivity of frozen cycles; they cannot establish global
+benefit when motion and compression magnitude can also be redesigned.
+
+The next study is the [whole-machine temperature map](MOTOR_RESEARCH_OBJECTIVES.md),
+with fixed total swept volume, variable S/L ratio and candidate-specific 100 kPa
+filling. Each temperature receives hardware and then motion adaptation. Preserve
+full domain verdicts (including supported turbulent states) rather than importing
+historical laminar-only campaign guards. No new campaign was run for this audit.
+
+## Historical assessment (2026-09-08)
+
+The following assessment preserves the earlier rectangular-channel/fixed-point
+workflow and profiling evidence. It is not the current microtube architecture
+or a fresh authorization for model changes. Dynamic-wall coupling and internal
+variable-property closures have since been implemented as described above.
+
+### Interpreting the diagnostics in the earlier assessment
 
 The conservative solver already integrates variable temperatures and separate
 cylinder/exchanger pressures. Failure to meet the configured isothermality or
@@ -29,14 +78,14 @@ sensitivity materially changes useful performance or hardware loads.
 The current power, volume, speed and temperature requirements are recorded in
 [MOTOR_DEMONSTRATOR.md](MOTOR_DEMONSTRATOR.md).
 
-## Exchanger priority
+### Earlier exchanger priority
 
-The current code already provides channel geometry, thermal resistances,
+At that assessment, the code provided channel geometry, thermal resistances,
 pressure-drop closures, an external liquid-side screening model, and a fixed-
 point cycle/geometry calculation. These should be reused.
 
 The main unresolved step is predicting transfer over the actual pulsating cycle.
-The fixed-point calculation currently combines an adjacent-port peak flow with
+The historical fixed-point calculation combines an adjacent-port peak flow with
 representative pressure/temperature extrema and sends a constant UA back to the
 0D cycle. That is a screening approximation; the selected extrema need not occur
 simultaneously. A more detailed geometry calculation alone does not remove it.
@@ -64,7 +113,7 @@ its existing excursion diagnostic remains available. See
 [EXCHANGER_LITERATURE.md](EXCHANGER_LITERATURE.md) for the first duty envelope and
 source comparison. The transient-model-first ordering above has been superseded.
 
-## Speed and language choice
+### Historical profiling and language discussion
 
 The current motor example was profiled using:
 
@@ -85,10 +134,11 @@ appropriate for independent candidates; shared LSODA instances should not be
 assumed thread-safe.
 
 Then benchmark a compiled numerical kernel on representative cases at matched
-error tolerances. A Julia prototype is reasonable, especially for a future
-larger exchanger state, but needs to include the right-hand side and event
-handling rather than retaining frequent Python callbacks. Include compilation
-time separately from repeated-solve time. No speedup factor is established yet.
+error tolerances. A Julia prototype was discussed as a possible later comparison, not approved
+or implemented. Any such comparison would need the right-hand side and event
+handling, with compilation time separated from repeated-solve time. No speedup
+factor is established. The current decision is to discuss migration separately
+after the temperature experiment.
 
 SciPy's [LSODA interface](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
 already wraps a Fortran integrator. SciML's
