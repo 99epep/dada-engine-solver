@@ -149,7 +149,8 @@ phase diagnostics and the current local motion-plus-hardware search. It
 separates historical constant-property results from the production
 [variable-property microtube model](docs/MICROTUBE_GAS_MODEL.md). Output JSON
 reports, not earlier summary prose, are the numerical authority. The production
-campaign checkpoint is best found so far, not a final or globally optimal machine.
+local 9D run is complete; its best-found result is not a final or globally optimal
+machine. The separate temperature study has begun.
 
 The [whole-machine temperature-study plan](docs/MOTOR_RESEARCH_OBJECTIVES.md)
 fixes total swept volume and atmospheric filling while adapting hardware,
@@ -158,6 +159,11 @@ cylinder ratio and then motion. The subsequent
 smoothing/readjustment, six-bar synthesis and evaluation of actual mechanism
 kinematics. Piecewise-linear velocity jumps have no mechanical-loss penalty and
 are not mechanically realizable as written.
+
+The first [solver-acceleration review](docs/SOLVER_ACCELERATION_STAGE1.md)
+contains current-model timing evidence, proposed priorities and questions for
+an independent second review. It is a preparation note, not an implemented
+speedup or approved language migration.
 
 ## Interchangeable models
 

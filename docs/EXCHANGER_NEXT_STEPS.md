@@ -113,6 +113,14 @@ its existing excursion diagnostic remains available. See
 [EXCHANGER_LITERATURE.md](EXCHANGER_LITERATURE.md) for the first duty envelope and
 source comparison. The transient-model-first ordering above has been superseded.
 
+### Current acceleration review
+
+The [stage-1 solver-acceleration note](SOLVER_ACCELERATION_STAGE1.md) profiles
+the production variable-property motor and separates integration, periodic
+convergence and duplicated diagnostics. It supersedes the old profile below
+as the starting point for performance discussion, without approving a rewrite.
+An independent second review will precede implementation.
+
 ### Historical profiling and language discussion
 
 The current motor example was profiled using:

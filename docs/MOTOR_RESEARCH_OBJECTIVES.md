@@ -63,10 +63,11 @@ Lambdas and volume ratio. The present 25/325-degree, approximately 100 W,
 
 This is a **whole-machine design study**, not merely kinematic temperature
 sensitivity. Use the production variable-property microtube model and its
-validity verdict, not the legacy blanket laminar-only screen. The current local
-9D reference is still a best-found checkpoint, not a final selected machine;
-finish/select the reference explicitly before building the map. No new
-optimization or temperature evaluation was launched for this documentation audit.
+validity verdict, not the legacy blanket laminar-only screen. The local
+9D reference run is complete at 312 attempts; its best-found candidate is the
+starting reference, not a globally optimal or final prototype machine.
+Temperature mapping has now started in separate work. This documentation pass
+launches no evaluations and leaves running campaign inputs and outputs untouched.
 
 ### Source grid and continuation order
 

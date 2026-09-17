@@ -9,6 +9,18 @@ The project is distributed under `GPL-3.0-or-later`. This replaces the earlier
 CC0 dedication. Third-party dependencies and referenced scientific material
 retain their own terms.
 
+## 2026-09-17 clarification: temporary four-stage simplification
+
+The four-stage law simplifies features discovered in the previous freer-motion
+searches to make the thermal design study tractable. It is intended as a simple
+law plausibly near a desirable thermodynamic motion, not a proven optimum or
+the intended final piston law. After this thermal study, return to smoother,
+more natural laws for the first prototype. The linear target informs that work
+without requiring its corners or exact shape to survive. C2 readjustment and
+mechanism evaluation remain the documented route; no new mechanism is selected
+by this clarification. See [FOUR_STAGE_OPTIMIZATION.md](FOUR_STAGE_OPTIMIZATION.md)
+for the completed local 9D result and the separate temperature-study handoff.
+
 ## 2026-09-17: four-stage design probe and whole-machine temperature map
 
 These decisions supersede contrary interpretations of the historical experiment
