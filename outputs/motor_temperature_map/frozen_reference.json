@@ -1,0 +1,682 @@
+{
+  "study": "frozen 300 K-delta-T champion across six source temperatures",
+  "reference_report": "outputs/motor_four_stage_hx9d_variable_gas/report.json",
+  "reference_candidate_index": 299,
+  "reference_parameters": {
+    "t1": 0.47887307081619906,
+    "t2": 0.6072461806591599,
+    "t3": 0.9033621966118612,
+    "a_l": 0.36249698288082816,
+    "b_l": 0.11707005461265117,
+    "a_s": 0.35563516984334814,
+    "b_s": 0.15456935670703065,
+    "n_i": 3247,
+    "n_o": 3781
+  },
+  "reference_periodic_state_reused": true,
+  "charge_pressure_pa": 100000.0,
+  "charge_temperature_k": 298.15,
+  "cold_source_temperature_k": 298.15,
+  "hot_air_density_policy": "reference density scaled inversely with absolute hot-air temperature at constant pressure",
+  "candidate_seconds": 0.0,
+  "reference_power_floor_w": 40.0,
+  "reference_power_floor_role": "reported guard only; does not suppress frozen-design points",
+  "hardware": {
+    "H_i": {
+      "tube_count": 3247,
+      "tube_length_m": 0.0463173095241189,
+      "inner_diameter_m": 0.00033,
+      "outlet_valve_cda_m2": 0.0005201954120169299,
+      "tube_flow_area_m2": 0.00027771545540045996,
+      "working_gas_volume_m3": 3.516928270741475e-05,
+      "tube_gas_volume_m3": 1.2863032707414743e-05,
+      "header_gas_volume_m3": 2.0306250000000006e-05,
+      "core_width_m": 0.07125000000000001,
+      "core_height_m": 0.07125000000000001,
+      "wall_capacity_j_k": 140.94014346459022,
+      "static_conductance_reference_w_k": 11.643488815397996,
+      "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+    },
+    "H_o": {
+      "tube_count": 3781,
+      "tube_length_m": 0.02519308603379876,
+      "inner_diameter_m": 0.00033,
+      "outlet_valve_cda_m2": 0.0001696090171832718,
+      "tube_flow_area_m2": 0.0003233884006372464,
+      "working_gas_volume_m3": 3.378465179958673e-05,
+      "tube_gas_volume_m3": 8.14715179958673e-06,
+      "header_gas_volume_m3": 2.36375e-05,
+      "core_width_m": 0.0775,
+      "core_height_m": 0.07625,
+      "wall_capacity_j_k": 90.00152076188583,
+      "static_conductance_reference_w_k": 7.35952766260472,
+      "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+    }
+  },
+  "results": [
+    {
+      "hot_source_temperature_k": 508.15,
+      "hot_source_temperature_deg_c": 235.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 210.0,
+      "carnot_efficiency": 0.41326380005903773,
+      "indicated_thermal_efficiency": 0.1508696656193547,
+      "fraction_of_carnot": 0.3650686694498813,
+      "indicated_power_w": 16.67009725729614,
+      "heat_input_w": 110.49336650188461,
+      "heat_out_w": -93.88275052501984,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": false,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.0072996808352430356,
+        "cold_isothermality_error": 0.022551270613718546,
+        "hot_isothermality_error": 0.15621196575289703,
+        "maximum_mach_number": 0.030114173537540184,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 479.7333247565484,
+      "maximum_tube_mach_number": 0.030114173537540184,
+      "maximum_absolute_mass_flow_kg_s": 0.010212894338767266,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 109451.44504672271,
+            "maximum": 477821.78640558524
+          },
+          "L": {
+            "minimum": 110555.61331615268,
+            "maximum": 478204.40693582746
+          },
+          "C": {
+            "minimum": 109459.1300238965,
+            "maximum": 477154.7720918286
+          },
+          "H": {
+            "minimum": 110282.26183204596,
+            "maximum": 477691.72930577205
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 292.36791737598776,
+            "maximum": 461.613017180414
+          },
+          "L": {
+            "minimum": 332.2445590539212,
+            "maximum": 504.8736315090336
+          },
+          "C": {
+            "minimum": 492.1248848489075,
+            "maximum": 505.6139273665033
+          },
+          "H": {
+            "minimum": 295.45280797141544,
+            "maximum": 342.0274055606417
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0074704227469052226,
+            "maximum": 0.005167210156851021
+          },
+          "small_to_cold": {
+            "minimum": -0.0045788345006159146,
+            "maximum": 0.010212894338767266
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006028658326244255
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.00946245797652533
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -347.8288020009798,
+          "maximum": 575.5011038559505
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1109.7009214071666,
+          "maximum": 370.67188643269276
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    },
+    {
+      "hot_source_temperature_k": 538.15,
+      "hot_source_temperature_deg_c": 265.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 240.0,
+      "carnot_efficiency": 0.44597231255226244,
+      "indicated_thermal_efficiency": 0.18699767452708796,
+      "fraction_of_carnot": 0.4193033272781349,
+      "indicated_power_w": 28.507996590682062,
+      "heat_input_w": 152.45107546271905,
+      "heat_out_w": -124.00368037962764,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": false,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007421708731929147,
+        "cold_isothermality_error": 0.021754410271756654,
+        "hot_isothermality_error": 0.16320800461288218,
+        "maximum_mach_number": 0.02954162967223778,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 473.6941158323688,
+      "maximum_tube_mach_number": 0.02954162967223778,
+      "maximum_absolute_mass_flow_kg_s": 0.010166386234737201,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 115088.95052115578,
+            "maximum": 485479.3614587166
+          },
+          "L": {
+            "minimum": 116242.05533320188,
+            "maximum": 485861.52003561833
+          },
+          "C": {
+            "minimum": 115094.9332711427,
+            "maximum": 484820.9946040963
+          },
+          "H": {
+            "minimum": 115943.16703849372,
+            "maximum": 485334.97128337127
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 299.2169493490117,
+            "maximum": 467.03115774123063
+          },
+          "L": {
+            "minimum": 351.33227600299335,
+            "maximum": 528.6769811784492
+          },
+          "C": {
+            "minimum": 518.814680062142,
+            "maximum": 531.8270805661932
+          },
+          "H": {
+            "minimum": 298.2864101415055,
+            "maximum": 346.9468767168363
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.007373249806427043,
+            "maximum": 0.005013019511601147
+          },
+          "small_to_cold": {
+            "minimum": -0.004650327967883608,
+            "maximum": 0.010166386234737201
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006199258922380427
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.009255910616775767
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -292.48566064886853,
+          "maximum": 626.578692017402
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1178.0747074479714,
+          "maximum": 385.36239368347054
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    },
+    {
+      "hot_source_temperature_k": 568.15,
+      "hot_source_temperature_deg_c": 295.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 270.0,
+      "carnot_efficiency": 0.47522661269031063,
+      "indicated_thermal_efficiency": 0.20772798803903395,
+      "fraction_of_carnot": 0.43711354223843385,
+      "indicated_power_w": 40.4456116490677,
+      "heat_input_w": 194.70468101519188,
+      "heat_out_w": -154.31782872079629,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": true,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007538344174072977,
+        "cold_isothermality_error": 0.021260387974781008,
+        "hot_isothermality_error": 0.1698239634289656,
+        "maximum_mach_number": 0.0290013740829131,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 467.6125412027781,
+      "maximum_tube_mach_number": 0.0290013740829131,
+      "maximum_absolute_mass_flow_kg_s": 0.010115924202752757,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 120730.74190567173,
+            "maximum": 492986.3989676749
+          },
+          "L": {
+            "minimum": 121933.74818944494,
+            "maximum": 493368.5079604461
+          },
+          "C": {
+            "minimum": 120735.03192710901,
+            "maximum": 492335.6862948669
+          },
+          "H": {
+            "minimum": 121608.13031059201,
+            "maximum": 492828.3239118332
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 305.8665014028241,
+            "maximum": 472.41827216300203
+          },
+          "L": {
+            "minimum": 370.61783285641815,
+            "maximum": 552.5476193120004
+          },
+          "C": {
+            "minimum": 545.4067567574608,
+            "maximum": 558.1236578245761
+          },
+          "H": {
+            "minimum": 301.15141475491714,
+            "maximum": 351.78442945126324
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.0072824594059111535,
+            "maximum": 0.004870060545751122
+          },
+          "small_to_cold": {
+            "minimum": -0.004719046772787556,
+            "maximum": 0.010115924202752757
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006360916595614437
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.009062939635748567
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -239.591062067759,
+          "maximum": 684.8578475418792
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1243.952095578786,
+          "maximum": 400.0246649203868
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    },
+    {
+      "hot_source_temperature_k": 598.15,
+      "hot_source_temperature_deg_c": 325.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 300.0,
+      "carnot_efficiency": 0.501546434840759,
+      "indicated_thermal_efficiency": 0.22070634462673688,
+      "fraction_of_carnot": 0.44005166679494223,
+      "indicated_power_w": 52.40224307474156,
+      "heat_input_w": 237.4297085267998,
+      "heat_out_w": -185.02309396767865,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": true,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007648657283034508,
+        "cold_isothermality_error": 0.02116303133754007,
+        "hot_isothermality_error": 0.17603157707978848,
+        "maximum_mach_number": 0.02849206940088871,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 463.0348713671188,
+      "maximum_tube_mach_number": 0.02849206940088871,
+      "maximum_absolute_mass_flow_kg_s": 0.01009536504066922,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 126353.95497153238,
+            "maximum": 500465.9676526793
+          },
+          "L": {
+            "minimum": 127608.7307403636,
+            "maximum": 499737.78214499616
+          },
+          "C": {
+            "minimum": 126356.61360864312,
+            "maximum": 499750.91761815303
+          },
+          "H": {
+            "minimum": 127254.46136160103,
+            "maximum": 499185.4413304355
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 312.34957136986094,
+            "maximum": 477.78590881801665
+          },
+          "L": {
+            "minimum": 390.01236211180355,
+            "maximum": 576.1765479875742
+          },
+          "C": {
+            "minimum": 571.8144002021202,
+            "maximum": 584.4730673966698
+          },
+          "H": {
+            "minimum": 304.0694658034986,
+            "maximum": 356.5532805098375
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004096625020727674,
+            "maximum": 0.004729098495058075
+          },
+          "small_to_cold": {
+            "minimum": -0.004783941100628932,
+            "maximum": 0.01009536504066922
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.006512226956248181
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.008903950403303433
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -189.00723129840213,
+          "maximum": 803.774394923079
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1300.3181621434032,
+          "maximum": 414.60679176555885
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    },
+    {
+      "hot_source_temperature_k": 628.15,
+      "hot_source_temperature_deg_c": 355.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 330.0,
+      "carnot_efficiency": 0.5253522247870732,
+      "indicated_thermal_efficiency": 0.22700796899509576,
+      "fraction_of_carnot": 0.432106229467483,
+      "indicated_power_w": 63.780932094846,
+      "heat_input_w": 280.9634057217785,
+      "heat_out_w": -217.10813573507886,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": true,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007744646591252494,
+        "cold_isothermality_error": 0.022287693754835105,
+        "hot_isothermality_error": 0.18357454837710577,
+        "maximum_mach_number": 0.028023686584212514,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 457.8023960071138,
+      "maximum_tube_mach_number": 0.028023686584212514,
+      "maximum_absolute_mass_flow_kg_s": 0.010058795563203124,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 131789.4250236456,
+            "maximum": 511849.18618508184
+          },
+          "L": {
+            "minimum": 133098.0003282617,
+            "maximum": 508495.60356231435
+          },
+          "C": {
+            "minimum": 131790.53720032974,
+            "maximum": 510472.54725937144
+          },
+          "H": {
+            "minimum": 132712.7242677425,
+            "maximum": 508491.9023159164
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 318.79518342103404,
+            "maximum": 484.25664105538016
+          },
+          "L": {
+            "minimum": 408.833569826168,
+            "maximum": 601.115774850755
+          },
+          "C": {
+            "minimum": 597.3656285683718,
+            "maximum": 610.6970125878264
+          },
+          "H": {
+            "minimum": 307.21707059832545,
+            "maximum": 361.94982219695953
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004234140346052404,
+            "maximum": 0.004701153574932535
+          },
+          "small_to_cold": {
+            "minimum": -0.004842183276153002,
+            "maximum": 0.010058795563203124
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.0066330423360956925
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.008767496501665062
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -128.21953050902766,
+          "maximum": 958.6118368679727
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1382.9079113666874,
+          "maximum": 427.1937090351316
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    },
+    {
+      "hot_source_temperature_k": 658.15,
+      "hot_source_temperature_deg_c": 385.0,
+      "cold_source_temperature_k": 298.15,
+      "source_delta_t_k": 360.0,
+      "carnot_efficiency": 0.5469877687457267,
+      "indicated_thermal_efficiency": 0.23092764606802468,
+      "fraction_of_carnot": 0.42218063961019564,
+      "indicated_power_w": 75.03383478077008,
+      "heat_input_w": 324.9235683053178,
+      "heat_out_w": -249.81198134651365,
+      "total_gas_mass_kg": 0.0014091818227513165,
+      "passes_reference_40w_guard": true,
+      "model_validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.00784079949027357,
+        "cold_isothermality_error": 0.023432786312761144,
+        "hot_isothermality_error": 0.19116232992237261,
+        "maximum_mach_number": 0.02771007106842109,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "maximum_tube_reynolds": 452.624586120436,
+      "maximum_tube_mach_number": 0.02771007106842109,
+      "maximum_absolute_mass_flow_kg_s": 0.010023178749612066,
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 136226.10669406533,
+            "maximum": 532849.6939966328
+          },
+          "L": {
+            "minimum": 137795.75783702233,
+            "maximum": 529382.5839404807
+          },
+          "C": {
+            "minimum": 136226.89409770304,
+            "maximum": 531455.2023657141
+          },
+          "H": {
+            "minimum": 137145.10801287528,
+            "maximum": 529374.9989769754
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 325.1538643206277,
+            "maximum": 493.3959301806619
+          },
+          "L": {
+            "minimum": 427.02714104081736,
+            "maximum": 628.576260924816
+          },
+          "C": {
+            "minimum": 622.9149234930211,
+            "maximum": 636.9312446259992
+          },
+          "H": {
+            "minimum": 310.4505114355655,
+            "maximum": 367.4455601019209
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": -0.004361285224913832,
+            "maximum": 0.0046747871402834885
+          },
+          "small_to_cold": {
+            "minimum": -0.004896225716570936,
+            "maximum": 0.010023178749612066
+          },
+          "hot_to_small": {
+            "minimum": 0.0,
+            "maximum": 0.00674403804378848
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.008647252881542083
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -66.53429961084029,
+          "maximum": 1111.3579255580685
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -1468.51116099631,
+          "maximum": 439.61079458726175
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "status": "converged",
+      "message": "Periodic steady state converged."
+    }
+  ]
+}
