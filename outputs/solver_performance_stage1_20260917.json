@@ -1,0 +1,964 @@
+{
+  "scope": "Stage-1 performance reflection; unchanged-model saved-state replay, no search",
+  "commit": "58e62b71b0b054222be6ad5ade386ca7a527c7dd",
+  "platform": "Linux-6.1.0-52-amd64-x86_64-with-glibc2.36",
+  "python": "3.11.2",
+  "numpy": "1.24.2",
+  "scipy": "1.10.1",
+  "source_report": "outputs/motor_four_stage_hx9d_variable_gas/report.json",
+  "source_report_sha256": "24385381a3c6abcf300cba3e2ff9e2520cf66515c547736a4dc44aeea69098dc",
+  "source_candidate": "ce741be9daad91c2668ff4313da755c29c609f20daae1b5119075a3233e65e6a",
+  "source_index": 299,
+  "parameters": {
+    "t1": 0.47887307081619906,
+    "t2": 0.6072461806591599,
+    "t3": 0.9033621966118612,
+    "a_l": 0.36249698288082816,
+    "b_l": 0.11707005461265117,
+    "a_s": 0.35563516984334814,
+    "b_s": 0.15456935670703065,
+    "n_i": 3247,
+    "n_o": 3781
+  },
+  "initial_state": [
+    0.00019450133997240594,
+    43.62800838526439,
+    0.0011400400782849006,
+    319.021826850909,
+    2.69734447494521e-05,
+    11.235182823937553,
+    4.766695974455774e-05,
+    10.779594657594401,
+    81966.11384555958,
+    28608.84988668075
+  ],
+  "numerical_settings": {
+    "integration_method": "LSODA",
+    "integration_relative_tolerance": 1e-08,
+    "integration_absolute_tolerances": [
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-07,
+      1e-07,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08
+    ],
+    "maximum_step_angle_radians": 0.008726646259971648,
+    "periodic_relative_tolerance": 1e-06,
+    "periodic_absolute_tolerance": 1e-12,
+    "progress_interval_seconds": 1.0,
+    "accelerate_walls": true
+  },
+  "probe_source": "\"\"\"Bounded read-only replay; no optimization or physics mutation.\"\"\"\nimport cProfile, pstats, json, time, hashlib, platform, subprocess\nfrom pathlib import Path\nfrom dataclasses import asdict\nimport numpy as np, scipy\nfrom refine_motor_four_stage_hx9d_variable_gas import _load_basis, _build_design\nfrom compare_motor_motion_laws_stage7A5 import _evaluate\nfrom dada_solver.integration import IntegrationInterrupted\nroot=Path.cwd(); rp=root/'outputs/motor_four_stage_hx9d_variable_gas/report.json'\nrbytes=rp.read_bytes();report=json.loads(rbytes);record=report['best_feasible']\ndefinition,base=_load_basis();design=_build_design(base,record['parameters'])\ninitial=np.asarray(record['last_complete_state'],float)\nresult=dict(scope='Stage-1 performance reflection; unchanged-model saved-state replay, no search',\n commit=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(),\n platform=platform.platform(),python=platform.python_version(),numpy=np.__version__,scipy=scipy.__version__,\n source_report=str(rp.relative_to(root)),source_report_sha256=hashlib.sha256(rbytes).hexdigest(),\n source_candidate=record['candidate_id'],source_index=record['index'],parameters=record['parameters'],initial_state=initial.tolist(),\n numerical_settings=asdict(definition.wall_numerical_settings),probe_source=Path(__file__).read_text())\nfor mode in ('unprofiled','profiled'):\n start=time.perf_counter();profile=cProfile.Profile()\n def progress(_):\n  if time.perf_counter()-start>90:raise IntegrationInterrupted('Read-only profiling probe deadline')\n if mode=='profiled':profile.enable()\n out,state=_evaluate('performance_probe',design,definition,initial_state=initial.copy(),progress_callback=progress)\n if mode=='profiled':profile.disable()\n elapsed=time.perf_counter()-start\n result[mode]=dict(elapsed_seconds=elapsed,status=out['status'],convergence=out['convergence'],\n    efficiency=out.get('indicated_thermal_efficiency'),power_w=out.get('indicated_power_w'))\n if mode=='profiled':\n  stats=pstats.Stats(profile);rows=[]\n  for (file,line,name),(primitive,total,selftime,cumtime,callers) in stats.stats.items():\n   rows.append(dict(file=file.replace(str(root)+'/',''),line=line,function=name,primitive_calls=primitive,total_calls=total,self_seconds=selftime,cumulative_seconds=cumtime))\n  result['profile_total_calls']=stats.total_calls;result['profile_total_seconds']=stats.total_tt\n  result['profile_top_cumulative']=sorted(rows,key=lambda x:x['cumulative_seconds'],reverse=True)[:45]\n  result['profile_top_self']=sorted(rows,key=lambda x:x['self_seconds'],reverse=True)[:25]\n  result['profile_selected']=[r for r in rows if r['function'] in ('derivative','evaluate','dimensions','diagnose','thermal_rates','flow_contexts','cycle_microtube_diagnostics','_tube_validity','extract_cycle_diagnostics','assess_cycle_validity','replace','solve_periodic_wall_motor','integrate_cycle','_gas_flow')]\n (root/'outputs/solver_performance_stage1_20260917.json').write_text(json.dumps(result,indent=2)+'\\n')\n print(mode,result[mode],flush=True)\n",
+  "unprofiled": {
+    "elapsed_seconds": 20.96013308002148,
+    "status": "converged",
+    "convergence": {
+      "cycles_completed": 1,
+      "first_normalized_periodic_error": 0.09299627416662144,
+      "last_normalized_periodic_error": 0.09299627416662144,
+      "normalized_periodic_error_ratio": 1.0,
+      "improving": false,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 0.09299627416662144
+        }
+      ]
+    },
+    "efficiency": 0.22070634462673688,
+    "power_w": 52.40224307474156
+  },
+  "profiled": {
+    "elapsed_seconds": 46.84906179003883,
+    "status": "converged",
+    "convergence": {
+      "cycles_completed": 1,
+      "first_normalized_periodic_error": 0.09299627416662144,
+      "last_normalized_periodic_error": 0.09299627416662144,
+      "normalized_periodic_error_ratio": 1.0,
+      "improving": false,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 0.09299627416662144
+        }
+      ]
+    },
+    "efficiency": 0.22070634462673688,
+    "power_w": 52.40224307474156
+  },
+  "profile_total_calls": 35589758,
+  "profile_total_seconds": 45.089419517999985,
+  "profile_top_cumulative": [
+    {
+      "file": "examples/compare_motor_motion_laws_stage7A5.py",
+      "line": 83,
+      "function": "_evaluate",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.017634863,
+      "cumulative_seconds": 46.848925627
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_diagnostics.py",
+      "line": 8,
+      "function": "cycle_microtube_diagnostics",
+      "primitive_calls": 2,
+      "total_calls": 2,
+      "self_seconds": 0.5712701990000001,
+      "cumulative_seconds": 26.874423554000003
+    },
+    {
+      "file": "src/dada_solver/dynamics.py",
+      "line": 103,
+      "function": "evaluate",
+      "primitive_calls": 24942,
+      "total_calls": 24942,
+      "self_seconds": 1.1423720210000001,
+      "cumulative_seconds": 19.990666906
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 111,
+      "function": "thermal_rates",
+      "primitive_calls": 12471,
+      "total_calls": 12471,
+      "self_seconds": 0.203802382,
+      "cumulative_seconds": 17.374431421
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 92,
+      "function": "flow_contexts",
+      "primitive_calls": 16731,
+      "total_calls": 16731,
+      "self_seconds": 0.558929935,
+      "cumulative_seconds": 16.398063485
+    },
+    {
+      "file": "src/dada_solver/exchangers/wall_cycle.py",
+      "line": 55,
+      "function": "solve_periodic_wall_motor",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.00042556100000000003,
+      "cumulative_seconds": 14.844153936000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 122,
+      "function": "integrate_cycle",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.00025230900000000004,
+      "cumulative_seconds": 14.843628016
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ivp/ivp.py",
+      "line": 156,
+      "function": "solve_ivp",
+      "primitive_calls": 4,
+      "total_calls": 4,
+      "self_seconds": 0.00882254,
+      "cumulative_seconds": 14.837142411
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ivp/base.py",
+      "line": 159,
+      "function": "step",
+      "primitive_calls": 2126,
+      "total_calls": 2126,
+      "self_seconds": 0.009037398,
+      "cumulative_seconds": 14.821852439
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ivp/lsoda.py",
+      "line": 144,
+      "function": "_step_impl",
+      "primitive_calls": 2126,
+      "total_calls": 2126,
+      "self_seconds": 0.019797026000000002,
+      "cumulative_seconds": 14.812815041
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ode.py",
+      "line": 1336,
+      "function": "run",
+      "primitive_calls": 2126,
+      "total_calls": 2126,
+      "self_seconds": 0.09557106600000001,
+      "cumulative_seconds": 14.790501778000001
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ivp/base.py",
+      "line": 136,
+      "function": "fun",
+      "primitive_calls": 6080,
+      "total_calls": 6080,
+      "self_seconds": 0.017052565000000002,
+      "cumulative_seconds": 14.692619228000002
+    },
+    {
+      "file": "/usr/lib/python3/dist-packages/scipy/integrate/_ivp/base.py",
+      "line": 19,
+      "function": "fun_wrapped",
+      "primitive_calls": 6080,
+      "total_calls": 6080,
+      "self_seconds": 0.015011691,
+      "cumulative_seconds": 14.675566663000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 138,
+      "function": "derivative",
+      "primitive_calls": 6080,
+      "total_calls": 6080,
+      "self_seconds": 0.033990147000000005,
+      "cumulative_seconds": 14.654682670000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 79,
+      "function": "derivative",
+      "primitive_calls": 6081,
+      "total_calls": 6081,
+      "self_seconds": 0.181322285,
+      "cumulative_seconds": 14.620339507
+    },
+    {
+      "file": "src/dada_solver/campaign/evaluator.py",
+      "line": 236,
+      "function": "_tube_validity",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.025154587000000003,
+      "cumulative_seconds": 13.62489324
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_correlations.py",
+      "line": 154,
+      "function": "diagnose",
+      "primitive_calls": 159894,
+      "total_calls": 159894,
+      "self_seconds": 3.770762641,
+      "cumulative_seconds": 12.853618329000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/hardware.py",
+      "line": 66,
+      "function": "directed_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 0.333375242,
+      "cumulative_seconds": 12.693367509000002
+    },
+    {
+      "file": "src/dada_solver/exchangers/hardware.py",
+      "line": 86,
+      "function": "_gas_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 1.706960897,
+      "cumulative_seconds": 12.008826180000002
+    },
+    {
+      "file": "/usr/lib/python3.11/dataclasses.py",
+      "line": 1253,
+      "function": "asdict",
+      "primitive_calls": 34082,
+      "total_calls": 34082,
+      "self_seconds": 0.075749276,
+      "cumulative_seconds": 11.518865719
+    },
+    {
+      "file": "/usr/lib/python3.11/dataclasses.py",
+      "line": 1277,
+      "function": "_asdict_inner",
+      "primitive_calls": 34082,
+      "total_calls": 817996,
+      "self_seconds": 3.4823738540000004,
+      "cumulative_seconds": 11.405702733
+    },
+    {
+      "file": "src/dada_solver/exchangers/hardware.py",
+      "line": 135,
+      "function": "bidirectional_flow",
+      "primitive_calls": 49884,
+      "total_calls": 49884,
+      "self_seconds": 0.084035726,
+      "cumulative_seconds": 8.469806369
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_film.py",
+      "line": 14,
+      "function": "evaluate",
+      "primitive_calls": 33462,
+      "total_calls": 33462,
+      "self_seconds": 0.448211546,
+      "cumulative_seconds": 5.925028838
+    },
+    {
+      "file": "/usr/lib/python3.11/copy.py",
+      "line": 128,
+      "function": "deepcopy",
+      "primitive_calls": 749812,
+      "total_calls": 749816,
+      "self_seconds": 2.176280791,
+      "cumulative_seconds": 5.40596561
+    },
+    {
+      "file": "src/dada_solver/results.py",
+      "line": 46,
+      "function": "extract_cycle_diagnostics",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.06449107500000001,
+      "cumulative_seconds": 4.871657107
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 117,
+      "function": "<genexpr>",
+      "primitive_calls": 37413,
+      "total_calls": 37413,
+      "self_seconds": 0.11560265400000001,
+      "cumulative_seconds": 4.8421211710000005
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 44,
+      "function": "rates",
+      "primitive_calls": 24942,
+      "total_calls": 24942,
+      "self_seconds": 0.21247399700000003,
+      "cumulative_seconds": 4.689149107
+    },
+    {
+      "file": "src/dada_solver/valves.py",
+      "line": 72,
+      "function": "flow",
+      "primitive_calls": 49884,
+      "total_calls": 49884,
+      "self_seconds": 0.10451832900000001,
+      "cumulative_seconds": 4.441863929
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 90,
+      "function": "mean_free_path",
+      "primitive_calls": 395718,
+      "total_calls": 395718,
+      "self_seconds": 1.223134221,
+      "cumulative_seconds": 4.418310712
+    },
+    {
+      "file": "examples/compare_motor_motion_laws_stage7A5.py",
+      "line": 123,
+      "function": "wall_heat_rates",
+      "primitive_calls": 2130,
+      "total_calls": 2130,
+      "self_seconds": 0.012751907000000002,
+      "cumulative_seconds": 2.883951717
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 49,
+      "function": "viscosity",
+      "primitive_calls": 631542,
+      "total_calls": 631542,
+      "self_seconds": 1.740334191,
+      "cumulative_seconds": 2.398997827
+    },
+    {
+      "file": "src/dada_solver/dynamics.py",
+      "line": 83,
+      "function": "volumes",
+      "primitive_calls": 45933,
+      "total_calls": 45933,
+      "self_seconds": 0.22598985400000002,
+      "cumulative_seconds": 2.398436249
+    },
+    {
+      "file": "src/dada_solver/dynamics.py",
+      "line": 207,
+      "function": "effective_topology",
+      "primitive_calls": 24942,
+      "total_calls": 24942,
+      "self_seconds": 0.19269055200000001,
+      "cumulative_seconds": 2.3298950940000003
+    },
+    {
+      "file": "src/dada_solver/state.py",
+      "line": 105,
+      "function": "temperatures_and_pressures",
+      "primitive_calls": 70875,
+      "total_calls": 70875,
+      "self_seconds": 1.452044142,
+      "cumulative_seconds": 2.2172749840000003
+    },
+    {
+      "file": "src/dada_solver/four_stage_kinematics.py",
+      "line": 40,
+      "function": "cylinder_volumes_and_derivatives",
+      "primitive_calls": 116808,
+      "total_calls": 116808,
+      "self_seconds": 1.317602924,
+      "cumulative_seconds": 1.7082232480000001
+    },
+    {
+      "file": "src/dada_solver/state.py",
+      "line": 95,
+      "function": "pressures",
+      "primitive_calls": 45933,
+      "total_calls": 45933,
+      "self_seconds": 0.06789437400000001,
+      "cumulative_seconds": 1.582560202
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method '__deepcopy__' of 'numpy.generic' objects>",
+      "primitive_calls": 529057,
+      "total_calls": 529057,
+      "self_seconds": 1.5540316170000001,
+      "cumulative_seconds": 1.5540316170000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 85,
+      "function": "density",
+      "primitive_calls": 395718,
+      "total_calls": 395718,
+      "self_seconds": 0.757595957,
+      "cumulative_seconds": 1.5124555030000002
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 45,
+      "function": "_check",
+      "primitive_calls": 1380510,
+      "total_calls": 1380510,
+      "self_seconds": 1.266228914,
+      "cumulative_seconds": 1.467020637
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 79,
+      "function": "cp",
+      "primitive_calls": 159894,
+      "total_calls": 159894,
+      "self_seconds": 0.49205677500000006,
+      "cumulative_seconds": 1.461149402
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.any>",
+      "primitive_calls": 233083,
+      "total_calls": 233083,
+      "self_seconds": 0.45461941200000006,
+      "cumulative_seconds": 1.327570705
+    },
+    {
+      "file": "/usr/lib/python3.11/dataclasses.py",
+      "line": 1241,
+      "function": "_is_dataclass_instance",
+      "primitive_calls": 858166,
+      "total_calls": 858166,
+      "self_seconds": 0.485237305,
+      "cumulative_seconds": 1.274798079
+    },
+    {
+      "file": "src/dada_solver/state.py",
+      "line": 64,
+      "function": "from_array",
+      "primitive_calls": 43805,
+      "total_calls": 43805,
+      "self_seconds": 0.38690515200000003,
+      "cumulative_seconds": 1.20732459
+    },
+    {
+      "file": "src/dada_solver/hydraulics.py",
+      "line": 357,
+      "function": "directed_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 0.796437253,
+      "cumulative_seconds": 1.1734312580000001
+    },
+    {
+      "file": "<__array_function__ internals>",
+      "line": 177,
+      "function": "sum",
+      "primitive_calls": 49892,
+      "total_calls": 49892,
+      "self_seconds": 0.102645684,
+      "cumulative_seconds": 1.15541867
+    }
+  ],
+  "profile_top_self": [
+    {
+      "file": "src/dada_solver/exchangers/gas_correlations.py",
+      "line": 154,
+      "function": "diagnose",
+      "primitive_calls": 159894,
+      "total_calls": 159894,
+      "self_seconds": 3.770762641,
+      "cumulative_seconds": 12.853618329000001
+    },
+    {
+      "file": "/usr/lib/python3.11/dataclasses.py",
+      "line": 1277,
+      "function": "_asdict_inner",
+      "primitive_calls": 34082,
+      "total_calls": 817996,
+      "self_seconds": 3.4823738540000004,
+      "cumulative_seconds": 11.405702733
+    },
+    {
+      "file": "/usr/lib/python3.11/copy.py",
+      "line": 128,
+      "function": "deepcopy",
+      "primitive_calls": 749812,
+      "total_calls": 749816,
+      "self_seconds": 2.176280791,
+      "cumulative_seconds": 5.40596561
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 49,
+      "function": "viscosity",
+      "primitive_calls": 631542,
+      "total_calls": 631542,
+      "self_seconds": 1.740334191,
+      "cumulative_seconds": 2.398997827
+    },
+    {
+      "file": "src/dada_solver/exchangers/hardware.py",
+      "line": 86,
+      "function": "_gas_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 1.706960897,
+      "cumulative_seconds": 12.008826180000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method '__deepcopy__' of 'numpy.generic' objects>",
+      "primitive_calls": 529057,
+      "total_calls": 529057,
+      "self_seconds": 1.5540316170000001,
+      "cumulative_seconds": 1.5540316170000001
+    },
+    {
+      "file": "src/dada_solver/state.py",
+      "line": 105,
+      "function": "temperatures_and_pressures",
+      "primitive_calls": 70875,
+      "total_calls": 70875,
+      "self_seconds": 1.452044142,
+      "cumulative_seconds": 2.2172749840000003
+    },
+    {
+      "file": "src/dada_solver/four_stage_kinematics.py",
+      "line": 40,
+      "function": "cylinder_volumes_and_derivatives",
+      "primitive_calls": 116808,
+      "total_calls": 116808,
+      "self_seconds": 1.317602924,
+      "cumulative_seconds": 1.7082232480000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 45,
+      "function": "_check",
+      "primitive_calls": 1380510,
+      "total_calls": 1380510,
+      "self_seconds": 1.266228914,
+      "cumulative_seconds": 1.467020637
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 90,
+      "function": "mean_free_path",
+      "primitive_calls": 395718,
+      "total_calls": 395718,
+      "self_seconds": 1.223134221,
+      "cumulative_seconds": 4.418310712
+    },
+    {
+      "file": "src/dada_solver/dynamics.py",
+      "line": 103,
+      "function": "evaluate",
+      "primitive_calls": 24942,
+      "total_calls": 24942,
+      "self_seconds": 1.1423720210000001,
+      "cumulative_seconds": 19.990666906
+    },
+    {
+      "file": "/usr/lib/python3.11/copy.py",
+      "line": 243,
+      "function": "_keep_alive",
+      "primitive_calls": 426817,
+      "total_calls": 426817,
+      "self_seconds": 0.8543131030000001,
+      "cumulative_seconds": 1.003358079
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.hasattr>",
+      "primitive_calls": 968185,
+      "total_calls": 968185,
+      "self_seconds": 0.8332886660000001,
+      "cumulative_seconds": 0.8333025730000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 68,
+      "function": "_molar_cp",
+      "primitive_calls": 319788,
+      "total_calls": 319788,
+      "self_seconds": 0.8102615820000001,
+      "cumulative_seconds": 0.8102615820000001
+    },
+    {
+      "file": "src/dada_solver/hydraulics.py",
+      "line": 357,
+      "function": "directed_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 0.796437253,
+      "cumulative_seconds": 1.1734312580000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 85,
+      "function": "density",
+      "primitive_calls": 395718,
+      "total_calls": 395718,
+      "self_seconds": 0.757595957,
+      "cumulative_seconds": 1.5124555030000002
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 41,
+      "function": "gas_constant",
+      "primitive_calls": 1027260,
+      "total_calls": 1027260,
+      "self_seconds": 0.726794848,
+      "cumulative_seconds": 0.726794848
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method math.isfinite>",
+      "primitive_calls": 5054634,
+      "total_calls": 5054634,
+      "self_seconds": 0.706022252,
+      "cumulative_seconds": 0.706022252
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_diagnostics.py",
+      "line": 8,
+      "function": "cycle_microtube_diagnostics",
+      "primitive_calls": 2,
+      "total_calls": 2,
+      "self_seconds": 0.5712701990000001,
+      "cumulative_seconds": 26.874423554000003
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 92,
+      "function": "flow_contexts",
+      "primitive_calls": 16731,
+      "total_calls": 16731,
+      "self_seconds": 0.558929935,
+      "cumulative_seconds": 16.398063485
+    },
+    {
+      "file": "src/dada_solver/geometry.py",
+      "line": 62,
+      "function": "__post_init__",
+      "primitive_calls": 70875,
+      "total_calls": 70875,
+      "self_seconds": 0.5532124460000001,
+      "cumulative_seconds": 0.7951328780000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 2559234,
+      "total_calls": 2559234,
+      "self_seconds": 0.5304586090000001,
+      "cumulative_seconds": 0.530478281
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 55,
+      "function": "conductivity",
+      "primitive_calls": 193356,
+      "total_calls": 193356,
+      "self_seconds": 0.497092705,
+      "cumulative_seconds": 0.707940554
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method numpy.array>",
+      "primitive_calls": 142722,
+      "total_calls": 142722,
+      "self_seconds": 0.49241216800000004,
+      "cumulative_seconds": 0.49241216800000004
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_transport.py",
+      "line": 79,
+      "function": "cp",
+      "primitive_calls": 159894,
+      "total_calls": 159894,
+      "self_seconds": 0.49205677500000006,
+      "cumulative_seconds": 1.461149402
+    }
+  ],
+  "profile_selected": [
+    {
+      "file": "/usr/lib/python3.11/dataclasses.py",
+      "line": 1443,
+      "function": "replace",
+      "primitive_calls": 6088,
+      "total_calls": 6088,
+      "self_seconds": 0.123825924,
+      "cumulative_seconds": 0.183200267
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 111,
+      "function": "thermal_rates",
+      "primitive_calls": 12471,
+      "total_calls": 12471,
+      "self_seconds": 0.203802382,
+      "cumulative_seconds": 17.374431421
+    },
+    {
+      "file": "src/dada_solver/dynamics.py",
+      "line": 103,
+      "function": "evaluate",
+      "primitive_calls": 24942,
+      "total_calls": 24942,
+      "self_seconds": 1.1423720210000001,
+      "cumulative_seconds": 19.990666906
+    },
+    {
+      "file": "src/dada_solver/exchangers/microtube_geometry.py",
+      "line": 30,
+      "function": "dimensions",
+      "primitive_calls": 2,
+      "total_calls": 2,
+      "self_seconds": 3.1939e-05,
+      "cumulative_seconds": 3.6199000000000004e-05
+    },
+    {
+      "file": "src/dada_solver/results.py",
+      "line": 46,
+      "function": "extract_cycle_diagnostics",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.06449107500000001,
+      "cumulative_seconds": 4.871657107
+    },
+    {
+      "file": "src/dada_solver/validity.py",
+      "line": 36,
+      "function": "assess_cycle_validity",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.013132183,
+      "cumulative_seconds": 0.213200898
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 92,
+      "function": "flow_contexts",
+      "primitive_calls": 16731,
+      "total_calls": 16731,
+      "self_seconds": 0.558929935,
+      "cumulative_seconds": 16.398063485
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 79,
+      "function": "derivative",
+      "primitive_calls": 6081,
+      "total_calls": 6081,
+      "self_seconds": 0.181322285,
+      "cumulative_seconds": 14.620339507
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 122,
+      "function": "integrate_cycle",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.00025230900000000004,
+      "cumulative_seconds": 14.843628016
+    },
+    {
+      "file": "src/dada_solver/exchangers/wall_cycle.py",
+      "line": 55,
+      "function": "solve_periodic_wall_motor",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.00042556100000000003,
+      "cumulative_seconds": 14.844153936000001
+    },
+    {
+      "file": "src/dada_solver/campaign/evaluator.py",
+      "line": 236,
+      "function": "_tube_validity",
+      "primitive_calls": 1,
+      "total_calls": 1,
+      "self_seconds": 0.025154587000000003,
+      "cumulative_seconds": 13.62489324
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_correlations.py",
+      "line": 154,
+      "function": "diagnose",
+      "primitive_calls": 159894,
+      "total_calls": 159894,
+      "self_seconds": 3.770762641,
+      "cumulative_seconds": 12.853618329000001
+    },
+    {
+      "file": "src/dada_solver/exchangers/hardware.py",
+      "line": 86,
+      "function": "_gas_flow",
+      "primitive_calls": 75930,
+      "total_calls": 75930,
+      "self_seconds": 1.706960897,
+      "cumulative_seconds": 12.008826180000002
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_film.py",
+      "line": 14,
+      "function": "evaluate",
+      "primitive_calls": 33462,
+      "total_calls": 33462,
+      "self_seconds": 0.448211546,
+      "cumulative_seconds": 5.925028838
+    },
+    {
+      "file": "src/dada_solver/exchangers/gas_diagnostics.py",
+      "line": 8,
+      "function": "cycle_microtube_diagnostics",
+      "primitive_calls": 2,
+      "total_calls": 2,
+      "self_seconds": 0.5712701990000001,
+      "cumulative_seconds": 26.874423554000003
+    },
+    {
+      "file": "src/dada_solver/exchangers/air_wall.py",
+      "line": 138,
+      "function": "derivative",
+      "primitive_calls": 6080,
+      "total_calls": 6080,
+      "self_seconds": 0.033990147000000005,
+      "cumulative_seconds": 14.654682670000001
+    }
+  ],
+  "stage_timing": {
+    "elapsed_seconds": 20.305967213003896,
+    "sections_seconds": {
+      "periodic_integration": [
+        6.61835833999794
+      ],
+      "generic_diagnostics": [
+        2.5871921440120786
+      ],
+      "generic_validity": [
+        0.12484038399998099
+      ],
+      "microtube_diagnostics": [
+        5.666839953977615,
+        5.305084411986172
+      ]
+    },
+    "status": "converged",
+    "efficiency": 0.22070634462673688,
+    "power_w": 52.40224307474156,
+    "convergence": {
+      "cycles_completed": 1,
+      "first_normalized_periodic_error": 0.09299627416662144,
+      "last_normalized_periodic_error": 0.09299627416662144,
+      "normalized_periodic_error_ratio": 1.0,
+      "improving": false,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 0.09299627416662144
+        }
+      ]
+    },
+    "probe_source": "import time,json\nfrom pathlib import Path\nimport numpy as np\nimport compare_motor_motion_laws_stage7A5 as ev\nimport dada_solver.exchangers.gas_diagnostics as gd\nfrom refine_motor_four_stage_hx9d_variable_gas import _load_basis,_build_design\nfrom dada_solver.integration import IntegrationInterrupted\np=Path('outputs/solver_performance_stage1_20260917.json');d=json.loads(p.read_text())\ndefinition,base=_load_basis();design=_build_design(base,d['parameters']);times={}\ndef wrap(obj,name,label):\n original=getattr(obj,name)\n def measured(*args,**kwargs):\n  start=time.perf_counter()\n  try:return original(*args,**kwargs)\n  finally:times.setdefault(label,[]).append(time.perf_counter()-start)\n setattr(obj,name,measured)\nwrap(ev,'solve_periodic_wall_motor','periodic_integration')\nwrap(ev,'extract_cycle_diagnostics','generic_diagnostics')\nwrap(ev,'assess_cycle_validity','generic_validity')\nwrap(gd,'cycle_microtube_diagnostics','microtube_diagnostics')\nstart=time.perf_counter()\ndef progress(_):\n if time.perf_counter()-start>90:raise IntegrationInterrupted('Stage timing deadline')\nr,_=ev._evaluate('stage_timing',design,definition,initial_state=np.asarray(d['initial_state']),progress_callback=progress)\nd['stage_timing']=dict(elapsed_seconds=time.perf_counter()-start,sections_seconds=times,status=r['status'],efficiency=r.get('indicated_thermal_efficiency'),power_w=r.get('indicated_power_w'),convergence=r['convergence'],probe_source=Path(__file__).read_text())\nd['campaign_cost_summary']=json.loads(Path('/tmp/dada_history_costs.json').read_text())\np.write_text(json.dumps(d,indent=2)+'\\n');print(json.dumps({k:v for k,v in d['stage_timing'].items() if k!='probe_source'},indent=2))\n"
+  },
+  "campaign_cost_summary": {
+    "source": "outputs/motor_four_stage_hx9d_variable_gas/history.jsonl",
+    "sha256": "2696148964f6ce3c97726c61c5a7243869bc7e2e01c5b9413254a4f3a02fb412",
+    "commit": "58e62b71b0b054222be6ad5ade386ca7a527c7dd",
+    "attempts": 312,
+    "statistics": {
+      "converged": {
+        "count": 256,
+        "elapsed_seconds_p50_p90_max": [
+          108.42730054003187,
+          168.26189283194253,
+          189.80584986903705
+        ],
+        "cycles_p50_p90_max": [
+          13.0,
+          22.0,
+          24.0
+        ],
+        "total_elapsed_seconds": 30963.22593004885
+      },
+      "interrupted": {
+        "count": 20,
+        "elapsed_seconds_p50_p90_max": [
+          180.66430041444255,
+          181.5057080002269,
+          181.8959977759514
+        ],
+        "cycles_p50_p90_max": [
+          25.0,
+          30.0,
+          31.0
+        ],
+        "total_elapsed_seconds": 3515.000054600765
+      },
+      "invalid_exchanger": {
+        "count": 36,
+        "elapsed_seconds_p50_p90_max": [
+          47.25418522651307,
+          95.88503194600344,
+          149.66898985300213
+        ],
+        "cycles_p50_p90_max": null,
+        "total_elapsed_seconds": 1625.3222187528154
+      }
+    },
+    "scope": "Historical mixed candidate costs, not a controlled speed benchmark; interrupted durations are censored."
+  }
+}

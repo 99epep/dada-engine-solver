@@ -264,12 +264,17 @@ Shared timing is therefore a useful reduced approximation, not exact physics.
 An independent local climb from 150/30/150/30 deg found another, more balanced
 timing basin. Those comparisons used the legacy gas model. The current physical
 9D refinement varies shared motion and independent H_i/H_o tube counts with the
-production variable-property model; its committed checkpoint is incomplete.
+production variable-property model; its local run is complete at 312 attempts (best record 299).
+This is finite-search completion, not a proof of optimality.
 See [the report-based chronology](FOUR_STAGE_OPTIMIZATION.md) for exact artifacts,
 parameters, filling rules, budgets and model generations. Efficiencies across
 those generations must not be ranked as optimization improvements.
 
-The four-stage law is still only a thermodynamic design probe. Its piecewise
+The four-stage law deliberately simplifies features discovered in previous
+freer-motion searches. It is a temporary thermodynamic design probe, plausibly
+near a desirable motion but not proven near-optimal. After the thermal study,
+return to smoother, more natural laws for the first prototype. Approximating
+the linear target does not require retaining its corners or freezing its shape. Its piecewise
 constant velocities jump at stage boundaries with no acceleration, inertia,
 stress or mechanical-loss penalty. Those jumps are mechanically unrealizable
 as written, and the 2% minimum duration is only a search bound. Passive-valve

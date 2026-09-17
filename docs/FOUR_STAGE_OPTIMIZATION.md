@@ -2,13 +2,14 @@
 
 ## Scope and evidence snapshot
 
-Documentation audit: 2026-09-17. Numerical authority is the committed output
-artifacts at repository commit `9656fff7199d4c71a129b30ea93aeaa2f3f210fe`,
-not earlier prose or a new simulation. In particular, the production 9D report
-and history at that commit contain **216 attempts**. The working directory had
-newer, uncommitted campaign progress during this audit; it was not overwritten
-or silently substituted for this reproducible checkpoint. Read the latest
-committed report/history before treating this snapshot as a selection.
+Updated 2026-09-17 after completion of the local production 9D search.
+Historical experiments remain sourced from their committed artifacts. The final
+production report/history are committed at
+`414444d771b206f6ce0843a4838dc7a75b63b565`: **312 attempts**, best record 299.
+This supersedes the earlier 216-attempt documentation checkpoint (best record
+152, 22.05791992%). Completion refers to this finite search, not proof of
+optimality or selection of final prototype hardware. Temperature mapping is
+now starting separately; its in-progress results are not folded into this table.
 
 This document separates historical constant-property / legacy-gas-model results,
 production variable-property gas-model results, controlled diagnostics and
@@ -44,7 +45,13 @@ are supplied to the integrator. No acceleration, inertia, stress or mechanical-
 loss penalty is attached to these discontinuities. The campaign minimum stage
 duration of 0.02 cycle (7.2 deg) is only a numerical/search bound; the class
 itself requires ordered knots. It is not a mechanical-feasibility guarantee.
-This is a thermodynamic design probe, mechanically unrealizable as written.
+This is a deliberately simplified representation of features found in the
+previous freer motion searches, intended to study a simpler law plausibly near
+a thermodynamic optimum. Proximity to a true optimum is not established.
+It is a temporary thermodynamic design probe, mechanically unrealizable as
+written. Once this thermal study is complete, return to smoother, more natural
+motion laws suitable for the first prototype; do not preserve sharp corners
+as a mechanism design requirement.
 
 The object adapts forward motor time to study angle; the factory still applies
 its usual motor reversal exactly once. Do not add another phase shift or
@@ -299,55 +306,56 @@ handles supported laminar states, rejects unsupported transition states, and
 can use its supported turbulent closure within its full declared domain.
 This is model applicability, not experimental transient validation.
 
-### Best found so far at the committed checkpoint
+### Best found at completion of this local search
 
 [motor_four_stage_hx9d_variable_gas/report.json](../outputs/motor_four_stage_hx9d_variable_gas/report.json) and
 [history.jsonl](../outputs/motor_four_stage_hx9d_variable_gas/history.jsonl)
-contain 216 attempts: 173 converged, 26 invalid-exchanger results and 17
-interruptions. The requested phase budget was 25200 s; reported elapsed time
-was 25200.096041794983 s. Radius index 4 (zero-based) reached
-`(0.001,0.0005,40)`; the full decreasing-radius schedule was **incomplete**.
-This is not a final selected machine.
+contain 312 attempts: 256 converged, 36 invalid-exchanger results and 20
+interruptions. The final invocation added 96 records, requested 14400 s and
+used 10905.716171912965 s; these are per-invocation times, not the cumulative
+campaign duration. Radius index 5 (zero-based), `(0.0005,0.00025,20)`, was
+reached. The user confirms this research run is finished. The result is best
+found under this finite local search, not a global optimum or a final mechanism.
 
 | Production evaluation | Indicated efficiency | Indicated power (W) |
 | --- | ---: | ---: |
 | Balanced-motion seed, index 0 | 21.95765114% | 52.35746491 |
-| Best found so far, index 152 | 22.05791992% | 52.17718204 |
+| Best found at completion, index 299 | 22.07057926% | 52.40219935 |
 
-The within-production gain is 0.10026878 percentage point. Do not interpret the
+The within-production gain is 0.11292813 percentage point. Do not interpret the
 small difference from the legacy balanced candidate as an optimization gain:
 changing the gas closure alone moved that seed from 22.05698563% to 21.95765114%.
 Old candidates require same-model reevaluation before ranking them here.
 
-| Coordinate | Best found so far |
+| Coordinate | Best found at completion |
 | --- | ---: |
-| `t1` | 0.47924609531431156 |
-| `t2` | 0.6064965825648978 |
-| `t3` | 0.9024383863589415 |
-| `a_l` | 0.3619805269073296 |
-| `b_l` | 0.1173749422869344 |
-| `a_s` | 0.3554084146606237 |
-| `b_s` | 0.1541981502721214 |
-| `n_i` | 3222 |
-| `n_o` | 3778 |
+| `t1` | 0.47887307081619906 |
+| `t2` | 0.6072461806591599 |
+| `t3` | 0.9033621966118612 |
+| `a_l` | 0.36249698288082816 |
+| `b_l` | 0.11707005461265117 |
+| `a_s` | 0.35563516984334814 |
+| `b_s` | 0.15456935670703065 |
+| `n_i` | 3247 |
+| `n_o` | 3781 |
 
 | Stage | Duration (deg) |
 | --- | ---: |
-| low pressure exchange | 172.52859431315215 |
-| compression | 45.810175410211045 |
-| high pressure exchange | 106.53904936585572 |
-| expansion | 35.12218091078107 |
+| low pressure exchange | 172.39430549383167 |
+| compression | 46.214319543465905 |
+| high pressure exchange | 106.60176574297247 |
+| expansion | 34.789609219729954 |
 
 The best uses fewer H_i tubes and slightly more H_o tubes than the 3708 reference.
 Both exchange stages lengthen relative to the balanced seed, mainly at the
 expense of compression. Compression and expansion remain tens of degrees,
 well above the 7.2 deg search floor.
 
-Recorded external heat input is 236.54624839296267 W, gas inventory
-0.0014086977362127346 kg, maximum gas pressure 500700.7349374512 Pa and maximum
-gas temperature 584.310676756102 K. H_i/H_o gas hold-up is
-3.5070244882442355e-5 / 3.377818751622287e-5 m^3 and wall capacity is
-139.87038566150594 / 89.93169675704962 J/K. These quantities are coupled outputs
+Recorded external heat input is 237.43010423682895 W, gas inventory
+0.0014091818227513165 kg, maximum gas pressure 500466.0077572007 Pa and maximum
+gas temperature 584.4730445627305 K. H_i/H_o gas hold-up is
+3.516928270741475e-05 / 3.378465179958673e-05 m^3 and wall capacity is
+140.94014346459022 / 90.00152076188583 J/K. These quantities are coupled outputs
 of geometry, not independent optimization coordinates.
 
 ## Next design study and interpretation limits
@@ -357,7 +365,8 @@ and cylinder ratio, then motion, at each source temperature. It retains fixed
 total swept volume and candidate-specific atmospheric filling, not fixed mass.
 The precise temperature grid, charge rule, power-floor policy and mandatory
 Carnot comparisons are in [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).
-This is a plan, not a temperature campaign completed by this documentation audit.
+Temperature work has now started independently. No temperature campaign was
+launched, interrupted or modified by this documentation update.
 
 The durable exchanger lessons and remaining external-air uncertainty are in
 [EXCHANGER_NEXT_STEPS.md](EXCHANGER_NEXT_STEPS.md). The later path is selected
