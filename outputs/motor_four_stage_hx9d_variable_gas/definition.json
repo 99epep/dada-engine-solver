@@ -1,0 +1,78 @@
+{
+  "parameter_names": [
+    "t1",
+    "t2",
+    "t3",
+    "a_l",
+    "b_l",
+    "a_s",
+    "b_s",
+    "n_i",
+    "n_o"
+  ],
+  "source_report": "outputs/motor_four_stage_from_150_30/report.json",
+  "seed_parameters": {
+    "t1": 0.4639541340225067,
+    "t2": 0.6192082431707531,
+    "t3": 0.8949516786045083,
+    "a_l": 0.3596051765014019,
+    "b_l": 0.11579141985445066,
+    "a_s": 0.35595731584136037,
+    "b_s": 0.14961511405242023,
+    "n_i": 3708,
+    "n_o": 3708
+  },
+  "production_gas_model": {
+    "species": "air",
+    "domain_policy": "reject",
+    "thermal_entry": true,
+    "hydraulics": "compressible_pressure_squared_with_variable_viscosity",
+    "internal_film": "instantaneous_flow_dependent"
+  },
+  "charge_pressure_pa": 100000.0,
+  "minimum_stage_fraction": 0.02,
+  "tube_count_bounds": [
+    2400,
+    5200
+  ],
+  "retained_H_i_tube_length_m": 0.0463173095241189,
+  "retained_H_o_tube_length_m": 0.02519308603379876,
+  "tube_inner_diameter_m": 0.00033,
+  "valve_policy": "outlet CdA scales linearly with tube count",
+  "radii": [
+    [
+      0.02,
+      0.01,
+      500
+    ],
+    [
+      0.01,
+      0.005,
+      300
+    ],
+    [
+      0.005,
+      0.0025,
+      150
+    ],
+    [
+      0.0025,
+      0.00125,
+      80
+    ],
+    [
+      0.001,
+      0.0005,
+      40
+    ],
+    [
+      0.0005,
+      0.00025,
+      20
+    ]
+  ],
+  "evaluations_per_radius": 48,
+  "sobol_seed": 26091623,
+  "strategy": "Pure local adaptive 9D Sobol refinement around the balanced 7D point; no global proposals and no historical state warm starts.",
+  "feasibility": "Power/pressure/temperature/flow constraints plus current thermodynamic+microtube validity; no legacy Re<2300 blanket rule."
+}
