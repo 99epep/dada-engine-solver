@@ -345,7 +345,30 @@ def main():
         write_report(rp,args.delta_t_k,hot_k,args.power_floor_w,source,source_p,th,load_history(mop),
                      args.thermo_evaluations,args.motion_evaluations,dp)
         print(f"Thermo pass incomplete: {n}/{args.thermo_evaluations}. Rerun to resume.",flush=True); return
-    if bt is None: raise RuntimeError('Thermo pass has no feasible candidate; review power floor/constraints.')
+ 
+    if bt is None:
+        bridge = [
+            r for r in th
+            if r.get('result', {}).get('status') == 'converged'
+            and r.get('result', {}).get('validity', {}).get('verdict') == 'valid'
+            and r.get('result', {}).get('indicated_power_w') is not None
+        ]
+        if not bridge:
+            raise RuntimeError(
+                'Thermo pass has no feasible or valid converged candidate.'
+            )
+
+        bt = max(
+            bridge,
+            key=lambda r: float(r['result']['indicated_power_w'])
+        )
+        print(
+            f"[thermo] no motor candidate; using highest-power valid candidate "
+            f"as motion bridge: P={bt['result']['indicated_power_w']:.3f} W",
+            flush=True,
+        )
+
+
 
     # Motion pass.
     frozen={name:bt['parameters'][name] for name in THERMO}; seedp=dict(bt['parameters'])
