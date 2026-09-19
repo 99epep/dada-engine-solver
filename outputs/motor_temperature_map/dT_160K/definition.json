@@ -1,0 +1,92 @@
+{
+  "target_delta_t_k": 160.0,
+  "cold_source_temperature_k": 298.15,
+  "hot_source_temperature_k": 458.15,
+  "power_floor_w": 10.0,
+  "charge_pressure_pa": 100000.0,
+  "charge_temperature_k": 298.15,
+  "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_temperature_map/dT_200K/report.json",
+  "source_sha256": "2753c62487b8ffad3f9f1573316743c688aaf71f0094d9383ba80a071b25e138",
+  "source_parameters": {
+    "swept_ratio": 0.9342435086332261,
+    "n_i": 4209,
+    "length_i_m": 0.04495513072916252,
+    "n_o": 4483,
+    "length_o_m": 0.024063233395069616,
+    "t1": 0.4961422726005935,
+    "t2": 0.6157513800607992,
+    "t3": 0.9147557195077338,
+    "a_l": 0.40896365114344013,
+    "b_l": 0.10979951163015106,
+    "a_s": 0.3894984878810555,
+    "b_s": 0.15776226865045134
+  },
+  "total_swept_volume_m3": 0.0018217821782178217,
+  "clearance_ratios": [
+    0.009999999999999998,
+    0.01
+  ],
+  "thermo_radii": [
+    [
+      0.08,
+      240,
+      0.1
+    ],
+    [
+      0.04,
+      120,
+      0.05
+    ],
+    [
+      0.02,
+      60,
+      0.025
+    ],
+    [
+      0.01,
+      30,
+      0.0125
+    ]
+  ],
+  "motion_radii": [
+    [
+      0.01,
+      0.005
+    ],
+    [
+      0.005,
+      0.0025
+    ],
+    [
+      0.0025,
+      0.00125
+    ],
+    [
+      0.001,
+      0.0005
+    ]
+  ],
+  "thermo_evaluations_per_radius": 24,
+  "motion_evaluations_per_radius": 24,
+  "bounds": {
+    "swept_ratio": [
+      0.5,
+      1.3
+    ],
+    "tube_count": [
+      2400,
+      5200
+    ],
+    "H_i_tube_length_m": [
+      0.03175,
+      0.0635
+    ],
+    "H_o_tube_length_m": [
+      0.016933333333333335,
+      0.03598333333333333
+    ]
+  },
+  "minimum_stage_fraction": 0.02,
+  "seed": 26091730,
+  "strategy": "Local thermo5D continuation followed by local motion7D continuation; 100 kPa theta=0 filling."
+}
