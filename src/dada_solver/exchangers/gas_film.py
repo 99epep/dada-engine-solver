@@ -1,6 +1,7 @@
 """Internal variable-property film attached to the existing lumped wall."""
 from dataclasses import dataclass
 import math
+from dada_solver import numerical_primitives as numeric
 from .gas_correlations import MicrotubeGasModel
 from .microtube_geometry import MicrotubeBank
 
@@ -24,7 +25,7 @@ class MicrotubeGasFilm:
         for flow,p1,p2 in context['passages']:
             d=self.model.diagnose(self.bank,flow,p1,p2,temperature,frequency=context['frequency_hz'])
             self.model.require(d)
-            conductance += .5*area*d.nusselt*k/self.bank.inner_diameter_m
+            conductance += numeric.film_port_conductance(area,d.nusselt,k,self.bank.inner_diameter_m)
             diagnostics.append(d)
-        overall=1/(1/conductance+self.half_wall_resistance_k_w)
+        overall=numeric.series_conductance(conductance,self.half_wall_resistance_k_w)
         return overall, tuple(diagnostics)

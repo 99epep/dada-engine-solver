@@ -207,22 +207,30 @@ class MachineEvaluator:
             saved = source.get('initial_guess_state') or source['final_periodic_state']; old = np.asarray(saved['values'], dtype=float)
             new_caps = np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
+        backend_last = {}
+        def record_backend(record):
+            if record['phase']=='rhs_backend': backend_last.update(record)
+            if control.statistics_callback is not None: control.statistics_callback(record)
         try:
             periodic = control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, state,
                 maximum_cycles=design.configuration.numerical.maximum_cycles,
                 progress_callback=control.check,
                 settings=self.definition.wall_numerical_settings,
+                backend=self.definition.wall_backend,
                 adaptive_acceleration=getattr(self.definition, "adaptive_wall_acceleration", None),
-                statistics_callback=control.statistics_callback)
+                statistics_callback=record_backend)
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
+            if backend_last: result['rhs_backend'] = backend_last
             return result
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         guess = (_state_record(periodic.last_complete_state, layout, family, direction,
             periodic=periodic.converged, wall_capacities=caps) if periodic.last_complete_state is not None else None)
         convergence = convergence_summary(periodic.history)
+        if self.definition.wall_backend.name != "python":
+            convergence["rhs_backend"] = periodic.backend_statistics
         warm = dict(warm_start_source=source['candidate_id'] if source else None,
             warm_start_normalized_distance=distance, warm_start_source_status=source['status'] if source else None)
         if periodic.status == 'interrupted':

@@ -87,22 +87,33 @@ def _evaluate(
     *,
     initial_state: np.ndarray | None = None,
     progress_callback=None,
+    statistics_callback=None, periodic_observer=None, measure_rhs_time=False,
 ) -> tuple[dict, np.ndarray | None]:
-    wrapper = design.build()
+    import time
+    def measured(phase,function,*args,**kwargs):
+        before=time.perf_counter()
+        try: return function(*args,**kwargs)
+        finally:
+            if statistics_callback is not None:
+                statistics_callback(dict(phase=phase,elapsed_seconds=time.perf_counter()-before))
+    wrapper = measured('build',design.build)
     if not isinstance(wrapper, AirWallMotor):
         raise TypeError("This comparison requires the dynamic-wall microtube motor.")
 
     if initial_state is None:
         initial_state = _uniform_wall_initial(design.configuration, wrapper)
 
-    periodic = solve_periodic_wall_motor(
-        wrapper,
+    periodic = measured(
+        "periodic_integration", solve_periodic_wall_motor, wrapper,
         initial_state,
         maximum_cycles=design.configuration.numerical.maximum_cycles,
         settings=definition.wall_numerical_settings,
+        **({"backend": definition.wall_backend} if hasattr(definition,"wall_backend") else {}),
         adaptive_acceleration=getattr(definition, "adaptive_wall_acceleration", None),
         progress_callback=progress_callback,
+        statistics_callback=statistics_callback, measure_rhs_time=measure_rhs_time,
     )
+    if periodic_observer is not None: periodic_observer(periodic)
 
     result = {
         "label": label,
@@ -125,19 +136,19 @@ def _evaluate(
         incoming, outgoing = wrapper.thermal_rates(_angle, trajectory[:, index])
         return incoming['gas_heat_w'], outgoing['gas_heat_w']
 
-    diagnostics = extract_cycle_diagnostics(
-        cycle,
+    diagnostics = measured(
+        "generic_diagnostics", extract_cycle_diagnostics, cycle,
         wrapper.model,
         heat_rate_provider=wall_heat_rates,
     )
-    validity = assess_cycle_validity(
-        cycle,
+    validity = measured(
+        "generic_validity", assess_cycle_validity, cycle,
         wrapper.model,
         design.configuration.validity,
     )
     helper = MachineEvaluator(definition)
     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-    gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
+    gas_domains = measured("microtube_diagnostics",cycle_microtube_diagnostics,wrapper, angles, trajectory)
     maximum_reynolds, maximum_mach = helper._tube_validity(
         wrapper, angles, trajectory, gas_domains=gas_domains
     )

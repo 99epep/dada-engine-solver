@@ -5,6 +5,7 @@ capacity are explicit inputs; Doty's overall UA does not identify their split.
 """
 from dataclasses import dataclass
 import math
+from dada_solver import numerical_primitives as numeric
 import time
 
 import numpy as np
@@ -51,14 +52,14 @@ class AirWallExchanger:
             raise ValueError('Gas and wall temperatures must be positive.')
         capacity_rate = self._air_capacity_rate
         effective = self._effective_air_conductance
-        air_heat = effective*(self.air_inlet_temperature_k-wall_temperature)
         conductance = self.gas_wall_conductance_w_k
         if self.gas_film is not None:
             if context is None: raise ValueError('Variable gas film requires instantaneous flow context.')
             conductance, _ = self.gas_film.evaluate(gas_temperature_k,wall_temperature,context)
-        gas_heat = conductance*(wall_temperature-gas_temperature_k)
+        air_heat,gas_heat,wall_rate = numeric.wall_heat_rates(effective,self.air_inlet_temperature_k,
+            wall_temperature,conductance,gas_temperature_k)
         return dict(gas_heat_w=gas_heat, air_heat_w=air_heat,
-                    wall_energy_rate_w=air_heat-gas_heat,
+                    wall_energy_rate_w=wall_rate,
                     air_outlet_temperature_k=(self.air_inlet_temperature_k-air_heat/capacity_rate
                                               if capacity_rate > 0 else None))
 
@@ -137,13 +138,14 @@ class AirWallMotor:
     def integrate_cycle(self, state, *, integration_method='LSODA', rtol=1e-7, atol=1e-10,
                         maximum_step_angle=math.pi/360, progress_callback=None,
                         progress_interval_seconds=10.0, statistics_callback=None,
-                        measure_rhs_time=False):
+                        measure_rhs_time=False, rhs=None):
         initial = np.asarray(state, dtype=float)
         if initial.shape != (10,):
             raise ValueError('Expected eight gas states and two wall energies.')
+        evaluate_rhs = self.derivative if rhs is None else rhs
         preflight_started = time.perf_counter()
         try:
-            self.derivative(0, np.r_[initial, np.zeros(5)])
+            evaluate_rhs(0, np.r_[initial, np.zeros(5)])
         except Exception as error:
             if statistics_callback is not None:
                 statistics_callback(dict(phase='integration_preflight', status='failed',
@@ -175,10 +177,10 @@ class AirWallMotor:
                         right_hand_side_evaluations=evaluations))
                     last_progress = now
                 if not measure_rhs_time:
-                    return self.derivative(angle, state)
+                    return evaluate_rhs(angle, state)
                 before = time.perf_counter()
                 try:
-                    return self.derivative(angle, state)
+                    return evaluate_rhs(angle, state)
                 finally:
                     rhs_seconds += time.perf_counter()-before
 

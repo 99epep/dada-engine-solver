@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from dada_solver import numerical_primitives as numeric
 
 import numpy as np
 from numpy.typing import NDArray
@@ -224,11 +225,9 @@ class ThermodynamicModel:
         energy_rates[2] += cold_heat_rate
         energy_rates[3] += hot_heat_rate
 
-        energy_rates[0] -= pressures[0] * volume_rate_small
-        energy_rates[1] -= pressures[1] * volume_rate_large
-        gas_work_rate = (
-            pressures[0] * volume_rate_small + pressures[1] * volume_rate_large
-        )
+        gas_work_rate = numeric.apply_piston_work(energy_rates,pressures,
+            (volume_rate_small,volume_rate_large))
+
 
         derivative = np.empty(8, dtype=float)
         derivative[0::2] = mass_rates
@@ -332,8 +331,5 @@ class ThermodynamicModel:
         upstream_temperature: float,
     ) -> None:
         mass_flow = flow.mass_flow_rate
-        enthalpy_flow = mass_flow * self.gas.enthalpy(upstream_temperature)
-        mass_rates[source] -= mass_flow
-        mass_rates[destination] += mass_flow
-        energy_rates[source] -= enthalpy_flow
-        energy_rates[destination] += enthalpy_flow
+        numeric.accumulate_transfer(mass_rates,energy_rates,source,destination,
+            mass_flow,self.gas.enthalpy(upstream_temperature))

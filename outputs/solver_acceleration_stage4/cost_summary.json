@@ -1,0 +1,179 @@
+{
+  "costs": {
+    "production_warm": {
+      "elapsed_seconds": 4.476102298009209,
+      "candidate_and_model_build_seconds": 0.00038361400947906077,
+      "periodic_integration_seconds": 0.23953225699369796,
+      "integration_segments_seconds": 0.23692846900667064,
+      "rhs_callback_seconds": 0.16373397952702362,
+      "kinematics_seconds": 0.039432283214409836,
+      "kinematics_microseconds_per_call": 5.585309237168532,
+      "kinematics_fraction_of_integration": 0.16462201671421353,
+      "compiled_dispatch_seconds": 0.07671692002622876,
+      "native_kernel_seconds_estimate": 0.02610123711882295,
+      "python_compiled_crossing_seconds_estimate": 0.05061568290740581,
+      "python_adapter_seconds": 0.037114165010279976,
+      "rhs_outer_wrapper_and_preflight_bookkeeping_seconds": 0.01056140728178434,
+      "integrator_callback_and_segment_reporting_residual_seconds": 0.07319448947964702,
+      "periodic_control_residual_seconds": 0.0018950649828184396,
+      "integration_preflight_seconds": 9.079600567929447e-05,
+      "backend_preparation_seconds": 0.0006179269985295832,
+      "generic_diagnostics_seconds": 1.7816057790041668,
+      "microtube_diagnostics_seconds": 2.3227892730064923,
+      "validity_seconds": 0.13091888101189397,
+      "report_materialization_and_other_seconds": 0.0008724939834792167,
+      "json_serialization_seconds": 0.0005113090010127053,
+      "calls": 7060,
+      "nfev": 7059,
+      "njev": 212,
+      "nlu": 212,
+      "accepted_steps": 2255
+    },
+    "production_cold": {
+      "elapsed_seconds": 8.458107205995475,
+      "candidate_and_model_build_seconds": 0.0003827420005109161,
+      "periodic_integration_seconds": 4.607561548997182,
+      "integration_segments_seconds": 4.563026046977029,
+      "rhs_callback_seconds": 3.109192993491888,
+      "kinematics_seconds": 0.7487655126897153,
+      "kinematics_microseconds_per_call": 5.56434074751767,
+      "kinematics_fraction_of_integration": 0.16250797840186879,
+      "compiled_dispatch_seconds": 1.4571369642362697,
+      "native_kernel_seconds_estimate": 0.5407324511452227,
+      "python_compiled_crossing_seconds_estimate": 0.916404513091047,
+      "python_adapter_seconds": 0.7051160772971343,
+      "rhs_outer_wrapper_and_preflight_bookkeeping_seconds": 0.20030409630271606,
+      "integrator_callback_and_segment_reporting_residual_seconds": 1.4538330534851411,
+      "periodic_control_residual_seconds": 0.04161331398063339,
+      "integration_preflight_seconds": 0.0021296570339472964,
+      "backend_preparation_seconds": 0.0007925310055725276,
+      "generic_diagnostics_seconds": 1.586474425988854,
+      "microtube_diagnostics_seconds": 2.152073956996901,
+      "validity_seconds": 0.11085728599573486,
+      "report_materialization_and_other_seconds": 0.0007572460162919015,
+      "json_serialization_seconds": 0.0017486139986431226,
+      "calls": 134565,
+      "nfev": 134543,
+      "njev": 3773,
+      "nlu": 3773,
+      "accepted_steps": 46222
+    },
+    "smooth_four_bar": {
+      "elapsed_seconds": 15.444138949009357,
+      "candidate_and_model_build_seconds": 0.03211575899331365,
+      "periodic_integration_seconds": 12.804548098996747,
+      "integration_segments_seconds": 12.761469850986032,
+      "rhs_callback_seconds": 10.953707014356041,
+      "kinematics_seconds": 7.793275951058604,
+      "kinematics_microseconds_per_call": 50.720962909590654,
+      "kinematics_fraction_of_integration": 0.6086334239057775,
+      "compiled_dispatch_seconds": 2.007169421412982,
+      "native_kernel_seconds_estimate": 0.5011655054206976,
+      "python_compiled_crossing_seconds_estimate": 1.5060039159922844,
+      "python_adapter_seconds": 0.8902930834447034,
+      "rhs_outer_wrapper_and_preflight_bookkeeping_seconds": 0.2678380904253572,
+      "integrator_callback_and_segment_reporting_residual_seconds": 1.8077628366299905,
+      "periodic_control_residual_seconds": 0.03756924101617187,
+      "integration_preflight_seconds": 0.0048695319856051356,
+      "backend_preparation_seconds": 0.0006394750089384615,
+      "generic_diagnostics_seconds": 1.1261647600040305,
+      "microtube_diagnostics_seconds": 1.3617214599944418,
+      "validity_seconds": 0.11882484100351576,
+      "report_materialization_and_other_seconds": 0.0007640300173079595,
+      "json_serialization_seconds": 0.00131167599465698,
+      "calls": 153650,
+      "nfev": 153618,
+      "njev": 5817,
+      "nlu": 5817,
+      "accepted_steps": 42713
+    }
+  },
+  "cache": {
+    "numba_final": {
+      "production_warm_0": {
+        "elapsed_seconds": 10.032225967006525,
+        "first_rhs_seconds": 5.533869279010105,
+        "backend_preparation_seconds": 0.005309934000251815,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": null
+      },
+      "production_warm_1": {
+        "elapsed_seconds": 4.360745707002934,
+        "first_rhs_seconds": 5.351900472305715e-05,
+        "backend_preparation_seconds": 0.0006545769865624607,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": null
+      },
+      "nearby_warm_0": {
+        "elapsed_seconds": 4.854626487009227,
+        "first_rhs_seconds": 5.04180061398074e-05,
+        "backend_preparation_seconds": 0.0006584479997400194,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": null
+      }
+    },
+    "cache_empty": {
+      "production_warm_0": {
+        "elapsed_seconds": 13.239926505993935,
+        "first_rhs_seconds": 6.1831687499943655,
+        "backend_preparation_seconds": 0.01010095099627506,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      },
+      "production_warm_1": {
+        "elapsed_seconds": 4.8279996199999005,
+        "first_rhs_seconds": 4.826700023841113e-05,
+        "backend_preparation_seconds": 0.0007978409994393587,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      },
+      "nearby_warm_0": {
+        "elapsed_seconds": 5.057328437003889,
+        "first_rhs_seconds": 4.687199543695897e-05,
+        "backend_preparation_seconds": 0.0007744869944872335,
+        "hits": 0,
+        "misses": 1,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      }
+    },
+    "cache_populated": {
+      "production_warm_0": {
+        "elapsed_seconds": 5.25031062499329,
+        "first_rhs_seconds": 0.3777300959918648,
+        "backend_preparation_seconds": 0.011555004995898344,
+        "hits": 1,
+        "misses": 0,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      },
+      "production_warm_1": {
+        "elapsed_seconds": 4.804736395002692,
+        "first_rhs_seconds": 4.8380999942310154e-05,
+        "backend_preparation_seconds": 0.000797490996774286,
+        "hits": 1,
+        "misses": 0,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      },
+      "nearby_warm_0": {
+        "elapsed_seconds": 5.064516106998781,
+        "first_rhs_seconds": 4.956699558533728e-05,
+        "backend_preparation_seconds": 0.0008128280023811385,
+        "hits": 1,
+        "misses": 0,
+        "cache_namespace": "b9245a3f26386403976c78515a0eef19d3aae6bd8ab4837dd9ce751e2c31e3d4"
+      }
+    }
+  },
+  "limitations": [
+    "Profile timings are instrumented, using the second replay to exclude compilation.",
+    "Native estimates use final-cycle sample microbenchmarks; cold-transient instruction mixes can differ.",
+    "Native batch cost includes native call/allocation/loop overhead; crossing estimates are approximate.",
+    "Integrator residual includes Python/SciPy callback bookkeeping and segment statistics, not LSODA alone.",
+    "JSON serialization is measured separately after elapsed_seconds; report materialization is included.",
+    "Dispatcher cache counters are cumulative within each process, not cache loads per candidate."
+  ]
+}

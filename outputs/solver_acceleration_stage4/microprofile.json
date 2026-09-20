@@ -1,0 +1,89 @@
+{
+  "cases": {
+    "production_warm": {
+      "calls_per_repeat": 8192,
+      "repeats": 5,
+      "native_batch_seconds": [
+        0.027429003006545827,
+        0.03028630799963139,
+        0.034643446997506544,
+        0.029114475997630507,
+        0.04124568800034467
+      ],
+      "python_dispatch_batch_seconds": [
+        0.09892886699526571,
+        0.13138916000025347,
+        0.10836898899287917,
+        0.10455018500215374,
+        0.12800162899657153
+      ],
+      "kinematics_batch_seconds": [
+        0.03634178300853819,
+        0.04781158200057689,
+        0.02911659999517724,
+        0.04609251700458117,
+        0.04770349799946416
+      ],
+      "native_seconds_per_call": 3.6970590819862537e-06,
+      "dispatcher_seconds_per_call": 1.322863635166982e-05,
+      "kinematics_seconds_per_call": 5.626527954660787e-06
+    },
+    "production_cold": {
+      "calls_per_repeat": 8192,
+      "repeats": 5,
+      "native_batch_seconds": [
+        0.033979829007876106,
+        0.032908230990869924,
+        0.03083258199330885,
+        0.03449633299896959,
+        0.03291851699759718
+      ],
+      "python_dispatch_batch_seconds": [
+        0.11273751400585752,
+        0.1079818959988188,
+        0.14321907701378223,
+        0.09093417398980819,
+        0.0904869369987864
+      ],
+      "kinematics_batch_seconds": [
+        0.03818963198864367,
+        0.03454575699288398,
+        0.03629776800516993,
+        0.031142002990236506,
+        0.03393898300419096
+      ],
+      "native_seconds_per_call": 4.0183736569332495e-06,
+      "dispatcher_seconds_per_call": 1.318138378891831e-05,
+      "kinematics_seconds_per_call": 4.217011351670408e-06
+    },
+    "smooth_four_bar": {
+      "calls_per_repeat": 8192,
+      "repeats": 5,
+      "native_batch_seconds": [
+        0.02956234999874141,
+        0.02660252500209026,
+        0.026720128997112624,
+        0.026077050002641045,
+        0.027186883991817012
+      ],
+      "python_dispatch_batch_seconds": [
+        0.10157441601040773,
+        0.07487508800113574,
+        0.07511137099936604,
+        0.07774576800875366,
+        0.07685354999557603
+      ],
+      "kinematics_batch_seconds": [
+        0.3954180729924701,
+        0.3343557350017363,
+        0.3398665139975492,
+        0.34282431899919175,
+        0.33117396300076507
+      ],
+      "native_seconds_per_call": 3.2617344967178497e-06,
+      "dispatcher_seconds_per_call": 9.38153686469434e-06,
+      "kinematics_seconds_per_call": 4.1487611571966454e-05
+    }
+  },
+  "limitations": "Bounded native/dispatcher microbenchmarks supplement full section timings.\n\nThe native loop removes Python crossings but includes native call/allocation and\nloop cost. Samples are final-cycle states, not the full cold transient. Differences\nare estimates, not additive exact attribution of an instrumented evaluation.\n"
+}

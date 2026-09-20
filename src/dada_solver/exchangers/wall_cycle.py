@@ -1,7 +1,7 @@
 """Reusable periodic evaluation for the existing ten-state air-wall motor."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 import math
 import time
 from types import SimpleNamespace
@@ -10,6 +10,7 @@ import numpy as np
 from dada_solver.dynamics import ValveTopology
 from dada_solver.exchangers.air_wall import AirWallMotor
 from dada_solver.integration import IntegrationInterrupted
+from dada_solver.wall_backend import WallBackendSettings, WallRHS
 from dada_solver.performance import ConservationReport, CyclePerformance, OperatingMode
 from dada_solver.state import ThermodynamicState
 from dada_solver.valves import ValveState
@@ -48,6 +49,7 @@ class WallCycleResult:
     trajectory: np.ndarray | None
     last_complete_state: np.ndarray | None
     solver_statistics: tuple[dict, ...] = ()
+    backend_statistics: dict = field(default_factory=dict)
 
     @property
     def converged(self):
@@ -57,7 +59,7 @@ class WallCycleResult:
 def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
         progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
         statistics_callback=None, measure_rhs_time=False,
-        adaptive_acceleration=None) -> WallCycleResult:
+        adaptive_acceleration=None, backend=WallBackendSettings()) -> WallCycleResult:
     """Repeat complete physical cycles at the original periodic tolerances.
 
     Optional adaptive wall guesses replace the fixed ten-cycle schedule. Failed
@@ -69,6 +71,8 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
         extrapolate_wall_energies, adaptive_wall_proposal, AdaptiveWallAccelerationSettings)
     if adaptive_acceleration is not None and not isinstance(adaptive_acceleration, AdaptiveWallAccelerationSettings):
         raise TypeError('Expected AdaptiveWallAccelerationSettings or None.')
+    if not isinstance(backend,WallBackendSettings):
+        raise TypeError('Expected WallBackendSettings.')
     state = np.asarray(initial_state, dtype=float)
     history, wall_history = [], []
     statistics = []
@@ -77,6 +81,11 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
     recovery_remaining = 0
     capacities = (np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
                   if adaptive_acceleration is not None else None)
+    rhs = None
+    backend_options = {}
+    def backend_snapshot():
+        return rhs.snapshot() if rhs is not None else dict(requested_backend=backend.name,
+            actual_backend='python' if backend.name=='python' else 'not_started')
     atol = np.asarray(settings.integration_absolute_tolerances)
     for cycle in range(1, maximum_cycles+1):
         def record_segment(record):
@@ -97,22 +106,29 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             recovery_remaining = adaptive_acceleration.recovery_cycles
 
         try:
+            if rhs is None and (backend.name!='python' or backend.profile):
+                # Keep Python's preflight-before-first-progress ordering.
+                rhs = WallRHS(wrapper,backend)
+                backend_options['rhs'] = rhs
             angles, trajectory = wrapper.integrate_cycle(state,
                 integration_method=settings.integration_method,
                 rtol=settings.integration_relative_tolerance, atol=atol,
                 maximum_step_angle=settings.maximum_step_angle_radians,
                 progress_callback=progress_callback,
                 progress_interval_seconds=settings.progress_interval_seconds,
-                statistics_callback=record_segment, measure_rhs_time=measure_rhs_time)
+                statistics_callback=record_segment, measure_rhs_time=measure_rhs_time, **backend_options)
         except IntegrationInterrupted as error:
             return WallCycleResult('interrupted', str(error), tuple(history),
                 last_angles, last_trajectory,
-                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
+                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot())
         except (ValueError, RuntimeError, ArithmeticError) as error:
             if pending is None:
                 raise
             restore_anchor('accelerated_integration_failed', exception=type(error).__name__, message=str(error))
             continue
+        finally:
+            if rhs is not None and statistics_callback is not None:
+                statistics_callback(dict(phase='rhs_backend',cycle=cycle,**rhs.snapshot()))
         end = trajectory[:10, -1]
         normalized = np.abs(end-state) / (
             settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))
@@ -155,7 +171,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             cycle_callback(cycle, end.copy(), error, history[-1])
         if error <= 1:
             return WallCycleResult('converged', 'Periodic steady state converged.',
-                tuple(history), angles, trajectory, end.copy(), tuple(statistics))
+                tuple(history), angles, trajectory, end.copy(), tuple(statistics), backend_snapshot())
         wall_history.append(end[8:10].copy())
         if adaptive_acceleration is not None:
             wall_history = wall_history[-4:]
@@ -187,7 +203,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
     return WallCycleResult('maximum_cycles',
         'Maximum cycle count reached before periodic convergence.', tuple(history),
         last_angles, last_trajectory,
-        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
+        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot())
 
 
 class WallDiagnosticCycle:

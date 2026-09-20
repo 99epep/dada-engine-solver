@@ -1,0 +1,44 @@
+{
+  "exact_comparisons": [
+    "invalid_domain_0.json",
+    "invalid_domain_1.json",
+    "invalid_domain_2.json",
+    "legacy_0.json",
+    "legacy_1.json",
+    "legacy_2.json",
+    "nearby_warm_0.json",
+    "nearby_warm_1.json",
+    "nearby_warm_2.json",
+    "production_cold_0.json",
+    "production_cold_1.json",
+    "production_cold_2.json",
+    "production_warm_0.json",
+    "production_warm_1.json",
+    "production_warm_2.json",
+    "smooth_four_bar_0.json",
+    "smooth_four_bar_1.json",
+    "smooth_four_bar_2.json"
+  ],
+  "interruption_semantics_checks": [
+    {
+      "file": "interrupted_0.json",
+      "retained_cycles": 0
+    },
+    {
+      "file": "interrupted_1.json",
+      "retained_cycles": 0
+    },
+    {
+      "file": "interrupted_2.json",
+      "retained_cycles": 0
+    }
+  ],
+  "median_speedup": {
+    "production_warm": 1.0443484390022668,
+    "production_cold": 0.9008430307920098,
+    "smooth_four_bar": 0.9853732651991458,
+    "legacy": 1.1274873387331255,
+    "nearby_warm": 0.9253901371546783
+  },
+  "note": "Observed maximum is reported separately; three repeats do not estimate population tail latency."
+}

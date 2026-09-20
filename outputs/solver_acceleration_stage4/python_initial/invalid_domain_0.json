@@ -1,0 +1,40 @@
+{
+  "case": "invalid_domain",
+  "repeat": 0,
+  "elapsed_seconds": 0.0008024980052141473,
+  "candidate_seconds": 0.00024587100779172033,
+  "sections_seconds": {
+    "build": [
+      0.0001872709981398657
+    ],
+    "periodic_integration": [
+      0.0002760559873422608
+    ]
+  },
+  "solver_statistics": [
+    {
+      "phase": "build",
+      "elapsed_seconds": 0.0001872709981398657
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "failed",
+      "elapsed_seconds": 0.0002418890071567148,
+      "exception": "ValueError",
+      "message": "Transport temperature 2000 K outside declared domain.",
+      "cycle": 1
+    },
+    {
+      "phase": "periodic_integration",
+      "elapsed_seconds": 0.0002760559873422608
+    }
+  ],
+  "result": {
+    "status": "ValueError",
+    "message": "Transport temperature 2000 K outside declared domain."
+  },
+  "final_state": null,
+  "exception": "ValueError",
+  "backend_statistics": {},
+  "report_serialization_seconds": 4.940599319525063e-05
+}
