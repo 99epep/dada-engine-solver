@@ -21,7 +21,7 @@ accuracy. It is not promoted to the campaign default. Both positive and negative
 results are retained below. The existing fixed cycle-10 extrapolation remains
 controlled by `wall_numerical.accelerate_walls` when adaptive mode is absent.
 
-The subsequently supplied [local study export](<Thermodynamic_and_Mechanica_ Study_dada-engine.org.html>)
+The subsequently supplied [local study export](<Thermodynamic and Mechanical Study — dada-engine.org.html>)
 (revision 1656, last modified 2026-09-20 04:27) has now been read. Sections 1,
 5–7 and Appendix A allow either upstream or downstream placement independently
 for the two check valves, while preserving branch circulation directions.
@@ -259,3 +259,23 @@ PYTHONPATH=src python3 examples/audit_wall_acceleration.py \
 reproduces the tighter study for either method. `--adaptive-controls FILE.json`
 records alternative settings as a separate experiment. `--measure-rhs` enables
 per-call timing; keep such timings separate from uninstrumented latency.
+
+
+## Study export update, 2026-09-20 evening
+
+The replacement [local export](<Thermodynamic and Mechanical Study — dada-engine.org.html>)
+is revision 1659 (19:02), compared with the previously reviewed revision 1656
+(04:27). Section 4 generalizes pressure-equalized pair reductions to connected
+sets, including inlet/outlet enthalpy and local exchanger mass redistribution.
+Section 6 expands the physical rationale for exchange and distinguishes spatial
+pressure equalization from pressure constancy over time. The swept-volume versus
+temperature ratio is a first-order sizing guide, not an imposed geometric rule.
+Motor chronology is recalculated with reversed kinematics and unchanged physical
+valve orientations, not obtained by reversing every hydraulic flow.
+
+These changes clarify reference reductions and chronology; they do not require
+replacing the full four-volume balances used by the acceleration benchmarks.
+The existing solver already retains heat exchange and passive pressure-driven
+valves throughout all kinematic phases. Upstream valve placement remains a
+separate, not-yet-implemented physical feature in the production compiled adapter.
+No new pressure-equalization or exact-isobaric constraint is introduced here.
