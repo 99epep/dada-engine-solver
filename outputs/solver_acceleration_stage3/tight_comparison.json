@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "comparison_rtol": 1e-06,
+  "comparison_atol": 1e-12,
+  "runs": [
+    {
+      "case": "production_cold",
+      "repeat": 0,
+      "status_equal": true,
+      "exception_equal": true,
+      "elapsed_seconds": 14.099459589997423,
+      "comparison_scaled_state_distance": 0.010636453240302822,
+      "relative_output_differences": {
+        "indicated_power_w": 8.827074429235597e-08,
+        "indicated_thermal_efficiency": 3.049888665553001e-07,
+        "total_mass_kg": 2.8159460243032595e-14
+      },
+      "cycles": [
+        33,
+        33
+      ],
+      "validity_equal": true,
+      "state_within_comparison_scale": true,
+      "outputs_within_relative_comparison_scale": true
+    },
+    {
+      "case": "smooth_four_bar",
+      "repeat": 0,
+      "status_equal": true,
+      "exception_equal": true,
+      "elapsed_seconds": 22.26266018199385,
+      "comparison_scaled_state_distance": 0.044804998783031943,
+      "relative_output_differences": {
+        "indicated_power_w": 2.537876407110592e-07,
+        "indicated_thermal_efficiency": 2.6745178299688666e-07,
+        "total_mass_kg": 2.3316257424265748e-15
+      },
+      "cycles": [
+        52,
+        52
+      ],
+      "validity_equal": true,
+      "state_within_comparison_scale": true,
+      "outputs_within_relative_comparison_scale": true
+    }
+  ],
+  "median_speedup": {
+    "production_cold": 7.635670269261914,
+    "smooth_four_bar": 5.769696157240809
+  },
+  "note": "Rounding can change adaptive ODE steps. Periodic state tolerance is not an output-error bound."
+}

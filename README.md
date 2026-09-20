@@ -160,10 +160,14 @@ smoothing/readjustment, six-bar synthesis and evaluation of actual mechanism
 kinematics. Piecewise-linear velocity jumps have no mechanical-loss penalty and
 are not mechanically realizable as written.
 
-The first [solver-acceleration review](docs/SOLVER_ACCELERATION_STAGE1.md)
-contains current-model timing evidence, proposed priorities and questions for
-an independent second review. It is a preparation note, not an implemented
-speedup or approved language migration.
+The [solver-acceleration implementation](docs/SOLVER_ACCELERATION_IMPLEMENTATION.md)
+records the completed Python cleanup, exact replay checks and measured gains.
+It follows the [Stage-1 evidence](docs/SOLVER_ACCELERATION_STAGE1.md) and
+[Stage-2 review](docs/SOLVER_ACCELERATION_STAGE2.md). Adaptive wall initial guesses
+are a separate experimental opt-in with mixed results at tighter accuracy;
+no compiled backend or language migration is enabled by default. The separate
+[Stage-3 Numba prototype](docs/SOLVER_ACCELERATION_STAGE3.md) measures a compiled
+wall RHS on frozen workloads, with explicit accuracy and adoption gates.
 
 ## Interchangeable models
 

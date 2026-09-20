@@ -20,7 +20,7 @@ class MicrotubeGasFilm:
         """
         conductance=0.; diagnostics=[]
         k=self.model.transport.conductivity(temperature)
-        area=self.bank.tube_count*math.pi*self.bank.inner_diameter_m*self.bank.tube_length_m
+        area=self.bank.tube_internal_area_m2
         for flow,p1,p2 in context['passages']:
             d=self.model.diagnose(self.bank,flow,p1,p2,temperature,frequency=context['frequency_hz'])
             self.model.require(d)

@@ -1,0 +1,61 @@
+{
+  "case": "interrupted",
+  "repeat": 1,
+  "elapsed_seconds": 0.0005401060043368489,
+  "sections_seconds": {
+    "build": [
+      0.00013959099305793643
+    ],
+    "integration": [
+      0.00016372199752368033
+    ]
+  },
+  "solver_statistics": [
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 9.19860030990094e-05,
+      "rhs_calls": 1,
+      "cycle": 1
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 3.008848242556311,
+      "ends_at_kinematic_breakpoint": true,
+      "status": "interrupted",
+      "message": "Frozen benchmark deadline at first progress callback.",
+      "nfev": null,
+      "njev": null,
+      "nlu": null,
+      "rhs_calls": 0,
+      "accepted_samples": null,
+      "accepted_steps": null,
+      "minimum_step_angle": null,
+      "median_step_angle": null,
+      "maximum_step_angle": null,
+      "integration_elapsed_seconds": 1.079800131265074e-05,
+      "rhs_elapsed_seconds": null,
+      "cycle": 1
+    }
+  ],
+  "rhs_timing_enabled": false,
+  "cycle_endpoints": [],
+  "result": {
+    "label": "interrupted",
+    "status": "interrupted",
+    "message": "Frozen benchmark deadline at first progress callback.",
+    "convergence": {
+      "cycles_completed": 0,
+      "first_normalized_periodic_error": null,
+      "last_normalized_periodic_error": null,
+      "normalized_periodic_error_ratio": null,
+      "improving": false,
+      "history": []
+    }
+  },
+  "final_state": null,
+  "exception": null,
+  "report_serialization_seconds": 3.880899748764932e-05
+}

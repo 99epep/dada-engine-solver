@@ -100,6 +100,7 @@ def _evaluate(
         initial_state,
         maximum_cycles=design.configuration.numerical.maximum_cycles,
         settings=definition.wall_numerical_settings,
+        adaptive_acceleration=getattr(definition, "adaptive_wall_acceleration", None),
         progress_callback=progress_callback,
     )
 
@@ -135,11 +136,11 @@ def _evaluate(
         design.configuration.validity,
     )
     helper = MachineEvaluator(definition)
-    maximum_reynolds, maximum_mach = helper._tube_validity(
-        wrapper, angles, trajectory
-    )
     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
     gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
+    maximum_reynolds, maximum_mach = helper._tube_validity(
+        wrapper, angles, trajectory, gas_domains=gas_domains
+    )
     validity = finalize_microtube_validity(
         validity,
         maximum_reynolds,

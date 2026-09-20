@@ -1,0 +1,881 @@
+diff --git a/examples/compare_motor_motion_laws_stage7A5.py b/examples/compare_motor_motion_laws_stage7A5.py
+index 88812ba..10b3580 100644
+--- a/examples/compare_motor_motion_laws_stage7A5.py
++++ b/examples/compare_motor_motion_laws_stage7A5.py
+@@ -135,11 +135,11 @@ def _evaluate(
+         design.configuration.validity,
+     )
+     helper = MachineEvaluator(definition)
+-    maximum_reynolds, maximum_mach = helper._tube_validity(
+-        wrapper, angles, trajectory
+-    )
+     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+     gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
++    maximum_reynolds, maximum_mach = helper._tube_validity(
++        wrapper, angles, trajectory, gas_domains=gas_domains
++    )
+     validity = finalize_microtube_validity(
+         validity,
+         maximum_reynolds,
+diff --git a/src/dada_solver/campaign/evaluator.py b/src/dada_solver/campaign/evaluator.py
+index 58720e1..605ec1a 100644
+--- a/src/dada_solver/campaign/evaluator.py
++++ b/src/dada_solver/campaign/evaluator.py
+@@ -24,10 +24,26 @@ class EvaluationControl:
+     deadline: float | None = None
+     clock: object = time.monotonic
+     previous_records: tuple = ()
++    statistics_callback: object = None
+     def check(self, _progress=None):
+         if self.deadline is not None and self.clock() >= self.deadline:
+             raise IntegrationInterrupted('Campaign wall-clock deadline reached.')
+ 
++    def measure(self, phase, function, *args, **kwargs):
++        """Optional side-channel timings; persisted campaign records stay unchanged."""
++        if self.statistics_callback is None:
++            return function(*args, **kwargs)
++        before = time.perf_counter()
++        status = 'completed'
++        try:
++            return function(*args, **kwargs)
++        except Exception:
++            status = 'failed'
++            raise
++        finally:
++            self.statistics_callback(dict(phase=phase, status=status,
++                elapsed_seconds=time.perf_counter()-before))
++
+ 
+ def json_values(value):
+     if isinstance(value, Enum): return value.value
+@@ -104,12 +120,21 @@ class MachineEvaluator:
+                 for c in self.definition.constraints]
+ 
+     def evaluate_with_control(self, candidate, control):
++        result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
++        if control.statistics_callback is not None:
++            control.statistics_callback(dict(phase='candidate_result', status=result['status'],
++                warm_start_source=result.get('warm_start_source'),
++                warm_start_normalized_distance=result.get('warm_start_normalized_distance'),
++                periodic_cycle_count=result['periodic_cycle_count']))
++        return result
++
++    def _evaluate_with_control(self, candidate, control):
+         try:
+             physical = dict(self.definition.fixed_parameters)
+             physical.update(candidate.payload['physical'])
+-            design = self.definition.adapter.build(physical)
++            design = control.measure('parameter_preflight', self.definition.adapter.build, physical)
+         except PreflightRejection as error: return rejected(error.status, str(error), error.diagnostics)
+-        try: built = design.build()
++        try: built = control.measure('build', design.build)
+         except KinematicConstraintViolation as error:
+             return rejected('invalid_kinematics', str(error), [asdict(d) for d in error.diagnostics])
+         except (ValueError, ArithmeticError) as error: return rejected('invalid_exchanger', str(error))
+@@ -183,10 +208,11 @@ class MachineEvaluator:
+             new_caps = np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
+             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
+         try:
+-            periodic = solve_periodic_wall_motor(wrapper, state,
++            periodic = control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, state,
+                 maximum_cycles=design.configuration.numerical.maximum_cycles,
+                 progress_callback=control.check,
+-                settings=self.definition.wall_numerical_settings)
++                settings=self.definition.wall_numerical_settings,
++                statistics_callback=control.statistics_callback)
+         except (ValueError, RuntimeError, ArithmeticError) as error:
+             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
+             status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
+@@ -209,12 +235,12 @@ class MachineEvaluator:
+         def wall_heat_rates(index, _angle, gas_state):
+             incoming, outgoing = wrapper.thermal_rates(_angle, periodic.trajectory[:,index])
+             return incoming['gas_heat_w'], outgoing['gas_heat_w']
+-        diagnostics = (extract_cycle_diagnostics(cycle, wrapper.model,
++        diagnostics = (control.measure('generic_diagnostics', extract_cycle_diagnostics, cycle, wrapper.model,
+             heat_rate_provider=wall_heat_rates) if periodic.converged else None)
+-        validity = assess_cycle_validity(cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
+-        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory)
++        validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
+         from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+-        gas_domains = cycle_microtube_diagnostics(wrapper, periodic.angles, periodic.trajectory)
++        gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory)
++        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains)
+         if validity is not None:
+             validity = finalize_microtube_validity(validity, max_re, max_mach,
+                 design.configuration.validity.maximum_mach_number,
+@@ -233,10 +259,12 @@ class MachineEvaluator:
+         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
+             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
+ 
+-    def _tube_validity(self, wrapper, angles, trajectory):
++    def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None):
+         if any(getattr(w,'requires_flow_context',False) for w in (wrapper.heat_in,wrapper.heat_out)):
+             from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+-            domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)['passages'].values()
++            if gas_domains is None:
++                gas_domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)
++            domains = gas_domains['passages'].values()
+             return (max(x['hydraulic_upstream_ranges']['reynolds']['maximum'] for x in domains),
+                     max(x['hydraulic_upstream_ranges']['mach']['maximum'] for x in domains))
+         max_re = max_mach = 0.; gas = wrapper.model.gas
+diff --git a/src/dada_solver/dynamics.py b/src/dada_solver/dynamics.py
+index 3d35500..b5d6b0e 100644
+--- a/src/dada_solver/dynamics.py
++++ b/src/dada_solver/dynamics.py
+@@ -39,6 +39,23 @@ class NetworkFlows:
+     cold_to_large_choked: bool
+ 
+ 
++@dataclass(frozen=True, slots=True)
++class InstantaneousPoint:
++    """Exact evaluation-local geometry, primitives and signed hydraulic flows.
++
++    Prepared for one trial state only; never cached by angle or across states.
++    The primitive arrays are read-only and ordered S, L, C, H.
++    """
++
++    theta: float
++    volumes: InstantaneousVolumes
++    volume_rates: tuple[float, float]
++    temperatures: NDArray[np.float64]
++    pressures: NDArray[np.float64]
++    topology: ValveTopology
++    flows: NetworkFlows
++
++
+ @dataclass(frozen=True, slots=True)
+ class ModelRates:
+     """State derivative and diagnostic rates at one instant."""
+@@ -106,7 +123,21 @@ class ThermodynamicModel:
+         state: ThermodynamicState,
+         topology: ValveTopology,
+     ) -> ModelRates:
+-        """Evaluate conservative rates without imposing a nominal phase sequence."""
++        """Compatibility facade over the authoritative point and balances."""
++        point = self.instantaneous_point(theta, state, topology)
++        return self.assemble_rates(
++            point,
++            self.cold_heat_transfer.heat_rate(point.temperatures[2]),
++            self.hot_heat_transfer.heat_rate(point.temperatures[3]),
++        )
++
++    def instantaneous_point(
++        self,
++        theta: float,
++        state: ThermodynamicState,
++        topology: ValveTopology,
++    ) -> InstantaneousPoint:
++        """Solve geometry and hydraulics once, before wall heat rates are known."""
+ 
+         combined_provider = getattr(
+             self.kinematics, "cylinder_volumes_and_derivatives", None
+@@ -132,7 +163,7 @@ class ThermodynamicModel:
+         small_cold = self.small_cold_link.bidirectional_flow(
+             pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas
+         )
+-        effective_topology = self.effective_topology(theta, state, topology)
++        effective_topology = self._topology_from_pressures(pressures, topology)
+         hot_small = self.hot_small_valve.flow(
+             effective_topology.hot_to_small,
+             pressures[3],
+@@ -148,6 +179,33 @@ class ThermodynamicModel:
+             self.gas,
+         )
+ 
++        temperatures.flags.writeable = False
++        pressures.flags.writeable = False
++        return InstantaneousPoint(
++            theta, volumes, (volume_rate_small, volume_rate_large),
++            temperatures, pressures, effective_topology,
++            NetworkFlows(
++                large_hot.mass_flow_rate, small_cold.mass_flow_rate,
++                hot_small.mass_flow_rate, cold_large.mass_flow_rate,
++                large_hot.is_choked, small_cold.is_choked,
++                hot_small.is_choked, cold_large.is_choked,
++            ),
++        )
++
++    def assemble_rates(
++        self,
++        point: InstantaneousPoint,
++        cold_heat_rate: float,
++        hot_heat_rate: float,
++    ) -> ModelRates:
++        """Assemble the sole conservative balances with actual gas heat rates."""
++        temperatures, pressures = point.temperatures, point.pressures
++        volume_rate_small, volume_rate_large = point.volume_rates
++        flows = point.flows
++        large_hot = FlowResult(flows.large_to_hot, flows.large_to_hot_choked)
++        small_cold = FlowResult(flows.small_to_cold, flows.small_to_cold_choked)
++        hot_small = FlowResult(flows.hot_to_small, flows.hot_to_small_choked)
++        cold_large = FlowResult(flows.cold_to_large, flows.cold_to_large_choked)
+         mass_rates = np.zeros(4, dtype=float)
+         energy_rates = np.zeros(4, dtype=float)
+         self._apply_bidirectional_link(
+@@ -163,8 +221,6 @@ class ThermodynamicModel:
+             mass_rates, energy_rates, 2, 1, cold_large, temperatures[2]
+         )
+ 
+-        cold_heat_rate = self.cold_heat_transfer.heat_rate(temperatures[2])
+-        hot_heat_rate = self.hot_heat_transfer.heat_rate(temperatures[3])
+         energy_rates[2] += cold_heat_rate
+         energy_rates[3] += hot_heat_rate
+ 
+@@ -187,16 +243,7 @@ class ThermodynamicModel:
+ 
+         return ModelRates(
+             state_derivative=derivative,
+-            flows=NetworkFlows(
+-                large_to_hot=large_hot.mass_flow_rate,
+-                small_to_cold=small_cold.mass_flow_rate,
+-                hot_to_small=hot_small.mass_flow_rate,
+-                cold_to_large=cold_large.mass_flow_rate,
+-                large_to_hot_choked=large_hot.is_choked,
+-                small_to_cold_choked=small_cold.is_choked,
+-                hot_to_small_choked=hot_small.is_choked,
+-                cold_to_large_choked=cold_large.is_choked,
+-            ),
++            flows=flows,
+             cold_heat_rate=cold_heat_rate,
+             hot_heat_rate=hot_heat_rate,
+             gas_work_rate=gas_work_rate,
+@@ -215,6 +262,13 @@ class ThermodynamicModel:
+         if not self.continuous_ideal_diodes:
+             return stored_topology
+         pressures = state.pressures(self.gas, self.volumes(theta))
++        return self._topology_from_pressures(pressures, stored_topology)
++
++    def _topology_from_pressures(
++        self, pressures: NDArray[np.float64], stored_topology: ValveTopology,
++    ) -> ValveTopology:
++        if not self.continuous_ideal_diodes:
++            return stored_topology
+         return ValveTopology(
+             ValveState.OPEN if pressures[3] > pressures[0] else ValveState.CLOSED,
+             ValveState.OPEN if pressures[2] > pressures[1] else ValveState.CLOSED,
+diff --git a/src/dada_solver/exchangers/air_wall.py b/src/dada_solver/exchangers/air_wall.py
+index 1a194d4..e584d0d 100644
+--- a/src/dada_solver/exchangers/air_wall.py
++++ b/src/dada_solver/exchangers/air_wall.py
+@@ -3,7 +3,7 @@
+ The air passage is quasi-steady against a uniform wall. Wall conductances and
+ capacity are explicit inputs; Doty's overall UA does not identify their split.
+ """
+-from dataclasses import dataclass, replace
++from dataclasses import dataclass
+ import math
+ import time
+ 
+@@ -11,7 +11,6 @@ import numpy as np
+ from scipy.integrate import solve_ivp
+ 
+ from dada_solver.dynamics import ThermodynamicModel
+-from dada_solver.heat_transfer import PrescribedHeatRate
+ from dada_solver.exchangers.base import LumpedWallThermalModel
+ from dada_solver.state import ThermodynamicState
+ from dada_solver.dynamics import ValveTopology
+@@ -36,6 +35,11 @@ class AirWallExchanger:
+         for value in (self.gas_wall_conductance_w_k, self.air_wall_conductance_w_k, self.air_mass_flow_kg_s):
+             if not math.isfinite(value) or value < 0:
+                 raise ValueError('Conductances and air flow must be finite and nonnegative.')
++        capacity_rate = self.air_mass_flow_kg_s*self.air_cp_j_kg_k
++        effective = (capacity_rate * -math.expm1(-self.air_wall_conductance_w_k/capacity_rate)
++                     if capacity_rate > 0 else 0.0)
++        object.__setattr__(self, '_air_capacity_rate', capacity_rate)
++        object.__setattr__(self, '_effective_air_conductance', effective)
+ 
+     @property
+     def requires_flow_context(self):
+@@ -45,9 +49,8 @@ class AirWallExchanger:
+         wall_temperature = wall_energy_j / self.wall_capacity_j_k
+         if any(not math.isfinite(v) or v <= 0 for v in (wall_temperature, gas_temperature_k)):
+             raise ValueError('Gas and wall temperatures must be positive.')
+-        capacity_rate = self.air_mass_flow_kg_s*self.air_cp_j_kg_k
+-        effective = (capacity_rate * -math.expm1(-self.air_wall_conductance_w_k/capacity_rate)
+-                     if capacity_rate > 0 else 0.0)
++        capacity_rate = self._air_capacity_rate
++        effective = self._effective_air_conductance
+         air_heat = effective*(self.air_inlet_temperature_k-wall_temperature)
+         conductance = self.gas_wall_conductance_w_k
+         if self.gas_film is not None:
+@@ -78,12 +81,10 @@ class AirWallMotor:
+ 
+     def derivative(self, angle, values):
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        incoming, outgoing = self.thermal_rates(angle, values)
+-        # Reuse all existing conservative transport and passive-valve equations.
+-        instantaneous = replace(self.model,
+-            cold_heat_transfer=PrescribedHeatRate(incoming['gas_heat_w']),
+-            hot_heat_transfer=PrescribedHeatRate(outgoing['gas_heat_w']))
+-        rates = instantaneous.evaluate(angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        point = self.model.instantaneous_point(
++            angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        incoming, outgoing = self._thermal_rates_from_point(point, values)
++        rates = self.model.assemble_rates(point, incoming['gas_heat_w'], outgoing['gas_heat_w'])
+         return np.r_[rates.state_derivative,
+                      incoming['wall_energy_rate_w'], outgoing['wall_energy_rate_w'],
+                      incoming['air_heat_w'], outgoing['air_heat_w'],
+@@ -92,8 +93,12 @@ class AirWallMotor:
+     def flow_contexts(self, angle, values):
+         """Geometry-independent pressure/flow state for contextual wall closures."""
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        pressures = gas.pressures(self.model.gas,self.model.volumes(angle))
+-        flows = self.model.evaluate(angle,gas,ValveTopology(ValveState.CLOSED,ValveState.CLOSED)).flows
++        point = self.model.instantaneous_point(
++            angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        return self._flow_contexts_from_point(point)
++
++    def _flow_contexts_from_point(self, point):
++        pressures, flows = point.pressures, point.flows
+         frequency = self.model.angular_speed/(2*math.pi)
+         contexts = (
+             dict(frequency_hz=frequency,passages=((flows.small_to_cold,pressures[0],pressures[2]),
+@@ -111,9 +116,19 @@ class AirWallMotor:
+     def thermal_rates(self, angle, values):
+         """Single diagnostic/integration access path; never substitutes static UA."""
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        temperatures = gas.temperatures(self.model.gas)
+         contextual = any(getattr(x,'requires_flow_context',False) for x in (self.heat_in,self.heat_out))
+-        contexts = self.flow_contexts(angle,values) if contextual else (None,None)
++        if contextual:
++            point = self.model.instantaneous_point(
++                angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++            return self._thermal_rates_from_point(point, values)
++        return self._thermal_rates(gas.temperatures(self.model.gas), values, (None, None))
++
++    def _thermal_rates_from_point(self, point, values):
++        contextual = any(getattr(x,'requires_flow_context',False) for x in (self.heat_in,self.heat_out))
++        contexts = self._flow_contexts_from_point(point) if contextual else (None, None)
++        return self._thermal_rates(point.temperatures, values, contexts)
++
++    def _thermal_rates(self, temperatures, values, contexts):
+         return tuple(exchanger.rates(temperatures[index],values[index+6],context=context)
+                      if getattr(exchanger,'requires_flow_context',False)
+                      else exchanger.rates(temperatures[index],values[index+6])
+@@ -121,11 +136,23 @@ class AirWallMotor:
+ 
+     def integrate_cycle(self, state, *, integration_method='LSODA', rtol=1e-7, atol=1e-10,
+                         maximum_step_angle=math.pi/360, progress_callback=None,
+-                        progress_interval_seconds=10.0):
++                        progress_interval_seconds=10.0, statistics_callback=None,
++                        measure_rhs_time=False):
+         initial = np.asarray(state, dtype=float)
+         if initial.shape != (10,):
+             raise ValueError('Expected eight gas states and two wall energies.')
+-        self.derivative(0, np.r_[initial, np.zeros(5)])
++        preflight_started = time.perf_counter()
++        try:
++            self.derivative(0, np.r_[initial, np.zeros(5)])
++        except Exception as error:
++            if statistics_callback is not None:
++                statistics_callback(dict(phase='integration_preflight', status='failed',
++                    elapsed_seconds=time.perf_counter()-preflight_started,
++                    exception=type(error).__name__, message=str(error)))
++            raise
++        if statistics_callback is not None:
++            statistics_callback(dict(phase='integration_preflight', status='completed',
++                elapsed_seconds=time.perf_counter()-preflight_started, rhs_calls=1))
+         if not math.isfinite(maximum_step_angle) or maximum_step_angle <= 0:
+             raise ValueError('Maximum angular step must be positive.')
+         provider = getattr(self.model.kinematics, 'breakpoint_angles', lambda: ())
+@@ -135,8 +162,10 @@ class AirWallMotor:
+         for lower, upper in zip(edges[:-1], edges[1:]):
+             last_progress = time.perf_counter()
+             evaluations = 0
++            rhs_seconds = 0.0
++            started = time.perf_counter()
+             def derivative(angle, state):
+-                nonlocal last_progress, evaluations
++                nonlocal last_progress, evaluations, rhs_seconds
+                 evaluations += 1
+                 now = time.perf_counter()
+                 if progress_callback is not None and now-last_progress >= progress_interval_seconds:
+@@ -145,9 +174,51 @@ class AirWallMotor:
+                         elapsed_seconds=now-last_progress,
+                         right_hand_side_evaluations=evaluations))
+                     last_progress = now
+-                return self.derivative(angle, state)
+-            solution = solve_ivp(derivative, (lower, upper), values, method=integration_method,
+-                                 rtol=rtol, atol=atol, max_step=maximum_step_angle)
++                if not measure_rhs_time:
++                    return self.derivative(angle, state)
++                before = time.perf_counter()
++                try:
++                    return self.derivative(angle, state)
++                finally:
++                    rhs_seconds += time.perf_counter()-before
++
++            def report(solution=None, error=None):
++                if statistics_callback is None:
++                    return
++                steps = np.diff(solution.t) if solution is not None else np.array([])
++                statistics_callback(dict(
++                    phase='solver_segment', method=integration_method,
++                    start_angle=lower, target_angle=upper,
++                    ends_at_kinematic_breakpoint=upper in edges[1:-1],
++                    status=('interrupted' if isinstance(error, IntegrationInterrupted) else
++                            'failed' if error is not None or not solution.success else 'completed'),
++                    message=str(error) if error is not None else solution.message,
++                    nfev=int(solution.nfev) if solution is not None else None,
++                    njev=int(solution.njev) if solution is not None else None,
++                    nlu=int(solution.nlu) if solution is not None else None,
++                    rhs_calls=evaluations,
++                    accepted_samples=len(solution.t) if solution is not None else None,
++                    accepted_steps=len(steps) if solution is not None else None,
++                    minimum_step_angle=float(np.min(steps)) if len(steps) else None,
++                    median_step_angle=float(np.median(steps)) if len(steps) else None,
++                    maximum_step_angle=float(np.max(steps)) if len(steps) else None,
++                    integration_elapsed_seconds=time.perf_counter()-started,
++                    rhs_elapsed_seconds=rhs_seconds if measure_rhs_time else None,
++                ))
++
++            try:
++                # Fast segments may all finish before the timed RHS callback.
++                # Always check cancellation/deadlines at physical boundaries.
++                if progress_callback is not None:
++                    progress_callback(dict(phase='running', start_angle=lower,
++                        current_angle=lower, target_angle=upper,
++                        elapsed_seconds=0.0, right_hand_side_evaluations=0))
++                solution = solve_ivp(derivative, (lower, upper), values, method=integration_method,
++                                     rtol=rtol, atol=atol, max_step=maximum_step_angle)
++            except Exception as error:
++                report(error=error)
++                raise
++            report(solution)
+             if not solution.success:
+                 raise RuntimeError(solution.message)
+             angles.extend(solution.t)
+diff --git a/src/dada_solver/exchangers/gas_correlations.py b/src/dada_solver/exchangers/gas_correlations.py
+index e5f0a42..e9bc907 100644
+--- a/src/dada_solver/exchangers/gas_correlations.py
++++ b/src/dada_solver/exchangers/gas_correlations.py
+@@ -157,7 +157,7 @@ class MicrotubeGasModel:
+             raise ValueError('Invalid instantaneous state.')
+         tr=self.transport; mu=tr.viscosity(t); conductivity=tr.conductivity(t);cp=tr.cp(t)
+         r=tr.gas_constant;rho=min(p1,p2)/(r*t);pm=(p1+p2)/2
+-        area=bank.tube_count*math.pi*bank.inner_diameter_m**2/4;d=bank.inner_diameter_m
++        area=bank.tube_flow_area_m2;d=bank.inner_diameter_m
+         u=abs(flow)/(rho*area);re=abs(flow)*d/(area*mu);pr=cp*mu/conductivity
+         speed=math.sqrt(cp/(cp-r)*r*t);ma=u/speed
+         kn=tr.mean_free_path(min(p1,p2),t)/d;knm=tr.mean_free_path(pm,t)/d
+diff --git a/src/dada_solver/exchangers/gas_diagnostics.py b/src/dada_solver/exchangers/gas_diagnostics.py
+index c758d31..f8ce9ae 100644
+--- a/src/dada_solver/exchangers/gas_diagnostics.py
++++ b/src/dada_solver/exchangers/gas_diagnostics.py
+@@ -1,5 +1,4 @@
+ """Time- and heat-weighted instantaneous microtube domain reports."""
+-from dataclasses import asdict
+ import math
+ import numpy as np
+ from dada_solver.state import ThermodynamicState
+@@ -29,12 +28,12 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
+             total_nu=sum(d.nusselt for d in diagnostics)
+             for label,diagnostic,passage,pair in zip(('inlet','outlet'),diagnostics,context['passages'],ports):
+                 name=f'{side}.{label}'
+-                samples[name].append(asdict(diagnostic))
++                samples[name].append(diagnostic)
+                 weights[name].append(abs(rates['gas_heat_w'])*diagnostic.nusselt/total_nu)
+                 flow,p1,p2=passage
+                 upstream=pair[0] if flow>=0 else pair[1]
+-                hydraulic = asdict(film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
+-                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2))
++                hydraulic = film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
++                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2)
+                 hydraulics[name].append(hydraulic)
+     time=np.asarray(angles)/wrapper.model.angular_speed
+     integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
+@@ -47,23 +46,23 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
+         heat=np.asarray(weights[name]); total_heat=integrate(heat)
+         ranges={}
+         for key in fields:
+-            values=[r[key] for r in rows if r[key] is not None]
++            values=[getattr(r,key) for r in rows if getattr(r,key) is not None]
+             ranges[key]=dict(minimum=min(values),maximum=max(values)) if values else None
+         domains={}
+         for field in ('correlation_id','continuum_regime','slip_regime','model_validity',
+                       'thermal_developing','hydrodynamic_developing','compressibility_significant'):
+             domains[field]={}
+-            for value in sorted(set(r[field] for r in rows),key=str):
+-                indicator=np.array([r[field]==value for r in rows])
++            for value in sorted(set(getattr(r,field) for r in rows),key=str):
++                indicator=np.array([getattr(r,field)==value for r in rows])
+                 domains[field][str(value)]=dict(time_fraction=integrate(indicator)/duration,
+                     absolute_heat_fraction=integrate(indicator*heat)/total_heat if total_heat else None)
+         for row in rows:
+-            failures.update(name+':'+issue for issue in row['issues'])
++            failures.update(name+':'+issue for issue in row.issues)
+         for row in hydraulics[name]:
+-            failures.update(name+':hydraulic_'+issue for issue in row['issues']
++            failures.update(name+':hydraulic_'+issue for issue in row.issues
+                             if issue in ('high_mach','beyond_continuum_model','reynolds_outside_correlation_domain'))
+-        hydraulic_ranges={key:dict(minimum=min(r[key] for r in hydraulics[name]),
+-                                   maximum=max(r[key] for r in hydraulics[name]))
++        hydraulic_ranges={key:dict(minimum=min(getattr(r,key) for r in hydraulics[name]),
++                                   maximum=max(getattr(r,key) for r in hydraulics[name]))
+                           for key in ('reynolds','mach','knudsen','pressure_ratio')}
+         result[name]=dict(ranges=ranges,domains=domains,hydraulic_upstream_ranges=hydraulic_ranges,
+                          absolute_gas_heat_J=total_heat)
+diff --git a/src/dada_solver/exchangers/gas_film.py b/src/dada_solver/exchangers/gas_film.py
+index d48690b..b916063 100644
+--- a/src/dada_solver/exchangers/gas_film.py
++++ b/src/dada_solver/exchangers/gas_film.py
+@@ -20,7 +20,7 @@ class MicrotubeGasFilm:
+         """
+         conductance=0.; diagnostics=[]
+         k=self.model.transport.conductivity(temperature)
+-        area=self.bank.tube_count*math.pi*self.bank.inner_diameter_m*self.bank.tube_length_m
++        area=self.bank.tube_internal_area_m2
+         for flow,p1,p2 in context['passages']:
+             d=self.model.diagnose(self.bank,flow,p1,p2,temperature,frequency=context['frequency_hz'])
+             self.model.require(d)
+diff --git a/src/dada_solver/exchangers/hardware.py b/src/dada_solver/exchangers/hardware.py
+index 43f5f0a..6973211 100644
+--- a/src/dada_solver/exchangers/hardware.py
++++ b/src/dada_solver/exchangers/hardware.py
+@@ -62,6 +62,8 @@ class TubeHalfLink:
+             raise ValueError('Header loss coefficient must be nonnegative.')
+         if self.valve_cda_m2 is not None and (not math.isfinite(self.valve_cda_m2) or self.valve_cda_m2 <= 0):
+             raise ValueError('Valve CdA must be positive when supplied.')
++        area = self.bank.tube_flow_area_m2
++        object.__setattr__(self, '_flow_cap', CompressibleOrifice(min(area, self.valve_cda_m2 or area)))
+ 
+     def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas):
+         if any(not math.isfinite(v) or v <= 0 for v in (upstream_pressure, downstream_pressure, upstream_temperature)):
+@@ -71,7 +73,7 @@ class TubeHalfLink:
+         if self.gas_model is not None:
+             return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas)
+         rho = (upstream_pressure+downstream_pressure)/(2*gas.gas_constant*upstream_temperature)
+-        area = self.bank.dimensions()['tube_flow_area_m2']
++        area = self.bank.tube_flow_area_m2
+         linear = self.core_loss_multiplier*64*self.viscosity_pa_s*self.bank.tube_length_m/(rho*self.bank.tube_count*math.pi*self.bank.inner_diameter_m**4)
+         # Header K refers explicitly to total tube-passage velocity.
+         quadratic = self.header_loss_coefficient/(4*rho*area**2)
+@@ -79,7 +81,7 @@ class TubeHalfLink:
+             quadratic += 1/(2*rho*self.valve_cda_m2**2)
+         dp = upstream_pressure-downstream_pressure
+         flow = 2*dp/(linear+math.sqrt(linear*linear+4*quadratic*dp))
+-        cap = CompressibleOrifice(min(area, self.valve_cda_m2 or area)).directed_flow(
++        cap = self._flow_cap.directed_flow(
+             upstream_pressure, downstream_pressure, upstream_temperature, gas)
+         return FlowResult(min(flow, cap.mass_flow_rate), flow >= cap.mass_flow_rate and cap.is_choked)
+ 
+@@ -96,7 +98,7 @@ class TubeHalfLink:
+         mu = tr.viscosity(temperature)
+         length = self.bank.tube_length_m/2
+         diameter = self.bank.inner_diameter_m
+-        area = self.bank.tube_count*math.pi*diameter**2/4
++        area = self.bank.tube_flow_area_m2
+         rho = (pin+pout)/(2*gas.gas_constant*temperature)
+         factor = self.gas_model.slip_factor(pin,pout,temperature,diameter)
+         nominal = compressible_poiseuille(pin,pout,temperature,mu,length,diameter,
+@@ -129,7 +131,7 @@ class TubeHalfLink:
+         if re>=4000:
+             failures += [x for x in diagnostics.issues if x in ('large_relative_pressure_drop','thermal_slip_not_implemented')]
+         if failures and self.gas_model.domain_policy=='reject': raise MicrotubeDomainError('; '.join(failures))
+-        cap = CompressibleOrifice(min(area,self.valve_cda_m2 or area)).directed_flow(pin,pout,temperature,gas)
++        cap = self._flow_cap.directed_flow(pin,pout,temperature,gas)
+         return FlowResult(min(flow,cap.mass_flow_rate),flow>=cap.mass_flow_rate and cap.is_choked)
+ 
+     def bidirectional_flow(self, first_pressure, second_pressure, first_temperature, second_temperature, gas):
+diff --git a/src/dada_solver/exchangers/microtube_geometry.py b/src/dada_solver/exchangers/microtube_geometry.py
+index 0815ef0..36721c5 100644
+--- a/src/dada_solver/exchangers/microtube_geometry.py
++++ b/src/dada_solver/exchangers/microtube_geometry.py
+@@ -26,8 +26,25 @@ class MicrotubeBank:
+                 or self.additional_internal_volume_m3 < 0
+                 or self.pitch_m <= self.inner_diameter_m + 2*self.wall_thickness_m):
+             raise ValueError('Expected positive geometry, nonoverlapping tubes and nonnegative additional volume.')
++        # Candidate-owned derived geometry; dataclass serialization stays input-only.
++        dimensions = self._calculate_dimensions()
++        object.__setattr__(self, '_prepared_dimensions', tuple(dimensions.items()))
++        object.__setattr__(self, '_tube_flow_area_m2', dimensions['tube_flow_area_m2'])
++        object.__setattr__(self, '_tube_internal_area_m2', dimensions['tube_internal_area_m2'])
++
++    @property
++    def tube_flow_area_m2(self):
++        return self._tube_flow_area_m2
++
++    @property
++    def tube_internal_area_m2(self):
++        return self._tube_internal_area_m2
+ 
+     def dimensions(self) -> dict:
++        """Return an independent reporting dictionary of prepared geometry."""
++        return dict(self._prepared_dimensions)
++
++    def _calculate_dimensions(self) -> dict:
+         """Square-pitch rectangular packing with two full-face gas plenums.
+ 
+         Dimensions describe internal fluid spaces, not pressure-vessel walls.
+diff --git a/src/dada_solver/exchangers/wall_cycle.py b/src/dada_solver/exchangers/wall_cycle.py
+index 6be5a4e..134b285 100644
+--- a/src/dada_solver/exchangers/wall_cycle.py
++++ b/src/dada_solver/exchangers/wall_cycle.py
+@@ -1,8 +1,9 @@
+ """Reusable periodic evaluation for the existing ten-state air-wall motor."""
+ from __future__ import annotations
+ 
+-from dataclasses import dataclass
++from dataclasses import asdict, dataclass
+ import math
++import time
+ from types import SimpleNamespace
+ import numpy as np
+ 
+@@ -46,6 +47,7 @@ class WallCycleResult:
+     angles: np.ndarray | None
+     trajectory: np.ndarray | None
+     last_complete_state: np.ndarray | None
++    solver_statistics: tuple[dict, ...] = ()
+ 
+     @property
+     def converged(self):
+@@ -53,37 +55,129 @@ class WallCycleResult:
+ 
+ 
+ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
+-        progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None) -> WallCycleResult:
+-    """Repeat unmodified complete cycles using the screening convergence rule."""
+-    from dada_solver.exchangers.wall_iteration import extrapolate_wall_energies
++        progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
++        statistics_callback=None, measure_rhs_time=False,
++        adaptive_acceleration=None) -> WallCycleResult:
++    """Repeat complete physical cycles at the original periodic tolerances.
++
++    Optional adaptive wall guesses replace the fixed ten-cycle schedule. Failed
++    trials consume the attempt budget and are reported, then roll back to the
++    retained physical endpoint. Only retained cycles notify cycle_callback.
++    Campaign defaults and their serialized numerical settings remain unchanged.
++    """
++    from dada_solver.exchangers.wall_iteration import (
++        extrapolate_wall_energies, adaptive_wall_proposal, AdaptiveWallAccelerationSettings)
++    if adaptive_acceleration is not None and not isinstance(adaptive_acceleration, AdaptiveWallAccelerationSettings):
++        raise TypeError('Expected AdaptiveWallAccelerationSettings or None.')
+     state = np.asarray(initial_state, dtype=float)
+     history, wall_history = [], []
++    statistics = []
+     last_angles = last_trajectory = None
++    pending = None
++    recovery_remaining = 0
++    capacities = (np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
++                  if adaptive_acceleration is not None else None)
+     atol = np.asarray(settings.integration_absolute_tolerances)
+     for cycle in range(1, maximum_cycles+1):
++        def record_segment(record):
++            record = dict(record, cycle=cycle)
++            statistics.append(record)
++            if statistics_callback is not None:
++                statistics_callback(record)
++
++        def restore_anchor(reason, **details):
++            nonlocal state, pending, recovery_remaining, wall_history, last_angles, last_trajectory
++            state = pending['state'].copy()
++            last_angles, last_trajectory = pending['angles'], pending['trajectory']
++            record_segment(dict(phase='wall_acceleration_rollback', status='rejected',
++                reason=reason, retained_cycle=pending['cycle'],
++                retained_normalized_error=pending['error'], **details))
++            pending = None
++            wall_history = []
++            recovery_remaining = adaptive_acceleration.recovery_cycles
++
+         try:
+             angles, trajectory = wrapper.integrate_cycle(state,
+                 integration_method=settings.integration_method,
+                 rtol=settings.integration_relative_tolerance, atol=atol,
+                 maximum_step_angle=settings.maximum_step_angle_radians,
+                 progress_callback=progress_callback,
+-                progress_interval_seconds=settings.progress_interval_seconds)
++                progress_interval_seconds=settings.progress_interval_seconds,
++                statistics_callback=record_segment, measure_rhs_time=measure_rhs_time)
+         except IntegrationInterrupted as error:
+             return WallCycleResult('interrupted', str(error), tuple(history),
+-                last_angles, last_trajectory, state.copy() if history else None)
++                last_angles, last_trajectory,
++                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
++        except (ValueError, RuntimeError, ArithmeticError) as error:
++            if pending is None:
++                raise
++            restore_anchor('accelerated_integration_failed', exception=type(error).__name__, message=str(error))
++            continue
+         end = trajectory[:10, -1]
+-        error = float(np.max(np.abs(end-state) /
+-            (settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))))
++        normalized = np.abs(end-state) / (
++            settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))
++        error = float(np.max(normalized))
+         history.append(dict(cycle=cycle, normalized_state_error=error))
++        if adaptive_acceleration is not None:
++            history[-1].update(normalized_gas_error=float(np.max(normalized[:8])),
++                               normalized_wall_error=float(np.max(normalized[8:10])))
++        if pending is not None:
++            if 'trial_error' in pending:
++                safe = (error <= 1 or (error <= adaptive_acceleration.maximum_residual_growth*pending['error']
++                        and error < .5*pending['trial_error']))
++                if not safe:
++                    history[-1]['wall_acceleration_rolled_back'] = True
++                    restore_anchor('transient_failed_to_contract', trial_normalized_error=error)
++                    continue
++                wall_history = [pending['trial_wall']]
++            else:
++                allowed = adaptive_acceleration.maximum_residual_growth*max(pending['error'],pending['normalized_jump'])
++                if error > allowed:
++                    history[-1]['wall_acceleration_rolled_back'] = True
++                    restore_anchor('normalized_residual_growth', trial_normalized_error=error,
++                                   allowed_normalized_error=allowed)
++                    continue
++                if error > pending['error'] and error > 1:
++                    # A wall-only jump leaves the gas to adjust physically. A
++                    # plausible transient is provisional until the next cycle
++                    # demonstrably contracts; it is not a convergence result.
++                    history[-1]['wall_acceleration_pending_validation'] = True
++                    pending['trial_error'] = error
++                    pending['trial_wall'] = end[8:10].copy()
++                    state = end.copy()
++                    continue
++                wall_history = []
++            history[-1]['wall_acceleration_accepted'] = True
++            pending = None
+         last_angles, last_trajectory = angles, trajectory
+         state = end
+         if cycle_callback is not None:
+             cycle_callback(cycle, end.copy(), error, history[-1])
+         if error <= 1:
+             return WallCycleResult('converged', 'Periodic steady state converged.',
+-                tuple(history), angles, trajectory, end.copy())
++                tuple(history), angles, trajectory, end.copy(), tuple(statistics))
+         wall_history.append(end[8:10].copy())
+-        if settings.accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
++        if adaptive_acceleration is not None:
++            wall_history = wall_history[-4:]
++            recovery_remaining = max(0, recovery_remaining-1)
++            if len(wall_history)==4 and recovery_remaining==0 and cycle < maximum_cycles:
++                decision_started = time.perf_counter()
++                proposal = adaptive_wall_proposal(wall_history, capacities, settings=adaptive_acceleration)
++                record_segment(dict(phase='wall_acceleration_decision',
++                    status='proposed' if proposal is not None else 'skipped',
++                    elapsed_seconds=time.perf_counter()-decision_started))
++                if proposal is not None:
++                    pending = dict(state=end.copy(), error=error, cycle=cycle,
++                        angles=angles, trajectory=trajectory)
++                    state = end.copy()
++                    state[8:10] = proposal.wall_energies
++                    pending['normalized_jump'] = float(np.max(np.abs(state[8:10]-end[8:10]) / (
++                        settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*
++                        np.maximum(np.abs(state[8:10]),np.abs(end[8:10])))))
++                    history[-1]['wall_initial_guess_extrapolated'] = True
++                    history[-1]['adaptive_wall_proposal'] = asdict(proposal)
++                    wall_history = []
++        elif settings.accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
+             proposed = extrapolate_wall_energies(*wall_history[-3:], np.array([
+                 wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]))
+             if proposed is not None:
+@@ -92,7 +186,8 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
+             wall_history = []
+     return WallCycleResult('maximum_cycles',
+         'Maximum cycle count reached before periodic convergence.', tuple(history),
+-        last_angles, last_trajectory, state.copy())
++        last_angles, last_trajectory,
++        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
+ 
+ 
+ class WallDiagnosticCycle:
+diff --git a/src/dada_solver/exchangers/wall_iteration.py b/src/dada_solver/exchangers/wall_iteration.py
+index 271622d..db52811 100644
+--- a/src/dada_solver/exchangers/wall_iteration.py
++++ b/src/dada_solver/exchangers/wall_iteration.py
+@@ -1,4 +1,6 @@
+ """Optional wall-only initial-guess acceleration for periodic fixed points."""
++from dataclasses import dataclass
++import math
+ import numpy as np
+ 
+ 
+@@ -23,3 +25,88 @@ def extrapolate_wall_energies(first, second, third, capacities):
+     if not np.any(safe) or np.any(proposal<=0):
+         return None
+     return proposal
++
++
++@dataclass(frozen=True)
++class AdaptiveWallAccelerationSettings:
++    """Opt-in numerical heuristics; never physical changes or looser tolerances.
++
++    Four retained endpoints supply three increments and two contraction ratios.
++    Fixed-cycle acceleration remains the default when this option is absent.
++    """
++    damping: float = 0.9
++    maximum_contraction_ratio: float = 0.98
++    relative_ratio_drift_limit: float = 0.5
++    maximum_correction_kelvin: float = 30.0
++    maximum_recent_step_multiple: float = 20.0
++    minimum_increment_kelvin: float = 1e-7
++    maximum_residual_growth: float = 2.0
++    recovery_cycles: int = 4
++
++    def __post_init__(self):
++        values = (self.damping, self.maximum_contraction_ratio,
++            self.relative_ratio_drift_limit, self.maximum_correction_kelvin,
++            self.maximum_recent_step_multiple, self.minimum_increment_kelvin,
++            self.maximum_residual_growth)
++        if any(not math.isfinite(v) or v <= 0 for v in values):
++            raise ValueError('Adaptive wall controls must be finite and positive.')
++        if self.damping > 1 or self.maximum_contraction_ratio >= 1:
++            raise ValueError('Damping must not exceed one and contraction must be below one.')
++        if self.relative_ratio_drift_limit > 1 or self.maximum_residual_growth < 1:
++            raise ValueError('Ratio drift must not exceed one and residual growth must be at least one.')
++        if type(self.recovery_cycles) is not int or self.recovery_cycles < 4:
++            raise ValueError('Recovery requires at least four ordinary physical cycles.')
++
++
++@dataclass(frozen=True)
++class AdaptiveWallProposal:
++    wall_energies: tuple[float, float]
++    correction_kelvin: tuple[float, float]
++    previous_contraction_ratio: tuple[float, float]
++    latest_contraction_ratio: tuple[float, float]
++    confidence: tuple[float, float]
++    eligible: tuple[bool, bool]
++
++
++def adaptive_wall_proposal(endpoints, capacities, *,
++        settings=AdaptiveWallAccelerationSettings()):
++    """Damped Aitken proposal sensitive to changing contraction and recent speed.
++
++    A trend drifting by a large fraction of its remaining contraction margin
++    is rejected. Nearly constant, oscillating, growing or negligible increments
++    are not extrapolated. Every jump is bounded by recent motion AND 30 K by
++    default. The caller must validate the proposal with an ordinary ODE cycle.
++    """
++    energies=np.asarray(endpoints,dtype=float); capacities=np.asarray(capacities,dtype=float)
++    if energies.shape!=(4,2) or capacities.shape!=(2,):
++        raise ValueError('Expected four two-wall endpoints and two capacities.')
++    if (not np.all(np.isfinite(energies)) or not np.all(np.isfinite(capacities))
++            or np.any(energies<=0) or np.any(capacities<=0)):
++        raise ValueError('Wall energies and capacities must be finite and positive.')
++    temperatures=energies/capacities
++    increments=np.diff(temperatures,axis=0)
++    first,previous,latest=increments
++    significant=np.all(np.abs(increments)>settings.minimum_increment_kelvin,axis=0)
++    r0=np.divide(previous,first,out=np.zeros(2),where=first!=0)
++    r1=np.divide(latest,previous,out=np.zeros(2),where=previous!=0)
++    eligible=(significant & (r0>0) & (r1>0)
++        & (r0<settings.maximum_contraction_ratio) & (r1<settings.maximum_contraction_ratio))
++    margin=settings.relative_ratio_drift_limit*np.maximum(1-r1,np.finfo(float).eps)
++    confidence=np.clip(1-np.abs(r1-r0)/margin,0,1)
++    eligible &= confidence>0
++    correction=np.divide(latest*r1,1-r1,out=np.zeros(2),where=eligible)
++    correction *= settings.damping*confidence
++    bound=np.minimum(settings.maximum_correction_kelvin,
++                     settings.maximum_recent_step_multiple*np.abs(latest))
++    correction=np.clip(correction,-bound,bound)
++    correction=np.where(eligible,correction,0.)
++    proposed=energies[-1]+correction*capacities
++    eligible &= (proposed>0) & (np.abs(correction)>settings.minimum_increment_kelvin)
++    if not np.any(eligible):
++        return None
++    correction=np.where(eligible,correction,0.)
++    proposed=energies[-1]+correction*capacities
++    return AdaptiveWallProposal(tuple(float(x) for x in proposed),
++        tuple(float(x) for x in correction),tuple(float(x) for x in r0),
++        tuple(float(x) for x in r1),tuple(float(x) for x in confidence),
++        tuple(bool(x) for x in eligible))

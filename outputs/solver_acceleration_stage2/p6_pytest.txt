@@ -1,0 +1,75 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.3.5, pluggy-1.5.0
+rootdir: /home/edada/Documents/dada-engine-solver
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.8.0, hypothesis-6.130.5, typeguard-4.4.2, sardana-3.5.1
+collected 400 items
+
+tests/test_adiabatic_cycle.py ..                                         [  0%]
+tests/test_air_wall.py .........                                         [  2%]
+tests/test_campaign.py ................................................  [ 14%]
+tests/test_compact_coupler_frame.py .                                    [ 15%]
+tests/test_compact_motion_search.py ..                                   [ 15%]
+tests/test_configuration.py ...                                          [ 16%]
+tests/test_configuration_loader.py .........                             [ 18%]
+tests/test_coupler_projection_geometry.py ..                             [ 19%]
+tests/test_domestic_refrigerator.py .......                              [ 20%]
+tests/test_doty.py ...................                                   [ 25%]
+tests/test_dynamics.py .....                                             [ 26%]
+tests/test_event_continuity.py .                                         [ 27%]
+tests/test_exchanger_configuration.py ..                                 [ 27%]
+tests/test_exchanger_coupling.py ...                                     [ 28%]
+tests/test_exchanger_duty.py ........                                    [ 30%]
+tests/test_exchanger_hardware.py .......                                 [ 32%]
+tests/test_exchanger_hydraulic_comparison.py .                           [ 32%]
+tests/test_exchanger_hydraulic_validity.py ..                            [ 32%]
+tests/test_exchanger_optimization.py ..                                  [ 33%]
+tests/test_exchangers.py .......                                         [ 35%]
+tests/test_feasibility.py ......                                         [ 36%]
+tests/test_fluids.py ...                                                 [ 37%]
+tests/test_four_bar.py ..........                                        [ 39%]
+tests/test_four_stage_kinematics.py .......                              [ 41%]
+tests/test_free_kinematics.py ..................                         [ 46%]
+tests/test_geometry.py ..                                                [ 46%]
+tests/test_heat_transfer.py ..                                           [ 47%]
+tests/test_humidity.py .....                                             [ 48%]
+tests/test_hydraulics.py ...........                                     [ 51%]
+tests/test_independent_four_stage_kinematics.py ..........               [ 53%]
+tests/test_kinematics.py ...                                             [ 54%]
+tests/test_machine_injection.py .....                                    [ 55%]
+tests/test_mechanical_optimization.py .                                  [ 55%]
+tests/test_mechanics.py ...                                              [ 56%]
+tests/test_mechanism_animation.py ..                                     [ 57%]
+tests/test_microtube_gas_model.py ............................           [ 64%]
+tests/test_microtube_geometry.py .....                                   [ 65%]
+tests/test_model_interfaces.py ........                                  [ 67%]
+tests/test_motor.py ....................                                 [ 72%]
+tests/test_pareto.py ..                                                  [ 72%]
+tests/test_performance.py .                                              [ 73%]
+tests/test_periodic.py ..                                                [ 73%]
+tests/test_results.py .                                                  [ 73%]
+tests/test_similarity.py ......                                          [ 75%]
+tests/test_six_bar.py ........                                           [ 77%]
+tests/test_sizing.py ................                                    [ 81%]
+tests/test_sizing_configuration.py ..                                    [ 81%]
+tests/test_sizing_optimizer.py ..                                        [ 82%]
+tests/test_slider_crank_comparison.py ....                               [ 83%]
+tests/test_small_rocker_e_search.py ....                                 [ 84%]
+tests/test_solver_acceleration.py ....................................   [ 93%]
+tests/test_state.py ...                                                  [ 94%]
+tests/test_thermal_loads.py ...                                          [ 94%]
+tests/test_topology.py ......                                            [ 96%]
+tests/test_two_sided_exchanger.py ..                                     [ 96%]
+tests/test_validity.py ..                                                [ 97%]
+tests/test_valves.py ....                                                [ 98%]
+tests/test_verification.py ..                                            [ 98%]
+tests/test_wall_iteration.py .....                                       [100%]
+
+=============================== warnings summary ===============================
+tests/test_microtube_gas_model.py: 68 warnings
+  /home/edada/Documents/dada-engine-solver/src/dada_solver/exchangers/gas_diagnostics.py:39: DeprecationWarning: `trapz` is deprecated. Use `trapezoid` instead, or one of the numerical integration functions in `scipy.integrate`.
+    integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+====================== 400 passed, 68 warnings in 35.06s =======================

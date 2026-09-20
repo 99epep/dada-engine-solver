@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.3.5, pluggy-1.5.0
+rootdir: /home/edada/Documents/dada-engine-solver
+configfile: pyproject.toml
+plugins: anyio-4.8.0, hypothesis-6.130.5, typeguard-4.4.2, sardana-3.5.1
+collected 36 items / 35 deselected / 1 selected
+
+tests/test_solver_acceleration.py F                                      [100%]
+
+=================================== FAILURES ===================================
+_________ test_interrupt_after_extrapolation_retains_physical_endpoint _________
+tests/test_solver_acceleration.py:221: in test_interrupt_after_extrapolation_retains_physical_endpoint
+    np.testing.assert_array_equal(result.last_complete_state,wrapper.endpoint)
+E   AssertionError: 
+E   Arrays are not equal
+E   
+E   Mismatched elements: 2 / 10 (20%)
+E   Max absolute difference among violations: 0.09765625
+E   Max relative difference among violations: 0.00048852
+E    ACTUAL: array([  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1., 200., 200.])
+E    DESIRED: array([  1.      ,   1.      ,   1.      ,   1.      ,   1.      ,
+E            1.      ,   1.      ,   1.      , 199.902344, 199.902344])
+=========================== short test summary info ============================
+FAILED tests/test_solver_acceleration.py::test_interrupt_after_extrapolation_retains_physical_endpoint
+======================= 1 failed, 35 deselected in 0.58s =======================

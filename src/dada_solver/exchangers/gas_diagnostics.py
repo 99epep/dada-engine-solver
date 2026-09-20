@@ -1,5 +1,4 @@
 """Time- and heat-weighted instantaneous microtube domain reports."""
-from dataclasses import asdict
 import math
 import numpy as np
 from dada_solver.state import ThermodynamicState
@@ -29,12 +28,12 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
             total_nu=sum(d.nusselt for d in diagnostics)
             for label,diagnostic,passage,pair in zip(('inlet','outlet'),diagnostics,context['passages'],ports):
                 name=f'{side}.{label}'
-                samples[name].append(asdict(diagnostic))
+                samples[name].append(diagnostic)
                 weights[name].append(abs(rates['gas_heat_w'])*diagnostic.nusselt/total_nu)
                 flow,p1,p2=passage
                 upstream=pair[0] if flow>=0 else pair[1]
-                hydraulic = asdict(film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
-                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2))
+                hydraulic = film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
+                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2)
                 hydraulics[name].append(hydraulic)
     time=np.asarray(angles)/wrapper.model.angular_speed
     integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
@@ -47,23 +46,23 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
         heat=np.asarray(weights[name]); total_heat=integrate(heat)
         ranges={}
         for key in fields:
-            values=[r[key] for r in rows if r[key] is not None]
+            values=[getattr(r,key) for r in rows if getattr(r,key) is not None]
             ranges[key]=dict(minimum=min(values),maximum=max(values)) if values else None
         domains={}
         for field in ('correlation_id','continuum_regime','slip_regime','model_validity',
                       'thermal_developing','hydrodynamic_developing','compressibility_significant'):
             domains[field]={}
-            for value in sorted(set(r[field] for r in rows),key=str):
-                indicator=np.array([r[field]==value for r in rows])
+            for value in sorted(set(getattr(r,field) for r in rows),key=str):
+                indicator=np.array([getattr(r,field)==value for r in rows])
                 domains[field][str(value)]=dict(time_fraction=integrate(indicator)/duration,
                     absolute_heat_fraction=integrate(indicator*heat)/total_heat if total_heat else None)
         for row in rows:
-            failures.update(name+':'+issue for issue in row['issues'])
+            failures.update(name+':'+issue for issue in row.issues)
         for row in hydraulics[name]:
-            failures.update(name+':hydraulic_'+issue for issue in row['issues']
+            failures.update(name+':hydraulic_'+issue for issue in row.issues
                             if issue in ('high_mach','beyond_continuum_model','reynolds_outside_correlation_domain'))
-        hydraulic_ranges={key:dict(minimum=min(r[key] for r in hydraulics[name]),
-                                   maximum=max(r[key] for r in hydraulics[name]))
+        hydraulic_ranges={key:dict(minimum=min(getattr(r,key) for r in hydraulics[name]),
+                                   maximum=max(getattr(r,key) for r in hydraulics[name]))
                           for key in ('reynolds','mach','knudsen','pressure_ratio')}
         result[name]=dict(ranges=ranges,domains=domains,hydraulic_upstream_ranges=hydraulic_ranges,
                          absolute_gas_heat_J=total_heat)

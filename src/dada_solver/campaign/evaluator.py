@@ -24,9 +24,25 @@ class EvaluationControl:
     deadline: float | None = None
     clock: object = time.monotonic
     previous_records: tuple = ()
+    statistics_callback: object = None
     def check(self, _progress=None):
         if self.deadline is not None and self.clock() >= self.deadline:
             raise IntegrationInterrupted('Campaign wall-clock deadline reached.')
+
+    def measure(self, phase, function, *args, **kwargs):
+        """Optional side-channel timings; persisted campaign records stay unchanged."""
+        if self.statistics_callback is None:
+            return function(*args, **kwargs)
+        before = time.perf_counter()
+        status = 'completed'
+        try:
+            return function(*args, **kwargs)
+        except Exception:
+            status = 'failed'
+            raise
+        finally:
+            self.statistics_callback(dict(phase=phase, status=status,
+                elapsed_seconds=time.perf_counter()-before))
 
 
 def json_values(value):
@@ -104,12 +120,21 @@ class MachineEvaluator:
                 for c in self.definition.constraints]
 
     def evaluate_with_control(self, candidate, control):
+        result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
+        if control.statistics_callback is not None:
+            control.statistics_callback(dict(phase='candidate_result', status=result['status'],
+                warm_start_source=result.get('warm_start_source'),
+                warm_start_normalized_distance=result.get('warm_start_normalized_distance'),
+                periodic_cycle_count=result['periodic_cycle_count']))
+        return result
+
+    def _evaluate_with_control(self, candidate, control):
         try:
             physical = dict(self.definition.fixed_parameters)
             physical.update(candidate.payload['physical'])
-            design = self.definition.adapter.build(physical)
+            design = control.measure('parameter_preflight', self.definition.adapter.build, physical)
         except PreflightRejection as error: return rejected(error.status, str(error), error.diagnostics)
-        try: built = design.build()
+        try: built = control.measure('build', design.build)
         except KinematicConstraintViolation as error:
             return rejected('invalid_kinematics', str(error), [asdict(d) for d in error.diagnostics])
         except (ValueError, ArithmeticError) as error: return rejected('invalid_exchanger', str(error))
@@ -183,10 +208,12 @@ class MachineEvaluator:
             new_caps = np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
         try:
-            periodic = solve_periodic_wall_motor(wrapper, state,
+            periodic = control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, state,
                 maximum_cycles=design.configuration.numerical.maximum_cycles,
                 progress_callback=control.check,
-                settings=self.definition.wall_numerical_settings)
+                settings=self.definition.wall_numerical_settings,
+                adaptive_acceleration=getattr(self.definition, "adaptive_wall_acceleration", None),
+                statistics_callback=control.statistics_callback)
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
@@ -209,12 +236,12 @@ class MachineEvaluator:
         def wall_heat_rates(index, _angle, gas_state):
             incoming, outgoing = wrapper.thermal_rates(_angle, periodic.trajectory[:,index])
             return incoming['gas_heat_w'], outgoing['gas_heat_w']
-        diagnostics = (extract_cycle_diagnostics(cycle, wrapper.model,
+        diagnostics = (control.measure('generic_diagnostics', extract_cycle_diagnostics, cycle, wrapper.model,
             heat_rate_provider=wall_heat_rates) if periodic.converged else None)
-        validity = assess_cycle_validity(cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
-        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory)
+        validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
         from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-        gas_domains = cycle_microtube_diagnostics(wrapper, periodic.angles, periodic.trajectory)
+        gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory)
+        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains)
         if validity is not None:
             validity = finalize_microtube_validity(validity, max_re, max_mach,
                 design.configuration.validity.maximum_mach_number,
@@ -233,10 +260,12 @@ class MachineEvaluator:
         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
 
-    def _tube_validity(self, wrapper, angles, trajectory):
+    def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None):
         if any(getattr(w,'requires_flow_context',False) for w in (wrapper.heat_in,wrapper.heat_out)):
             from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-            domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)['passages'].values()
+            if gas_domains is None:
+                gas_domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)
+            domains = gas_domains['passages'].values()
             return (max(x['hydraulic_upstream_ranges']['reynolds']['maximum'] for x in domains),
                     max(x['hydraulic_upstream_ranges']['mach']['maximum'] for x in domains))
         max_re = max_mach = 0.; gas = wrapper.model.gas

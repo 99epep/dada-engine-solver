@@ -62,6 +62,8 @@ class TubeHalfLink:
             raise ValueError('Header loss coefficient must be nonnegative.')
         if self.valve_cda_m2 is not None and (not math.isfinite(self.valve_cda_m2) or self.valve_cda_m2 <= 0):
             raise ValueError('Valve CdA must be positive when supplied.')
+        area = self.bank.tube_flow_area_m2
+        object.__setattr__(self, '_flow_cap', CompressibleOrifice(min(area, self.valve_cda_m2 or area)))
 
     def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas):
         if any(not math.isfinite(v) or v <= 0 for v in (upstream_pressure, downstream_pressure, upstream_temperature)):
@@ -71,7 +73,7 @@ class TubeHalfLink:
         if self.gas_model is not None:
             return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas)
         rho = (upstream_pressure+downstream_pressure)/(2*gas.gas_constant*upstream_temperature)
-        area = self.bank.dimensions()['tube_flow_area_m2']
+        area = self.bank.tube_flow_area_m2
         linear = self.core_loss_multiplier*64*self.viscosity_pa_s*self.bank.tube_length_m/(rho*self.bank.tube_count*math.pi*self.bank.inner_diameter_m**4)
         # Header K refers explicitly to total tube-passage velocity.
         quadratic = self.header_loss_coefficient/(4*rho*area**2)
@@ -79,7 +81,7 @@ class TubeHalfLink:
             quadratic += 1/(2*rho*self.valve_cda_m2**2)
         dp = upstream_pressure-downstream_pressure
         flow = 2*dp/(linear+math.sqrt(linear*linear+4*quadratic*dp))
-        cap = CompressibleOrifice(min(area, self.valve_cda_m2 or area)).directed_flow(
+        cap = self._flow_cap.directed_flow(
             upstream_pressure, downstream_pressure, upstream_temperature, gas)
         return FlowResult(min(flow, cap.mass_flow_rate), flow >= cap.mass_flow_rate and cap.is_choked)
 
@@ -96,7 +98,7 @@ class TubeHalfLink:
         mu = tr.viscosity(temperature)
         length = self.bank.tube_length_m/2
         diameter = self.bank.inner_diameter_m
-        area = self.bank.tube_count*math.pi*diameter**2/4
+        area = self.bank.tube_flow_area_m2
         rho = (pin+pout)/(2*gas.gas_constant*temperature)
         factor = self.gas_model.slip_factor(pin,pout,temperature,diameter)
         nominal = compressible_poiseuille(pin,pout,temperature,mu,length,diameter,
@@ -129,7 +131,7 @@ class TubeHalfLink:
         if re>=4000:
             failures += [x for x in diagnostics.issues if x in ('large_relative_pressure_drop','thermal_slip_not_implemented')]
         if failures and self.gas_model.domain_policy=='reject': raise MicrotubeDomainError('; '.join(failures))
-        cap = CompressibleOrifice(min(area,self.valve_cda_m2 or area)).directed_flow(pin,pout,temperature,gas)
+        cap = self._flow_cap.directed_flow(pin,pout,temperature,gas)
         return FlowResult(min(flow,cap.mass_flow_rate),flow>=cap.mass_flow_rate and cap.is_choked)
 
     def bidirectional_flow(self, first_pressure, second_pressure, first_temperature, second_temperature, gas):

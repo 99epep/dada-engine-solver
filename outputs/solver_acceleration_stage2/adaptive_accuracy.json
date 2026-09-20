@@ -1,0 +1,66 @@
+{
+  "accuracy_manifest": "outputs/solver_acceleration_stage2/manifest.json",
+  "comparison_rtol": 1e-06,
+  "comparison_atol": 1e-12,
+  "cases": {
+    "production_cold": {
+      "runs": {
+        "fixed": {
+          "elapsed_seconds": 107.6588244040031,
+          "cycles_completed": 33,
+          "final_normalized_residual": 0.6743379924312324,
+          "indicated_power_w": 52.402611592351114,
+          "indicated_thermal_efficiency": 0.2207134928934839,
+          "proposal_computation_seconds": 0
+        },
+        "adaptive": {
+          "elapsed_seconds": 115.45727743199677,
+          "cycles_completed": 35,
+          "final_normalized_residual": 0.8117236831859287,
+          "indicated_power_w": 52.40263337684263,
+          "indicated_thermal_efficiency": 0.22071319330159642,
+          "proposal_computation_seconds": 0.005924254001001827
+        }
+      },
+      "comparison_scaled_state_distance": 0.1415515573888445,
+      "relative_output_differences": {
+        "indicated_power_w": 4.15713851917161e-07,
+        "indicated_thermal_efficiency": 1.35737912333799e-06,
+        "total_mass_kg": 1.3233407545906028e-14
+      },
+      "validity_classifications_equal": true,
+      "state_within_comparison_scale": true,
+      "power_and_efficiency_within_relative_comparison_scale": false
+    },
+    "smooth_four_bar": {
+      "runs": {
+        "fixed": {
+          "elapsed_seconds": 128.4487849020079,
+          "cycles_completed": 52,
+          "final_normalized_residual": 0.5772210023397853,
+          "indicated_power_w": 47.1923150108088,
+          "indicated_thermal_efficiency": 0.1793259761034284,
+          "proposal_computation_seconds": 0
+        },
+        "adaptive": {
+          "elapsed_seconds": 100.31076056801248,
+          "cycles_completed": 35,
+          "final_normalized_residual": 0.3996999573929197,
+          "indicated_power_w": 47.19232687021729,
+          "indicated_thermal_efficiency": 0.1793260919077748,
+          "proposal_computation_seconds": 0.005592116984189488
+        }
+      },
+      "comparison_scaled_state_distance": 0.030054860798725744,
+      "relative_output_differences": {
+        "indicated_power_w": 2.5129957054499954e-07,
+        "indicated_thermal_efficiency": 6.45775636672031e-07,
+        "total_mass_kg": 2.1713264726347477e-14
+      },
+      "validity_classifications_equal": true,
+      "state_within_comparison_scale": true,
+      "power_and_efficiency_within_relative_comparison_scale": true
+    }
+  },
+  "limitation": "One timing per case; state periodic tolerances are not output-error guarantees."
+}

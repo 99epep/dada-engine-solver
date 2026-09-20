@@ -1,0 +1,445 @@
+diff --git a/examples/compare_motor_motion_laws_stage7A5.py b/examples/compare_motor_motion_laws_stage7A5.py
+index 88812ba..10b3580 100644
+--- a/examples/compare_motor_motion_laws_stage7A5.py
++++ b/examples/compare_motor_motion_laws_stage7A5.py
+@@ -135,11 +135,11 @@ def _evaluate(
+         design.configuration.validity,
+     )
+     helper = MachineEvaluator(definition)
+-    maximum_reynolds, maximum_mach = helper._tube_validity(
+-        wrapper, angles, trajectory
+-    )
+     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+     gas_domains = cycle_microtube_diagnostics(wrapper, angles, trajectory)
++    maximum_reynolds, maximum_mach = helper._tube_validity(
++        wrapper, angles, trajectory, gas_domains=gas_domains
++    )
+     validity = finalize_microtube_validity(
+         validity,
+         maximum_reynolds,
+diff --git a/src/dada_solver/campaign/evaluator.py b/src/dada_solver/campaign/evaluator.py
+index 58720e1..257a587 100644
+--- a/src/dada_solver/campaign/evaluator.py
++++ b/src/dada_solver/campaign/evaluator.py
+@@ -212,9 +212,9 @@ class MachineEvaluator:
+         diagnostics = (extract_cycle_diagnostics(cycle, wrapper.model,
+             heat_rate_provider=wall_heat_rates) if periodic.converged else None)
+         validity = assess_cycle_validity(cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
+-        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory)
+         from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+         gas_domains = cycle_microtube_diagnostics(wrapper, periodic.angles, periodic.trajectory)
++        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains)
+         if validity is not None:
+             validity = finalize_microtube_validity(validity, max_re, max_mach,
+                 design.configuration.validity.maximum_mach_number,
+@@ -233,10 +233,12 @@ class MachineEvaluator:
+         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
+             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
+ 
+-    def _tube_validity(self, wrapper, angles, trajectory):
++    def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None):
+         if any(getattr(w,'requires_flow_context',False) for w in (wrapper.heat_in,wrapper.heat_out)):
+             from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+-            domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)['passages'].values()
++            if gas_domains is None:
++                gas_domains = cycle_microtube_diagnostics(wrapper,angles,trajectory)
++            domains = gas_domains['passages'].values()
+             return (max(x['hydraulic_upstream_ranges']['reynolds']['maximum'] for x in domains),
+                     max(x['hydraulic_upstream_ranges']['mach']['maximum'] for x in domains))
+         max_re = max_mach = 0.; gas = wrapper.model.gas
+diff --git a/src/dada_solver/dynamics.py b/src/dada_solver/dynamics.py
+index 3d35500..b5d6b0e 100644
+--- a/src/dada_solver/dynamics.py
++++ b/src/dada_solver/dynamics.py
+@@ -39,6 +39,23 @@ class NetworkFlows:
+     cold_to_large_choked: bool
+ 
+ 
++@dataclass(frozen=True, slots=True)
++class InstantaneousPoint:
++    """Exact evaluation-local geometry, primitives and signed hydraulic flows.
++
++    Prepared for one trial state only; never cached by angle or across states.
++    The primitive arrays are read-only and ordered S, L, C, H.
++    """
++
++    theta: float
++    volumes: InstantaneousVolumes
++    volume_rates: tuple[float, float]
++    temperatures: NDArray[np.float64]
++    pressures: NDArray[np.float64]
++    topology: ValveTopology
++    flows: NetworkFlows
++
++
+ @dataclass(frozen=True, slots=True)
+ class ModelRates:
+     """State derivative and diagnostic rates at one instant."""
+@@ -106,7 +123,21 @@ class ThermodynamicModel:
+         state: ThermodynamicState,
+         topology: ValveTopology,
+     ) -> ModelRates:
+-        """Evaluate conservative rates without imposing a nominal phase sequence."""
++        """Compatibility facade over the authoritative point and balances."""
++        point = self.instantaneous_point(theta, state, topology)
++        return self.assemble_rates(
++            point,
++            self.cold_heat_transfer.heat_rate(point.temperatures[2]),
++            self.hot_heat_transfer.heat_rate(point.temperatures[3]),
++        )
++
++    def instantaneous_point(
++        self,
++        theta: float,
++        state: ThermodynamicState,
++        topology: ValveTopology,
++    ) -> InstantaneousPoint:
++        """Solve geometry and hydraulics once, before wall heat rates are known."""
+ 
+         combined_provider = getattr(
+             self.kinematics, "cylinder_volumes_and_derivatives", None
+@@ -132,7 +163,7 @@ class ThermodynamicModel:
+         small_cold = self.small_cold_link.bidirectional_flow(
+             pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas
+         )
+-        effective_topology = self.effective_topology(theta, state, topology)
++        effective_topology = self._topology_from_pressures(pressures, topology)
+         hot_small = self.hot_small_valve.flow(
+             effective_topology.hot_to_small,
+             pressures[3],
+@@ -148,6 +179,33 @@ class ThermodynamicModel:
+             self.gas,
+         )
+ 
++        temperatures.flags.writeable = False
++        pressures.flags.writeable = False
++        return InstantaneousPoint(
++            theta, volumes, (volume_rate_small, volume_rate_large),
++            temperatures, pressures, effective_topology,
++            NetworkFlows(
++                large_hot.mass_flow_rate, small_cold.mass_flow_rate,
++                hot_small.mass_flow_rate, cold_large.mass_flow_rate,
++                large_hot.is_choked, small_cold.is_choked,
++                hot_small.is_choked, cold_large.is_choked,
++            ),
++        )
++
++    def assemble_rates(
++        self,
++        point: InstantaneousPoint,
++        cold_heat_rate: float,
++        hot_heat_rate: float,
++    ) -> ModelRates:
++        """Assemble the sole conservative balances with actual gas heat rates."""
++        temperatures, pressures = point.temperatures, point.pressures
++        volume_rate_small, volume_rate_large = point.volume_rates
++        flows = point.flows
++        large_hot = FlowResult(flows.large_to_hot, flows.large_to_hot_choked)
++        small_cold = FlowResult(flows.small_to_cold, flows.small_to_cold_choked)
++        hot_small = FlowResult(flows.hot_to_small, flows.hot_to_small_choked)
++        cold_large = FlowResult(flows.cold_to_large, flows.cold_to_large_choked)
+         mass_rates = np.zeros(4, dtype=float)
+         energy_rates = np.zeros(4, dtype=float)
+         self._apply_bidirectional_link(
+@@ -163,8 +221,6 @@ class ThermodynamicModel:
+             mass_rates, energy_rates, 2, 1, cold_large, temperatures[2]
+         )
+ 
+-        cold_heat_rate = self.cold_heat_transfer.heat_rate(temperatures[2])
+-        hot_heat_rate = self.hot_heat_transfer.heat_rate(temperatures[3])
+         energy_rates[2] += cold_heat_rate
+         energy_rates[3] += hot_heat_rate
+ 
+@@ -187,16 +243,7 @@ class ThermodynamicModel:
+ 
+         return ModelRates(
+             state_derivative=derivative,
+-            flows=NetworkFlows(
+-                large_to_hot=large_hot.mass_flow_rate,
+-                small_to_cold=small_cold.mass_flow_rate,
+-                hot_to_small=hot_small.mass_flow_rate,
+-                cold_to_large=cold_large.mass_flow_rate,
+-                large_to_hot_choked=large_hot.is_choked,
+-                small_to_cold_choked=small_cold.is_choked,
+-                hot_to_small_choked=hot_small.is_choked,
+-                cold_to_large_choked=cold_large.is_choked,
+-            ),
++            flows=flows,
+             cold_heat_rate=cold_heat_rate,
+             hot_heat_rate=hot_heat_rate,
+             gas_work_rate=gas_work_rate,
+@@ -215,6 +262,13 @@ class ThermodynamicModel:
+         if not self.continuous_ideal_diodes:
+             return stored_topology
+         pressures = state.pressures(self.gas, self.volumes(theta))
++        return self._topology_from_pressures(pressures, stored_topology)
++
++    def _topology_from_pressures(
++        self, pressures: NDArray[np.float64], stored_topology: ValveTopology,
++    ) -> ValveTopology:
++        if not self.continuous_ideal_diodes:
++            return stored_topology
+         return ValveTopology(
+             ValveState.OPEN if pressures[3] > pressures[0] else ValveState.CLOSED,
+             ValveState.OPEN if pressures[2] > pressures[1] else ValveState.CLOSED,
+diff --git a/src/dada_solver/exchangers/air_wall.py b/src/dada_solver/exchangers/air_wall.py
+index 1a194d4..5b513b7 100644
+--- a/src/dada_solver/exchangers/air_wall.py
++++ b/src/dada_solver/exchangers/air_wall.py
+@@ -3,7 +3,7 @@
+ The air passage is quasi-steady against a uniform wall. Wall conductances and
+ capacity are explicit inputs; Doty's overall UA does not identify their split.
+ """
+-from dataclasses import dataclass, replace
++from dataclasses import dataclass
+ import math
+ import time
+ 
+@@ -11,7 +11,6 @@ import numpy as np
+ from scipy.integrate import solve_ivp
+ 
+ from dada_solver.dynamics import ThermodynamicModel
+-from dada_solver.heat_transfer import PrescribedHeatRate
+ from dada_solver.exchangers.base import LumpedWallThermalModel
+ from dada_solver.state import ThermodynamicState
+ from dada_solver.dynamics import ValveTopology
+@@ -36,6 +35,11 @@ class AirWallExchanger:
+         for value in (self.gas_wall_conductance_w_k, self.air_wall_conductance_w_k, self.air_mass_flow_kg_s):
+             if not math.isfinite(value) or value < 0:
+                 raise ValueError('Conductances and air flow must be finite and nonnegative.')
++        capacity_rate = self.air_mass_flow_kg_s*self.air_cp_j_kg_k
++        effective = (capacity_rate * -math.expm1(-self.air_wall_conductance_w_k/capacity_rate)
++                     if capacity_rate > 0 else 0.0)
++        object.__setattr__(self, '_air_capacity_rate', capacity_rate)
++        object.__setattr__(self, '_effective_air_conductance', effective)
+ 
+     @property
+     def requires_flow_context(self):
+@@ -45,9 +49,8 @@ class AirWallExchanger:
+         wall_temperature = wall_energy_j / self.wall_capacity_j_k
+         if any(not math.isfinite(v) or v <= 0 for v in (wall_temperature, gas_temperature_k)):
+             raise ValueError('Gas and wall temperatures must be positive.')
+-        capacity_rate = self.air_mass_flow_kg_s*self.air_cp_j_kg_k
+-        effective = (capacity_rate * -math.expm1(-self.air_wall_conductance_w_k/capacity_rate)
+-                     if capacity_rate > 0 else 0.0)
++        capacity_rate = self._air_capacity_rate
++        effective = self._effective_air_conductance
+         air_heat = effective*(self.air_inlet_temperature_k-wall_temperature)
+         conductance = self.gas_wall_conductance_w_k
+         if self.gas_film is not None:
+@@ -78,12 +81,10 @@ class AirWallMotor:
+ 
+     def derivative(self, angle, values):
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        incoming, outgoing = self.thermal_rates(angle, values)
+-        # Reuse all existing conservative transport and passive-valve equations.
+-        instantaneous = replace(self.model,
+-            cold_heat_transfer=PrescribedHeatRate(incoming['gas_heat_w']),
+-            hot_heat_transfer=PrescribedHeatRate(outgoing['gas_heat_w']))
+-        rates = instantaneous.evaluate(angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        point = self.model.instantaneous_point(
++            angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        incoming, outgoing = self._thermal_rates_from_point(point, values)
++        rates = self.model.assemble_rates(point, incoming['gas_heat_w'], outgoing['gas_heat_w'])
+         return np.r_[rates.state_derivative,
+                      incoming['wall_energy_rate_w'], outgoing['wall_energy_rate_w'],
+                      incoming['air_heat_w'], outgoing['air_heat_w'],
+@@ -92,8 +93,12 @@ class AirWallMotor:
+     def flow_contexts(self, angle, values):
+         """Geometry-independent pressure/flow state for contextual wall closures."""
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        pressures = gas.pressures(self.model.gas,self.model.volumes(angle))
+-        flows = self.model.evaluate(angle,gas,ValveTopology(ValveState.CLOSED,ValveState.CLOSED)).flows
++        point = self.model.instantaneous_point(
++            angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++        return self._flow_contexts_from_point(point)
++
++    def _flow_contexts_from_point(self, point):
++        pressures, flows = point.pressures, point.flows
+         frequency = self.model.angular_speed/(2*math.pi)
+         contexts = (
+             dict(frequency_hz=frequency,passages=((flows.small_to_cold,pressures[0],pressures[2]),
+@@ -111,9 +116,19 @@ class AirWallMotor:
+     def thermal_rates(self, angle, values):
+         """Single diagnostic/integration access path; never substitutes static UA."""
+         gas = ThermodynamicState.from_array(np.asarray(values[:8]))
+-        temperatures = gas.temperatures(self.model.gas)
+         contextual = any(getattr(x,'requires_flow_context',False) for x in (self.heat_in,self.heat_out))
+-        contexts = self.flow_contexts(angle,values) if contextual else (None,None)
++        if contextual:
++            point = self.model.instantaneous_point(
++                angle, gas, ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
++            return self._thermal_rates_from_point(point, values)
++        return self._thermal_rates(gas.temperatures(self.model.gas), values, (None, None))
++
++    def _thermal_rates_from_point(self, point, values):
++        contextual = any(getattr(x,'requires_flow_context',False) for x in (self.heat_in,self.heat_out))
++        contexts = self._flow_contexts_from_point(point) if contextual else (None, None)
++        return self._thermal_rates(point.temperatures, values, contexts)
++
++    def _thermal_rates(self, temperatures, values, contexts):
+         return tuple(exchanger.rates(temperatures[index],values[index+6],context=context)
+                      if getattr(exchanger,'requires_flow_context',False)
+                      else exchanger.rates(temperatures[index],values[index+6])
+diff --git a/src/dada_solver/exchangers/gas_correlations.py b/src/dada_solver/exchangers/gas_correlations.py
+index e5f0a42..e9bc907 100644
+--- a/src/dada_solver/exchangers/gas_correlations.py
++++ b/src/dada_solver/exchangers/gas_correlations.py
+@@ -157,7 +157,7 @@ class MicrotubeGasModel:
+             raise ValueError('Invalid instantaneous state.')
+         tr=self.transport; mu=tr.viscosity(t); conductivity=tr.conductivity(t);cp=tr.cp(t)
+         r=tr.gas_constant;rho=min(p1,p2)/(r*t);pm=(p1+p2)/2
+-        area=bank.tube_count*math.pi*bank.inner_diameter_m**2/4;d=bank.inner_diameter_m
++        area=bank.tube_flow_area_m2;d=bank.inner_diameter_m
+         u=abs(flow)/(rho*area);re=abs(flow)*d/(area*mu);pr=cp*mu/conductivity
+         speed=math.sqrt(cp/(cp-r)*r*t);ma=u/speed
+         kn=tr.mean_free_path(min(p1,p2),t)/d;knm=tr.mean_free_path(pm,t)/d
+diff --git a/src/dada_solver/exchangers/gas_diagnostics.py b/src/dada_solver/exchangers/gas_diagnostics.py
+index c758d31..f8ce9ae 100644
+--- a/src/dada_solver/exchangers/gas_diagnostics.py
++++ b/src/dada_solver/exchangers/gas_diagnostics.py
+@@ -1,5 +1,4 @@
+ """Time- and heat-weighted instantaneous microtube domain reports."""
+-from dataclasses import asdict
+ import math
+ import numpy as np
+ from dada_solver.state import ThermodynamicState
+@@ -29,12 +28,12 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
+             total_nu=sum(d.nusselt for d in diagnostics)
+             for label,diagnostic,passage,pair in zip(('inlet','outlet'),diagnostics,context['passages'],ports):
+                 name=f'{side}.{label}'
+-                samples[name].append(asdict(diagnostic))
++                samples[name].append(diagnostic)
+                 weights[name].append(abs(rates['gas_heat_w'])*diagnostic.nusselt/total_nu)
+                 flow,p1,p2=passage
+                 upstream=pair[0] if flow>=0 else pair[1]
+-                hydraulic = asdict(film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
+-                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2))
++                hydraulic = film.model.diagnose(film.bank,flow,p1,p2,temperatures[upstream],
++                    frequency=context['frequency_hz'],length=film.bank.tube_length_m/2)
+                 hydraulics[name].append(hydraulic)
+     time=np.asarray(angles)/wrapper.model.angular_speed
+     integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
+@@ -47,23 +46,23 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory):
+         heat=np.asarray(weights[name]); total_heat=integrate(heat)
+         ranges={}
+         for key in fields:
+-            values=[r[key] for r in rows if r[key] is not None]
++            values=[getattr(r,key) for r in rows if getattr(r,key) is not None]
+             ranges[key]=dict(minimum=min(values),maximum=max(values)) if values else None
+         domains={}
+         for field in ('correlation_id','continuum_regime','slip_regime','model_validity',
+                       'thermal_developing','hydrodynamic_developing','compressibility_significant'):
+             domains[field]={}
+-            for value in sorted(set(r[field] for r in rows),key=str):
+-                indicator=np.array([r[field]==value for r in rows])
++            for value in sorted(set(getattr(r,field) for r in rows),key=str):
++                indicator=np.array([getattr(r,field)==value for r in rows])
+                 domains[field][str(value)]=dict(time_fraction=integrate(indicator)/duration,
+                     absolute_heat_fraction=integrate(indicator*heat)/total_heat if total_heat else None)
+         for row in rows:
+-            failures.update(name+':'+issue for issue in row['issues'])
++            failures.update(name+':'+issue for issue in row.issues)
+         for row in hydraulics[name]:
+-            failures.update(name+':hydraulic_'+issue for issue in row['issues']
++            failures.update(name+':hydraulic_'+issue for issue in row.issues
+                             if issue in ('high_mach','beyond_continuum_model','reynolds_outside_correlation_domain'))
+-        hydraulic_ranges={key:dict(minimum=min(r[key] for r in hydraulics[name]),
+-                                   maximum=max(r[key] for r in hydraulics[name]))
++        hydraulic_ranges={key:dict(minimum=min(getattr(r,key) for r in hydraulics[name]),
++                                   maximum=max(getattr(r,key) for r in hydraulics[name]))
+                           for key in ('reynolds','mach','knudsen','pressure_ratio')}
+         result[name]=dict(ranges=ranges,domains=domains,hydraulic_upstream_ranges=hydraulic_ranges,
+                          absolute_gas_heat_J=total_heat)
+diff --git a/src/dada_solver/exchangers/gas_film.py b/src/dada_solver/exchangers/gas_film.py
+index d48690b..b916063 100644
+--- a/src/dada_solver/exchangers/gas_film.py
++++ b/src/dada_solver/exchangers/gas_film.py
+@@ -20,7 +20,7 @@ class MicrotubeGasFilm:
+         """
+         conductance=0.; diagnostics=[]
+         k=self.model.transport.conductivity(temperature)
+-        area=self.bank.tube_count*math.pi*self.bank.inner_diameter_m*self.bank.tube_length_m
++        area=self.bank.tube_internal_area_m2
+         for flow,p1,p2 in context['passages']:
+             d=self.model.diagnose(self.bank,flow,p1,p2,temperature,frequency=context['frequency_hz'])
+             self.model.require(d)
+diff --git a/src/dada_solver/exchangers/hardware.py b/src/dada_solver/exchangers/hardware.py
+index 43f5f0a..6973211 100644
+--- a/src/dada_solver/exchangers/hardware.py
++++ b/src/dada_solver/exchangers/hardware.py
+@@ -62,6 +62,8 @@ class TubeHalfLink:
+             raise ValueError('Header loss coefficient must be nonnegative.')
+         if self.valve_cda_m2 is not None and (not math.isfinite(self.valve_cda_m2) or self.valve_cda_m2 <= 0):
+             raise ValueError('Valve CdA must be positive when supplied.')
++        area = self.bank.tube_flow_area_m2
++        object.__setattr__(self, '_flow_cap', CompressibleOrifice(min(area, self.valve_cda_m2 or area)))
+ 
+     def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas):
+         if any(not math.isfinite(v) or v <= 0 for v in (upstream_pressure, downstream_pressure, upstream_temperature)):
+@@ -71,7 +73,7 @@ class TubeHalfLink:
+         if self.gas_model is not None:
+             return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas)
+         rho = (upstream_pressure+downstream_pressure)/(2*gas.gas_constant*upstream_temperature)
+-        area = self.bank.dimensions()['tube_flow_area_m2']
++        area = self.bank.tube_flow_area_m2
+         linear = self.core_loss_multiplier*64*self.viscosity_pa_s*self.bank.tube_length_m/(rho*self.bank.tube_count*math.pi*self.bank.inner_diameter_m**4)
+         # Header K refers explicitly to total tube-passage velocity.
+         quadratic = self.header_loss_coefficient/(4*rho*area**2)
+@@ -79,7 +81,7 @@ class TubeHalfLink:
+             quadratic += 1/(2*rho*self.valve_cda_m2**2)
+         dp = upstream_pressure-downstream_pressure
+         flow = 2*dp/(linear+math.sqrt(linear*linear+4*quadratic*dp))
+-        cap = CompressibleOrifice(min(area, self.valve_cda_m2 or area)).directed_flow(
++        cap = self._flow_cap.directed_flow(
+             upstream_pressure, downstream_pressure, upstream_temperature, gas)
+         return FlowResult(min(flow, cap.mass_flow_rate), flow >= cap.mass_flow_rate and cap.is_choked)
+ 
+@@ -96,7 +98,7 @@ class TubeHalfLink:
+         mu = tr.viscosity(temperature)
+         length = self.bank.tube_length_m/2
+         diameter = self.bank.inner_diameter_m
+-        area = self.bank.tube_count*math.pi*diameter**2/4
++        area = self.bank.tube_flow_area_m2
+         rho = (pin+pout)/(2*gas.gas_constant*temperature)
+         factor = self.gas_model.slip_factor(pin,pout,temperature,diameter)
+         nominal = compressible_poiseuille(pin,pout,temperature,mu,length,diameter,
+@@ -129,7 +131,7 @@ class TubeHalfLink:
+         if re>=4000:
+             failures += [x for x in diagnostics.issues if x in ('large_relative_pressure_drop','thermal_slip_not_implemented')]
+         if failures and self.gas_model.domain_policy=='reject': raise MicrotubeDomainError('; '.join(failures))
+-        cap = CompressibleOrifice(min(area,self.valve_cda_m2 or area)).directed_flow(pin,pout,temperature,gas)
++        cap = self._flow_cap.directed_flow(pin,pout,temperature,gas)
+         return FlowResult(min(flow,cap.mass_flow_rate),flow>=cap.mass_flow_rate and cap.is_choked)
+ 
+     def bidirectional_flow(self, first_pressure, second_pressure, first_temperature, second_temperature, gas):
+diff --git a/src/dada_solver/exchangers/microtube_geometry.py b/src/dada_solver/exchangers/microtube_geometry.py
+index 0815ef0..36721c5 100644
+--- a/src/dada_solver/exchangers/microtube_geometry.py
++++ b/src/dada_solver/exchangers/microtube_geometry.py
+@@ -26,8 +26,25 @@ class MicrotubeBank:
+                 or self.additional_internal_volume_m3 < 0
+                 or self.pitch_m <= self.inner_diameter_m + 2*self.wall_thickness_m):
+             raise ValueError('Expected positive geometry, nonoverlapping tubes and nonnegative additional volume.')
++        # Candidate-owned derived geometry; dataclass serialization stays input-only.
++        dimensions = self._calculate_dimensions()
++        object.__setattr__(self, '_prepared_dimensions', tuple(dimensions.items()))
++        object.__setattr__(self, '_tube_flow_area_m2', dimensions['tube_flow_area_m2'])
++        object.__setattr__(self, '_tube_internal_area_m2', dimensions['tube_internal_area_m2'])
++
++    @property
++    def tube_flow_area_m2(self):
++        return self._tube_flow_area_m2
++
++    @property
++    def tube_internal_area_m2(self):
++        return self._tube_internal_area_m2
+ 
+     def dimensions(self) -> dict:
++        """Return an independent reporting dictionary of prepared geometry."""
++        return dict(self._prepared_dimensions)
++
++    def _calculate_dimensions(self) -> dict:
+         """Square-pitch rectangular packing with two full-face gas plenums.
+ 
+         Dimensions describe internal fluid spaces, not pressure-vessel walls.
