@@ -104,8 +104,9 @@ The initial shared-primitives refactor passed 81 focused tests and the existing
 455-test suite. The first production adapter added 47 checks, including all four
 species, boundary temperatures, conservation, reversal/zero flow, breakpoint
 neighbors, fallback errors, absent optional dependencies, identity and retained
-endpoints. Final counts and full benchmark gates are recorded below once the
-separate cache experiment is validated.
+endpoints. The final suite passes **506 tests** (68 existing NumPy `trapz`
+deprecation warnings). Missing-Numba behavior is checked in a fresh subprocess.
+The final control replay also verifies invalid-state precedence over interruption.
 
 The initial no-cache integration is measured before cache changes. Three Numba
 repetitions cover warm, nearby warm, cold, smooth four-bar, historical fallback,
@@ -113,6 +114,50 @@ invalid-domain and controlled-interruption cases. A fresh Python replay checks
 that extracting shared primitives preserves the historical physical results.
 The Stage-3 pointwise bound remains `1e-11 + 2e-11 * abs(reference_rhs)`; final-state
 and output comparisons retain the original Stage-3 scale and are not relaxed.
+
+The final Python replay reproduces the frozen Python reports and trajectories
+exactly. The three final compiled replays also reproduce the Stage-3 compiled
+reports and trajectories exactly. The 1,110 saved-state RHS comparisons pass;
+the largest discrepancy consumes 0.01438 of the allowed pointwise bound, with
+zero fallback on supported states. Full-run maximum relative differences from
+Python are 3.63e-7 for power, 3.04e-7 for efficiency and 1.91e-14 for mass.
+Maximum scaled final-state distance is 0.02182 (acceptance threshold 1).
+
+| Frozen workload | Cycles | Python, fresh replay (s) | Numba, three-run median (s) | Numba maximum (s) |
+|---|---:|---:|---:|---:|
+| Production warm | 1 | 6.911 | 4.361 | 10.032 |
+| Nearby compatible warm | 3 | 13.296 | 4.727 | 4.855 |
+| Production cold | 22 | 72.002 | 8.925 | 8.960 |
+| Smooth four-bar | 32 | 87.382 | 14.007 | 14.601 |
+| Historical unsupported | 1 | 1.783 | 1.805 | 1.821 |
+
+For historical before/after context, Stage-3 prototype medians were 4.554 s
+warm, 4.375 s nearby, 8.040 s cold, 13.802 s smooth and 2.036 s fallback.
+These were separate sessions, not paired timing trials; production integration
+retains comparable throughput without claiming an additional speedup.
+
+The first warm Numba run includes 5.534 s of first-call compilation. Subsequent
+cases share the compiled structure. Python numbers are single fresh replays,
+not three-run medians. Before the separate cache refactor, production Numba
+medians were 4.882, 4.766, 8.228, 14.181 and 1.835 s respectively; this variation
+is not evidence of a cache-off speed improvement or regression.
+
+Supported workloads have no RHS fallback. The historical case explicitly uses
+Python; the invalid-domain case invokes authoritative validation with the same
+exception type/message. Controlled interruption retains zero completed cycles;
+tests additionally interrupt after a retained cycle. A final control replay
+(`control_confirmation`) validates preflight/progress ordering after the last
+callback-order correction; physical computations in the timed replays are unchanged.
+
+With periodic tolerances tightened by 100, cold/smooth need 33/52 cycles, exactly
+as in the saved Python comparison. Relative power differences are 8.83e-8 and
+2.54e-7; scaled final-state distances are 0.01064 and 0.04481. These pass the
+**original** output comparison scale. ODE tolerances were not tightened, so this
+is independent supporting evidence, not certification at 1e-8 state accuracy.
+
+Artifacts: `final_python_exact.json`, `prototype_exact.json`,
+`final_compiled_pointwise.json`, `final_comparison.json`, `tight_comparison.json`
+and `final_pytest.txt` in the measurement directory.
 
 ## Separate disk-cache experiment
 
@@ -130,6 +175,23 @@ reported separately. Cache-enabled selection remains optional, including its
 path and effective cache status in reproducibility metadata. No stale binary is
 accepted merely because source size or modification time happens to match.
 
+| Process/cache condition | First supported RHS (s) | Complete first warm evaluation (s) |
+|---|---:|---:|
+| Fresh process, cache disabled | 5.534 | 10.032 |
+| Fresh process, empty disk cache | 6.183 | 13.240 |
+| Fresh process, populated disk cache | 0.378 | 5.250 |
+| Warm process, populated cache | 0.000048 | 4.805 |
+
+Each fresh condition is one independent process, not a distribution of process
+startups. The empty-cache run also spent unusually long in diagnostics; the full
+13.240 s must not be attributed entirely to cache construction. Both cache runs
+pass the physical comparison gate. A different nearby candidate needs only
+about 47–50 microseconds on its first RHS after compilation/loading; candidate
+values do not trigger specialization. Cache hit/miss counters are cumulative
+per process. Cache namespace invalidation and unwritable-cache fallback are tested.
+The cache remains **off by default**. First-call time in this refactor exceeds
+the historical prototype's approximately 2.9 s and is recorded rather than hidden.
+
 ## Residual-cost measurements and next-stage decisions
 
 Full-evaluation section timers are supplemented by bounded native-kernel and
@@ -138,11 +200,67 @@ separate from uninstrumented latency. The native loop includes allocation/native
 call overhead; subtracting its time from Python dispatch is an estimate, not an
 exact partition. Final-cycle samples do not reproduce every cold transient state.
 
-The report will separately identify candidate/model construction, Python
-kinematics, compiled dispatch, approximate native kernel cost, Python marshalling,
-LSODA/callback overhead, periodic overhead, generic and microtube diagnostics,
-validity and serialization/report materialization. No acceptance-critical validity
-check is skipped or deferred in this stage.
+The following seconds come from the second instrumented replay, after compilation.
+Indented conceptual components are presented as separate rows; native kernel and
+crossing estimates partition dispatch and must not be added again to dispatch.
+
+| Component (s) | Warm | Cold | Smooth four-bar |
+|---|---:|---:|---:|
+| Complete evaluation | 4.476 | 8.458 | 15.444 |
+| Candidate/model construction | 0.00038 | 0.00038 | 0.03212 |
+| Complete periodic solve | 0.2395 | 4.6076 | 12.8045 |
+| Kinematics inside RHS | 0.0394 | 0.7488 | 7.7933 |
+| Compiled dispatch, total | 0.0767 | 1.4571 | 2.0072 |
+| Native kernel, estimated portion | 0.0261 | 0.5407 | 0.5012 |
+| Python/compiled crossing, estimated portion | 0.0506 | 0.9164 | 1.5060 |
+| Python RHS adapter | 0.0371 | 0.7051 | 0.8903 |
+| Outer RHS/timer bookkeeping | 0.0106 | 0.2003 | 0.2678 |
+| Integrator/callback/segment-report residual | 0.0732 | 1.4538 | 1.8078 |
+| Periodic control outside segments/preflight/preparation | 0.00190 | 0.04161 | 0.03757 |
+| Generic diagnostics | 1.7816 | 1.5865 | 1.1262 |
+| Microtube diagnostics | 2.3228 | 2.1521 | 1.3617 |
+| Validity | 0.1309 | 0.1109 | 0.1188 |
+| Report materialization/other | 0.00087 | 0.00076 | 0.00076 |
+| JSON serialization, outside evaluation timer | 0.00051 | 0.00175 | 0.00131 |
+
+Preparation/preflight and all unrounded components are in `cost_summary.json`.
+The residual is **not isolated LSODA internal work**. Timers perturb the execution;
+use the uninstrumented table for end-to-end latency. Preflight and per-RHS timer boundaries overlap slightly; the residual table
+is a measured attribution aid, not an exact accounting identity.
+
+| Integration count | Warm | Cold | Smooth four-bar |
+|---|---:|---:|---:|
+| RHS calls including preflight | 7,060 | 134,565 | 153,650 |
+| nfev | 7,059 | 134,543 | 153,618 |
+| njev / nlu | 212 | 3,773 | 5,817 |
+| Accepted steps | 2,255 | 46,222 | 42,713 |
+
+**Recommendations, distinct from implemented changes:**
+
+1. Prioritize shared final-trajectory reconstruction for warm evaluations:
+   generic/microtube diagnostics and validity consume 94.6% of warm elapsed time.
+   The current paths repeatedly reconstruct hydraulics and film rates. Preserve
+   all acceptance-critical checks, samples, weights and reporting semantics.
+2. Investigate exact kinematics reuse before compilation. Four-stage kinematics
+   cost about 5.6 microseconds/call; smooth four-bar about 50.7. The latter accounts
+   for 60.9% of integration and 50.5% of full evaluation. Geometry normalization
+   is already prepared once, but adaptive-angle evaluations remain. Measure exact
+   repeated-angle reuse and cheaper scalar arithmetic before introducing an
+   optional compiled provider. Keep slider-crank, four-bar and six-bar interfaces
+   generic; solenoids are deferred. This is not authorization to duplicate all
+   mechanisms in compiled form.
+3. A bounded matched-accuracy ODE comparison is justified after those measurements,
+   especially for cold workloads. Collect nfev/njev/nlu, accepted steps and complete
+   physical outputs; no default-method change follows from the present profile.
+4. Defer Julia. Neither the 1.45 s cold nor 1.81 s smooth residual isolates a
+   removable language/integrator cost. The larger measured opportunities are
+   diagnostics and four-bar evaluation. Any later Julia trial must move the whole
+   integration loop and establish end-to-end value.
+5. Study the local mass-conserving periodic map separately before selecting a
+   shooting accelerator. Production periodic convergence and experimental adaptive
+   wall extrapolation remain unchanged.
+
+No acceptance-critical validity check is skipped or deferred in this stage.
 
 ## Reproduction
 
@@ -169,3 +287,6 @@ periodic experiment. Keep the original manifest as the comparison scale argument
 when reproducing the stated Stage-3 output/state gate. Output directories must be
 new. Cache experiments and instrumented runs are not pooled into ordinary timing
 medians. Three repeats provide observed medians/maxima, not population tail estimates.
+
+A subsequent [periodic-map and exact-kinematics reuse diagnostic](PERIODIC_MAP_DIAGNOSTIC.md)
+measures the next questions separately from this production integration.

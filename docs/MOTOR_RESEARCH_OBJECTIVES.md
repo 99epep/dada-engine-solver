@@ -36,6 +36,11 @@ thermodynamic reoptimization, six-bar synthesis, then thermodynamic evaluation
 of the actual mechanism. See [MOTION_OPTIMALITY.md](MOTION_OPTIMALITY.md) for
 that sequence and the distinction between numerical evidence and certification.
 
+The 2026-09-20 mechanism priorities are slider-crank, four-bar and six-bar.
+Solenoid actuation is deferred. Fixed geometry should be prepared and reused
+across compatible thermal evaluations; compilation is an optional numerical
+implementation choice, not a prerequisite for admitting a motion family.
+
 ## 2. Map Lambdas and cylinder volume ratio
 
 Immediately after the motion-law objective, seek design maps for `Lambda_S`,

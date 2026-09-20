@@ -168,6 +168,12 @@ are a separate experimental opt-in with mixed results at tighter accuracy;
 no compiled backend or language migration is enabled by default. The separate
 [Stage-3 Numba prototype](docs/SOLVER_ACCELERATION_STAGE3.md) measures a compiled
 wall RHS on frozen workloads, with explicit accuracy and adoption gates.
+The [Stage-4 production integration](docs/SOLVER_ACCELERATION_STAGE4.md) provides
+an optional explicit Numba backend, shared numerical physics, opt-in disk cache,
+equivalence tests and residual-cost measurements. Python remains the default.
+A separate [periodic-map diagnostic](docs/PERIODIC_MAP_DIAGNOSTIC.md) measures the
+two slow thermal modes and tests exact repeated-angle reuse without compiling
+kinematics or changing production convergence.
 
 ## Interchangeable models
 
