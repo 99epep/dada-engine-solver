@@ -1,6 +1,7 @@
 """Auditable circular-tube gas correlations, without empirical pulse multipliers."""
 from dataclasses import dataclass, field
 import math
+from dada_solver import numerical_primitives as numeric
 from .gas_transport import DiluteGasTransport, GasTransportModel
 
 
@@ -67,13 +68,13 @@ def compressible_poiseuille(p1,p2,t,mu,length,diameter,count,gas_constant):
     """Signed isothermal no-slip mass flow; N*pi*D^4*(p1^2-p2^2)/(256*mu*L*R*T)."""
     if any(not math.isfinite(x) or x<=0 for x in (p1,p2,t,mu,length,diameter,count,gas_constant)):
         raise ValueError('Positive finite tube and gas inputs required.')
-    return count*math.pi*diameter**4*(p1-p2)*(p1+p2)/(256*mu*length*gas_constant*t)
+    return numeric.poiseuille(p1,p2,t,mu,length,diameter,count,gas_constant)
 
 
 def laminar_entry_nusselt(graetz):
     """Hausen mean Nu, constant wall temperature, developed velocity profile."""
     if not math.isfinite(graetz) or graetz<0: raise ValueError('Graetz must be nonnegative.')
-    return 3.66+.0668*graetz/(1+.04*graetz**(2/3))
+    return numeric.hausen(graetz)
 
 
 def darcy_smooth(reynolds):
@@ -145,7 +146,7 @@ class MicrotubeGasModel:
     def slip_factor(self,p1,p2,t,diameter):
         mean=(p1+p2)/2
         kn=self.transport.mean_free_path(mean,t)/diameter
-        if kn<.001: return 1.
+        if not numeric.requires_slip(kn): return 1.
         if self.slip is None:
             if self.domain_policy=='reject': raise MicrotubeDomainError('Momentum slip required but gas/surface coefficients are unknown.')
             return 1.
@@ -158,27 +159,23 @@ class MicrotubeGasModel:
         tr=self.transport; mu=tr.viscosity(t); conductivity=tr.conductivity(t);cp=tr.cp(t)
         r=tr.gas_constant;rho=min(p1,p2)/(r*t);pm=(p1+p2)/2
         area=bank.tube_flow_area_m2;d=bank.inner_diameter_m
-        u=abs(flow)/(rho*area);re=abs(flow)*d/(area*mu);pr=cp*mu/conductivity
-        speed=math.sqrt(cp/(cp-r)*r*t);ma=u/speed
+        rho,u,re,pr,speed,ma,gz,ratio,compressibility=numeric.flow_numbers(
+            flow,p1,p2,t,d,length,area,r,mu,conductivity,cp)
         kn=tr.mean_free_path(min(p1,p2),t)/d;knm=tr.mean_free_path(pm,t)/d
-        gz=re*pr*d/length;ratio=max(p1,p2)/min(p1,p2);compressibility=2*(ratio-1)/(ratio+1)
-        issues=[]
-        if ma>self.maximum_mach: issues.append('high_mach')
-        if kn>=.001: issues.append('thermal_slip_not_implemented')
-        if kn>.1: issues.append('beyond_continuum_model')
-        if compressibility>self.maximum_relative_pressure_drop: issues.append('large_relative_pressure_drop')
-        if not .5<=pr<=2000: issues.append('prandtl_outside_domain')
+        flags=numeric.domain_flags(re,pr,ma,kn,compressibility,length,d,
+                                   self.maximum_mach,self.maximum_relative_pressure_drop)
+        issue_names=('high_mach','thermal_slip_not_implemented','beyond_continuum_model',
+            'large_relative_pressure_drop','prandtl_outside_domain','hydrodynamic_entry_unresolved',
+            'turbulent_entry_unresolved','reynolds_outside_correlation_domain')
+        issues=[name for bit,name in enumerate(issue_names) if flags & (1<<bit)]
         if re<2300:
             nu=laminar_entry_nusselt(gz) if self.thermal_entry else 3.66
             correlation='hausen_constant_wall' if self.thermal_entry else 'fully_developed_3_66_screening'
             if re==0: correlation='stagnant_radial_screening'
-            if length<.05*re*d: issues.append('hydrodynamic_entry_unresolved')
         elif re>=4000 and re<=5e6 and .5<=pr<=2000:
             nu=gnielinski(re,pr);correlation='gnielinski_smooth'
-            if length<10*d: issues.append('turbulent_entry_unresolved')
         else:
             nu=None;correlation='unavailable_transition_or_out_of_range'
-            issues.append('reynolds_outside_correlation_domain')
         viscous=(d/2)**2*rho/mu;thermal=viscous*pr
         return MicrotubeFlowDiagnostics(re,pr,ma,kn,knm,gz,ratio,compressibility,
             length<.05*re*pr*d,length<.05*re*d,knudsen_regime(kn),

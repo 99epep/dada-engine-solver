@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from dada_solver import numerical_primitives as numeric
 from typing import Protocol
 
 from dada_solver.fluids import CaloricallyPerfectGas
@@ -374,41 +375,9 @@ class CompressibleOrifice:
         if downstream_pressure >= upstream_pressure:
             return FlowResult(mass_flow_rate=0.0, is_choked=False)
 
-        gamma = gas.heat_capacity_ratio
-        pressure_ratio = downstream_pressure / upstream_pressure
-        critical_ratio = self.critical_pressure_ratio(gas)
-
-        if pressure_ratio <= critical_ratio:
-            factor = math.sqrt(gamma / (gas.gas_constant * upstream_temperature))
-            factor *= (2.0 / (gamma + 1.0)) ** (
-                (gamma + 1.0) / (2.0 * (gamma - 1.0))
-            )
-            return FlowResult(
-                mass_flow_rate=self._regularize(
-                    self.effective_flow_area * upstream_pressure * factor,
-                    upstream_pressure - downstream_pressure,
-                ),
-                is_choked=True,
-            )
-
-        radicand = (
-            2.0
-            * gamma
-            / (gas.gas_constant * upstream_temperature * (gamma - 1.0))
-            * (
-                pressure_ratio ** (2.0 / gamma)
-                - pressure_ratio ** ((gamma + 1.0) / gamma)
-            )
-        )
-        return FlowResult(
-            mass_flow_rate=self._regularize(
-                self.effective_flow_area
-                * upstream_pressure
-                * math.sqrt(max(0.0, radicand)),
-                upstream_pressure - downstream_pressure,
-            ),
-            is_choked=False,
-        )
+        flow,choked = numeric.orifice_flow(upstream_pressure,downstream_pressure,
+            upstream_temperature,gas.gas_constant,gas.heat_capacity_ratio,self.effective_flow_area)
+        return FlowResult(self._regularize(flow,upstream_pressure-downstream_pressure),choked)
 
     def _regularize(self, mass_flow_rate: float, pressure_difference: float) -> float:
         """Linearize the square-root law only near zero pressure difference."""

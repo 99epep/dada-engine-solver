@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from dada_solver import numerical_primitives as numeric
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,7 +47,7 @@ class CaloricallyPerfectGas:
             raise ValueError("Mass must be finite and strictly positive.")
         if not math.isfinite(internal_energy) or internal_energy <= 0.0:
             raise ValueError("Internal energy must be finite and strictly positive.")
-        return internal_energy / (mass * self.heat_capacity_cv)
+        return numeric.temperature(mass,internal_energy,self.heat_capacity_cv)
 
     def pressure(self, mass: float, internal_energy: float, volume: float) -> float:
         """Reconstruct pressure from the conservative state and volume."""
@@ -54,7 +55,7 @@ class CaloricallyPerfectGas:
         if not math.isfinite(volume) or volume <= 0.0:
             raise ValueError("Volume must be finite and strictly positive.")
         temperature = self.temperature(mass, internal_energy)
-        return mass * self.gas_constant * temperature / volume
+        return numeric.pressure(mass,self.gas_constant,temperature,volume)
 
     def mass(self, pressure: float, temperature: float, volume: float) -> float:
         """Return ideal-gas mass for a prescribed equilibrium state."""
@@ -81,7 +82,7 @@ class CaloricallyPerfectGas:
 
         if not math.isfinite(temperature) or temperature <= 0.0:
             raise ValueError("Temperature must be finite and strictly positive.")
-        return self.heat_capacity_cp * temperature
+        return numeric.enthalpy(self.heat_capacity_cp, temperature)
 
     def compressibility_factor(self, pressure: float, temperature: float) -> float:
         """Return the first-level ideal-gas compressibility factor."""

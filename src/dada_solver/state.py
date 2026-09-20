@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import math
 
 import numpy as np
+from dada_solver import numerical_primitives as numeric
 from numpy.typing import NDArray
 
 from dada_solver.fluids import CaloricallyPerfectGas
@@ -90,7 +91,7 @@ class ThermodynamicState:
         """Return temperatures ordered as S, L, C, H in K."""
 
         values = self.as_array()
-        return values[1::2] / (values[0::2] * gas.heat_capacity_cv)
+        return numeric.temperature(values[0::2],values[1::2],gas.heat_capacity_cv)
 
     def pressures(
         self,
@@ -111,9 +112,9 @@ class ThermodynamicState:
 
         values = self.as_array()
         masses = values[0::2]
-        temperatures = values[1::2] / (masses * gas.heat_capacity_cv)
+        temperatures = numeric.temperature(masses,values[1::2],gas.heat_capacity_cv)
         volume_array = np.fromiter(volumes.as_tuple(), dtype=float, count=4)
-        pressures = masses * gas.gas_constant * temperatures / volume_array
+        pressures = numeric.pressure(masses,gas.gas_constant,temperatures,volume_array)
         return temperatures, pressures
 
 

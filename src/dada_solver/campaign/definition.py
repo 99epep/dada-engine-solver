@@ -63,6 +63,12 @@ class CampaignDefinition:
                 wall_cycle=asdict(self.wall_numerical_settings))
         else:
             self.wall_numerical_settings = None
+        from dada_solver.wall_backend import WallBackendSettings, backend_identity
+        self.wall_backend = WallBackendSettings(**raw.get('wall_backend', {}))
+        if 'wall_backend' in raw:
+            if self.wall_numerical_settings is None:
+                raise ValueError('Wall backend selection requires the wall evaluator.')
+            self.numerical_settings['wall_backend'] = backend_identity(self.wall_backend)
         self.adaptive_wall_acceleration = None
         adaptive = raw.get('adaptive_wall_acceleration')
         if adaptive is not None:
@@ -125,6 +131,8 @@ class CampaignDefinition:
         self.identity = dict(schema_version=2, campaign=raw, base_configuration=self.base_source,
                              hardware_configuration=self.hardware_source,
                              runtime=runtime_identity())
+        if 'wall_backend' in raw:
+            self.identity['wall_backend'] = self.numerical_settings['wall_backend']
         self.definition_id = content_hash(self.identity)
 
     @classmethod

@@ -3,6 +3,7 @@
 Laminar equivalent-passage laws are screening assumptions, not a Doty fit.
 Half the tube/header loss is assigned to each side of the gas storage node.
 """
+from dada_solver import numerical_primitives as numeric
 from dataclasses import dataclass, replace
 import math
 import tomllib
@@ -104,10 +105,9 @@ class TubeHalfLink:
         nominal = compressible_poiseuille(pin,pout,temperature,mu,length,diameter,
                                           self.bank.tube_count,gas.gas_constant)*factor/self.core_loss_multiplier
         linear = (pin-pout)/nominal
-        quadratic = self.header_loss_coefficient/(4*rho*area**2)
-        if self.valve_cda_m2 is not None: quadratic += 1/(2*rho*self.valve_cda_m2**2)
+        quadratic = numeric.minor_loss_coefficient(self.header_loss_coefficient,rho,area,self.valve_cda_m2 or 0.)
         dp = pin-pout
-        flow = 2*dp/(linear+math.sqrt(linear**2+4*quadratic*dp))
+        flow = numeric.laminar_network_flow(dp,linear,quadratic)
         re = flow*diameter/(area*mu)
         if re >= 2300:
             # The transition bridge is only a root-bracketing device. A root in
