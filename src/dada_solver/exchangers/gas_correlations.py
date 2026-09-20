@@ -157,7 +157,7 @@ class MicrotubeGasModel:
             raise ValueError('Invalid instantaneous state.')
         tr=self.transport; mu=tr.viscosity(t); conductivity=tr.conductivity(t);cp=tr.cp(t)
         r=tr.gas_constant;rho=min(p1,p2)/(r*t);pm=(p1+p2)/2
-        area=bank.tube_count*math.pi*bank.inner_diameter_m**2/4;d=bank.inner_diameter_m
+        area=bank.tube_flow_area_m2;d=bank.inner_diameter_m
         u=abs(flow)/(rho*area);re=abs(flow)*d/(area*mu);pr=cp*mu/conductivity
         speed=math.sqrt(cp/(cp-r)*r*t);ma=u/speed
         kn=tr.mean_free_path(min(p1,p2),t)/d;knm=tr.mean_free_path(pm,t)/d

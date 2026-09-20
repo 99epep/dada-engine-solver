@@ -40,6 +40,23 @@ class NetworkFlows:
 
 
 @dataclass(frozen=True, slots=True)
+class InstantaneousPoint:
+    """Exact evaluation-local geometry, primitives and signed hydraulic flows.
+
+    Prepared for one trial state only; never cached by angle or across states.
+    The primitive arrays are read-only and ordered S, L, C, H.
+    """
+
+    theta: float
+    volumes: InstantaneousVolumes
+    volume_rates: tuple[float, float]
+    temperatures: NDArray[np.float64]
+    pressures: NDArray[np.float64]
+    topology: ValveTopology
+    flows: NetworkFlows
+
+
+@dataclass(frozen=True, slots=True)
 class ModelRates:
     """State derivative and diagnostic rates at one instant."""
 
@@ -106,7 +123,21 @@ class ThermodynamicModel:
         state: ThermodynamicState,
         topology: ValveTopology,
     ) -> ModelRates:
-        """Evaluate conservative rates without imposing a nominal phase sequence."""
+        """Compatibility facade over the authoritative point and balances."""
+        point = self.instantaneous_point(theta, state, topology)
+        return self.assemble_rates(
+            point,
+            self.cold_heat_transfer.heat_rate(point.temperatures[2]),
+            self.hot_heat_transfer.heat_rate(point.temperatures[3]),
+        )
+
+    def instantaneous_point(
+        self,
+        theta: float,
+        state: ThermodynamicState,
+        topology: ValveTopology,
+    ) -> InstantaneousPoint:
+        """Solve geometry and hydraulics once, before wall heat rates are known."""
 
         combined_provider = getattr(
             self.kinematics, "cylinder_volumes_and_derivatives", None
@@ -132,7 +163,7 @@ class ThermodynamicModel:
         small_cold = self.small_cold_link.bidirectional_flow(
             pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas
         )
-        effective_topology = self.effective_topology(theta, state, topology)
+        effective_topology = self._topology_from_pressures(pressures, topology)
         hot_small = self.hot_small_valve.flow(
             effective_topology.hot_to_small,
             pressures[3],
@@ -148,6 +179,33 @@ class ThermodynamicModel:
             self.gas,
         )
 
+        temperatures.flags.writeable = False
+        pressures.flags.writeable = False
+        return InstantaneousPoint(
+            theta, volumes, (volume_rate_small, volume_rate_large),
+            temperatures, pressures, effective_topology,
+            NetworkFlows(
+                large_hot.mass_flow_rate, small_cold.mass_flow_rate,
+                hot_small.mass_flow_rate, cold_large.mass_flow_rate,
+                large_hot.is_choked, small_cold.is_choked,
+                hot_small.is_choked, cold_large.is_choked,
+            ),
+        )
+
+    def assemble_rates(
+        self,
+        point: InstantaneousPoint,
+        cold_heat_rate: float,
+        hot_heat_rate: float,
+    ) -> ModelRates:
+        """Assemble the sole conservative balances with actual gas heat rates."""
+        temperatures, pressures = point.temperatures, point.pressures
+        volume_rate_small, volume_rate_large = point.volume_rates
+        flows = point.flows
+        large_hot = FlowResult(flows.large_to_hot, flows.large_to_hot_choked)
+        small_cold = FlowResult(flows.small_to_cold, flows.small_to_cold_choked)
+        hot_small = FlowResult(flows.hot_to_small, flows.hot_to_small_choked)
+        cold_large = FlowResult(flows.cold_to_large, flows.cold_to_large_choked)
         mass_rates = np.zeros(4, dtype=float)
         energy_rates = np.zeros(4, dtype=float)
         self._apply_bidirectional_link(
@@ -163,8 +221,6 @@ class ThermodynamicModel:
             mass_rates, energy_rates, 2, 1, cold_large, temperatures[2]
         )
 
-        cold_heat_rate = self.cold_heat_transfer.heat_rate(temperatures[2])
-        hot_heat_rate = self.hot_heat_transfer.heat_rate(temperatures[3])
         energy_rates[2] += cold_heat_rate
         energy_rates[3] += hot_heat_rate
 
@@ -187,16 +243,7 @@ class ThermodynamicModel:
 
         return ModelRates(
             state_derivative=derivative,
-            flows=NetworkFlows(
-                large_to_hot=large_hot.mass_flow_rate,
-                small_to_cold=small_cold.mass_flow_rate,
-                hot_to_small=hot_small.mass_flow_rate,
-                cold_to_large=cold_large.mass_flow_rate,
-                large_to_hot_choked=large_hot.is_choked,
-                small_to_cold_choked=small_cold.is_choked,
-                hot_to_small_choked=hot_small.is_choked,
-                cold_to_large_choked=cold_large.is_choked,
-            ),
+            flows=flows,
             cold_heat_rate=cold_heat_rate,
             hot_heat_rate=hot_heat_rate,
             gas_work_rate=gas_work_rate,
@@ -215,6 +262,13 @@ class ThermodynamicModel:
         if not self.continuous_ideal_diodes:
             return stored_topology
         pressures = state.pressures(self.gas, self.volumes(theta))
+        return self._topology_from_pressures(pressures, stored_topology)
+
+    def _topology_from_pressures(
+        self, pressures: NDArray[np.float64], stored_topology: ValveTopology,
+    ) -> ValveTopology:
+        if not self.continuous_ideal_diodes:
+            return stored_topology
         return ValveTopology(
             ValveState.OPEN if pressures[3] > pressures[0] else ValveState.CLOSED,
             ValveState.OPEN if pressures[2] > pressures[1] else ValveState.CLOSED,

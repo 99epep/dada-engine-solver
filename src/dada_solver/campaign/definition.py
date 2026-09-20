@@ -63,6 +63,16 @@ class CampaignDefinition:
                 wall_cycle=asdict(self.wall_numerical_settings))
         else:
             self.wall_numerical_settings = None
+        self.adaptive_wall_acceleration = None
+        adaptive = raw.get('adaptive_wall_acceleration')
+        if adaptive is not None:
+            if self.wall_numerical_settings is None:
+                raise ValueError('Adaptive wall acceleration requires the wall evaluator.')
+            from dada_solver.exchangers.wall_iteration import AdaptiveWallAccelerationSettings
+            self.adaptive_wall_acceleration = AdaptiveWallAccelerationSettings(**adaptive)
+            # Opt-in numerical policy is part of exact campaign/cache identity.
+            # Omitted settings preserve the historical identity schema.
+            self.numerical_settings['adaptive_wall_acceleration'] = asdict(self.adaptive_wall_acceleration)
         self.free_settings = raw.get('free', {})
         self.fixed_parameters = dict(raw.get('fixed_parameters', {}))
 

@@ -1,8 +1,9 @@
 """Reusable periodic evaluation for the existing ten-state air-wall motor."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import math
+import time
 from types import SimpleNamespace
 import numpy as np
 
@@ -46,6 +47,7 @@ class WallCycleResult:
     angles: np.ndarray | None
     trajectory: np.ndarray | None
     last_complete_state: np.ndarray | None
+    solver_statistics: tuple[dict, ...] = ()
 
     @property
     def converged(self):
@@ -53,37 +55,129 @@ class WallCycleResult:
 
 
 def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
-        progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None) -> WallCycleResult:
-    """Repeat unmodified complete cycles using the screening convergence rule."""
-    from dada_solver.exchangers.wall_iteration import extrapolate_wall_energies
+        progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
+        statistics_callback=None, measure_rhs_time=False,
+        adaptive_acceleration=None) -> WallCycleResult:
+    """Repeat complete physical cycles at the original periodic tolerances.
+
+    Optional adaptive wall guesses replace the fixed ten-cycle schedule. Failed
+    trials consume the attempt budget and are reported, then roll back to the
+    retained physical endpoint. Only retained cycles notify cycle_callback.
+    Campaign defaults and their serialized numerical settings remain unchanged.
+    """
+    from dada_solver.exchangers.wall_iteration import (
+        extrapolate_wall_energies, adaptive_wall_proposal, AdaptiveWallAccelerationSettings)
+    if adaptive_acceleration is not None and not isinstance(adaptive_acceleration, AdaptiveWallAccelerationSettings):
+        raise TypeError('Expected AdaptiveWallAccelerationSettings or None.')
     state = np.asarray(initial_state, dtype=float)
     history, wall_history = [], []
+    statistics = []
     last_angles = last_trajectory = None
+    pending = None
+    recovery_remaining = 0
+    capacities = (np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
+                  if adaptive_acceleration is not None else None)
     atol = np.asarray(settings.integration_absolute_tolerances)
     for cycle in range(1, maximum_cycles+1):
+        def record_segment(record):
+            record = dict(record, cycle=cycle)
+            statistics.append(record)
+            if statistics_callback is not None:
+                statistics_callback(record)
+
+        def restore_anchor(reason, **details):
+            nonlocal state, pending, recovery_remaining, wall_history, last_angles, last_trajectory
+            state = pending['state'].copy()
+            last_angles, last_trajectory = pending['angles'], pending['trajectory']
+            record_segment(dict(phase='wall_acceleration_rollback', status='rejected',
+                reason=reason, retained_cycle=pending['cycle'],
+                retained_normalized_error=pending['error'], **details))
+            pending = None
+            wall_history = []
+            recovery_remaining = adaptive_acceleration.recovery_cycles
+
         try:
             angles, trajectory = wrapper.integrate_cycle(state,
                 integration_method=settings.integration_method,
                 rtol=settings.integration_relative_tolerance, atol=atol,
                 maximum_step_angle=settings.maximum_step_angle_radians,
                 progress_callback=progress_callback,
-                progress_interval_seconds=settings.progress_interval_seconds)
+                progress_interval_seconds=settings.progress_interval_seconds,
+                statistics_callback=record_segment, measure_rhs_time=measure_rhs_time)
         except IntegrationInterrupted as error:
             return WallCycleResult('interrupted', str(error), tuple(history),
-                last_angles, last_trajectory, state.copy() if history else None)
+                last_angles, last_trajectory,
+                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
+        except (ValueError, RuntimeError, ArithmeticError) as error:
+            if pending is None:
+                raise
+            restore_anchor('accelerated_integration_failed', exception=type(error).__name__, message=str(error))
+            continue
         end = trajectory[:10, -1]
-        error = float(np.max(np.abs(end-state) /
-            (settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))))
+        normalized = np.abs(end-state) / (
+            settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))
+        error = float(np.max(normalized))
         history.append(dict(cycle=cycle, normalized_state_error=error))
+        if adaptive_acceleration is not None:
+            history[-1].update(normalized_gas_error=float(np.max(normalized[:8])),
+                               normalized_wall_error=float(np.max(normalized[8:10])))
+        if pending is not None:
+            if 'trial_error' in pending:
+                safe = (error <= 1 or (error <= adaptive_acceleration.maximum_residual_growth*pending['error']
+                        and error < .5*pending['trial_error']))
+                if not safe:
+                    history[-1]['wall_acceleration_rolled_back'] = True
+                    restore_anchor('transient_failed_to_contract', trial_normalized_error=error)
+                    continue
+                wall_history = [pending['trial_wall']]
+            else:
+                allowed = adaptive_acceleration.maximum_residual_growth*max(pending['error'],pending['normalized_jump'])
+                if error > allowed:
+                    history[-1]['wall_acceleration_rolled_back'] = True
+                    restore_anchor('normalized_residual_growth', trial_normalized_error=error,
+                                   allowed_normalized_error=allowed)
+                    continue
+                if error > pending['error'] and error > 1:
+                    # A wall-only jump leaves the gas to adjust physically. A
+                    # plausible transient is provisional until the next cycle
+                    # demonstrably contracts; it is not a convergence result.
+                    history[-1]['wall_acceleration_pending_validation'] = True
+                    pending['trial_error'] = error
+                    pending['trial_wall'] = end[8:10].copy()
+                    state = end.copy()
+                    continue
+                wall_history = []
+            history[-1]['wall_acceleration_accepted'] = True
+            pending = None
         last_angles, last_trajectory = angles, trajectory
         state = end
         if cycle_callback is not None:
             cycle_callback(cycle, end.copy(), error, history[-1])
         if error <= 1:
             return WallCycleResult('converged', 'Periodic steady state converged.',
-                tuple(history), angles, trajectory, end.copy())
+                tuple(history), angles, trajectory, end.copy(), tuple(statistics))
         wall_history.append(end[8:10].copy())
-        if settings.accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
+        if adaptive_acceleration is not None:
+            wall_history = wall_history[-4:]
+            recovery_remaining = max(0, recovery_remaining-1)
+            if len(wall_history)==4 and recovery_remaining==0 and cycle < maximum_cycles:
+                decision_started = time.perf_counter()
+                proposal = adaptive_wall_proposal(wall_history, capacities, settings=adaptive_acceleration)
+                record_segment(dict(phase='wall_acceleration_decision',
+                    status='proposed' if proposal is not None else 'skipped',
+                    elapsed_seconds=time.perf_counter()-decision_started))
+                if proposal is not None:
+                    pending = dict(state=end.copy(), error=error, cycle=cycle,
+                        angles=angles, trajectory=trajectory)
+                    state = end.copy()
+                    state[8:10] = proposal.wall_energies
+                    pending['normalized_jump'] = float(np.max(np.abs(state[8:10]-end[8:10]) / (
+                        settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*
+                        np.maximum(np.abs(state[8:10]),np.abs(end[8:10])))))
+                    history[-1]['wall_initial_guess_extrapolated'] = True
+                    history[-1]['adaptive_wall_proposal'] = asdict(proposal)
+                    wall_history = []
+        elif settings.accelerate_walls and cycle % 10 == 0 and cycle < maximum_cycles and len(wall_history) >= 3:
             proposed = extrapolate_wall_energies(*wall_history[-3:], np.array([
                 wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]))
             if proposed is not None:
@@ -92,7 +186,8 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             wall_history = []
     return WallCycleResult('maximum_cycles',
         'Maximum cycle count reached before periodic convergence.', tuple(history),
-        last_angles, last_trajectory, state.copy())
+        last_angles, last_trajectory,
+        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics))
 
 
 class WallDiagnosticCycle:

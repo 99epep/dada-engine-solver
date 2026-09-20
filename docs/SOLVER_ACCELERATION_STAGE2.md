@@ -1,5 +1,13 @@
 # Solver acceleration — stage 2 independent review and implementation gates
 
+Implementation follow-up (2026-09-20): see
+[SOLVER_ACCELERATION_IMPLEMENTATION.md](SOLVER_ACCELERATION_IMPLEMENTATION.md)
+for exact Python-cleanup replays, instrumentation, interruption corrections and
+measured gates. After this review, the user separately authorized an adaptive
+four-endpoint wall-guess experiment. It remains opt-in with unchanged periodic
+criteria; the historical deferral below describes the original first-pass scope.
+
+
 Date: 2026-09-18. Status: **independent architectural review; no production code change approved by this document alone**.
 
 This review follows [SOLVER_ACCELERATION_STAGE1.md](SOLVER_ACCELERATION_STAGE1.md) and checks its main conclusions against the current solver structure, especially:

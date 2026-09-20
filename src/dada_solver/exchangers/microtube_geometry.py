@@ -26,8 +26,25 @@ class MicrotubeBank:
                 or self.additional_internal_volume_m3 < 0
                 or self.pitch_m <= self.inner_diameter_m + 2*self.wall_thickness_m):
             raise ValueError('Expected positive geometry, nonoverlapping tubes and nonnegative additional volume.')
+        # Candidate-owned derived geometry; dataclass serialization stays input-only.
+        dimensions = self._calculate_dimensions()
+        object.__setattr__(self, '_prepared_dimensions', tuple(dimensions.items()))
+        object.__setattr__(self, '_tube_flow_area_m2', dimensions['tube_flow_area_m2'])
+        object.__setattr__(self, '_tube_internal_area_m2', dimensions['tube_internal_area_m2'])
+
+    @property
+    def tube_flow_area_m2(self):
+        return self._tube_flow_area_m2
+
+    @property
+    def tube_internal_area_m2(self):
+        return self._tube_internal_area_m2
 
     def dimensions(self) -> dict:
+        """Return an independent reporting dictionary of prepared geometry."""
+        return dict(self._prepared_dimensions)
+
+    def _calculate_dimensions(self) -> dict:
         """Square-pitch rectangular packing with two full-face gas plenums.
 
         Dimensions describe internal fluid spaces, not pressure-vessel walls.
