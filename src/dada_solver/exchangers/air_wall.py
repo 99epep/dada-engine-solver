@@ -19,6 +19,22 @@ from dada_solver.valves import ValveState
 from dada_solver.integration import IntegrationInterrupted
 
 
+@dataclass(frozen=True, slots=True)
+class WallThermalPoint:
+    """Typed numerical facts; dictionaries are only the public rates boundary."""
+    gas_heat_w: float
+    air_heat_w: float
+    wall_energy_rate_w: float
+    air_outlet_temperature_k: float | None
+    wall_temperature_k: float
+    film_diagnostics: tuple = ()
+
+    def rates(self):
+        return dict(gas_heat_w=self.gas_heat_w, air_heat_w=self.air_heat_w,
+                    wall_energy_rate_w=self.wall_energy_rate_w,
+                    air_outlet_temperature_k=self.air_outlet_temperature_k)
+
+
 @dataclass(frozen=True)
 class AirWallExchanger:
     gas_wall_conductance_w_k: float
@@ -47,21 +63,25 @@ class AirWallExchanger:
         return self.gas_film is not None
 
     def rates(self, gas_temperature_k, wall_energy_j, *, context=None):
+        return self.thermal_point(gas_temperature_k, wall_energy_j, context=context).rates()
+
+    def thermal_point(self, gas_temperature_k, wall_energy_j, *, context=None):
+        """Evaluate shared wall/film physics once and retain its diagnostic facts."""
         wall_temperature = wall_energy_j / self.wall_capacity_j_k
         if any(not math.isfinite(v) or v <= 0 for v in (wall_temperature, gas_temperature_k)):
             raise ValueError('Gas and wall temperatures must be positive.')
         capacity_rate = self._air_capacity_rate
         effective = self._effective_air_conductance
         conductance = self.gas_wall_conductance_w_k
+        diagnostics = ()
         if self.gas_film is not None:
             if context is None: raise ValueError('Variable gas film requires instantaneous flow context.')
-            conductance, _ = self.gas_film.evaluate(gas_temperature_k,wall_temperature,context)
+            conductance, diagnostics = self.gas_film.evaluate(gas_temperature_k,wall_temperature,context)
         air_heat,gas_heat,wall_rate = numeric.wall_heat_rates(effective,self.air_inlet_temperature_k,
             wall_temperature,conductance,gas_temperature_k)
-        return dict(gas_heat_w=gas_heat, air_heat_w=air_heat,
-                    wall_energy_rate_w=wall_rate,
-                    air_outlet_temperature_k=(self.air_inlet_temperature_k-air_heat/capacity_rate
-                                              if capacity_rate > 0 else None))
+        return WallThermalPoint(gas_heat, air_heat, wall_rate,
+            self.air_inlet_temperature_k-air_heat/capacity_rate if capacity_rate > 0 else None,
+            wall_temperature, diagnostics)
 
 
 @dataclass(frozen=True)

@@ -174,6 +174,9 @@ equivalence tests and residual-cost measurements. Python remains the default.
 A separate [periodic-map diagnostic](docs/PERIODIC_MAP_DIAGNOSTIC.md) measures the
 two slow thermal modes and tests exact repeated-angle reuse without compiling
 kinematics or changing production convergence.
+[Stage 5](docs/SOLVER_ACCELERATION_STAGE5.md) enables exact candidate-local angle
+reuse and shared final-trajectory diagnostic replay. Its smooth interpolation
+experiment remains outside production after failing the full reporting gate.
 
 ## Interchangeable models
 
