@@ -1,0 +1,43 @@
+{
+  "study": "260 K UU local smooth-motion refinement",
+  "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_4h_refine/report.json",
+  "source_sha256": "f9615a131f0224e29d0e6c051fb8c433ea2370d08df33d216aac18f05d156383",
+  "source_harmonics": 4,
+  "target_harmonics": 6,
+  "shape_radii": [
+    0.018,
+    0.012,
+    0.008,
+    0.005,
+    0.003,
+    0.0015
+  ],
+  "evaluations_per_radius": 96,
+  "sobol_seed": 26092141,
+  "thermo_hard_relative_limit_vs_original_linear_UU": 0.03,
+  "thermo_bounds": {
+    "swept_ratio": [
+      0.8355583780715242,
+      0.8872424014573917
+    ],
+    "length_i_m": [
+      0.03908760854735771,
+      0.0415053987667819
+    ],
+    "length_o_m": [
+      0.025477546718741185,
+      0.027053477443611775
+    ],
+    "n_i": [
+      3718,
+      3950
+    ],
+    "n_o": [
+      4035,
+      4285
+    ]
+  },
+  "source_efficiency": 0.22866248227897826,
+  "reference_linear_UU_efficiency": 0.22132638079267666,
+  "strategy": "Local Sobol refinement; progressively smaller shape and thermo radii; every eighth proposal probes only newly added harmonics."
+}
