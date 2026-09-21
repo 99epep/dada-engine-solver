@@ -177,6 +177,9 @@ kinematics or changing production convergence.
 [Stage 5](docs/SOLVER_ACCELERATION_STAGE5.md) enables exact candidate-local angle
 reuse and shared final-trajectory diagnostic replay. Its smooth interpolation
 experiment remains outside production after failing the full reporting gate.
+The bounded [Anderson experiment](docs/PERIODIC_ANDERSON_EXPERIMENT.md) retains
+a direct opt-in solver path but fails the adoption gate: the existing fixed-wall
+policy remains faster on the frozen cold and smooth four-bar workloads.
 
 ## Interchangeable models
 
