@@ -32,6 +32,9 @@ from optimize_motor_four_stage_thermo3d import _volume_limits
 from optimize_motor_four_stage_k2 import _symmetry_diagnostics
 from refine_motor_four_stage_hx9d_variable_gas import _hardware_metrics, _load_basis
 
+from types import SimpleNamespace
+from dada_solver.wall_backend import WallBackendSettings
+
 REFERENCE_REPORT = ROOT/'outputs'/'motor_four_stage_hx9d_variable_gas'/'report.json'
 OUTPUT_ROOT = ROOT/'outputs'/'motor_temperature_map'
 COLD_K = 298.15
@@ -271,7 +274,15 @@ def main():
     if min(args.thermo_evaluations,args.motion_evaluations,args.thermo_evaluations_per_radius,args.motion_evaluations_per_radius)<=0: raise ValueError('Evaluation counts must be positive.')
     if min(args.thermo_budget_seconds,args.motion_budget_seconds,args.candidate_seconds)<=0: raise ValueError('Budgets must be positive.')
 
-    definition,base=_load_basis(); g=base_geometry(base); hot_k=COLD_K+args.delta_t_k
+
+    campaign_definition,base=_load_basis()
+    definition=SimpleNamespace(
+        wall_numerical_settings=campaign_definition.wall_numerical_settings,
+        wall_backend=WallBackendSettings("numba"),
+        exact_kinematics_cache=True,
+        shared_replay=True,
+    )
+    g=base_geometry(base); hot_k=COLD_K+args.delta_t_k
     source=args.source_report if args.source_report.is_absolute() else ROOT/args.source_report
     if not source.exists(): raise FileNotFoundError(source)
     source_p,source_state,source_record=load_source(source,base,g)
