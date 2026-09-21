@@ -38,19 +38,24 @@ def assess_cycle_validity(
     model: ThermodynamicModel,
     thresholds: ValidityThresholds,
     geometric_flow_areas: dict[str, float] | None = None,
+    *, replay=None,
 ) -> ValidityReport:
     """Assess configured criteria without claiming unavailable quantities are valid."""
 
     if not cycle.completed:
         raise ValueError("Validity assessment requires a completed cycle.")
-    pressures: list[np.ndarray] = []
-    temperatures: list[np.ndarray] = []
-    for angle, values in zip(cycle.angles, cycle.states.T, strict=True):
-        state = ThermodynamicState.from_array(values)
-        temperatures.append(state.temperatures(model.gas))
-        pressures.append(state.pressures(model.gas, model.volumes(float(angle))))
-    pressure_history = np.asarray(pressures).T
-    temperature_history = np.asarray(temperatures).T
+    if replay is not None:
+        replay.require(model=model, cycle=cycle)
+        pressure_history, temperature_history = replay.pressures, replay.temperatures
+    else:
+        pressures: list[np.ndarray] = []
+        temperatures: list[np.ndarray] = []
+        for angle, values in zip(cycle.angles, cycle.states.T, strict=True):
+            state = ThermodynamicState.from_array(values)
+            temperatures.append(state.temperatures(model.gas))
+            pressures.append(state.pressures(model.gas, model.volumes(float(angle))))
+        pressure_history = np.asarray(pressures).T
+        temperature_history = np.asarray(temperatures).T
 
     pair_references = np.maximum(
         0.5 * (pressure_history[[0, 1]] + pressure_history[[2, 3]]),

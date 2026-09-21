@@ -14,7 +14,7 @@ from dada_solver.integration import IntegrationInterrupted
 from compare_motor_motion_laws_stage7A5 import _evaluate
 
 
-def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=None,profile=False,**backend_options):
+def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=None,profile=False,exact_cache=True,warm_compile=False,shared_replay=True,**backend_options):
     if output.exists(): raise FileExistsError('Use a new measurement directory.')
     manifest=json.loads(manifest_path.read_text())
     for name,expected in manifest['input_hashes'].items():
@@ -27,6 +27,16 @@ def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=N
         preparation_seconds=time.perf_counter()-preparation,
         source_hashes={str(p.relative_to(ROOT)):digest(p) for p in sorted((ROOT/'src').rglob('*.py'))})
     (output/'environment.json').write_text(json.dumps(metadata,indent=2)+'\n')
+    if warm_compile:
+        from dada_solver.wall_backend import WallRHS
+        first=next(c for c in json.loads(DEFAULT_MANIFEST.read_text())['cases'] if c['name']=='production_warm')
+        prepared=_build_design(base,first['parameters']).build()
+        rhs=WallRHS(prepared,mode)
+        started=time.perf_counter();rhs(0.,np.r_[first['initial_state'],np.zeros(5)])
+        metadata['excluded_compilation_seconds']=time.perf_counter()-started
+        metadata['exact_kinematics_cache']=exact_cache
+        metadata['shared_replay']=shared_replay
+        (output/'environment.json').write_text(json.dumps(metadata,indent=2)+'\n')
     rows=[]
     for case in manifest['cases']:
         if cases and case['name'] not in cases: continue
@@ -34,12 +44,15 @@ def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=N
             start=time.perf_counter();records=[];capture=[]
             design=legacy_design() if case.get('legacy') else _build_design(base,case['parameters'])
             if case.get('motion')=='base': design=replace(design,kinematics=base.kinematics)
+            if case.get('motion')=='six_bar':
+                from stage5_mechanisms import six_bar
+                design=replace(design,kinematics=six_bar(design.configuration.machine_volumes))
             design=replace(design,configuration=replace(design.configuration,
                 numerical=replace(design.configuration.numerical,maximum_cycles=case['maximum_cycles'])))
             candidate_seconds=time.perf_counter()-start
             raw=dict(manifest['numerical_settings']);raw['integration_absolute_tolerances']=tuple(raw['integration_absolute_tolerances'])
             settings=WallCycleNumericalSettings() if case.get('legacy') else WallCycleNumericalSettings(**raw)
-            definition=SimpleNamespace(wall_numerical_settings=settings,wall_backend=mode)
+            definition=SimpleNamespace(wall_numerical_settings=settings,wall_backend=mode,exact_kinematics_cache=exact_cache,shared_replay=shared_replay)
             def progress(_):
                 if case.get('interrupt_first_progress'): raise IntegrationInterrupted('Frozen benchmark deadline at first progress callback.')
             try:
@@ -55,7 +68,7 @@ def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=N
                 np.savez_compressed(output/(key+'.npz'),angles=capture[0].angles,trajectory=capture[0].trajectory)
             sections={}
             for record in records:
-                if record['phase'] in ('build','periodic_integration','generic_diagnostics','generic_validity','microtube_diagnostics'):
+                if record['phase'] in ('build','periodic_integration','generic_diagnostics','generic_validity','microtube_diagnostics','shared_replay'):
                     sections.setdefault(record['phase'],[]).append(record['elapsed_seconds'])
             row=dict(case=case['name'],repeat=repeat,elapsed_seconds=elapsed,candidate_seconds=candidate_seconds,
                 sections_seconds=sections,solver_statistics=records,result=result,

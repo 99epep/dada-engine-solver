@@ -109,6 +109,7 @@ def _evaluate(
         maximum_cycles=design.configuration.numerical.maximum_cycles,
         settings=definition.wall_numerical_settings,
         **({"backend": definition.wall_backend} if hasattr(definition,"wall_backend") else {}),
+        exact_kinematics_cache=getattr(definition, "exact_kinematics_cache", True),
         adaptive_acceleration=getattr(definition, "adaptive_wall_acceleration", None),
         progress_callback=progress_callback,
         statistics_callback=statistics_callback, measure_rhs_time=measure_rhs_time,
@@ -131,6 +132,8 @@ def _evaluate(
 
     performance = wall_cycle_performance(wrapper, trajectory)
     cycle = WallDiagnosticCycle(angles, trajectory)
+    from dada_solver.diagnostic_replay import replay_wall_trajectory
+    replay = measured('shared_replay', replay_wall_trajectory, wrapper, cycle, trajectory) if getattr(definition,'shared_replay',True) else None
 
     def wall_heat_rates(index: int, _angle: float, gas_state: ThermodynamicState):
         incoming, outgoing = wrapper.thermal_rates(_angle, trajectory[:, index])
@@ -139,18 +142,18 @@ def _evaluate(
     diagnostics = measured(
         "generic_diagnostics", extract_cycle_diagnostics, cycle,
         wrapper.model,
-        heat_rate_provider=wall_heat_rates,
+        heat_rate_provider=wall_heat_rates if replay is None else None, replay=replay,
     )
     validity = measured(
         "generic_validity", assess_cycle_validity, cycle,
         wrapper.model,
-        design.configuration.validity,
+        design.configuration.validity, replay=replay,
     )
     helper = MachineEvaluator(definition)
     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-    gas_domains = measured("microtube_diagnostics",cycle_microtube_diagnostics,wrapper, angles, trajectory)
+    gas_domains = measured("microtube_diagnostics",cycle_microtube_diagnostics,wrapper, angles, trajectory,replay=replay)
     maximum_reynolds, maximum_mach = helper._tube_validity(
-        wrapper, angles, trajectory, gas_domains=gas_domains
+        wrapper, angles, trajectory, gas_domains=gas_domains,replay=replay
     )
     validity = finalize_microtube_validity(
         validity,

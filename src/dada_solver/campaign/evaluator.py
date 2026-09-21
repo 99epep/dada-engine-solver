@@ -241,15 +241,14 @@ class MachineEvaluator:
             return result
         cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
         performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
-        def wall_heat_rates(index, _angle, gas_state):
-            incoming, outgoing = wrapper.thermal_rates(_angle, periodic.trajectory[:,index])
-            return incoming['gas_heat_w'], outgoing['gas_heat_w']
+        from dada_solver.diagnostic_replay import replay_wall_trajectory
+        replay = control.measure('shared_replay', replay_wall_trajectory, wrapper, cycle, periodic.trajectory) if periodic.converged else None
         diagnostics = (control.measure('generic_diagnostics', extract_cycle_diagnostics, cycle, wrapper.model,
-            heat_rate_provider=wall_heat_rates) if periodic.converged else None)
-        validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity) if periodic.converged else None
+            replay=replay) if periodic.converged else None)
+        validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity, replay=replay) if periodic.converged else None
         from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-        gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory)
-        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains)
+        gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory, replay=replay)
+        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains,replay=replay)
         if validity is not None:
             validity = finalize_microtube_validity(validity, max_re, max_mach,
                 design.configuration.validity.maximum_mach_number,
@@ -268,7 +267,8 @@ class MachineEvaluator:
         return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
 
-    def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None):
+    def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None, replay=None):
+        if replay is not None: replay.require(wrapper=wrapper, angles=angles, trajectory=trajectory)
         if any(getattr(w,'requires_flow_context',False) for w in (wrapper.heat_in,wrapper.heat_out)):
             from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
             if gas_domains is None:
@@ -277,10 +277,14 @@ class MachineEvaluator:
             return (max(x['hydraulic_upstream_ranges']['reynolds']['maximum'] for x in domains),
                     max(x['hydraulic_upstream_ranges']['mach']['maximum'] for x in domains))
         max_re = max_mach = 0.; gas = wrapper.model.gas
-        for angle, values in zip(angles, trajectory.T):
-            state = ThermodynamicState.from_array(values[:8]); temps = state.temperatures(gas)
-            pressures = state.pressures(gas, wrapper.model.volumes(float(angle)))
-            flows = wrapper.model.evaluate(float(angle), state, initial_valve_topology()).flows
+        for index,(angle, values) in enumerate(zip(angles, trajectory.T)):
+            if replay is None:
+                state = ThermodynamicState.from_array(values[:8]); temps = state.temperatures(gas)
+                pressures = state.pressures(gas, wrapper.model.volumes(float(angle)))
+                flows = wrapper.model.evaluate(float(angle), state, initial_valve_topology()).flows
+            else:
+                point = replay.samples[index].point
+                temps, pressures, flows = point.temperatures, point.pressures, point.flows
             samples = ((flows.small_to_cold, 2, wrapper.model.small_cold_link),
                 (flows.cold_to_large, 2, wrapper.model.cold_large_valve.flow_model),
                 (flows.large_to_hot, 3, wrapper.model.large_hot_link),

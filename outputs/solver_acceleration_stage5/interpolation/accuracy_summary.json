@@ -1,0 +1,3485 @@
+{
+  "rtol": 1e-06,
+  "atol": 1e-12,
+  "runs": [
+    {
+      "mechanism": "smooth_four_bar",
+      "intervals": 1024,
+      "elapsed_seconds": 5.426119949988788,
+      "state_scaled_distance": 0.031754115430309836,
+      "relative_outputs": {
+        "indicated_power_w": 5.09365345177705e-07,
+        "indicated_thermal_efficiency": 3.3496998630600975e-07,
+        "heat_input_w": 1.7439541726288602e-07,
+        "heat_out_w": 4.5103955825344505e-07,
+        "total_mass_kg": 3.774319170553035e-14
+      },
+      "cycles": [
+        32,
+        32
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.0033517119949696464,
+      "conservation": {
+        "absolute_mass_residual": -4.336808689942018e-18,
+        "relative_mass_residual": -2.9145321780333335e-15,
+        "absolute_energy_residual": 3.4208369470434263e-10,
+        "relative_energy_residual": 3.080275921294359e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448275331147444,
+          "scaled_distance": 1.3190379936447185
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.058301367791646797,
+          "actual": 0.05830150683588888,
+          "scaled_distance": 2.3848758763798785
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448275331147444,
+          "scaled_distance": 1.3190379936447185
+        },
+        {
+          "path": ".validity.cold_isothermality_error",
+          "reference": 0.022813074740134328,
+          "actual": 0.02281289528570921,
+          "scaled_distance": 7.865952363293725
+        },
+        {
+          "path": ".validity.maximum_pressure_equalization_error",
+          "reference": 0.01491104843582831,
+          "actual": 0.01491103324601161,
+          "scaled_distance": 1.0186271032244412
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.minimum",
+          "reference": -0.0004811944715869966,
+          "actual": -0.0004811919982137834,
+          "scaled_distance": 5.129410142504505
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.maximum",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427791153710839,
+          "scaled_distance": 3.531868096170069
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.cold_to_large.maximum",
+          "reference": 0.013418307258312407,
+          "actual": 0.013418584853414578,
+          "scaled_distance": 20.685818913388346
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.minimum",
+          "reference": -0.0010846740833554225,
+          "actual": -0.0010846716878477208,
+          "scaled_distance": 2.206470374888148
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.maximum",
+          "reference": 0.005127149901391198,
+          "actual": 0.00512714448335179,
+          "scaled_distance": 1.0565290625139774
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": 0.07359564270222871,
+          "actual": 0.07359595159815233,
+          "scaled_distance": 4.197129322748287
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 1063.7202285801277,
+          "actual": 1063.7242387211122,
+          "scaled_distance": 3.7699065554533386
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.minimum",
+          "reference": 97367.57785294676,
+          "actual": 97367.70323379463,
+          "scaled_distance": 1.2877046874842162
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.minimum",
+          "reference": 95931.65374868365,
+          "actual": 95931.83391843027,
+          "scaled_distance": 1.8781017652626197
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.minimum",
+          "reference": 94325.32907907103,
+          "actual": 94325.08432437612,
+          "scaled_distance": 2.5947929076798357
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -459.00747767996126,
+          "actual": -459.0042038384517,
+          "scaled_distance": 7.132436096616048
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.maximum",
+          "reference": 98.54715965784517,
+          "actual": 98.54789514213854,
+          "scaled_distance": 7.463216589742445
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 606.5028006953752,
+          "actual": 606.5095015594939,
+          "scaled_distance": 11.048242592065609
+        },
+        {
+          "path": ".maximum_absolute_mass_flow_kg_s",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427791153710839,
+          "scaled_distance": 3.531868096170069
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.reynolds.maximum",
+          "reference": 548.2173268851374,
+          "actual": 548.226034848903,
+          "scaled_distance": 15.88389313215154
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.minimum",
+          "reference": 0.005375931384261374,
+          "actual": 0.00537592080639957,
+          "scaled_distance": 1.9672673962916576
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 397.89051118339194,
+          "actual": 266.4780310503021,
+          "scaled_distance": 330272.9673345929
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.002687965692130687,
+          "actual": 0.002687960403199785,
+          "scaled_distance": 1.9669015925549183
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 198.94525559169597,
+          "actual": 133.23901552515105,
+          "scaled_distance": 330272.966504533
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.womersley.maximum",
+          "reference": 0.18162172434111576,
+          "actual": 0.1816222971315505,
+          "scaled_distance": 3.15372776398171
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.knudsen.minimum",
+          "reference": 9.765016529451815e-05,
+          "actual": 9.765034064206072e-05,
+          "scaled_distance": 1.7774651504410044
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.002624978346170033,
+          "actual": 0.0026249949032737,
+          "scaled_distance": 6.305078370942371
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.008573425810310412,
+          "actual": 0.008573543278762204,
+          "scaled_distance": 13.699674486810753
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.001811701803173179,
+          "actual": 0.0018117136851387016,
+          "scaled_distance": 6.554794405763269
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.graetz.maximum",
+          "reference": 2.6957762640531038,
+          "actual": 2.6958197241544264,
+          "scaled_distance": 16.121287640981347
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mach.maximum",
+          "reference": 0.0364156180814016,
+          "actual": 0.036415818882051504,
+          "scaled_distance": 5.51395360909087
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.623200490128761,
+          "actual": 0.6232012050128206,
+          "scaled_distance": 1.147114137058219
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.376799509871239,
+          "actual": 0.3767987949871793,
+          "scaled_distance": 1.8972481220138875
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 548.2173268851374,
+          "actual": 548.226034848903,
+          "scaled_distance": 15.88389313215154
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.0364156180814016,
+          "actual": 0.036415818882051504,
+          "scaled_distance": 5.51395360909087
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.knudsen.minimum",
+          "reference": 9.765016529451815e-05,
+          "actual": 9.765034064206072e-05,
+          "scaled_distance": 1.7774651504410044
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 60.8410382676429,
+          "actual": 60.84127490981987,
+          "scaled_distance": 3.8895005641059193
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 390.2178615690221,
+          "actual": 187.72747132679117,
+          "scaled_distance": 518916.2508069816
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 195.10893078451105,
+          "actual": 93.86373566339559,
+          "scaled_distance": 518916.24947716994
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.womersley.maximum",
+          "reference": 0.2932966369945764,
+          "actual": 0.2932969414117809,
+          "scaled_distance": 1.0379111528515785
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00684548625153812,
+          "actual": 0.006845500461621744,
+          "scaled_distance": 2.0755251101201897
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836772647289568,
+          "actual": 0.004836746974185676,
+          "scaled_distance": 5.306802481985891
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.2591251532831455,
+          "actual": 0.2591189970746071,
+          "scaled_distance": 23.757573137209793
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.35103999472394487,
+          "actual": 0.3510338117987716,
+          "scaled_distance": 17.613114326304665
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7408748467168543,
+          "actual": 0.7408810029253929,
+          "scaled_distance": 8.309296911387037
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6489600052760551,
+          "actual": 0.6489661882012284,
+          "scaled_distance": 9.527330943233117
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 61.0015162595444,
+          "actual": 61.001753457072546,
+          "scaled_distance": 3.888372232152079
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.00010502051264111847,
+          "actual": 0.0014043120654117346,
+          "scaled_distance": 924557.317018369
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 39778.60449380309,
+          "actual": 2974.8109749321106,
+          "scaled_distance": 925215.803477451
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 19889.302246901545,
+          "actual": 1487.4054874660553,
+          "scaled_distance": 925215.8034541919
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.006845419247661749,
+          "actual": 0.006845428105303996,
+          "scaled_distance": 1.2937610840337452
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 5.488363095821813e-10,
+          "actual": 7.338926994719587e-09,
+          "scaled_distance": 6740.621754184427
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.014911048435828248,
+          "actual": 0.014911033246011542,
+          "scaled_distance": 1.0186271035734362
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836716528917508,
+          "actual": 0.004836695850209731,
+          "scaled_distance": 4.2744769466655335
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 9.717907485366264e-07,
+          "actual": 1.2994577531093632e-05,
+          "scaled_distance": 859103.2316512854
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 3.5218600743587474e-09,
+          "actual": 4.709359188137869e-08,
+          "scaled_distance": 41612.069966670206
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.maximum",
+          "reference": 0.040923955499352946,
+          "actual": 0.040923879329701526,
+          "scaled_distance": 1.8612030359018603
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 6.935865351148285e-05,
+          "actual": 0.000927449693821671,
+          "scaled_distance": 924219.2075890794
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 4.762123127602888e-09,
+          "actual": 6.367812317432982e-08,
+          "scaled_distance": 55388.93652424116
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448275331147444,
+          "scaled_distance": 1.3190379936447185
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.0002772396768956067,
+          "actual": 0.0002772401262173363,
+          "scaled_distance": 1.614870348397371
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.0007042643037644456,
+          "scaled_distance": 174733.8265536809
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 548.5453713776819,
+          "actual": 548.5440848038321,
+          "scaled_distance": 2.3454283175304314
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.minimum",
+          "reference": 0.005416716337858585,
+          "actual": 0.00541663985329158,
+          "scaled_distance": 14.117491990282309
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 1009.4042113873371,
+          "actual": 2384.8898653492247,
+          "scaled_distance": 576750.1775951915
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0027083581689292925,
+          "actual": 0.00270831992664579,
+          "scaled_distance": 14.11488666992412
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 504.70210569366856,
+          "actual": 1192.4449326746123,
+          "scaled_distance": 576750.1773533564
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.womersley.maximum",
+          "reference": 0.18240167134735857,
+          "actual": 0.18240219480515715,
+          "scaled_distance": 2.8697841566769355
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.0004851520224597407,
+          "scaled_distance": 1.5214432942722276
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.minimum",
+          "reference": 0.0005223296502727086,
+          "actual": 0.0005223290947577424,
+          "scaled_distance": 1.06150103644543
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.002647571898945338,
+          "actual": 0.002647587095013841,
+          "scaled_distance": 5.737424505137792
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.9548201234431158e-07,
+          "actual": 2.8976894019650613e-08,
+          "scaled_distance": 139278.6479473233
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.00646453138191652,
+          "actual": 0.006464506995974759,
+          "scaled_distance": 3.771684076718604
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mean_knudsen.minimum",
+          "reference": 9.650463400035086e-05,
+          "actual": 9.650473192726951e-05,
+          "scaled_distance": 1.004329910083874
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.minimum",
+          "reference": 0.0003607991302075489,
+          "actual": 0.00036079873339997656,
+          "scaled_distance": 1.0967620959766213
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.0018272953719212148,
+          "actual": 0.0018273063184431873,
+          "scaled_distance": 5.987247247399966
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 2.8595030052007334e-06,
+          "actual": 3.465588282937574e-06,
+          "scaled_distance": 135723.50143711476
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.697403354414102,
+          "actual": 2.69739781254006,
+          "scaled_distance": 2.0545210557042917
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 8.130799898114167e-08,
+          "scaled_distance": 92735.42359491231
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.0361379426490023,
+          "actual": 0.03613829348951214,
+          "scaled_distance": 9.708006880109163
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.0007042643037644456,
+          "scaled_distance": 174733.8265536809
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 606.5028006953752,
+          "actual": 606.5095015594939,
+          "scaled_distance": 11.048242592065609
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 8.130799898114167e-08,
+          "scaled_distance": 92735.42359491231
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.033442763713722734,
+          "actual": 0.03344264058344439,
+          "scaled_distance": 3.681711167300637
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.0004851520224597407,
+          "scaled_distance": 1.5214432942722276
+        },
+        {
+          "path": "valve_behavior.cold_to_large.open_time_fraction",
+          "reference": 0.37679950987123906,
+          "actual": 0.3767987949871793,
+          "scaled_distance": 1.8972481221612094
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.648960005276055,
+          "actual": 0.6489661882012284,
+          "scaled_distance": 9.527330943404191
+        },
+        {
+          "path": "valve_behavior.hot_to_small.estimated_crossing_angles[0]",
+          "reference": 3.0993717879988627,
+          "actual": 3.099375848624525,
+          "scaled_distance": 1.310142606306573
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "smooth_four_bar",
+      "intervals": 2048,
+      "elapsed_seconds": 5.388055746996542,
+      "state_scaled_distance": 0.02728606810225511,
+      "relative_outputs": {
+        "indicated_power_w": 3.47400901621655e-07,
+        "indicated_thermal_efficiency": 1.266458033403039e-07,
+        "heat_input_w": 2.207551262888794e-07,
+        "heat_out_w": 3.875016800352706e-07,
+        "total_mass_kg": 1.092949566762462e-14
+      },
+      "cycles": [
+        32,
+        32
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.0008376323397664277,
+      "conservation": {
+        "absolute_mass_residual": 4.336808689942018e-19,
+        "relative_mass_residual": 2.914532178033265e-16,
+        "absolute_energy_residual": 2.572946300460899e-10,
+        "relative_energy_residual": 2.3167969300476025e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.04344830223378628,
+          "scaled_distance": 1.9382102696115286
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.058301367791646797,
+          "actual": 0.05830162653862395,
+          "scaled_distance": 4.437998637768193
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.04344830223378628,
+          "scaled_distance": 1.9382102696115286
+        },
+        {
+          "path": ".validity.cold_isothermality_error",
+          "reference": 0.022813074740134328,
+          "actual": 0.02281292428048393,
+          "scaled_distance": 6.595036270910503
+        },
+        {
+          "path": ".validity.maximum_pressure_equalization_error",
+          "reference": 0.01491104843582831,
+          "actual": 0.014911013987381896,
+          "scaled_distance": 2.310108270041727
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.cold_to_large.maximum",
+          "reference": 0.013418307258312407,
+          "actual": 0.013418322116257826,
+          "scaled_distance": 1.107205363312512
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.minimum",
+          "reference": -0.0010846740833554225,
+          "actual": -0.0010846716795520008,
+          "scaled_distance": 2.214111452575172
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.maximum",
+          "reference": 0.005127149901391198,
+          "actual": 0.005127139489168242,
+          "scaled_distance": 2.030405342364598
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": 0.07359564270222871,
+          "actual": 0.07371080324578583,
+          "scaled_distance": 1562.3080495416164
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 1063.7202285801277,
+          "actual": 1063.7226315707248,
+          "scaled_distance": 2.25903870385842
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.minimum",
+          "reference": 95931.65374868365,
+          "actual": 95931.33000231418,
+          "scaled_distance": 3.3747606427431838
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.minimum",
+          "reference": 94325.32907907103,
+          "actual": 94324.78386057794,
+          "scaled_distance": 5.780191793745205
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -459.00747767996126,
+          "actual": -459.0018224023662,
+          "scaled_distance": 12.32066547437818
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.maximum",
+          "reference": 98.54715965784517,
+          "actual": 98.54762429297334,
+          "scaled_distance": 4.714828254730008
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 397.89051118339194,
+          "actual": 242.92070659200954,
+          "scaled_distance": 389478.5119177589
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 198.94525559169597,
+          "actual": 121.46035329600477,
+          "scaled_distance": 389478.5109389004
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.047714165694403024,
+          "actual": 0.04771775500665682,
+          "scaled_distance": 75.21806160485077
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.623200490128761,
+          "actual": 0.6232125310666281,
+          "scaled_distance": 19.32072599017582
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.9522858343055971,
+          "actual": 0.952282244993343,
+          "scaled_distance": 3.7691503492215115
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.376799509871239,
+          "actual": 0.37678746893337195,
+          "scaled_distance": 31.955736660673285
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.reynolds.maximum",
+          "reference": 254.63921780448246,
+          "actual": 254.6394844612099,
+          "scaled_distance": 1.0471931599697712
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 390.2178615690221,
+          "actual": 665.0394352264852,
+          "scaled_distance": 413241.01803170383
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 195.10893078451105,
+          "actual": 332.5197176132426,
+          "scaled_distance": 413241.01741032564
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00684548625153812,
+          "actual": 0.006845498037331276,
+          "scaled_distance": 1.721433803421337
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.2591251532831455,
+          "actual": 0.2591282201040365,
+          "scaled_distance": 11.835102539908691
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.35103999472394487,
+          "actual": 0.3510440181953627,
+          "scaled_distance": 11.461411526353604
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7408748467168543,
+          "actual": 0.7408717798959634,
+          "scaled_distance": 4.139453195157119
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6489600052760551,
+          "actual": 0.6489559818046373,
+          "scaled_distance": 6.199866224784701
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 254.63921780448246,
+          "actual": 254.6394844612099,
+          "scaled_distance": 1.0471931599697712
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.00010502051264111847,
+          "actual": 7.857799080086936e-05,
+          "scaled_distance": 249409.48861243084
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.minimum",
+          "reference": 0.0033985411930533747,
+          "actual": 0.003398545907837077,
+          "scaled_distance": 1.3868863166321372
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 39778.60449380309,
+          "actual": 53164.576016364896,
+          "scaled_distance": 251783.65982246542
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0016992705965266873,
+          "actual": 0.0016992729539185385,
+          "scaled_distance": 1.386478474375564
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 19889.302246901545,
+          "actual": 26582.288008182448,
+          "scaled_distance": 251783.6598177295
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.006845419247661749,
+          "actual": 0.006845429302391597,
+          "scaled_distance": 1.4686093150316826
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 5.488363095821813e-10,
+          "actual": 4.106479599964075e-10,
+          "scaled_distance": 138.11254840440054
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.014911048435828248,
+          "actual": 0.014911013987381825,
+          "scaled_distance": 2.3101082706233873
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836716528917508,
+          "actual": 0.004836710971217065,
+          "scaled_distance": 1.1488272224855487
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 9.717907485366264e-07,
+          "actual": 7.271089548411292e-07,
+          "scaled_distance": 124091.15616202627
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.maximum",
+          "reference": 2.429816791503972,
+          "actual": 2.4298129246828224,
+          "scaled_distance": 1.591403751763353
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 3.5218600743587474e-09,
+          "actual": 2.635111630014038e-09,
+          "scaled_distance": 883.6364005852381
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.maximum",
+          "reference": 0.040923955499352946,
+          "actual": 0.040923902213212154,
+          "scaled_distance": 1.302045173691583
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 6.935865351148285e-05,
+          "actual": 5.1895245356925305e-05,
+          "scaled_distance": 248205.54804545033
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 236.55900311821662,
+          "actual": 236.55867467103624,
+          "scaled_distance": 1.3884366042366425
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 4.762123127602888e-09,
+          "actual": 3.5630957174538675e-09,
+          "scaled_distance": 1193.3445564376102
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.043448218019902486,
+          "actual": 0.04344830223378628,
+          "scaled_distance": 1.9382102696115286
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.0002772396768956067,
+          "actual": 0.0002772406606171411,
+          "scaled_distance": 3.535506033607534
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.0002602063920605715,
+          "scaled_distance": 551215.4956887935
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 1009.4042113873371,
+          "actual": 2253.9606132197446,
+          "scaled_distance": 552164.2188336271
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 504.70210569366856,
+          "actual": 1126.9803066098723,
+          "scaled_distance": 552164.218588652
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.0004851524375942969,
+          "scaled_distance": 2.37536048664565
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.minimum",
+          "reference": 0.0005223296502727086,
+          "actual": 0.0005223290368130295,
+          "scaled_distance": 1.1722241970923504
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.9548201234431158e-07,
+          "actual": 3.813682585839094e-08,
+          "scaled_distance": 131616.52359567545
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.minimum",
+          "reference": 0.0003607991302075489,
+          "actual": 0.0003607986722371137,
+          "scaled_distance": 1.265814085751303
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 2.8595030052007334e-06,
+          "actual": 1.2805878720789785e-06,
+          "scaled_distance": 409098.04474673164
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 8.590974701837477e-08,
+          "scaled_distance": 88874.35626936112
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.0002602063920605715,
+          "scaled_distance": 551215.4956887935
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 8.590974701837477e-08,
+          "scaled_distance": 88874.35626936112
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.0004851524375942969,
+          "scaled_distance": 2.37536048664565
+        },
+        {
+          "path": "valve_behavior.cold_to_large.open_time_fraction",
+          "reference": 0.37679950987123906,
+          "actual": 0.37678746893337195,
+          "scaled_distance": 31.9557366608206
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.648960005276055,
+          "actual": 0.6489559818046373,
+          "scaled_distance": 6.199866224613626
+        },
+        {
+          "path": "valve_behavior.hot_to_small.estimated_crossing_angles[0]",
+          "reference": 3.0993717879988627,
+          "actual": 3.099376537141137,
+          "scaled_distance": 1.5322890539137428
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "smooth_four_bar",
+      "intervals": 256,
+      "elapsed_seconds": 5.573143791989423,
+      "state_scaled_distance": 0.032536622144795496,
+      "relative_outputs": {
+        "indicated_power_w": 2.1304545763930127e-07,
+        "indicated_thermal_efficiency": 5.5804335877409037e-08,
+        "heat_input_w": 1.5724113050924674e-07,
+        "heat_out_w": 4.603921515603556e-07,
+        "total_mass_kg": 1.661283341478942e-14
+      },
+      "cycles": [
+        32,
+        32
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.0020048920956300354,
+      "conservation": {
+        "absolute_mass_residual": -4.336808689942018e-19,
+        "relative_mass_residual": -2.9145321780332796e-16,
+        "absolute_energy_residual": 3.8692604675816256e-10,
+        "relative_energy_residual": 3.484056690955744e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448318806984174,
+          "scaled_distance": 2.319646992284373
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.058301367791646797,
+          "actual": 0.058301578554055836,
+          "scaled_distance": 3.6149757740775796
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448318806984174,
+          "scaled_distance": 2.319646992284373
+        },
+        {
+          "path": ".validity.cold_isothermality_error",
+          "reference": 0.022813074740134328,
+          "actual": 0.0228130301107475,
+          "scaled_distance": 1.9562216454911716
+        },
+        {
+          "path": ".validity.maximum_pressure_equalization_error",
+          "reference": 0.01491104843582831,
+          "actual": 0.014910953569509921,
+          "scaled_distance": 6.361722790643138
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.minimum",
+          "reference": -0.0004811944715869966,
+          "actual": -0.0004811938306400091,
+          "scaled_distance": 1.3292292327163742
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.maximum",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427533797272465,
+          "scaled_distance": 15.632714692218862
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.cold_to_large.maximum",
+          "reference": 0.013418307258312407,
+          "actual": 0.01341871817253429,
+          "scaled_distance": 30.620182674496487
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.minimum",
+          "reference": -0.0010846740833554225,
+          "actual": -0.001084668317816695,
+          "scaled_distance": 5.310561259427755
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": 0.07359564270222871,
+          "actual": 0.07389129800001268,
+          "scaled_distance": 4001.165287672055
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 1063.7202285801277,
+          "actual": 1063.7186633326726,
+          "scaled_distance": 1.4714841474216527
+        },
+        {
+          "path": ".diagnostics.temperature_extrema.S.maximum",
+          "reference": 488.47755097890007,
+          "actual": 488.476499742798,
+          "scaled_distance": 2.1520663494128836
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.maximum",
+          "reference": 456322.45653053134,
+          "actual": 456319.0047874144,
+          "scaled_distance": 7.564263094102266
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.C.maximum",
+          "reference": 460248.60517912207,
+          "actual": 460244.1416642076,
+          "scaled_distance": 9.698052018426608
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.minimum",
+          "reference": 95931.65374868365,
+          "actual": 95931.85465004478,
+          "scaled_distance": 2.0942090807006855
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.maximum",
+          "reference": 456301.8281934539,
+          "actual": 456297.00128744077,
+          "scaled_distance": 10.57831837366842
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.minimum",
+          "reference": 94325.32907907103,
+          "actual": 94325.12714326849,
+          "scaled_distance": 2.1408438699567256
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.maximum",
+          "reference": 463229.604326236,
+          "actual": 463226.08340966544,
+          "scaled_distance": 7.600802145781726
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -459.00747767996126,
+          "actual": -459.0085577875216,
+          "scaled_distance": 2.353131634892803
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.maximum",
+          "reference": 98.54715965784517,
+          "actual": 98.54821366961457,
+          "scaled_distance": 10.695391823498689
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 606.5028006953752,
+          "actual": 606.5061717799725,
+          "scaled_distance": 5.558203277463294
+        },
+        {
+          "path": ".maximum_absolute_mass_flow_kg_s",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427533797272465,
+          "scaled_distance": 15.632714692218862
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.absolute_gas_heat_J",
+          "reference": 65.79191911465998,
+          "actual": 65.79201443959386,
+          "scaled_distance": 1.4488830178514391
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.reynolds.maximum",
+          "reference": 548.2173268851374,
+          "actual": 548.2272053175202,
+          "scaled_distance": 18.018865661899827
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.minimum",
+          "reference": 0.005375931384261374,
+          "actual": 0.00537596860433287,
+          "scaled_distance": 6.922129220957409
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 397.89051118339194,
+          "actual": 168.93700153170857,
+          "scaled_distance": 575418.3692275535
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.002687965692130687,
+          "actual": 0.002687984302166435,
+          "scaled_distance": 6.920842093841164
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 198.94525559169597,
+          "actual": 84.46850076585429,
+          "scaled_distance": 575418.3677813808
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.womersley.maximum",
+          "reference": 0.18162172434111576,
+          "actual": 0.18162246482123134,
+          "scaled_distance": 4.077006879667737
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.knudsen.minimum",
+          "reference": 9.765016529451815e-05,
+          "actual": 9.764955464339608e-05,
+          "scaled_distance": 6.190066891817599
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.002624978346170033,
+          "actual": 0.0026249997505283346,
+          "scaled_distance": 8.150936913493103
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.008573425810310412,
+          "actual": 0.008573545871546734,
+          "scaled_distance": 14.00205190119692
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mean_knudsen.minimum",
+          "reference": 9.723187905297939e-05,
+          "actual": 9.723119010851589e-05,
+          "scaled_distance": 7.013450930039011
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.001811701803173179,
+          "actual": 0.0018117177681888567,
+          "scaled_distance": 8.807226341522265
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.graetz.maximum",
+          "reference": 2.6957762640531038,
+          "actual": 2.6958265191274946,
+          "scaled_distance": 18.641798866676368
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.047714165694403024,
+          "actual": 0.04771597546724156,
+          "scaled_distance": 37.927232830947354
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.623200490128761,
+          "actual": 0.6232074194375575,
+          "scaled_distance": 11.118766339495892
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.9522858343055971,
+          "actual": 0.9522840245327585,
+          "scaled_distance": 1.9004492904807007
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.376799509871239,
+          "actual": 0.37679258056244247,
+          "scaled_distance": 18.389860456666177
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 548.2173268851374,
+          "actual": 548.2272053175202,
+          "scaled_distance": 18.018865661899827
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.knudsen.minimum",
+          "reference": 9.765016529451815e-05,
+          "actual": 9.764955464339608e-05,
+          "scaled_distance": 6.190066891817599
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 60.8410382676429,
+          "actual": 60.84139130446522,
+          "scaled_distance": 5.802576320927184
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.reynolds.maximum",
+          "reference": 254.63921780448246,
+          "actual": 254.63957982225787,
+          "scaled_distance": 1.4216869751622512
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 390.2178615690221,
+          "actual": 410.76967801836423,
+          "scaled_distance": 50032.457357748
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 195.10893078451105,
+          "actual": 205.38483900918212,
+          "scaled_distance": 50032.45723594627
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.womersley.maximum",
+          "reference": 0.2932966369945764,
+          "actual": 0.29329699015059996,
+          "scaled_distance": 1.204086067397125
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00684548625153812,
+          "actual": 0.006845502736733338,
+          "scaled_distance": 2.4078271567772207
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.016896791598652504,
+          "actual": 0.016896763183185094,
+          "scaled_distance": 1.6816083476778605
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836772647289568,
+          "actual": 0.004836755378415641,
+          "scaled_distance": 3.5695918734137986
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.2591251532831455,
+          "actual": 0.2591176045379141,
+          "scaled_distance": 29.131545140300883
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.35103999472394487,
+          "actual": 0.3510333959608228,
+          "scaled_distance": 18.79769947461278
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7408748467168543,
+          "actual": 0.7408823954620859,
+          "scaled_distance": 10.188843855596048
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6489600052760551,
+          "actual": 0.6489666040391773,
+          "scaled_distance": 10.16809326239804
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 254.63921780448246,
+          "actual": 254.63957982225787,
+          "scaled_distance": 1.4216869751622512
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 61.0015162595444,
+          "actual": 61.00186970108214,
+          "scaled_distance": 5.79394588523538
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.00010502051264111847,
+          "actual": 0.0029561654640315243,
+          "scaled_distance": 964147.9268134765
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.minimum",
+          "reference": 0.0033985411930533747,
+          "actual": 0.0033985493774930584,
+          "scaled_distance": 2.4075072237190094
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 39778.60449380309,
+          "actual": 777.3698552499378,
+          "scaled_distance": 980457.5885423155
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0016992705965266873,
+          "actual": 0.0016992746887465292,
+          "scaled_distance": 2.4067992477549915
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 19889.302246901545,
+          "actual": 388.6849276249689,
+          "scaled_distance": 980457.5885176676
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.006845419247661749,
+          "actual": 0.006845432224232294,
+          "scaled_distance": 1.8953770547443018
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 5.488363095821813e-10,
+          "actual": 1.126015319086003e-08,
+          "scaled_distance": 10592.048789305209
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.014911048435828248,
+          "actual": 0.014910953569509985,
+          "scaled_distance": 6.361722782151049
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836716528917508,
+          "actual": 0.004836696887048179,
+          "scaled_distance": 4.060153010520475
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 9.717907485366264e-07,
+          "actual": 2.739148251493403e-05,
+          "scaled_distance": 930549.9194168724
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 3.5218600743587474e-09,
+          "actual": 1.8144360779327745e-07,
+          "scaled_distance": 150596.9024211357
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.maximum",
+          "reference": 0.040923955499352946,
+          "actual": 0.04092404465023523,
+          "scaled_distance": 2.178394258319916
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 6.935865351148285e-05,
+          "actual": 0.0022023086752753665,
+          "scaled_distance": 968066.8195514233
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 4.762123127602888e-09,
+          "actual": 1.9701638765305695e-07,
+          "scaled_distance": 160611.22179154077
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.043448218019902486,
+          "actual": 0.043448318806984174,
+          "scaled_distance": 2.319646992284373
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.0002772396768956067,
+          "actual": 0.0002772400462420789,
+          "scaled_distance": 1.3274382216992786
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.absolute_gas_heat_J",
+          "reference": 65.78779838982582,
+          "actual": 65.78789358043835,
+          "scaled_distance": 1.4469320402132484
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.00102459426137292,
+          "scaled_distance": 432494.12057276303
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 548.5453713776819,
+          "actual": 548.5283502533424,
+          "scaled_distance": 31.029565094575652
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.minimum",
+          "reference": 0.005416716337858585,
+          "actual": 0.005416602835809954,
+          "scaled_distance": 20.950164525631017
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 1009.4042113873371,
+          "actual": 572.4168218206958,
+          "scaled_distance": 432916.1541075052
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0027083581689292925,
+          "actual": 0.002708301417904977,
+          "scaled_distance": 20.94629826594526
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 504.70210569366856,
+          "actual": 286.2084109103479,
+          "scaled_distance": 432916.1536786224
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.womersley.maximum",
+          "reference": 0.18240167134735857,
+          "actual": 0.18240227246772314,
+          "scaled_distance": 3.295556907701622
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.minimum",
+          "reference": 9.68171610003356e-05,
+          "actual": 9.681639511779473e-05,
+          "scaled_distance": 7.829735938359663
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.00048515190635861226,
+          "scaled_distance": 1.2826270924223686
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.002647571898945338,
+          "actual": 0.002647589349574993,
+          "scaled_distance": 6.588650542628756
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.9548201234431158e-07,
+          "actual": 1.2051873905363924e-07,
+          "scaled_distance": 62705.479895654105
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.00646453138191652,
+          "actual": 0.006464416991486959,
+          "scaled_distance": 17.692347744357054
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mean_knudsen.minimum",
+          "reference": 9.650463400035086e-05,
+          "actual": 9.650397383579065e-05,
+          "scaled_distance": 6.770596771932679
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.0018272953719212148,
+          "actual": 0.0018273086184206926,
+          "scaled_distance": 7.245220716220945
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 2.8595030052007334e-06,
+          "actual": 5.04247024170816e-06,
+          "scaled_distance": 361270.6640141133
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.697403354414102,
+          "actual": 2.697321710705752,
+          "scaled_distance": 30.267508175535685
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 3.3828002950328335e-07,
+          "scaled_distance": 109429.1741426397
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.0361379426490023,
+          "actual": 0.03613828245495449,
+          "scaled_distance": 9.402675678811773
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.001583980882259091,
+          "scaled_distance": 632783.7264469769
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 606.5028006953752,
+          "actual": 606.5061717799725,
+          "scaled_distance": 5.558203277463294
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 2.468018119039244e-07,
+          "scaled_distance": 44087.7293214975
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.033442763713722734,
+          "actual": 0.033441996860074846,
+          "scaled_distance": 22.929645552216897
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.minimum",
+          "reference": 8.129299521460557e-05,
+          "actual": 8.129357626245823e-05,
+          "scaled_distance": 7.060670820789007
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.00048515190635861226,
+          "scaled_distance": 1.2826270924223686
+        },
+        {
+          "path": "valve_behavior.cold_to_large.open_time_fraction",
+          "reference": 0.37679950987123906,
+          "actual": 0.37679258056244247,
+          "scaled_distance": 18.389860456813498
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.648960005276055,
+          "actual": 0.6489666040391773,
+          "scaled_distance": 10.168093262569116
+        },
+        {
+          "path": "valve_behavior.hot_to_small.estimated_crossing_angles[0]",
+          "reference": 3.0993717879988627,
+          "actual": 3.0993772801656387,
+          "scaled_distance": 1.772022089455871
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "smooth_four_bar",
+      "intervals": 512,
+      "elapsed_seconds": 5.2550216740055475,
+      "state_scaled_distance": 0.018608729974989423,
+      "relative_outputs": {
+        "indicated_power_w": 3.239435702365321e-07,
+        "indicated_thermal_efficiency": 3.0330221219356545e-07,
+        "heat_input_w": 2.0641364299095807e-08,
+        "heat_out_w": 2.6406218791258386e-07,
+        "total_mass_kg": 2.098463168183927e-14
+      },
+      "cycles": [
+        32,
+        32
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.004262507110826983,
+      "conservation": {
+        "absolute_mass_residual": -2.8189256484623115e-18,
+        "relative_mass_residual": -1.8944459157216367e-15,
+        "absolute_energy_residual": 6.376481564984715e-10,
+        "relative_energy_residual": 5.7416717236414495e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.058301367791646797,
+          "actual": 0.05830148653199448,
+          "scaled_distance": 2.0366257898985825
+        },
+        {
+          "path": ".validity.cold_isothermality_error",
+          "reference": 0.022813074740134328,
+          "actual": 0.02281294584704449,
+          "scaled_distance": 5.649718049270373
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.minimum",
+          "reference": -0.0004811944715869966,
+          "actual": -0.0004811908026695105,
+          "scaled_distance": 7.608792100092196
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.maximum",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427473302425129,
+          "scaled_distance": 20.137592331947516
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.minimum",
+          "reference": -0.0010846740833554225,
+          "actual": -0.001084670656454072,
+          "scaled_distance": 3.1564733865514767
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": 0.07359564270222871,
+          "actual": 0.07354255507165527,
+          "scaled_distance": 721.3322323441581
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 1063.7202285801277,
+          "actual": 1063.7240105189464,
+          "scaled_distance": 3.555375997714666
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.minimum",
+          "reference": 95931.65374868365,
+          "actual": 95931.31838157539,
+          "scaled_distance": 3.4958962464436563
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.minimum",
+          "reference": 94325.32907907103,
+          "actual": 94324.78560536553,
+          "scaled_distance": 5.761694242725747
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -459.00747767996126,
+          "actual": -459.0060866692685,
+          "scaled_distance": 3.0304750083187697
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.maximum",
+          "reference": 98.54715965784517,
+          "actual": 98.54797652671124,
+          "scaled_distance": 8.289047493095994
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 606.5028006953752,
+          "actual": 606.5045973840461,
+          "scaled_distance": 2.962366115056948
+        },
+        {
+          "path": ".maximum_absolute_mass_flow_kg_s",
+          "reference": 0.013427743724991793,
+          "actual": 0.013427473302425129,
+          "scaled_distance": 20.137592331947516
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 397.89051118339194,
+          "actual": 1041.7780048113066,
+          "scaled_distance": 618065.9315479345
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 198.94525559169597,
+          "actual": 520.8890024056533,
+          "scaled_distance": 618065.9309546546
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.008573425810310412,
+          "actual": 0.008573491841111815,
+          "scaled_distance": 7.700841359070887
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.047714165694403024,
+          "actual": 0.04771374127298971,
+          "scaled_distance": 8.894895514585231
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 60.8410382676429,
+          "actual": 60.841291560917405,
+          "scaled_distance": 4.163180363902752
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 390.2178615690221,
+          "actual": 114.3812229255451,
+          "scaled_distance": 706878.5545271822
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 195.10893078451105,
+          "actual": 57.19061146277255,
+          "scaled_distance": 706878.5527156851
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.womersley.maximum",
+          "reference": 0.2932966369945764,
+          "actual": 0.29329697162418183,
+          "scaled_distance": 1.140920285131946
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00684548625153812,
+          "actual": 0.0068455018719263605,
+          "scaled_distance": 2.281513761756336
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.016896791598652504,
+          "actual": 0.01689677191842478,
+          "scaled_distance": 1.1646627081623404
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836772647289568,
+          "actual": 0.004836752824150383,
+          "scaled_distance": 4.097575605569586
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.2591251532831455,
+          "actual": 0.2591280212920076,
+          "scaled_distance": 11.067879806833975
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.35103999472394487,
+          "actual": 0.3510415018380656,
+          "scaled_distance": 4.293252562961161
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7408748467168543,
+          "actual": 0.7408719787079924,
+          "scaled_distance": 3.871105900759666
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6489600052760551,
+          "actual": 0.6489584981619344,
+          "scaled_distance": 2.3223492759529933
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 61.0015162595444,
+          "actual": 61.0017700089663,
+          "scaled_distance": 4.159705819964783
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.00010502051264111847,
+          "actual": 0.01403723007134942,
+          "scaled_distance": 992447.7293717037
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 39778.60449380309,
+          "actual": 297.604011511171,
+          "scaled_distance": 992518.4903721283
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 19889.302246901545,
+          "actual": 148.8020057555855,
+          "scaled_distance": 992518.4903471774
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.006845419247661749,
+          "actual": 0.006845431954023816,
+          "scaled_distance": 1.8559100787112284
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 5.488363095821813e-10,
+          "actual": 6.480546356058163e-08,
+          "scaled_distance": 60345.88424831424
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.004836716528917508,
+          "actual": 0.004836694106856005,
+          "scaled_distance": 4.634844015656913
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 9.717907485366264e-07,
+          "actual": 0.00012989115930268574,
+          "scaled_distance": 984935.6460815137
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 3.5218600743587474e-09,
+          "actual": 4.707394294872508e-07,
+          "scaled_distance": 317675.28635291965
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 6.935865351148285e-05,
+          "actual": 0.009270625631956665,
+          "scaled_distance": 992411.4005133064
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 4.762123127602888e-09,
+          "actual": 6.365150299672286e-07,
+          "scaled_distance": 386035.50549259345
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.0002772396768956067,
+          "actual": 0.00027724066232230176,
+          "scaled_distance": 3.541634378044764
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.00032833883657008134,
+          "scaled_distance": 434155.62936813815
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 548.5453713776819,
+          "actual": 548.5368006499731,
+          "scaled_distance": 15.624464520944084
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.minimum",
+          "reference": 0.005416716337858585,
+          "actual": 0.005416605865803457,
+          "scaled_distance": 20.390889488966028
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 1009.4042113873371,
+          "actual": 1786.249102487441,
+          "scaled_distance": 434902.88649181445
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0027083581689292925,
+          "actual": 0.0027083029329017286,
+          "scaled_distance": 20.38712644100087
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 504.70210569366856,
+          "actual": 893.1245512437205,
+          "scaled_distance": 434902.88624834176
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.00048515237975689084,
+          "scaled_distance": 2.2563910625353993
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.minimum",
+          "reference": 0.0005223296502727086,
+          "actual": 0.0005223289353240475,
+          "scaled_distance": 1.3661535530680402
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.9548201234431158e-07,
+          "actual": 6.973791878387369e-08,
+          "scaled_distance": 105182.75663040446
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.00646453138191652,
+          "actual": 0.006464488065202677,
+          "scaled_distance": 6.69963708854466
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.minimum",
+          "reference": 0.0003607991302075489,
+          "actual": 0.0003607986110319013,
+          "scaled_distance": 1.4349831281378695
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 2.8595030052007334e-06,
+          "actual": 1.6158970133299089e-06,
+          "scaled_distance": 322219.20547672804
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.697403354414102,
+          "actual": 2.697360114449333,
+          "scaled_distance": 16.030212414546856
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 1.084043582011249e-07,
+          "scaled_distance": 70000.39630111447
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.0361379426490023,
+          "actual": 0.036138344486777545,
+          "scaled_distance": 11.119121858702522
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0005810307732359664,
+          "actual": 0.00032833883657008134,
+          "scaled_distance": 434155.62936813815
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 606.5028006953752,
+          "actual": 606.5045973840461,
+          "scaled_distance": 2.962366115056948
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 1.9183315110315155e-07,
+          "actual": 1.084043582011249e-07,
+          "scaled_distance": 70000.39630111447
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.033442763713722734,
+          "actual": 0.03344217341192457,
+          "scaled_distance": 17.650579139881184
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.maximum",
+          "reference": 0.00048515128280700613,
+          "actual": 0.00048515237975689084,
+          "scaled_distance": 2.2563910625353993
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.648960005276055,
+          "actual": 0.6489584981619345,
+          "scaled_distance": 2.3223492756108395
+        },
+        {
+          "path": "valve_behavior.hot_to_small.estimated_crossing_angles[0]",
+          "reference": 3.0993717879988627,
+          "actual": 3.0993768244993682,
+          "scaled_distance": 1.6250037235628896
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "six_bar",
+      "intervals": 1024,
+      "elapsed_seconds": 5.045110923005268,
+      "state_scaled_distance": 0.010590944533174844,
+      "relative_outputs": {
+        "indicated_power_w": 2.0135514989875014e-07,
+        "indicated_thermal_efficiency": 5.035517973410079e-07,
+        "heat_input_w": 3.021967996073951e-07,
+        "heat_out_w": 9.439044276593723e-08,
+        "total_mass_kg": 3.760686327125231e-15
+      },
+      "cycles": [
+        27,
+        27
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.007628993164336115,
+      "conservation": {
+        "absolute_mass_residual": 4.336808689942018e-19,
+        "relative_mass_residual": 2.8928356362501676e-16,
+        "absolute_energy_residual": 3.8331293694682245e-10,
+        "relative_energy_residual": 3.4533152936562267e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000242500861796,
+          "scaled_distance": 1.4766734199015783
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.07452803328433229,
+          "actual": 0.07452815702738243,
+          "scaled_distance": 1.6603307359895854
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000242500861796,
+          "scaled_distance": 1.4766734199015783
+        },
+        {
+          "path": ".validity.cold_isothermality_error",
+          "reference": 0.019394776494744692,
+          "actual": 0.019394566071346448,
+          "scaled_distance": 10.848928801641463
+        },
+        {
+          "path": ".validity.maximum_pressure_equalization_error",
+          "reference": 0.01159227341921999,
+          "actual": 0.011592256280617812,
+          "scaled_distance": 1.4783229514502625
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.maximum",
+          "reference": 0.01079551420246375,
+          "actual": 0.010795545806484601,
+          "scaled_distance": 2.9272344524065925
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.cold_to_large.maximum",
+          "reference": 0.010570177753690608,
+          "actual": 0.010570162811623037,
+          "scaled_distance": 1.4134723603408277
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.hot_to_small.maximum",
+          "reference": 0.005864627229183385,
+          "actual": 0.0058646187542400465,
+          "scaled_distance": 1.4448486081915553
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": -0.8304926607522432,
+          "actual": -0.8305586807259376,
+          "scaled_distance": 79.48853673800168
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 911.2876144116111,
+          "actual": 911.27016005797,
+          "scaled_distance": 19.153506912587865
+        },
+        {
+          "path": ".diagnostics.temperature_extrema.L.maximum",
+          "reference": 585.2458200669299,
+          "actual": 585.2464692398719,
+          "scaled_distance": 1.109229999620729
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.maximum",
+          "reference": 499823.7150068942,
+          "actual": 499824.2750732804,
+          "scaled_distance": 1.1205265812688996
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.maximum",
+          "reference": 504242.5652057981,
+          "actual": 504244.23655427014,
+          "scaled_distance": 3.3145613789963955
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -523.3723660444764,
+          "actual": -523.3631760442023,
+          "scaled_distance": 17.55920039490276
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.maximum",
+          "reference": 170.45246027743698,
+          "actual": 170.45226425019538,
+          "scaled_distance": 1.1500405457970242
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 492.53206314864684,
+          "actual": 492.5285298052621,
+          "scaled_distance": 7.173834237246647
+        },
+        {
+          "path": ".maximum_absolute_mass_flow_kg_s",
+          "reference": 0.01079551420246375,
+          "actual": 0.010795545806484601,
+          "scaled_distance": 2.9272344524065925
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.absolute_gas_heat_J",
+          "reference": 63.66886310976389,
+          "actual": 63.6689845700414,
+          "scaled_distance": 1.9076835671981178
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.reynolds.maximum",
+          "reference": 430.61089178856713,
+          "actual": 430.61037952478785,
+          "scaled_distance": 1.1896210427186622
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.minimum",
+          "reference": 0.007220897286455576,
+          "actual": 0.0072210719914302226,
+          "scaled_distance": 24.190422755966534
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 7858.892143242849,
+          "actual": 3035.774145068778,
+          "scaled_distance": 613714.7462581375
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.003610448643227788,
+          "actual": 0.0036105359957151113,
+          "scaled_distance": 24.187073706866002
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 3929.4460716214244,
+          "actual": 1517.887072534389,
+          "scaled_distance": 613714.7461800458
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.knudsen.minimum",
+          "reference": 8.976126962978918e-05,
+          "actual": 8.976159331230919e-05,
+          "scaled_distance": 3.5662939377429015
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.0028474718771222796,
+          "actual": 0.002847467514243509,
+          "scaled_distance": 1.5316559048867386
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.0058979609972211345,
+          "actual": 0.005897809977375383,
+          "scaled_distance": 25.601092433459083
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mean_knudsen.minimum",
+          "reference": 8.953354057539694e-05,
+          "actual": 8.953372926729069e-05,
+          "scaled_distance": 2.0842165154905787
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.graetz.maximum",
+          "reference": 2.117772068963854,
+          "actual": 2.117769525246059,
+          "scaled_distance": 1.2011285969896994
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027054117378662635,
+          "scaled_distance": 31.20887864964868
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.04227392162520098,
+          "actual": 0.04227478486865725,
+          "scaled_distance": 20.419336008892255
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.6158614420482691,
+          "actual": 0.6158638958891651,
+          "scaled_distance": 3.9843818220716583
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.3841385579517309,
+          "actual": 0.3841361041108349,
+          "scaled_distance": 6.387889102379771
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 430.61089178856713,
+          "actual": 430.61037952478785,
+          "scaled_distance": 1.1896210427186622
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027054117378662635,
+          "scaled_distance": 31.20887864964868
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.knudsen.minimum",
+          "reference": 8.976126962978918e-05,
+          "actual": 8.976159331230919e-05,
+          "scaled_distance": 3.5662939377429015
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 58.382434841570344,
+          "actual": 58.38262163641878,
+          "scaled_distance": 3.199493959052521
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 79.01601874357631,
+          "actual": 533.4451684592132,
+          "scaled_distance": 851876.023502697
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 39.508009371788155,
+          "actual": 266.7225842296066,
+          "scaled_distance": 851876.0219057644
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.012933395209279342,
+          "actual": 0.012933375600409913,
+          "scaled_distance": 1.5160252266896492
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.thermal_diffusion_time_s.minimum",
+          "reference": 0.0012369878892984443,
+          "actual": 0.0012369891448631464,
+          "scaled_distance": 1.0141968589387622
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.03837224910002306,
+          "scaled_distance": 1.5590967706563377
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.27850608982023783,
+          "actual": 0.27848593493444007,
+          "scaled_distance": 72.36758608469134
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.3400079813531697,
+          "actual": 0.339993661533875,
+          "scaled_distance": 42.116003046985476
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7214939101797622,
+          "actual": 0.7215140650655599,
+          "scaled_distance": 27.934116380413435
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6599920186468303,
+          "actual": 0.660006338466125,
+          "scaled_distance": 21.696454660568126
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.03837224910002306,
+          "scaled_distance": 1.5590967706563377
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 58.61821935873293,
+          "actual": 58.61840796004915,
+          "scaled_distance": 3.2174417484842377
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.0001910214736992973,
+          "scaled_distance": 717822.0217226092
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.maximum",
+          "reference": 302.87803047941014,
+          "actual": 302.8784377651769,
+          "scaled_distance": 1.344716937975783
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 4846.274878941539,
+          "actual": 24316.416553725307,
+          "scaled_distance": 800699.4628902349
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 2423.1374394707696,
+          "actual": 12158.208276862653,
+          "scaled_distance": 800699.4628573065
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.4965602079712117e-09,
+          "actual": 8.132645664706086e-10,
+          "scaled_distance": 682.2745765184751
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.01159227341921992,
+          "actual": 0.011592256280617901,
+          "scaled_distance": 1.4783229376841374
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 6.303768230123677e-06,
+          "actual": 1.7688295268477164e-06,
+          "scaled_distance": 620903.9718117082
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.maximum",
+          "reference": 2.797098842030983,
+          "actual": 2.7971033653693107,
+          "scaled_distance": 1.6171503587434144
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 5.78173114963049e-09,
+          "scaled_distance": 22573.51875389405
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.maximum",
+          "reference": 0.03803505511821704,
+          "actual": 0.038034982701486836,
+          "scaled_distance": 1.903896972954283
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.00012610446052621765,
+          "scaled_distance": 813218.3916185736
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 7.815031552360966e-09,
+          "scaled_distance": 20597.541664227196
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000242500861796,
+          "scaled_distance": 1.4766734199015783
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.absolute_gas_heat_J",
+          "reference": 63.67586949057953,
+          "actual": 63.67599027387657,
+          "scaled_distance": 1.8968420377271669
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0007450558635819392,
+          "scaled_distance": 341807.08920292405
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 439.78543730563035,
+          "actual": 439.78775236643776,
+          "scaled_distance": 5.264041096378122
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.minimum",
+          "reference": 0.007067999541196201,
+          "actual": 0.00706812171639491,
+          "scaled_distance": 17.282938901088134
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 729.3826242311279,
+          "actual": 998.8066758364439,
+          "scaled_distance": 269745.94569058396
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0035339997705981004,
+          "actual": 0.003534060858197455,
+          "scaled_distance": 17.28049439735901
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 364.69131211556396,
+          "actual": 499.40333791822195,
+          "scaled_distance": 269745.9454205157
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00286201980609191,
+          "actual": 0.0028620150123269063,
+          "scaled_distance": 1.674373678336262
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 7.380631722089409e-08,
+          "actual": 1.5556042487676367e-07,
+          "scaled_distance": 70748.44888755027
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.004482146345551947,
+          "actual": 0.004482179010680963,
+          "scaled_distance": 7.286153182547694
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.0019756830225198152,
+          "actual": 0.0019756773966223373,
+          "scaled_distance": 2.846130317212856
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 5.573672633157207e-06,
+          "actual": 3.6668695836895465e-06,
+          "scaled_distance": 290066.6272685776
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.1628944069393827,
+          "actual": 2.1629055328718385,
+          "scaled_distance": 5.14397283779402
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.9378671365522666e-07,
+          "scaled_distance": 57047.34236365862
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.02763827527838378,
+          "actual": 0.027637649929170973,
+          "scaled_distance": 22.6253838608307
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0007450558635819392,
+          "scaled_distance": 341807.08920292405
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 492.53206314864684,
+          "actual": 492.5285298052621,
+          "scaled_distance": 7.173834237246647
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.9378671365522666e-07,
+          "scaled_distance": 57047.34236365862
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.knudsen.minimum",
+          "reference": 7.398887329143504e-05,
+          "actual": 7.398903470658895e-05,
+          "scaled_distance": 2.152516758470986
+        },
+        {
+          "path": "valve_behavior.cold_to_large.open_time_fraction",
+          "reference": 0.38413855795173085,
+          "actual": 0.3841361041108348,
+          "scaled_distance": 6.387889102379772
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.6599920186468304,
+          "actual": 0.660006338466125,
+          "scaled_distance": 21.69645466039991
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "six_bar",
+      "intervals": 2048,
+      "elapsed_seconds": 4.9572880339983385,
+      "state_scaled_distance": 0.014145207648124018,
+      "relative_outputs": {
+        "indicated_power_w": 3.518749157271443e-08,
+        "indicated_thermal_efficiency": 4.3609004842203877e-07,
+        "heat_input_w": 4.009023819098301e-07,
+        "heat_out_w": 1.6065043867626271e-07,
+        "total_mass_kg": 1.3017760363125799e-15
+      },
+      "cycles": [
+        27,
+        27
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.008618804992901678,
+      "conservation": {
+        "absolute_mass_residual": -2.168404344971009e-18,
+        "relative_mass_residual": -1.4464178181250848e-15,
+        "absolute_energy_residual": 4.931806074637279e-10,
+        "relative_energy_residual": 4.443127128660019e-15
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000276953360185,
+          "scaled_distance": 2.3169508471876994
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.07452803328433229,
+          "actual": 0.07452810972573073,
+          "scaled_distance": 1.0256582794093323
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000276953360185,
+          "scaled_distance": 2.3169508471876994
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.minimum",
+          "reference": -0.0007547826612689076,
+          "actual": -0.0007547782711507477,
+          "scaled_distance": 5.808704519077503
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.maximum",
+          "reference": 0.0058885407303762944,
+          "actual": 0.005888529349294673,
+          "scaled_distance": 1.9324226017662212
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": -0.8304926607522432,
+          "actual": -0.8306396367829405,
+          "scaled_distance": 176.94298134340085
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 911.2876144116111,
+          "actual": 911.2895657749274,
+          "scaled_distance": 2.1413208132865083
+        },
+        {
+          "path": ".diagnostics.temperature_extrema.L.maximum",
+          "reference": 585.2458200669299,
+          "actual": 585.2464741444209,
+          "scaled_distance": 1.1176103038877292
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.maximum",
+          "reference": 499823.7150068942,
+          "actual": 499824.56175901403,
+          "scaled_distance": 1.6940986590395535
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.C.maximum",
+          "reference": 502344.7187036505,
+          "actual": 502343.3651365724,
+          "scaled_distance": 2.694498474310316
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.minimum",
+          "reference": 121153.42607727004,
+          "actual": 121153.29837853249,
+          "scaled_distance": 1.054024980386206
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.maximum",
+          "reference": 499819.7833258567,
+          "actual": 499820.48638746917,
+          "scaled_distance": 1.4066282427105443
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.minimum",
+          "reference": 119859.81298964572,
+          "actual": 119860.05585779718,
+          "scaled_distance": 2.0262642939498448
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.maximum",
+          "reference": 504242.5652057981,
+          "actual": 504243.8865166444,
+          "scaled_distance": 2.6203804976888074
+        },
+        {
+          "path": ".diagnostics.hot_heat_rate_extrema.minimum",
+          "reference": -523.3723660444764,
+          "actual": -523.3733888169717,
+          "scaled_distance": 1.9541927716907352
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 492.53206314864684,
+          "actual": 492.5223249537341,
+          "scaled_distance": 19.771697360636455
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.minimum",
+          "reference": 0.007220897286455576,
+          "actual": 0.007220757703481394,
+          "scaled_distance": 19.32774292476126
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 7858.892143242849,
+          "actual": 219.10436033985357,
+          "scaled_distance": 972120.1974377059
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.003610448643227788,
+          "actual": 0.003610378851740697,
+          "scaled_distance": 19.325067025858335
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 3929.4460716214244,
+          "actual": 109.55218016992679,
+          "scaled_distance": 972120.197314009
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.0058979609972211345,
+          "actual": 0.005897996279841365,
+          "scaled_distance": 5.981122644779559
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mean_knudsen.minimum",
+          "reference": 8.953354057539694e-05,
+          "actual": 8.953367822727923e-05,
+          "scaled_distance": 1.5204494612274058
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027055416937369087,
+          "scaled_distance": 16.823087847737952
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.04227392162520098,
+          "actual": 0.042277500091366556,
+          "scaled_distance": 84.64032919432347
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.6158614420482691,
+          "actual": 0.6158692635270602,
+          "scaled_distance": 12.699880566221953
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.9577260783747991,
+          "actual": 0.9577224999086335,
+          "scaled_distance": 3.7364153592510094
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.3841385579517309,
+          "actual": 0.3841307364729398,
+          "scaled_distance": 20.361034496905717
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027055416937369087,
+          "scaled_distance": 16.823087847737952
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 58.382434841570344,
+          "actual": 58.382609560287904,
+          "scaled_distance": 2.992649966879519
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.reynolds.maximum",
+          "reference": 301.6480357362622,
+          "actual": 301.6476105368145,
+          "scaled_distance": 1.409587983084516
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 79.01601874357631,
+          "actual": 116.46983709328855,
+          "scaled_distance": 321575.25899291586
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 39.508009371788155,
+          "actual": 58.23491854664427,
+          "scaled_distance": 321575.2562318984
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.012933395209279342,
+          "actual": 0.012933444255254185,
+          "scaled_distance": 3.7918888414780647
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.03837235218095644,
+          "scaled_distance": 1.1271684357094691
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.27850608982023783,
+          "actual": 0.2784990975080175,
+          "scaled_distance": 25.106406536570812
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.3400079813531697,
+          "actual": 0.34000353880111955,
+          "scaled_distance": 13.065984411472707
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7214939101797622,
+          "actual": 0.7215009024919826,
+          "scaled_distance": 9.691328874261497
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6599920186468303,
+          "actual": 0.6599964611988804,
+          "scaled_distance": 6.731165362441496
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 301.6480357362622,
+          "actual": 301.6476105368145,
+          "scaled_distance": 1.409587983084516
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.03837235218095644,
+          "scaled_distance": 1.1271684357094691
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 58.61821935873293,
+          "actual": 58.6183953911153,
+          "scaled_distance": 3.0030228257314744
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.0001725706187573678,
+          "scaled_distance": 744935.7858485748
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.maximum",
+          "reference": 302.87803047941014,
+          "actual": 302.8784529664067,
+          "scaled_distance": 1.394906078781422
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.minimum",
+          "reference": 0.003646672712407861,
+          "actual": 0.0036466804902317027,
+          "scaled_distance": 2.132265658247035
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 4846.274878941539,
+          "actual": 15607.83668024773,
+          "scaled_distance": 689497.3352864353
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0018233363562039306,
+          "actual": 0.0018233402451158513,
+          "scaled_distance": 2.1316812646110463
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 2423.1374394707696,
+          "actual": 7803.918340123865,
+          "scaled_distance": 689497.335242259
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.4965602079712117e-09,
+          "actual": 1.691166982800085e-09,
+          "scaled_distance": 194.27821792124766
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 6.303768230123677e-06,
+          "actual": 1.6009548430444546e-06,
+          "scaled_distance": 643888.6392482896
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.maximum",
+          "reference": 2.797098842030983,
+          "actual": 2.797106159073996,
+          "scaled_distance": 2.615932317619417
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 9.091128489792029e-09,
+          "scaled_distance": 19357.420770545326
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.maximum",
+          "reference": 0.03803505511821704,
+          "actual": 0.03803514410441266,
+          "scaled_distance": 2.339516733773072
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.00012713615210214124,
+          "scaled_distance": 811702.3078312165
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 271.3172133833851,
+          "actual": 271.3160579181085,
+          "scaled_distance": 4.258724530914715
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 1.1273987438091374e-08,
+          "scaled_distance": 17236.101527200084
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.04100018195541681,
+          "actual": 0.041000276953360185,
+          "scaled_distance": 2.3169508471876994
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0004329986906343925,
+          "scaled_distance": 617113.3082457208
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 439.78543730563035,
+          "actual": 439.78642374935004,
+          "scaled_distance": 2.2430062961690855
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 729.3826242311279,
+          "actual": 1718.635160406821,
+          "scaled_distance": 575603.5710138282
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 364.69131211556396,
+          "actual": 859.3175802034104,
+          "scaled_distance": 575603.5706789091
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.womersley.maximum",
+          "reference": 0.18964493557431825,
+          "actual": 0.1896446491528777,
+          "scaled_distance": 1.5102956974531259
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.minimum",
+          "reference": 8.930660881945282e-05,
+          "actual": 8.930702710306829e-05,
+          "scaled_distance": 4.631794765980311
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00286201980609191,
+          "actual": 0.0028620111610604547,
+          "scaled_distance": 3.019549999990582
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 7.380631722089409e-08,
+          "actual": 5.355892652505025e-08,
+          "scaled_distance": 18855.719482304667
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.004482146345551947,
+          "actual": 0.004482186377653155,
+          "scaled_distance": 8.929385895743692
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mean_knudsen.minimum",
+          "reference": 8.913694723090542e-05,
+          "actual": 8.913708395074627e-05,
+          "scaled_distance": 1.5167990227748134
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.0019756830225198152,
+          "actual": 0.001975678352206315,
+          "scaled_distance": 2.362702288062476
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 5.573672633157207e-06,
+          "actual": 2.1310478996862032e-06,
+          "scaled_distance": 523698.8401440335
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.1628944069393827,
+          "actual": 2.162898915886944,
+          "scaled_distance": 2.084676932104058
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.1262160856215268e-07,
+          "scaled_distance": 121158.33529011434
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.02763827527838378,
+          "actual": 0.027638400786684073,
+          "scaled_distance": 4.540919727584632
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0004329986906343925,
+          "scaled_distance": 617113.3082457208
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 492.53206314864684,
+          "actual": 492.5223249537341,
+          "scaled_distance": 19.771697360636455
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.1262160856215268e-07,
+          "scaled_distance": 121158.33529011434
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.025301957821495986,
+          "actual": 0.025302110532528246,
+          "scaled_distance": 6.035267168608451
+        },
+        {
+          "path": "valve_behavior.cold_to_large.open_time_fraction",
+          "reference": 0.38413855795173085,
+          "actual": 0.3841307364729398,
+          "scaled_distance": 20.36103449676121
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.6599920186468304,
+          "actual": 0.6599964611988806,
+          "scaled_distance": 6.731165362441495
+        }
+      ],
+      "passed": false
+    },
+    {
+      "mechanism": "six_bar",
+      "intervals": 512,
+      "elapsed_seconds": 6.031358064006781,
+      "state_scaled_distance": 0.018619381357508454,
+      "relative_outputs": {
+        "indicated_power_w": 5.974042776762193e-08,
+        "indicated_thermal_efficiency": 1.5496270241860626e-07,
+        "heat_input_w": 9.522225981844678e-08,
+        "heat_out_w": 1.8889943970059732e-08,
+        "total_mass_kg": 9.11243225418806e-15
+      },
+      "cycles": [
+        27,
+        27
+      ],
+      "validity_classification_equal": true,
+      "domain_classification_equal": true,
+      "relative_conservation_scaled_distance": 0.0034289580370592478,
+      "conservation": {
+        "absolute_mass_residual": 2.168404344971009e-18,
+        "relative_mass_residual": 1.4464178181251042e-15,
+        "absolute_energy_residual": -8.288481012641569e-11,
+        "relative_energy_residual": -7.467198511586329e-16
+      },
+      "failed_fields": [
+        {
+          "path": ".maximum_tube_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.04100027300444289,
+          "scaled_distance": 2.2206390046883246
+        },
+        {
+          "path": ".validity.hot_isothermality_error",
+          "reference": 0.07452803328433229,
+          "actual": 0.07452791607515775,
+          "scaled_distance": 1.5726646297097304
+        },
+        {
+          "path": ".validity.maximum_mach_number",
+          "reference": 0.04100018195541681,
+          "actual": 0.04100027300444289,
+          "scaled_distance": 2.2206390046883246
+        },
+        {
+          "path": ".validity.maximum_pressure_equalization_error",
+          "reference": 0.01159227341921999,
+          "actual": 0.011592238837601715,
+          "scaled_distance": 2.9829037084754786
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.minimum",
+          "reference": -0.0007547826612689076,
+          "actual": -0.0007547817039665877,
+          "scaled_distance": 1.2666370493091983
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.small_to_cold.maximum",
+          "reference": 0.01079551420246375,
+          "actual": 0.010795556396002406,
+          "scaled_distance": 3.9080552269106095
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.cold_to_large.maximum",
+          "reference": 0.010570177753690608,
+          "actual": 0.010570138607760016,
+          "scaled_distance": 3.7030812937456434
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.large_to_hot.maximum",
+          "reference": 0.0058885407303762944,
+          "actual": 0.005888530091979245,
+          "scaled_distance": 1.8063203119905038
+        },
+        {
+          "path": ".diagnostics.mass_flow_extrema.hot_to_small.maximum",
+          "reference": 0.005864627229183385,
+          "actual": 0.005864610070353837,
+          "scaled_distance": 2.925318789920121
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.minimum",
+          "reference": -0.8304926607522432,
+          "actual": -0.8305558385329092,
+          "scaled_distance": 76.06677560755328
+        },
+        {
+          "path": ".diagnostics.cold_heat_rate_extrema.maximum",
+          "reference": 911.2876144116111,
+          "actual": 911.2888028209121,
+          "scaled_distance": 1.3040973355659722
+        },
+        {
+          "path": ".diagnostics.temperature_extrema.L.maximum",
+          "reference": 585.2458200669299,
+          "actual": 585.2466582561708,
+          "scaled_distance": 1.4321982494457104
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.minimum",
+          "reference": 122347.42065989107,
+          "actual": 122347.27276970055,
+          "scaled_distance": 1.2087724426250412
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.L.maximum",
+          "reference": 499823.7150068942,
+          "actual": 499824.35448035534,
+          "scaled_distance": 1.279396362752476
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.C.maximum",
+          "reference": 502344.7187036505,
+          "actual": 502343.9171349723,
+          "scaled_distance": 1.5956546339292847
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.H.maximum",
+          "reference": 499819.7833258567,
+          "actual": 499820.3278072203,
+          "scaled_distance": 1.0893541804163414
+        },
+        {
+          "path": ".diagnostics.pressure_extrema.S.maximum",
+          "reference": 504242.5652057981,
+          "actual": 504243.5229126573,
+          "scaled_distance": 1.8992943205001331
+        },
+        {
+          "path": ".maximum_tube_reynolds",
+          "reference": 492.53206314864684,
+          "actual": 492.53123736653356,
+          "scaled_distance": 1.6766057956225278
+        },
+        {
+          "path": ".maximum_absolute_mass_flow_kg_s",
+          "reference": 0.01079551420246375,
+          "actual": 0.010795556396002406,
+          "scaled_distance": 3.9080552269106095
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.absolute_gas_heat_J",
+          "reference": 63.66886310976389,
+          "actual": 63.66923366625893,
+          "scaled_distance": 5.820024333331985
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.reynolds.maximum",
+          "reference": 430.61089178856713,
+          "actual": 430.6090746881266,
+          "scaled_distance": 4.219819960316655
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.minimum",
+          "reference": 0.007220897286455576,
+          "actual": 0.007220760232145055,
+          "scaled_distance": 18.97760451097511
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.strouhal.maximum",
+          "reference": 7858.892143242849,
+          "actual": 2124.3219435901947,
+          "scaled_distance": 729691.9329594821
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.003610448643227788,
+          "actual": 0.0036103801160725273,
+          "scaled_distance": 18.974977088244547
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.residence_time_s.maximum",
+          "reference": 3929.4460716214244,
+          "actual": 1062.1609717950973,
+          "scaled_distance": 729691.9328666328
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.0058979609972211345,
+          "actual": 0.005897831274568316,
+          "scaled_distance": 21.99076292918796
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.graetz.maximum",
+          "reference": 2.117772068963854,
+          "actual": 2.117763188534903,
+          "scaled_distance": 4.1932863730544385
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027055414715349273,
+          "scaled_distance": 16.740963794835306
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.04227392162520098,
+          "actual": 0.042273415506763744,
+          "scaled_distance": 11.972072750924195
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 430.61089178856713,
+          "actual": 430.6090746881266,
+          "scaled_distance": 4.219819960316655
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.027054961764890105,
+          "actual": 0.027055414715349273,
+          "scaled_distance": 16.740963794835306
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.absolute_gas_heat_J",
+          "reference": 58.382434841570344,
+          "actual": 58.38260033459292,
+          "scaled_distance": 2.8346291325705457
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.minimum",
+          "reference": 0.0036146322363622757,
+          "actual": 0.0036146281841173997,
+          "scaled_distance": 1.1207569274523779
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.strouhal.maximum",
+          "reference": 79.01601874357631,
+          "actual": 92.1176902996094,
+          "scaled_distance": 142227.52840624697
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.minimum",
+          "reference": 0.0018073161181811378,
+          "actual": 0.0018073140920586998,
+          "scaled_distance": 1.120447037794208
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.residence_time_s.maximum",
+          "reference": 39.508009371788155,
+          "actual": 46.0588451498047,
+          "scaled_distance": 142227.52686227072
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.graetz.maximum",
+          "reference": 2.7857397584212613,
+          "actual": 2.785743422776613,
+          "scaled_distance": 1.3153953828770382
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.038372208270195544,
+          "scaled_distance": 2.623113105444248
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.absolute_heat_fraction",
+          "reference": 0.27850608982023783,
+          "actual": 0.27850024558800773,
+          "scaled_distance": 20.984141674358327
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.stagnant_radial_screening.time_fraction",
+          "reference": 0.3400079813531697,
+          "actual": 0.34000311392898613,
+          "scaled_distance": 14.31557532442153
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.absolute_heat_fraction",
+          "reference": 0.7214939101797622,
+          "actual": 0.7214997544119922,
+          "scaled_distance": 8.100105501356715
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.domains.correlation_id.hausen_constant_wall.time_fraction",
+          "reference": 0.6599920186468303,
+          "actual": 0.6599968860710139,
+          "scaled_distance": 7.3749087479242705
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.outlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.03837230892772509,
+          "actual": 0.038372208270195544,
+          "scaled_distance": 2.623113105444248
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.absolute_gas_heat_J",
+          "reference": 58.61821935873293,
+          "actual": 58.6183857342637,
+          "scaled_distance": 2.8382823212402033
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.003124296129014981,
+          "scaled_distance": 782261.3595643498
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.reynolds.maximum",
+          "reference": 302.87803047941014,
+          "actual": 302.8786234022456,
+          "scaled_distance": 1.9576252256418798
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.strouhal.maximum",
+          "reference": 4846.274878941539,
+          "actual": 1486.7192201768091,
+          "scaled_distance": 693224.3304377436
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.residence_time_s.maximum",
+          "reference": 2423.1374394707696,
+          "actual": 743.3596100884046,
+          "scaled_distance": 693224.3302947009
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 1.4965602079712117e-09,
+          "actual": 1.3301546442431642e-08,
+          "scaled_distance": 11650.022913619528
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.compressibility_parameter.maximum",
+          "reference": 0.01159227341921992,
+          "actual": 0.011592238837601701,
+          "scaled_distance": 2.9829037035376444
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.minimum",
+          "reference": 6.303768230123677e-06,
+          "actual": 2.893049722026226e-05,
+          "scaled_distance": 755975.7134545967
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.graetz.maximum",
+          "reference": 2.797098842030983,
+          "actual": 2.7971056518278683,
+          "scaled_distance": 2.434586068088766
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 9.456449468667359e-08,
+          "scaled_distance": 59890.83771253787
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0006794977300905227,
+          "actual": 0.0020625318580671527,
+          "scaled_distance": 670226.6905014378
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.9010110169488012e-08,
+          "actual": 1.2782060093270066e-07,
+          "scaled_distance": 87611.88674998222
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Ho.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.04100018195541681,
+          "actual": 0.04100027300444289,
+          "scaled_distance": 2.2206390046883246
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.absolute_gas_heat_J",
+          "reference": 63.67586949057953,
+          "actual": 63.6762399514716,
+          "scaled_distance": 5.817882565550795
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0006552996736117714,
+          "scaled_distance": 420992.69824683934
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.reynolds.maximum",
+          "reference": 439.78543730563035,
+          "actual": 439.7879201216199,
+          "scaled_distance": 5.6454847218307505
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.minimum",
+          "reference": 0.007067999541196201,
+          "actual": 0.007068102145142022,
+          "scaled_distance": 14.51442399823065
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.strouhal.maximum",
+          "reference": 729.3826242311279,
+          "actual": 1135.6129559834726,
+          "scaled_distance": 357719.0003462217
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.minimum",
+          "reference": 0.0035339997705981004,
+          "actual": 0.003534051072571011,
+          "scaled_distance": 14.512371068343606
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.residence_time_s.maximum",
+          "reference": 364.69131211556396,
+          "actual": 567.8064779917363,
+          "scaled_distance": 357719.0000312209
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.knudsen.minimum",
+          "reference": 8.930660881945282e-05,
+          "actual": 8.930708767059778e-05,
+          "scaled_distance": 5.302475778066681
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.viscous_diffusion_time_s.maximum",
+          "reference": 0.00286201980609191,
+          "actual": 0.0028620144086859076,
+          "scaled_distance": 1.885214342954496
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.compressibility_parameter.minimum",
+          "reference": 7.380631722089409e-08,
+          "actual": 5.073835112124022e-08,
+          "scaled_distance": 21482.42725872186
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mean_knudsen.minimum",
+          "reference": 8.913694723090542e-05,
+          "actual": 8.913718298785856e-05,
+          "scaled_distance": 2.6155349582650342
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.thermal_diffusion_time_s.maximum",
+          "reference": 0.0019756830225198152,
+          "actual": 0.001975680227864929,
+          "scaled_distance": 1.4138103350785736
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.minimum",
+          "reference": 5.573672633157207e-06,
+          "actual": 3.225125223739759e-06,
+          "scaled_distance": 357265.64745124616
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.graetz.maximum",
+          "reference": 2.1628944069393827,
+          "actual": 2.162906424529595,
+          "scaled_distance": 5.5562203338002005
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.704413862605811e-07,
+          "scaled_distance": 75487.43577261339
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.ranges.mach.maximum",
+          "reference": 0.02763827527838378,
+          "actual": 0.027637741450975986,
+          "scaled_distance": 19.314088463565163
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.minimum",
+          "reference": 0.0011324911867684213,
+          "actual": 0.0009875993658951512,
+          "scaled_distance": 127827.92011498212
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.reynolds.maximum",
+          "reference": 492.53206314864684,
+          "actual": 492.53123736653356,
+          "scaled_distance": 1.6766057956225278
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.minimum",
+          "reference": 2.6600917234555567e-07,
+          "actual": 1.264633898242372e-07,
+          "scaled_distance": 110224.93799375856
+        },
+        {
+          "path": ".microtube_gas_domains.passages.Hi.inlet.hydraulic_upstream_ranges.mach.maximum",
+          "reference": 0.025301957821495986,
+          "actual": 0.025301658260986456,
+          "scaled_distance": 11.838952253850923
+        },
+        {
+          "path": "valve_behavior.hot_to_small.open_time_fraction",
+          "reference": 0.6599920186468304,
+          "actual": 0.6599968860710139,
+          "scaled_distance": 7.374908747756055
+        }
+      ],
+      "passed": false
+    }
+  ]
+}

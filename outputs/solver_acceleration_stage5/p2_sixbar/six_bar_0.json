@@ -1,0 +1,3287 @@
+{
+  "case": "six_bar",
+  "repeat": 0,
+  "elapsed_seconds": 5.6836275559908245,
+  "candidate_seconds": 0.03280362399527803,
+  "sections_seconds": {
+    "build": [
+      0.00018870100029744208
+    ],
+    "periodic_integration": [
+      4.5998692130087875
+    ],
+    "shared_replay": [
+      0.949600049003493
+    ],
+    "generic_diagnostics": [
+      0.00902518499060534
+    ],
+    "generic_validity": [
+      0.00022210899624042213
+    ],
+    "microtube_diagnostics": [
+      0.08149603402125649
+    ]
+  },
+  "solver_statistics": [
+    {
+      "phase": "build",
+      "elapsed_seconds": 0.00018870100029744208
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.0001333800028078258,
+      "rhs_calls": 1,
+      "cycle": 1
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5595,
+      "njev": 194,
+      "nlu": 194,
+      "rhs_calls": 5595,
+      "accepted_samples": 1671,
+      "accepted_steps": 1670,
+      "minimum_step_angle": 9.290508202745668e-08,
+      "median_step_angle": 0.0028135741668853242,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.18209326098440215,
+      "rhs_elapsed_seconds": null,
+      "cycle": 1
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 1,
+      "actual_backend": "numba",
+      "calls": 5596,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 5596,
+        "hits": 3808,
+        "misses": 1788,
+        "hit_fraction": 0.6804860614724804
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00011097599053755403,
+      "rhs_calls": 1,
+      "cycle": 2
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4755,
+      "njev": 176,
+      "nlu": 176,
+      "rhs_calls": 4755,
+      "accepted_samples": 1381,
+      "accepted_steps": 1380,
+      "minimum_step_angle": 4.167078778792052e-06,
+      "median_step_angle": 0.003956421207001348,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.17615833599120378,
+      "rhs_elapsed_seconds": null,
+      "cycle": 2
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 2,
+      "actual_backend": "numba",
+      "calls": 10352,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 10352,
+        "hits": 7092,
+        "misses": 3260,
+        "hit_fraction": 0.6850850077279753
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00011491600889712572,
+      "rhs_calls": 1,
+      "cycle": 3
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4466,
+      "njev": 166,
+      "nlu": 166,
+      "rhs_calls": 4466,
+      "accepted_samples": 1297,
+      "accepted_steps": 1296,
+      "minimum_step_angle": 3.1702198359795375e-06,
+      "median_step_angle": 0.0056220677399196894,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.14841167800477706,
+      "rhs_elapsed_seconds": null,
+      "cycle": 3
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 3,
+      "actual_backend": "numba",
+      "calls": 14819,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 14819,
+        "hits": 10180,
+        "misses": 4639,
+        "hit_fraction": 0.686955934948377
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00012190398410893977,
+      "rhs_calls": 1,
+      "cycle": 4
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4670,
+      "njev": 174,
+      "nlu": 174,
+      "rhs_calls": 4670,
+      "accepted_samples": 1335,
+      "accepted_steps": 1334,
+      "minimum_step_angle": 3.882349651540551e-06,
+      "median_step_angle": 0.004500198609726804,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1621995969908312,
+      "rhs_elapsed_seconds": null,
+      "cycle": 4
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 4,
+      "actual_backend": "numba",
+      "calls": 19490,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 19490,
+        "hits": 13428,
+        "misses": 6062,
+        "hit_fraction": 0.6889687018984094
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00011803701636381447,
+      "rhs_calls": 1,
+      "cycle": 5
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4747,
+      "njev": 176,
+      "nlu": 176,
+      "rhs_calls": 4747,
+      "accepted_samples": 1350,
+      "accepted_steps": 1349,
+      "minimum_step_angle": 3.169642185163468e-06,
+      "median_step_angle": 0.0049512844669505895,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.15286401699995622,
+      "rhs_elapsed_seconds": null,
+      "cycle": 5
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 5,
+      "actual_backend": "numba",
+      "calls": 24238,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 24238,
+        "hits": 16732,
+        "misses": 7506,
+        "hit_fraction": 0.6903209835795032
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.0001150860043708235,
+      "rhs_calls": 1,
+      "cycle": 6
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4646,
+      "njev": 175,
+      "nlu": 175,
+      "rhs_calls": 4646,
+      "accepted_samples": 1323,
+      "accepted_steps": 1322,
+      "minimum_step_angle": 4.563366747435594e-06,
+      "median_step_angle": 0.0047947885528811796,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1594914800080005,
+      "rhs_elapsed_seconds": null,
+      "cycle": 6
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 6,
+      "actual_backend": "numba",
+      "calls": 28885,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 28885,
+        "hits": 19977,
+        "misses": 8908,
+        "hit_fraction": 0.6916046390860308
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00013563601532950997,
+      "rhs_calls": 1,
+      "cycle": 7
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4697,
+      "njev": 169,
+      "nlu": 169,
+      "rhs_calls": 4697,
+      "accepted_samples": 1360,
+      "accepted_steps": 1359,
+      "minimum_step_angle": 3.0604196128436456e-06,
+      "median_step_angle": 0.005059926988198349,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.156811105000088,
+      "rhs_elapsed_seconds": null,
+      "cycle": 7
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 7,
+      "actual_backend": "numba",
+      "calls": 33583,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 33583,
+        "hits": 23219,
+        "misses": 10364,
+        "hit_fraction": 0.6913914778310455
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010023100185208023,
+      "rhs_calls": 1,
+      "cycle": 8
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5061,
+      "njev": 195,
+      "nlu": 195,
+      "rhs_calls": 5061,
+      "accepted_samples": 1420,
+      "accepted_steps": 1419,
+      "minimum_step_angle": 4.753354933993204e-06,
+      "median_step_angle": 0.00419454544085518,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.174245886009885,
+      "rhs_elapsed_seconds": null,
+      "cycle": 8
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 8,
+      "actual_backend": "numba",
+      "calls": 38645,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 38645,
+        "hits": 26755,
+        "misses": 11890,
+        "hit_fraction": 0.69232759736059
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00012693999451585114,
+      "rhs_calls": 1,
+      "cycle": 9
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4901,
+      "njev": 185,
+      "nlu": 185,
+      "rhs_calls": 4901,
+      "accepted_samples": 1376,
+      "accepted_steps": 1375,
+      "minimum_step_angle": 3.072361407063795e-06,
+      "median_step_angle": 0.004352920612225031,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.17676973599009216,
+      "rhs_elapsed_seconds": null,
+      "cycle": 9
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 9,
+      "actual_backend": "numba",
+      "calls": 43547,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 43547,
+        "hits": 30187,
+        "misses": 13360,
+        "hit_fraction": 0.69320504282729
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010095699690282345,
+      "rhs_calls": 1,
+      "cycle": 10
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4618,
+      "njev": 178,
+      "nlu": 178,
+      "rhs_calls": 4618,
+      "accepted_samples": 1311,
+      "accepted_steps": 1310,
+      "minimum_step_angle": 4.041489724215808e-06,
+      "median_step_angle": 0.004815607607507211,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1627954780124128,
+      "rhs_elapsed_seconds": null,
+      "cycle": 10
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 10,
+      "actual_backend": "numba",
+      "calls": 48166,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 48166,
+        "hits": 33416,
+        "misses": 14750,
+        "hit_fraction": 0.693767387783914
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 9.689299622550607e-05,
+      "rhs_calls": 1,
+      "cycle": 11
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5461,
+      "njev": 184,
+      "nlu": 184,
+      "rhs_calls": 5461,
+      "accepted_samples": 1646,
+      "accepted_steps": 1645,
+      "minimum_step_angle": 8.69928374542097e-07,
+      "median_step_angle": 0.0026659134471880286,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.20364296701154672,
+      "rhs_elapsed_seconds": null,
+      "cycle": 11
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 11,
+      "actual_backend": "numba",
+      "calls": 53628,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 53628,
+        "hits": 37131,
+        "misses": 16497,
+        "hit_fraction": 0.6923808458268069
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010718399425968528,
+      "rhs_calls": 1,
+      "cycle": 12
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5078,
+      "njev": 194,
+      "nlu": 194,
+      "rhs_calls": 5078,
+      "accepted_samples": 1385,
+      "accepted_steps": 1384,
+      "minimum_step_angle": 3.7703878281725167e-06,
+      "median_step_angle": 0.0041242105497234505,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.16715879298863,
+      "rhs_elapsed_seconds": null,
+      "cycle": 12
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 12,
+      "actual_backend": "numba",
+      "calls": 58707,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 58707,
+        "hits": 40731,
+        "misses": 17976,
+        "hit_fraction": 0.6938014206142368
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.0001186709851026535,
+      "rhs_calls": 1,
+      "cycle": 13
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4928,
+      "njev": 182,
+      "nlu": 182,
+      "rhs_calls": 4928,
+      "accepted_samples": 1388,
+      "accepted_steps": 1387,
+      "minimum_step_angle": 3.955037625402724e-06,
+      "median_step_angle": 0.0047357143155775105,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.16906276100780815,
+      "rhs_elapsed_seconds": null,
+      "cycle": 13
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 13,
+      "actual_backend": "numba",
+      "calls": 63636,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 63636,
+        "hits": 44172,
+        "misses": 19464,
+        "hit_fraction": 0.6941353950594004
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010943101369775832,
+      "rhs_calls": 1,
+      "cycle": 14
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4850,
+      "njev": 181,
+      "nlu": 181,
+      "rhs_calls": 4850,
+      "accepted_samples": 1375,
+      "accepted_steps": 1374,
+      "minimum_step_angle": 4.872339865672875e-06,
+      "median_step_angle": 0.004564518396268043,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.17938407399924472,
+      "rhs_elapsed_seconds": null,
+      "cycle": 14
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 14,
+      "actual_backend": "numba",
+      "calls": 68487,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 68487,
+        "hits": 47562,
+        "misses": 20925,
+        "hit_fraction": 0.6944675631871742
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010979198850691319,
+      "rhs_calls": 1,
+      "cycle": 15
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4969,
+      "njev": 189,
+      "nlu": 189,
+      "rhs_calls": 4969,
+      "accepted_samples": 1373,
+      "accepted_steps": 1372,
+      "minimum_step_angle": 4.001925566043951e-06,
+      "median_step_angle": 0.004506391643046115,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.18748809001408517,
+      "rhs_elapsed_seconds": null,
+      "cycle": 15
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 15,
+      "actual_backend": "numba",
+      "calls": 73457,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 73457,
+        "hits": 51061,
+        "misses": 22396,
+        "hit_fraction": 0.6951141484133575
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010663701687008142,
+      "rhs_calls": 1,
+      "cycle": 16
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4870,
+      "njev": 188,
+      "nlu": 188,
+      "rhs_calls": 4870,
+      "accepted_samples": 1347,
+      "accepted_steps": 1346,
+      "minimum_step_angle": 1.092799994495408e-06,
+      "median_step_angle": 0.00464109665423873,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1841070509981364,
+      "rhs_elapsed_seconds": null,
+      "cycle": 16
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 16,
+      "actual_backend": "numba",
+      "calls": 78328,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 78328,
+        "hits": 54494,
+        "misses": 23834,
+        "hit_fraction": 0.6957154529670105
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010539899813011289,
+      "rhs_calls": 1,
+      "cycle": 17
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4535,
+      "njev": 169,
+      "nlu": 169,
+      "rhs_calls": 4535,
+      "accepted_samples": 1316,
+      "accepted_steps": 1315,
+      "minimum_step_angle": 4.875590268683917e-06,
+      "median_step_angle": 0.004985453745826263,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1583289069822058,
+      "rhs_elapsed_seconds": null,
+      "cycle": 17
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 17,
+      "actual_backend": "numba",
+      "calls": 82864,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 82864,
+        "hits": 57630,
+        "misses": 25234,
+        "hit_fraction": 0.6954769260474996
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00012981900363229215,
+      "rhs_calls": 1,
+      "cycle": 18
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5103,
+      "njev": 197,
+      "nlu": 197,
+      "rhs_calls": 5103,
+      "accepted_samples": 1391,
+      "accepted_steps": 1390,
+      "minimum_step_angle": 3.9789662142908355e-06,
+      "median_step_angle": 0.0042933232808684,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1882252259820234,
+      "rhs_elapsed_seconds": null,
+      "cycle": 18
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 18,
+      "actual_backend": "numba",
+      "calls": 87968,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 87968,
+        "hits": 61245,
+        "misses": 26723,
+        "hit_fraction": 0.6962190796653328
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.0001114390033762902,
+      "rhs_calls": 1,
+      "cycle": 19
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5181,
+      "njev": 198,
+      "nlu": 198,
+      "rhs_calls": 5181,
+      "accepted_samples": 1402,
+      "accepted_steps": 1401,
+      "minimum_step_angle": 4.152889877317989e-06,
+      "median_step_angle": 0.004171647012336077,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.16945453500375152,
+      "rhs_elapsed_seconds": null,
+      "cycle": 19
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 19,
+      "actual_backend": "numba",
+      "calls": 93150,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 93150,
+        "hits": 64924,
+        "misses": 28226,
+        "hit_fraction": 0.696983360171766
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010771499364636838,
+      "rhs_calls": 1,
+      "cycle": 20
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5039,
+      "njev": 189,
+      "nlu": 189,
+      "rhs_calls": 5039,
+      "accepted_samples": 1390,
+      "accepted_steps": 1389,
+      "minimum_step_angle": 4.87831451897431e-06,
+      "median_step_angle": 0.004727112176135861,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1650325039809104,
+      "rhs_elapsed_seconds": null,
+      "cycle": 20
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 20,
+      "actual_backend": "numba",
+      "calls": 98190,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 98190,
+        "hits": 68470,
+        "misses": 29720,
+        "hit_fraction": 0.6973215195030044
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00016999099170789123,
+      "rhs_calls": 1,
+      "cycle": 21
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4832,
+      "njev": 175,
+      "nlu": 175,
+      "rhs_calls": 4832,
+      "accepted_samples": 1438,
+      "accepted_steps": 1437,
+      "minimum_step_angle": 2.9323426788963047e-06,
+      "median_step_angle": 0.00420088184789158,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.17455578400404193,
+      "rhs_elapsed_seconds": null,
+      "cycle": 21
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 21,
+      "actual_backend": "numba",
+      "calls": 103023,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 103023,
+        "hits": 71770,
+        "misses": 31253,
+        "hit_fraction": 0.6966405559923512
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00011963298311457038,
+      "rhs_calls": 1,
+      "cycle": 22
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4853,
+      "njev": 181,
+      "nlu": 181,
+      "rhs_calls": 4853,
+      "accepted_samples": 1369,
+      "accepted_steps": 1368,
+      "minimum_step_angle": 3.315354940802706e-06,
+      "median_step_angle": 0.0045627037136490856,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.16176607500528917,
+      "rhs_elapsed_seconds": null,
+      "cycle": 22
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 22,
+      "actual_backend": "numba",
+      "calls": 107877,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 107877,
+        "hits": 75156,
+        "misses": 32721,
+        "hit_fraction": 0.6966823326566367
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010107801062986255,
+      "rhs_calls": 1,
+      "cycle": 23
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4825,
+      "njev": 179,
+      "nlu": 179,
+      "rhs_calls": 4825,
+      "accepted_samples": 1377,
+      "accepted_steps": 1376,
+      "minimum_step_angle": 4.166493903667856e-06,
+      "median_step_angle": 0.0042208876492795255,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.15621992500382476,
+      "rhs_elapsed_seconds": null,
+      "cycle": 23
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 23,
+      "actual_backend": "numba",
+      "calls": 112703,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 112703,
+        "hits": 78521,
+        "misses": 34182,
+        "hit_fraction": 0.696707274872896
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00011453701881691813,
+      "rhs_calls": 1,
+      "cycle": 24
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5051,
+      "njev": 197,
+      "nlu": 197,
+      "rhs_calls": 5051,
+      "accepted_samples": 1364,
+      "accepted_steps": 1363,
+      "minimum_step_angle": 4.892436918264252e-06,
+      "median_step_angle": 0.004634319929171848,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1584802099969238,
+      "rhs_elapsed_seconds": null,
+      "cycle": 24
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 24,
+      "actual_backend": "numba",
+      "calls": 117755,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 117755,
+        "hits": 82103,
+        "misses": 35652,
+        "hit_fraction": 0.6972357861661925
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010750201181508601,
+      "rhs_calls": 1,
+      "cycle": 25
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4872,
+      "njev": 185,
+      "nlu": 185,
+      "rhs_calls": 4872,
+      "accepted_samples": 1380,
+      "accepted_steps": 1379,
+      "minimum_step_angle": 4.892440101883723e-06,
+      "median_step_angle": 0.004303026824743483,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1615699759859126,
+      "rhs_elapsed_seconds": null,
+      "cycle": 25
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 25,
+      "actual_backend": "numba",
+      "calls": 122628,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 122628,
+        "hits": 85502,
+        "misses": 37126,
+        "hit_fraction": 0.6972469582803275
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.00010786199709400535,
+      "rhs_calls": 1,
+      "cycle": 26
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 4904,
+      "njev": 185,
+      "nlu": 185,
+      "rhs_calls": 4904,
+      "accepted_samples": 1376,
+      "accepted_steps": 1375,
+      "minimum_step_angle": 4.015775018295642e-06,
+      "median_step_angle": 0.004281782104485821,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.1623488930054009,
+      "rhs_elapsed_seconds": null,
+      "cycle": 26
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 26,
+      "actual_backend": "numba",
+      "calls": 127533,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 127533,
+        "hits": 88940,
+        "misses": 38593,
+        "hit_fraction": 0.6973881269945817
+      }
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 9.811899508349597e-05,
+      "rhs_calls": 1,
+      "cycle": 27
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 5161,
+      "njev": 202,
+      "nlu": 202,
+      "rhs_calls": 5161,
+      "accepted_samples": 1393,
+      "accepted_steps": 1392,
+      "minimum_step_angle": 3.841844543384099e-06,
+      "median_step_angle": 0.004136722102621615,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.16396167300990783,
+      "rhs_elapsed_seconds": null,
+      "cycle": 27
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 27,
+      "actual_backend": "numba",
+      "calls": 132695,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 8.438702207058668e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0005955770029686391,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 132695,
+        "hits": 92600,
+        "misses": 40095,
+        "hit_fraction": 0.6978409133727721
+      }
+    },
+    {
+      "phase": "periodic_integration",
+      "elapsed_seconds": 4.5998692130087875
+    },
+    {
+      "phase": "shared_replay",
+      "elapsed_seconds": 0.949600049003493
+    },
+    {
+      "phase": "generic_diagnostics",
+      "elapsed_seconds": 0.00902518499060534
+    },
+    {
+      "phase": "generic_validity",
+      "elapsed_seconds": 0.00022210899624042213
+    },
+    {
+      "phase": "microtube_diagnostics",
+      "elapsed_seconds": 0.08149603402125649
+    }
+  ],
+  "result": {
+    "label": "six_bar",
+    "status": "converged",
+    "message": "Periodic steady state converged.",
+    "convergence": {
+      "cycles_completed": 27,
+      "first_normalized_periodic_error": 368854.99533827824,
+      "last_normalized_periodic_error": 0.9878101569598258,
+      "normalized_periodic_error_ratio": 2.678044677296295e-06,
+      "improving": true,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 368854.99533827824
+        },
+        {
+          "cycle": 2,
+          "normalized_state_error": 4756.722050105443
+        },
+        {
+          "cycle": 3,
+          "normalized_state_error": 4423.509879131466
+        },
+        {
+          "cycle": 4,
+          "normalized_state_error": 4105.052225259288
+        },
+        {
+          "cycle": 5,
+          "normalized_state_error": 3810.671411103903
+        },
+        {
+          "cycle": 6,
+          "normalized_state_error": 3538.4339560811363
+        },
+        {
+          "cycle": 7,
+          "normalized_state_error": 3286.537251611222
+        },
+        {
+          "cycle": 8,
+          "normalized_state_error": 3053.3436132199067
+        },
+        {
+          "cycle": 9,
+          "normalized_state_error": 2837.362338886747
+        },
+        {
+          "cycle": 10,
+          "normalized_state_error": 2637.2365253487237,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 11,
+          "normalized_state_error": 31418.299937306496
+        },
+        {
+          "cycle": 12,
+          "normalized_state_error": 552.9227123725587
+        },
+        {
+          "cycle": 13,
+          "normalized_state_error": 7.644430105763629
+        },
+        {
+          "cycle": 14,
+          "normalized_state_error": 7.209977719675685
+        },
+        {
+          "cycle": 15,
+          "normalized_state_error": 6.793815539290478
+        },
+        {
+          "cycle": 16,
+          "normalized_state_error": 6.402179902724334
+        },
+        {
+          "cycle": 17,
+          "normalized_state_error": 6.0337574490372035
+        },
+        {
+          "cycle": 18,
+          "normalized_state_error": 5.687011604074017
+        },
+        {
+          "cycle": 19,
+          "normalized_state_error": 5.360770057547795
+        },
+        {
+          "cycle": 20,
+          "normalized_state_error": 5.053705094483133,
+          "wall_initial_guess_extrapolated": true
+        },
+        {
+          "cycle": 21,
+          "normalized_state_error": 67.5067773178043
+        },
+        {
+          "cycle": 22,
+          "normalized_state_error": 1.3509334173440672
+        },
+        {
+          "cycle": 23,
+          "normalized_state_error": 1.2710541309842853
+        },
+        {
+          "cycle": 24,
+          "normalized_state_error": 1.1931949534797424
+        },
+        {
+          "cycle": 25,
+          "normalized_state_error": 1.12030498926609
+        },
+        {
+          "cycle": 26,
+          "normalized_state_error": 1.051818238486085
+        },
+        {
+          "cycle": 27,
+          "normalized_state_error": 0.9878101569598258
+        }
+      ]
+    },
+    "indicated_power_w": 51.470184952971934,
+    "heat_input_w": 254.69619273204128,
+    "heat_out_w": -203.16336599066344,
+    "indicated_thermal_efficiency": 0.2020846263969178,
+    "maximum_tube_reynolds": 492.53206314864684,
+    "maximum_tube_mach_number": 0.04100018195541681,
+    "maximum_absolute_mass_flow_kg_s": 0.01079551420246375,
+    "validity": {
+      "verdict": "valid",
+      "maximum_pressure_equalization_error": 0.01159227341921999,
+      "cold_isothermality_error": 0.019394776494744692,
+      "hot_isothermality_error": 0.07452803328433229,
+      "maximum_mach_number": 0.04100018195541681,
+      "mach_number_status": "available",
+      "maximum_compressibility_deviation": 0.0,
+      "maximum_cp_variation": 0.0,
+      "failed_criteria": [],
+      "unavailable_criteria": []
+    },
+    "diagnostics": {
+      "pressure_extrema": {
+        "S": {
+          "minimum": 119859.81298964572,
+          "maximum": 504242.5652057981
+        },
+        "L": {
+          "minimum": 122347.42065989107,
+          "maximum": 499823.7150068942
+        },
+        "C": {
+          "minimum": 119860.07341281058,
+          "maximum": 502344.7187036505
+        },
+        "H": {
+          "minimum": 121153.42607727004,
+          "maximum": 499819.7833258567
+        }
+      },
+      "temperature_extrema": {
+        "S": {
+          "minimum": 324.2184418933254,
+          "maximum": 485.7559191335753
+        },
+        "L": {
+          "minimum": 379.095605320063,
+          "maximum": 585.2458200669299
+        },
+        "C": {
+          "minimum": 569.289616326109,
+          "maximum": 580.8906018864405
+        },
+        "H": {
+          "minimum": 314.3555898674432,
+          "maximum": 336.57612299116687
+        }
+      },
+      "mass_flow_extrema": {
+        "large_to_hot": {
+          "minimum": -0.001908868479237918,
+          "maximum": 0.0058885407303762944
+        },
+        "small_to_cold": {
+          "minimum": -0.0007547826612689076,
+          "maximum": 0.01079551420246375
+        },
+        "hot_to_small": {
+          "minimum": 0.0,
+          "maximum": 0.005864627229183385
+        },
+        "cold_to_large": {
+          "minimum": 0.0,
+          "maximum": 0.010570177753690608
+        }
+      },
+      "cold_heat_rate_extrema": {
+        "minimum": -0.8304926607522432,
+        "maximum": 911.2876144116111
+      },
+      "hot_heat_rate_extrema": {
+        "minimum": -523.3723660444764,
+        "maximum": 170.45246027743698
+      },
+      "valve_events": [],
+      "topology": {
+        "classification": "non_nominal",
+        "reasons": [
+          "observed_event_sequence_differs_from_nominal_sequence"
+        ]
+      },
+      "orifice_pressure_regularization": 0.0,
+      "regularization_sample_fraction": 0.0
+    },
+    "microtube_gas_domains": {
+      "passages": {
+        "Hi.inlet": {
+          "ranges": {
+            "reynolds": {
+              "minimum": 0.0011324911867684213,
+              "maximum": 439.78543730563035
+            },
+            "prandtl": {
+              "minimum": 0.6902772496254695,
+              "maximum": 0.6907918607816871
+            },
+            "mach": {
+              "minimum": 2.6600917234555567e-07,
+              "maximum": 0.02763827527838378
+            },
+            "knudsen": {
+              "minimum": 8.930660881945282e-05,
+              "maximum": 0.00038218922826297304
+            },
+            "mean_knudsen": {
+              "minimum": 8.913694723090542e-05,
+              "maximum": 0.000382189010090621
+            },
+            "graetz": {
+              "minimum": 5.573672633157207e-06,
+              "maximum": 2.1628944069393827
+            },
+            "pressure_ratio": {
+              "minimum": 1.00000007380632,
+              "maximum": 1.004492213725218
+            },
+            "compressibility_parameter": {
+              "minimum": 7.380631722089409e-08,
+              "maximum": 0.004482146345551947
+            },
+            "womersley": {
+              "minimum": 0.0912599816841379,
+              "maximum": 0.18964493557431825
+            },
+            "strouhal": {
+              "minimum": 0.007067999541196201,
+              "maximum": 729.3826242311279
+            },
+            "viscous_diffusion_time_s": {
+              "minimum": 0.0006627517612342753,
+              "maximum": 0.00286201980609191
+            },
+            "thermal_diffusion_time_s": {
+              "minimum": 0.00045781170405714307,
+              "maximum": 0.0019756830225198152
+            },
+            "residence_time_s": {
+              "minimum": 0.0035339997705981004,
+              "maximum": 364.69131211556396
+            },
+            "acoustic_time_s": {
+              "minimum": 9.674780150885558e-05,
+              "maximum": 9.768148569358209e-05
+            }
+          },
+          "domains": {
+            "correlation_id": {
+              "hausen_constant_wall": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "continuum_regime": {
+              "continuum": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "slip_regime": {
+              "negligible": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "model_validity": {
+              "valid": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "thermal_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "hydrodynamic_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "compressibility_significant": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            }
+          },
+          "hydraulic_upstream_ranges": {
+            "reynolds": {
+              "minimum": 0.0011324911867684213,
+              "maximum": 492.53206314864684
+            },
+            "mach": {
+              "minimum": 2.6600917234555567e-07,
+              "maximum": 0.025301957821495986
+            },
+            "knudsen": {
+              "minimum": 7.398887329143504e-05,
+              "maximum": 0.00038218922826297304
+            },
+            "pressure_ratio": {
+              "minimum": 1.00000007380632,
+              "maximum": 1.004492213725218
+            }
+          },
+          "absolute_gas_heat_J": 63.67586949057953
+        },
+        "Hi.outlet": {
+          "ranges": {
+            "reynolds": {
+              "minimum": 0.0,
+              "maximum": 430.61089178856713
+            },
+            "prandtl": {
+              "minimum": 0.6902772496254695,
+              "maximum": 0.6907918607816871
+            },
+            "mach": {
+              "minimum": 0.0,
+              "maximum": 0.027054961764890105
+            },
+            "knudsen": {
+              "minimum": 8.976126962978918e-05,
+              "maximum": 0.0003821889682851985
+            },
+            "mean_knudsen": {
+              "minimum": 8.953354057539694e-05,
+              "maximum": 0.0003821889682851985
+            },
+            "graetz": {
+              "minimum": 0.0,
+              "maximum": 2.117772068963854
+            },
+            "pressure_ratio": {
+              "minimum": 1.0,
+              "maximum": 1.0059154054124237
+            },
+            "compressibility_parameter": {
+              "minimum": 0.0,
+              "maximum": 0.0058979609972211345
+            },
+            "womersley": {
+              "minimum": 0.09125998379219473,
+              "maximum": 0.18916232955290957
+            },
+            "strouhal": {
+              "minimum": 0.007220897286455576,
+              "maximum": 7858.892143242849
+            },
+            "viscous_diffusion_time_s": {
+              "minimum": 0.0006627517918526991,
+              "maximum": 0.0028474718771222796
+            },
+            "thermal_diffusion_time_s": {
+              "minimum": 0.00045781174194019057,
+              "maximum": 0.0019656424314283202
+            },
+            "residence_time_s": {
+              "minimum": 0.003610448643227788,
+              "maximum": 3929.4460716214244
+            },
+            "acoustic_time_s": {
+              "minimum": 9.674780150885558e-05,
+              "maximum": 9.768148569358209e-05
+            }
+          },
+          "domains": {
+            "correlation_id": {
+              "hausen_constant_wall": {
+                "time_fraction": 0.3841385579517309,
+                "absolute_heat_fraction": 0.9577260783747991
+              },
+              "stagnant_radial_screening": {
+                "time_fraction": 0.6158614420482691,
+                "absolute_heat_fraction": 0.04227392162520098
+              }
+            },
+            "continuum_regime": {
+              "continuum": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "slip_regime": {
+              "negligible": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "model_validity": {
+              "valid": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "thermal_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "hydrodynamic_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "compressibility_significant": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            }
+          },
+          "hydraulic_upstream_ranges": {
+            "reynolds": {
+              "minimum": 0.0,
+              "maximum": 430.61089178856713
+            },
+            "mach": {
+              "minimum": 0.0,
+              "maximum": 0.027054961764890105
+            },
+            "knudsen": {
+              "minimum": 8.976126962978918e-05,
+              "maximum": 0.0003821889682851985
+            },
+            "pressure_ratio": {
+              "minimum": 1.0,
+              "maximum": 1.0059154054124237
+            }
+          },
+          "absolute_gas_heat_J": 63.66886310976389
+        },
+        "Ho.inlet": {
+          "ranges": {
+            "reynolds": {
+              "minimum": 0.0006794977300905227,
+              "maximum": 302.87803047941014
+            },
+            "prandtl": {
+              "minimum": 0.7036437701877251,
+              "maximum": 0.7083217140084811
+            },
+            "mach": {
+              "minimum": 2.9010110169488012e-08,
+              "maximum": 0.03803505511821704
+            },
+            "knudsen": {
+              "minimum": 4.481304369848993e-05,
+              "maximum": 0.0001899732696073766
+            },
+            "mean_knudsen": {
+              "minimum": 4.481302026910166e-05,
+              "maximum": 0.00018900155946650253
+            },
+            "graetz": {
+              "minimum": 6.303768230123677e-06,
+              "maximum": 2.797098842030983
+            },
+            "pressure_ratio": {
+              "minimum": 1.0000000014965602,
+              "maximum": 1.0116598555359204
+            },
+            "compressibility_parameter": {
+              "minimum": 1.4965602079712117e-09,
+              "maximum": 0.01159227341921992
+            },
+            "womersley": {
+              "minimum": 0.14930370704632503,
+              "maximum": 0.30917831875725454
+            },
+            "strouhal": {
+              "minimum": 0.003646672712407861,
+              "maximum": 4846.274878941539
+            },
+            "viscous_diffusion_time_s": {
+              "minimum": 0.0017739089210295122,
+              "maximum": 0.007606908607353469
+            },
+            "thermal_diffusion_time_s": {
+              "minimum": 0.0012512262753205142,
+              "maximum": 0.005377764830047545
+            },
+            "residence_time_s": {
+              "minimum": 0.0018233363562039306,
+              "maximum": 2423.1374394707696
+            },
+            "acoustic_time_s": {
+              "minimum": 6.862436563504847e-05,
+              "maximum": 7.098711464712974e-05
+            }
+          },
+          "domains": {
+            "correlation_id": {
+              "hausen_constant_wall": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "continuum_regime": {
+              "continuum": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "slip_regime": {
+              "negligible": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "model_validity": {
+              "valid": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "thermal_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "hydrodynamic_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "compressibility_significant": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            }
+          },
+          "hydraulic_upstream_ranges": {
+            "reynolds": {
+              "minimum": 0.0006794977300905227,
+              "maximum": 271.3172133833851
+            },
+            "mach": {
+              "minimum": 2.9010110169488012e-08,
+              "maximum": 0.04100018195541681
+            },
+            "knudsen": {
+              "minimum": 4.481304369848993e-05,
+              "maximum": 0.00022752422237805556
+            },
+            "pressure_ratio": {
+              "minimum": 1.0000000014965602,
+              "maximum": 1.0116598555359204
+            }
+          },
+          "absolute_gas_heat_J": 58.61821935873293
+        },
+        "Ho.outlet": {
+          "ranges": {
+            "reynolds": {
+              "minimum": 0.0,
+              "maximum": 301.6480357362622
+            },
+            "prandtl": {
+              "minimum": 0.7036437701877251,
+              "maximum": 0.7083217140084811
+            },
+            "mach": {
+              "minimum": 0.0,
+              "maximum": 0.03837230892772509
+            },
+            "knudsen": {
+              "minimum": 4.481299683973789e-05,
+              "maximum": 0.0001921167821307613
+            },
+            "mean_knudsen": {
+              "minimum": 4.481299683973789e-05,
+              "maximum": 0.00019103383797152386
+            },
+            "graetz": {
+              "minimum": 0.0,
+              "maximum": 2.7857397584212613
+            },
+            "pressure_ratio": {
+              "minimum": 1.0,
+              "maximum": 1.0130175759364055
+            },
+            "compressibility_parameter": {
+              "minimum": 0.0,
+              "maximum": 0.012933395209279342
+            },
+            "womersley": {
+              "minimum": 0.148454470904106,
+              "maximum": 0.30917882620902726
+            },
+            "strouhal": {
+              "minimum": 0.0036146322363622757,
+              "maximum": 79.01601874357631
+            },
+            "viscous_diffusion_time_s": {
+              "minimum": 0.0017537864040262452,
+              "maximum": 0.007606933577684125
+            },
+            "thermal_diffusion_time_s": {
+              "minimum": 0.0012369878892984443,
+              "maximum": 0.005377784260763055
+            },
+            "residence_time_s": {
+              "minimum": 0.0018073161181811378,
+              "maximum": 39.508009371788155
+            },
+            "acoustic_time_s": {
+              "minimum": 6.862436563504847e-05,
+              "maximum": 7.098711464712974e-05
+            }
+          },
+          "domains": {
+            "correlation_id": {
+              "hausen_constant_wall": {
+                "time_fraction": 0.6599920186468303,
+                "absolute_heat_fraction": 0.7214939101797622
+              },
+              "stagnant_radial_screening": {
+                "time_fraction": 0.3400079813531697,
+                "absolute_heat_fraction": 0.27850608982023783
+              }
+            },
+            "continuum_regime": {
+              "continuum": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "slip_regime": {
+              "negligible": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "model_validity": {
+              "valid": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "thermal_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "hydrodynamic_developing": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            },
+            "compressibility_significant": {
+              "False": {
+                "time_fraction": 1.0,
+                "absolute_heat_fraction": 1.0
+              }
+            }
+          },
+          "hydraulic_upstream_ranges": {
+            "reynolds": {
+              "minimum": 0.0,
+              "maximum": 301.6480357362622
+            },
+            "mach": {
+              "minimum": 0.0,
+              "maximum": 0.03837230892772509
+            },
+            "knudsen": {
+              "minimum": 4.481299683973789e-05,
+              "maximum": 0.0001921167821307613
+            },
+            "pressure_ratio": {
+              "minimum": 1.0,
+              "maximum": 1.0130175759364055
+            }
+          },
+          "absolute_gas_heat_J": 58.382434841570344
+        }
+      },
+      "model_validity": "valid",
+      "failed_criteria": [],
+      "time_weighting": "trapezoidal physical time",
+      "heat_weighting": "absolute wall-to-gas heat, split by instantaneous half-film conductance",
+      "limitations": [
+        "quasi_steady_pulse_response_unvalidated",
+        "stagnant_radial_heat_is_lumped_screening",
+        "no_axial_wall_or_gas_temperature_resolution",
+        "external_air_film_unchanged"
+      ]
+    },
+    "total_mass_kg": 0.0014991548899624253
+  },
+  "final_state": [
+    0.0002937825351245621,
+    68.6670196755518,
+    0.00113432274836802,
+    310.66224915506984,
+    2.6104829781893668e-05,
+    10.869402530455508,
+    4.494477668794958e-05,
+    10.510971385517687,
+    81809.96204087668,
+    28787.895152226494
+  ],
+  "exception": null,
+  "backend_statistics": {
+    "actual_backend": "numba",
+    "calls": 132695,
+    "fallback_calls": 0,
+    "fallback_reason": null,
+    "first_call_seconds": 8.438702207058668e-05,
+    "profile": false,
+    "dispatcher_cache_path": "None",
+    "dispatcher_cache_hits": 0,
+    "dispatcher_cache_misses": 1,
+    "kinematics_seconds": null,
+    "dispatch_seconds": null,
+    "total_rhs_seconds": null,
+    "requested_backend": "numba",
+    "identity": {
+      "settings": {
+        "name": "numba",
+        "profile": false,
+        "disk_cache": false,
+        "cache_directory": null
+      },
+      "python": "3.13.5",
+      "numpy": "2.2.4",
+      "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+      "libc": [
+        "glibc",
+        "2.41"
+      ],
+      "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+      "fastmath": false,
+      "parallel": false,
+      "float_type": "float64",
+      "numba_available": true,
+      "numba": "0.61.2",
+      "llvmlite": "0.44.0",
+      "llvm": [
+        19,
+        1,
+        7
+      ],
+      "cpu": "sandybridge",
+      "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+      "disable_jit": false,
+      "compiler_cpu_name": null,
+      "compiler_cpu_features": null,
+      "compiler_opt": "_OptLevel(3)",
+      "boundscheck": null,
+      "numba_cache_dir": ""
+    },
+    "preparation_seconds": 0.0005955770029686391,
+    "cache_directory": null,
+    "cache_namespace": null,
+    "cache_error": null,
+    "exact_kinematics_cache": {
+      "calls": 132695,
+      "hits": 92600,
+      "misses": 40095,
+      "hit_fraction": 0.6978409133727721
+    }
+  },
+  "report_serialization_seconds": 0.0012109920207876712
+}

@@ -47,11 +47,13 @@ def extract_cycle_diagnostics(
     cycle: CycleIntegrationResult,
     model: ThermodynamicModel,
     heat_rate_provider=None,
+    *, replay=None,
 ) -> CycleDiagnostics:
     """Re-evaluate sampled states to obtain diagnostic histories and extrema."""
 
     if not cycle.completed:
         raise ValueError("Diagnostics require a completed cycle integration.")
+    if replay is not None: replay.require(model=model, cycle=cycle)
     sample_count = cycle.angles.size
     pressures = np.empty((4, sample_count), dtype=float)
     temperatures = np.empty((4, sample_count), dtype=float)
@@ -74,9 +76,14 @@ def extract_cycle_diagnostics(
     for index, (angle, topology) in enumerate(
         zip(cycle.angles, cycle.topologies, strict=True)
     ):
-        state = ThermodynamicState.from_array(cycle.states[:, index])
-        temperatures[:, index] = state.temperatures(model.gas)
-        pressures[:, index] = state.pressures(model.gas, model.volumes(float(angle)))
+        if replay is None:
+            state = ThermodynamicState.from_array(cycle.states[:, index])
+            temperatures[:, index] = state.temperatures(model.gas)
+            pressures[:, index] = state.pressures(model.gas, model.volumes(float(angle)))
+        else:
+            sample = replay.samples[index]
+            temperatures[:, index] = sample.point.temperatures
+            pressures[:, index] = sample.point.pressures
         if regularization_width > 0.0:
             pressure_differences = (
                 pressures[1, index] - pressures[3, index],
@@ -88,6 +95,14 @@ def extract_cycle_diagnostics(
                 abs(value) <= regularization_width
                 for value in pressure_differences
             )
+        if replay is not None:
+            flow_values[:, index] = _flow_array(sample.point.flows)
+            if heat_rate_provider is None:
+                cold_heat_rates[index], hot_heat_rates[index] = (w.gas_heat_w for w in sample.walls)
+            else:
+                state = ThermodynamicState.from_array(cycle.states[:, index])
+                cold_heat_rates[index], hot_heat_rates[index] = heat_rate_provider(index, float(angle), state)
+            continue
         rates = model.evaluate(float(angle), state, topology)
         flow_values[:, index] = _flow_array(rates.flows)
         if heat_rate_provider is None:

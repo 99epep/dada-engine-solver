@@ -1,0 +1,190 @@
+{
+  "case": "interrupted",
+  "repeat": 0,
+  "elapsed_seconds": 0.0008837839995976537,
+  "candidate_seconds": 9.175899322144687e-05,
+  "sections_seconds": {
+    "build": [
+      0.0001213549985550344
+    ],
+    "periodic_integration": [
+      0.0006362900021485984
+    ]
+  },
+  "solver_statistics": [
+    {
+      "phase": "build",
+      "elapsed_seconds": 0.0001213549985550344
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 5.682601477019489e-05,
+      "rhs_calls": 1,
+      "cycle": 1
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 3.008848242556311,
+      "ends_at_kinematic_breakpoint": true,
+      "status": "interrupted",
+      "message": "Frozen benchmark deadline at first progress callback.",
+      "nfev": null,
+      "njev": null,
+      "nlu": null,
+      "rhs_calls": 0,
+      "accepted_samples": null,
+      "accepted_steps": null,
+      "minimum_step_angle": null,
+      "median_step_angle": null,
+      "maximum_step_angle": null,
+      "integration_elapsed_seconds": 1.1903000995516777e-05,
+      "rhs_elapsed_seconds": null,
+      "cycle": 1
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 1,
+      "actual_backend": "numba",
+      "calls": 1,
+      "fallback_calls": 0,
+      "fallback_reason": null,
+      "first_call_seconds": 3.1648000003769994e-05,
+      "profile": false,
+      "dispatcher_cache_path": "None",
+      "dispatcher_cache_hits": 0,
+      "dispatcher_cache_misses": 1,
+      "kinematics_seconds": null,
+      "dispatch_seconds": null,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0004601920081768185,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null,
+      "exact_kinematics_cache": {
+        "calls": 1,
+        "hits": 0,
+        "misses": 1,
+        "hit_fraction": 0.0
+      }
+    },
+    {
+      "phase": "periodic_integration",
+      "elapsed_seconds": 0.0006362900021485984
+    }
+  ],
+  "result": {
+    "label": "interrupted",
+    "status": "interrupted",
+    "message": "Frozen benchmark deadline at first progress callback.",
+    "convergence": {
+      "cycles_completed": 0,
+      "first_normalized_periodic_error": null,
+      "last_normalized_periodic_error": null,
+      "normalized_periodic_error_ratio": null,
+      "improving": false,
+      "history": []
+    }
+  },
+  "final_state": null,
+  "exception": null,
+  "backend_statistics": {
+    "actual_backend": "numba",
+    "calls": 1,
+    "fallback_calls": 0,
+    "fallback_reason": null,
+    "first_call_seconds": 3.1648000003769994e-05,
+    "profile": false,
+    "dispatcher_cache_path": "None",
+    "dispatcher_cache_hits": 0,
+    "dispatcher_cache_misses": 1,
+    "kinematics_seconds": null,
+    "dispatch_seconds": null,
+    "total_rhs_seconds": null,
+    "requested_backend": "numba",
+    "identity": {
+      "settings": {
+        "name": "numba",
+        "profile": false,
+        "disk_cache": false,
+        "cache_directory": null
+      },
+      "python": "3.13.5",
+      "numpy": "2.2.4",
+      "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+      "libc": [
+        "glibc",
+        "2.41"
+      ],
+      "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+      "fastmath": false,
+      "parallel": false,
+      "float_type": "float64",
+      "numba_available": true,
+      "numba": "0.61.2",
+      "llvmlite": "0.44.0",
+      "llvm": [
+        19,
+        1,
+        7
+      ],
+      "cpu": "sandybridge",
+      "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+      "disable_jit": false,
+      "compiler_cpu_name": null,
+      "compiler_cpu_features": null,
+      "compiler_opt": "_OptLevel(3)",
+      "boundscheck": null,
+      "numba_cache_dir": ""
+    },
+    "preparation_seconds": 0.0004601920081768185,
+    "cache_directory": null,
+    "cache_namespace": null,
+    "cache_error": null,
+    "exact_kinematics_cache": {
+      "calls": 1,
+      "hits": 0,
+      "misses": 1,
+      "hit_fraction": 0.0
+    }
+  },
+  "report_serialization_seconds": 7.911899592727423e-05
+}

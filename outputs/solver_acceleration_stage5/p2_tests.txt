@@ -1,0 +1,8 @@
+...................................................                      [100%]
+=============================== warnings summary ===============================
+tests/test_diagnostic_replay.py: 512 warnings
+  /home/edada/Documents/dada-engine-solver/src/dada_solver/exchangers/gas_diagnostics.py:51: DeprecationWarning: `trapz` is deprecated. Use `trapezoid` instead, or one of the numerical integration functions in `scipy.integrate`.
+    integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+51 passed, 512 warnings in 3.65s

@@ -1,0 +1,297 @@
+{
+  "case": "legacy",
+  "repeat": 0,
+  "elapsed_seconds": 1.7480847050028387,
+  "candidate_seconds": 0.001689022989012301,
+  "sections_seconds": {
+    "build": [
+      0.08836077500018291
+    ],
+    "periodic_integration": [
+      0.8963076919899322
+    ],
+    "generic_diagnostics": [
+      0.34444561699638143
+    ],
+    "generic_validity": [
+      0.10341615398647264
+    ],
+    "microtube_diagnostics": [
+      7.0020032580941916e-06
+    ]
+  },
+  "solver_statistics": [
+    {
+      "phase": "build",
+      "elapsed_seconds": 0.08836077500018291
+    },
+    {
+      "phase": "integration_preflight",
+      "status": "completed",
+      "elapsed_seconds": 0.0003708910080604255,
+      "rhs_calls": 1,
+      "cycle": 1
+    },
+    {
+      "phase": "solver_segment",
+      "method": "LSODA",
+      "start_angle": 0.0,
+      "target_angle": 6.283185307179586,
+      "ends_at_kinematic_breakpoint": false,
+      "status": "completed",
+      "message": "The solver successfully reached the end of the integration interval.",
+      "nfev": 3906,
+      "njev": 136,
+      "nlu": 136,
+      "rhs_calls": 3906,
+      "accepted_samples": 1221,
+      "accepted_steps": 1220,
+      "minimum_step_angle": 2.7952224634393757e-06,
+      "median_step_angle": 0.007040636525222688,
+      "maximum_step_angle": 0.008726646259971993,
+      "integration_elapsed_seconds": 0.8943964569771197,
+      "rhs_elapsed_seconds": null,
+      "cycle": 1
+    },
+    {
+      "phase": "rhs_backend",
+      "cycle": 1,
+      "actual_backend": "python",
+      "reason": "unsupported_model: Compiled backend requires built-in dilute transport without an explicit slip model.",
+      "calls": 3907,
+      "fallback_calls": 3907,
+      "profile": false,
+      "total_rhs_seconds": null,
+      "requested_backend": "numba",
+      "identity": {
+        "settings": {
+          "name": "numba",
+          "profile": false,
+          "disk_cache": false,
+          "cache_directory": null
+        },
+        "python": "3.13.5",
+        "numpy": "2.2.4",
+        "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+        "libc": [
+          "glibc",
+          "2.41"
+        ],
+        "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+        "fastmath": false,
+        "parallel": false,
+        "float_type": "float64",
+        "numba_available": true,
+        "numba": "0.61.2",
+        "llvmlite": "0.44.0",
+        "llvm": [
+          19,
+          1,
+          7
+        ],
+        "cpu": "sandybridge",
+        "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+        "disable_jit": false,
+        "compiler_cpu_name": null,
+        "compiler_cpu_features": null,
+        "compiler_opt": "_OptLevel(3)",
+        "boundscheck": null,
+        "numba_cache_dir": ""
+      },
+      "preparation_seconds": 0.0006659060018137097,
+      "cache_directory": null,
+      "cache_namespace": null,
+      "cache_error": null
+    },
+    {
+      "phase": "periodic_integration",
+      "elapsed_seconds": 0.8963076919899322
+    },
+    {
+      "phase": "generic_diagnostics",
+      "elapsed_seconds": 0.34444561699638143
+    },
+    {
+      "phase": "generic_validity",
+      "elapsed_seconds": 0.10341615398647264
+    },
+    {
+      "phase": "microtube_diagnostics",
+      "elapsed_seconds": 7.0020032580941916e-06
+    }
+  ],
+  "result": {
+    "label": "legacy",
+    "status": "converged",
+    "message": "Periodic steady state converged.",
+    "convergence": {
+      "cycles_completed": 1,
+      "first_normalized_periodic_error": 0.11990234276888032,
+      "last_normalized_periodic_error": 0.11990234276888032,
+      "normalized_periodic_error_ratio": 1.0,
+      "improving": false,
+      "history": [
+        {
+          "cycle": 1,
+          "normalized_state_error": 0.11990234276888032
+        }
+      ]
+    },
+    "indicated_power_w": 37.626110566556775,
+    "heat_input_w": 353.59450839544627,
+    "heat_out_w": -315.98848660404144,
+    "indicated_thermal_efficiency": 0.10641033634062327,
+    "maximum_tube_reynolds": 491.00474572567015,
+    "maximum_tube_mach_number": 0.06606220816322464,
+    "maximum_absolute_mass_flow_kg_s": 0.009437549274119187,
+    "validity": {
+      "verdict": "valid",
+      "maximum_pressure_equalization_error": 0.03683900344643419,
+      "cold_isothermality_error": 0.03373586635267303,
+      "hot_isothermality_error": 0.07010786480480102,
+      "maximum_mach_number": 0.06606220816322464,
+      "mach_number_status": "available",
+      "maximum_compressibility_deviation": 0.0,
+      "maximum_cp_variation": 0.0,
+      "failed_criteria": [],
+      "unavailable_criteria": []
+    },
+    "diagnostics": {
+      "pressure_extrema": {
+        "S": {
+          "minimum": 113935.52980213513,
+          "maximum": 271680.35159291606
+        },
+        "L": {
+          "minimum": 123172.286353238,
+          "maximum": 267996.9592393252
+        },
+        "C": {
+          "minimum": 113935.92654030268,
+          "maximum": 270118.9530786122
+        },
+        "H": {
+          "minimum": 118732.53202686128,
+          "maximum": 267991.6084646702
+        }
+      },
+      "temperature_extrema": {
+        "S": {
+          "minimum": 327.40726259173465,
+          "maximum": 421.6965561095988
+        },
+        "L": {
+          "minimum": 454.06512993253625,
+          "maximum": 582.6178398482265
+        },
+        "C": {
+          "minimum": 554.5847277223448,
+          "maximum": 574.7638361811962
+        },
+        "H": {
+          "minimum": 318.33956164360933,
+          "maximum": 339.24222153516075
+        }
+      },
+      "mass_flow_extrema": {
+        "large_to_hot": {
+          "minimum": -0.00039225712529703855,
+          "maximum": 0.009423985735886509
+        },
+        "small_to_cold": {
+          "minimum": -0.00018042904032324625,
+          "maximum": 0.008162704949570327
+        },
+        "hot_to_small": {
+          "minimum": 0.0,
+          "maximum": 0.009437549274119187
+        },
+        "cold_to_large": {
+          "minimum": 0.0,
+          "maximum": 0.008118817532129024
+        }
+      },
+      "cold_heat_rate_extrema": {
+        "minimum": 0.152926643605691,
+        "maximum": 1084.3047634594427
+      },
+      "hot_heat_rate_extrema": {
+        "minimum": -1086.2249600824957,
+        "maximum": 35.67287028603363
+      },
+      "valve_events": [],
+      "topology": {
+        "classification": "non_nominal",
+        "reasons": [
+          "observed_event_sequence_differs_from_nominal_sequence"
+        ]
+      },
+      "orifice_pressure_regularization": 0.0,
+      "regularization_sample_fraction": 0.0
+    },
+    "microtube_gas_domains": null,
+    "total_mass_kg": 0.0012879789076066135
+  },
+  "final_state": [
+    9.508087973052305e-05,
+    23.33704359455577,
+    0.0010958830578788382,
+    378.7962769054898,
+    3.508191975962528e-05,
+    14.4473466491643,
+    6.193305023762713e-05,
+    14.53919627028546,
+    84455.670203955,
+    46880.53902399268
+  ],
+  "exception": null,
+  "backend_statistics": {
+    "actual_backend": "python",
+    "reason": "unsupported_model: Compiled backend requires built-in dilute transport without an explicit slip model.",
+    "calls": 3907,
+    "fallback_calls": 3907,
+    "profile": false,
+    "total_rhs_seconds": null,
+    "requested_backend": "numba",
+    "identity": {
+      "settings": {
+        "name": "numba",
+        "profile": false,
+        "disk_cache": false,
+        "cache_directory": null
+      },
+      "python": "3.13.5",
+      "numpy": "2.2.4",
+      "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+      "libc": [
+        "glibc",
+        "2.41"
+      ],
+      "source_sha256": "7b3669c5a5ec21f22efcf0c119fa53bfab53ebce50d4d6570843529aed9572fc",
+      "fastmath": false,
+      "parallel": false,
+      "float_type": "float64",
+      "numba_available": true,
+      "numba": "0.61.2",
+      "llvmlite": "0.44.0",
+      "llvm": [
+        19,
+        1,
+        7
+      ],
+      "cpu": "sandybridge",
+      "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+      "disable_jit": false,
+      "compiler_cpu_name": null,
+      "compiler_cpu_features": null,
+      "compiler_opt": "_OptLevel(3)",
+      "boundscheck": null,
+      "numba_cache_dir": ""
+    },
+    "preparation_seconds": 0.0006659060018137097,
+    "cache_directory": null,
+    "cache_namespace": null,
+    "cache_error": null
+  },
+  "report_serialization_seconds": 0.00018084899056702852
+}

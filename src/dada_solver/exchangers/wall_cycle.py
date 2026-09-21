@@ -1,7 +1,7 @@
 """Reusable periodic evaluation for the existing ten-state air-wall motor."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 import math
 import time
 from types import SimpleNamespace
@@ -59,7 +59,7 @@ class WallCycleResult:
 def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
         progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
         statistics_callback=None, measure_rhs_time=False,
-        adaptive_acceleration=None, backend=WallBackendSettings()) -> WallCycleResult:
+        adaptive_acceleration=None, backend=WallBackendSettings(), exact_kinematics_cache=True) -> WallCycleResult:
     """Repeat complete physical cycles at the original periodic tolerances.
 
     Optional adaptive wall guesses replace the fixed ten-cycle schedule. Failed
@@ -73,6 +73,13 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
         raise TypeError('Expected AdaptiveWallAccelerationSettings or None.')
     if not isinstance(backend,WallBackendSettings):
         raise TypeError('Expected WallBackendSettings.')
+    from dada_solver.kinematics_cache import prepare_exact_kinematics, ExactAngleKinematics
+    cache = None
+    if exact_kinematics_cache and isinstance(wrapper, AirWallMotor):
+        prepared = prepare_exact_kinematics(wrapper.model.kinematics)
+        if isinstance(prepared, ExactAngleKinematics):
+            cache = prepared
+            wrapper = replace(wrapper, model=replace(wrapper.model, kinematics=prepared))
     state = np.asarray(initial_state, dtype=float)
     history, wall_history = [], []
     statistics = []
@@ -84,8 +91,10 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
     rhs = None
     backend_options = {}
     def backend_snapshot():
-        return rhs.snapshot() if rhs is not None else dict(requested_backend=backend.name,
+        snapshot = rhs.snapshot() if rhs is not None else dict(requested_backend=backend.name,
             actual_backend='python' if backend.name=='python' else 'not_started')
+        if cache is not None: snapshot['exact_kinematics_cache'] = cache.snapshot()
+        return snapshot
     atol = np.asarray(settings.integration_absolute_tolerances)
     for cycle in range(1, maximum_cycles+1):
         def record_segment(record):
@@ -128,7 +137,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             continue
         finally:
             if rhs is not None and statistics_callback is not None:
-                statistics_callback(dict(phase='rhs_backend',cycle=cycle,**rhs.snapshot()))
+                statistics_callback(dict(phase='rhs_backend',cycle=cycle,**backend_snapshot()))
         end = trajectory[:10, -1]
         normalized = np.abs(end-state) / (
             settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))
