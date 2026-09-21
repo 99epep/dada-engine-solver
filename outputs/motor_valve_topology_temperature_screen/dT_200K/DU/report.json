@@ -1,0 +1,2273 @@
+{
+  "study": "two-pass whole-machine temperature continuation",
+  "target_delta_t_k": 200.0,
+  "cold_source_temperature_k": 298.15,
+  "hot_source_temperature_k": 498.15,
+  "power_floor_w": 15.0,
+  "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_temperature_map/dT_200K/report.json",
+  "source_parameters": {
+    "swept_ratio": 0.9342435086332261,
+    "n_i": 4209,
+    "length_i_m": 0.04495513072916252,
+    "n_o": 4483,
+    "length_o_m": 0.024063233395069616,
+    "t1": 0.4961422726005935,
+    "t2": 0.6157513800607992,
+    "t3": 0.9147557195077338,
+    "a_l": 0.40896365114344013,
+    "b_l": 0.10979951163015106,
+    "a_s": 0.3894984878810555,
+    "b_s": 0.15776226865045134
+  },
+  "definition": "/home/edada/Documents/dada-engine-solver/outputs/motor_valve_topology_temperature_screen/dT_200K/DU/definition.json",
+  "thermo_pass": {
+    "complete": true,
+    "target_nonseed_evaluations": 24,
+    "attempted_total": 25,
+    "completed_nonseed_evaluations": 24,
+    "best_feasible": {
+      "candidate_id": "1cdc7e89f4e36856be974ffd6bdb7b73ba3c886c538cca435f4ddaed85951f64",
+      "phase": "thermo",
+      "radius_index": 0,
+      "swept_ratio_radius": 0.08,
+      "tube_count_radius": 240,
+      "tube_length_relative_radius": 0.1,
+      "parameters": {
+        "swept_ratio": 0.9368102807365357,
+        "n_i": 4273,
+        "length_i_m": 0.043767900835703116,
+        "n_o": 4548,
+        "length_o_m": 0.02394915263966498,
+        "t1": 0.4961422726005935,
+        "t2": 0.6157513800607992,
+        "t3": 0.9147557195077338,
+        "a_l": 0.40896365114344013,
+        "b_l": 0.10979951163015106,
+        "a_s": 0.3894984878810555,
+        "b_s": 0.15776226865045134
+      },
+      "phase_degrees": {
+        "low_pressure_exchange_deg": 178.61121813621367,
+        "compression_deg": 43.05927868567405,
+        "high_pressure_exchange_deg": 107.64156220089646,
+        "expansion_deg": 30.687940977215824
+      },
+      "symmetry": {
+        "delta_a": 0.01946516326238462,
+        "delta_b": -0.047962757020300284,
+        "rms": 0.03660135681788076
+      },
+      "hardware": {
+        "H_i": {
+          "tube_count": 4273,
+          "tube_length_m": 0.043767900835703116,
+          "inner_diameter_m": 0.00033,
+          "outlet_valve_cda_m2": 0.0006845688313977029,
+          "tube_flow_area_m2": 0.0003654690917542856,
+          "working_gas_volume_m3": 4.480831496641606e-05,
+          "tube_gas_volume_m3": 1.5995814966416056e-05,
+          "header_gas_volume_m3": 2.6812500000000005e-05,
+          "core_width_m": 0.0825,
+          "core_height_m": 0.08125,
+          "wall_capacity_j_k": 174.77891433687918,
+          "static_conductance_reference_w_k": 14.37220798634744,
+          "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+        },
+        "H_o": {
+          "tube_count": 4548,
+          "tube_length_m": 0.02394915263966498,
+          "inner_diameter_m": 0.00033,
+          "outlet_valve_cda_m2": 0.00020401528964546946,
+          "tube_flow_area_m2": 0.0003889898032526307,
+          "working_gas_volume_m3": 3.979097617337051e-05,
+          "tube_gas_volume_m3": 9.315976173370502e-06,
+          "header_gas_volume_m3": 2.8475000000000004e-05,
+          "core_width_m": 0.085,
+          "core_height_m": 0.08375,
+          "wall_capacity_j_k": 102.62658592904624,
+          "static_conductance_reference_w_k": 8.380769416887272,
+          "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+        }
+      },
+      "derived_geometry": {
+        "small_swept_volume_m3": 0.0008811726635238842,
+        "large_swept_volume_m3": 0.0009406095146939374,
+        "total_swept_volume_m3": 0.0018217821782178217,
+        "small_clearance_ratio": 0.009999999999999998,
+        "large_clearance_ratio": 0.01,
+        "swept_ratio": 0.9368102807365358,
+        "gas_inventory_kg": 0.0013818576063263424
+      },
+      "result": {
+        "label": "temperature_200_thermo_1",
+        "status": "converged",
+        "message": "Periodic steady state converged.",
+        "convergence": {
+          "cycles_completed": 13,
+          "first_normalized_periodic_error": 13488.309130515296,
+          "last_normalized_periodic_error": 0.12383955541194283,
+          "normalized_periodic_error_ratio": 9.181251275726935e-06,
+          "improving": true,
+          "history": [
+            {
+              "cycle": 1,
+              "normalized_state_error": 13488.309130515296
+            },
+            {
+              "cycle": 2,
+              "normalized_state_error": 57.340234360951754
+            },
+            {
+              "cycle": 3,
+              "normalized_state_error": 10.054275033984421
+            },
+            {
+              "cycle": 4,
+              "normalized_state_error": 9.543169370678179
+            },
+            {
+              "cycle": 5,
+              "normalized_state_error": 9.057290916195235
+            },
+            {
+              "cycle": 6,
+              "normalized_state_error": 8.596283761572877
+            },
+            {
+              "cycle": 7,
+              "normalized_state_error": 8.167455410597045
+            },
+            {
+              "cycle": 8,
+              "normalized_state_error": 7.7487672712265505
+            },
+            {
+              "cycle": 9,
+              "normalized_state_error": 7.365307181073652
+            },
+            {
+              "cycle": 10,
+              "normalized_state_error": 6.985355879012034,
+              "wall_initial_guess_extrapolated": true
+            },
+            {
+              "cycle": 11,
+              "normalized_state_error": 130.0420150389302
+            },
+            {
+              "cycle": 12,
+              "normalized_state_error": 1.5741580988180965
+            },
+            {
+              "cycle": 13,
+              "normalized_state_error": 0.12383955541194283
+            }
+          ]
+        },
+        "indicated_power_w": 22.50836328627148,
+        "heat_input_w": 126.63100165248206,
+        "heat_out_w": -104.1262193353447,
+        "indicated_thermal_efficiency": 0.17774765256964464,
+        "maximum_tube_reynolds": 594.3278922802989,
+        "maximum_tube_mach_number": 0.023292015469939188,
+        "maximum_absolute_mass_flow_kg_s": 0.013203881071340701,
+        "validity": {
+          "verdict": "valid",
+          "maximum_pressure_equalization_error": 0.007168001112746365,
+          "cold_isothermality_error": 0.018100759264610834,
+          "hot_isothermality_error": 0.12388625341799751,
+          "maximum_mach_number": 0.023292015469939188,
+          "mach_number_status": "available",
+          "maximum_compressibility_deviation": 0.0,
+          "maximum_cp_variation": 0.0,
+          "failed_criteria": [],
+          "unavailable_criteria": []
+        },
+        "diagnostics": {
+          "pressure_extrema": {
+            "S": {
+              "minimum": 114167.16767024955,
+              "maximum": 382778.4773391562
+            },
+            "L": {
+              "minimum": 115074.43130593379,
+              "maximum": 383193.82428631926
+            },
+            "C": {
+              "minimum": 114168.07840792496,
+              "maximum": 382296.1536558689
+            },
+            "H": {
+              "minimum": 114715.6814211691,
+              "maximum": 382741.5329015945
+            }
+          },
+          "temperature_extrema": {
+            "S": {
+              "minimum": 295.5780362425152,
+              "maximum": 436.0571032872236
+            },
+            "L": {
+              "minimum": 348.64380977681003,
+              "maximum": 491.6452060999004
+            },
+            "C": {
+              "minimum": 483.54531997251024,
+              "maximum": 494.3722891266372
+            },
+            "H": {
+              "minimum": 296.88192743920024,
+              "maximum": 333.8186138957762
+            }
+          },
+          "mass_flow_extrema": {
+            "large_to_hot": {
+              "minimum": 0.0,
+              "maximum": 0.004127539089076819
+            },
+            "small_to_cold": {
+              "minimum": -0.003529659709448846,
+              "maximum": 0.007783368246988316
+            },
+            "hot_to_small": {
+              "minimum": -0.0020079009552238887,
+              "maximum": 0.013203881071340701
+            },
+            "cold_to_large": {
+              "minimum": 0.0,
+              "maximum": 0.007049296437805804
+            }
+          },
+          "cold_heat_rate_extrema": {
+            "minimum": -278.47065292866563,
+            "maximum": 625.6108615082636
+          },
+          "hot_heat_rate_extrema": {
+            "minimum": -939.4001957765184,
+            "maximum": 368.88381692794985
+          },
+          "valve_events": [],
+          "topology": {
+            "classification": "non_nominal",
+            "reasons": [
+              "observed_event_sequence_differs_from_nominal_sequence"
+            ]
+          },
+          "orifice_pressure_regularization": 0.0,
+          "regularization_sample_fraction": 0.0
+        },
+        "microtube_gas_domains": {
+          "passages": {
+            "Hi.inlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0003366791594445965,
+                  "maximum": 265.47722128923056
+                },
+                "prandtl": {
+                  "minimum": 0.6891284117900756,
+                  "maximum": 0.6892398186727438
+                },
+                "mach": {
+                  "minimum": 7.527031723382074e-08,
+                  "maximum": 0.017854521439576308
+                },
+                "knudsen": {
+                  "minimum": 9.835426226103404e-05,
+                  "maximum": 0.00032964640787711116
+                },
+                "mean_knudsen": {
+                  "minimum": 9.822140458834099e-05,
+                  "maximum": 0.000329646134390504
+                },
+                "graetz": {
+                  "minimum": 1.749400143252369e-06,
+                  "maximum": 1.3794017555701514
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000494172305,
+                  "maximum": 1.0030543531375242
+                },
+                "compressibility_parameter": {
+                  "minimum": 4.941722930883772e-08,
+                  "maximum": 0.0030496957136884246
+                },
+                "womersley": {
+                  "minimum": 0.10247067863493267,
+                  "maximum": 0.18793941783696905
+                },
+                "strouhal": {
+                  "minimum": 0.011079101896905412,
+                  "maximum": 2633.32854784905
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0008355825482264045,
+                  "maximum": 0.0028107737596516896
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0005758429574635042,
+                  "maximum": 0.0019371539268217873
+                },
+                "residence_time_s": {
+                  "minimum": 0.005539550948452706,
+                  "maximum": 1316.664273924525
+                },
+                "acoustic_time_s": {
+                  "minimum": 9.876987547301875e-05,
+                  "maximum": 9.983054599736567e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0003366791594445965,
+                  "maximum": 289.06030964356563
+                },
+                "mach": {
+                  "minimum": 7.527031723382074e-08,
+                  "maximum": 0.016760300574136123
+                },
+                "knudsen": {
+                  "minimum": 8.546263559335028e-05,
+                  "maximum": 0.00032964640787711116
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000494172305,
+                  "maximum": 1.0030543531375242
+                }
+              },
+              "absolute_gas_heat_J": 34.441531222174035
+            },
+            "Hi.outlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 242.53282884821238
+                },
+                "prandtl": {
+                  "minimum": 0.6891284117900756,
+                  "maximum": 0.6892398186727438
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.01624836370288863
+                },
+                "knudsen": {
+                  "minimum": 9.86832077701098e-05,
+                  "maximum": 0.0003296460959462498
+                },
+                "mean_knudsen": {
+                  "minimum": 9.851846043544275e-05,
+                  "maximum": 0.0003296460959462498
+                },
+                "graetz": {
+                  "minimum": 0.0,
+                  "maximum": 1.260290830636622
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0034265518168697
+                },
+                "compressibility_parameter": {
+                  "minimum": 0.0,
+                  "maximum": 0.0034206912289968484
+                },
+                "womersley": {
+                  "minimum": 0.10247067863493267,
+                  "maximum": 0.18762573346811645
+                },
+                "strouhal": {
+                  "minimum": 0.012249055700794124,
+                  "maximum": 14.39037532497351
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0008355825482264045,
+                  "maximum": 0.0028013988238754397
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0005758429574635042,
+                  "maximum": 0.0019306920298679065
+                },
+                "residence_time_s": {
+                  "minimum": 0.006124527850397062,
+                  "maximum": 7.195187662486755
+                },
+                "acoustic_time_s": {
+                  "minimum": 9.876987547301875e-05,
+                  "maximum": 9.983054599736567e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 0.3843778432962592,
+                    "absolute_heat_fraction": 0.953812485994882
+                  },
+                  "stagnant_radial_screening": {
+                    "time_fraction": 0.6156221567037408,
+                    "absolute_heat_fraction": 0.046187514005117974
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 242.53282884821238
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.01624836370288863
+                },
+                "knudsen": {
+                  "minimum": 9.86832077701098e-05,
+                  "maximum": 0.0003296460959462498
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0034265518168697
+                }
+              },
+              "absolute_gas_heat_J": 34.41577127640461
+            },
+            "Ho.inlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 175.27443324131772
+                },
+                "prandtl": {
+                  "minimum": 0.7041816817320856,
+                  "maximum": 0.7125841753097251
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.021967528745446944
+                },
+                "knudsen": {
+                  "minimum": 5.61085272716009e-05,
+                  "maximum": 0.00018849669530623313
+                },
+                "mean_knudsen": {
+                  "minimum": 5.61085272716009e-05,
+                  "maximum": 0.0001878257106602856
+                },
+                "graetz": {
+                  "minimum": 0.0,
+                  "maximum": 1.7117978051568317
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0071937836373048
+                },
+                "compressibility_parameter": {
+                  "minimum": 0.0,
+                  "maximum": 0.0071680011127463
+                },
+                "womersley": {
+                  "minimum": 0.15176873669788837,
+                  "maximum": 0.2790512083175821
+                },
+                "strouhal": {
+                  "minimum": 0.006163092143571128,
+                  "maximum": 4373.64806476656
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0018329675405684015,
+                  "maximum": 0.006196664037150364
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0012993251522678262,
+                  "maximum": 0.004398299324818288
+                },
+                "residence_time_s": {
+                  "minimum": 0.003081546071785564,
+                  "maximum": 2186.82403238328
+                },
+                "acoustic_time_s": {
+                  "minimum": 6.550220310269383e-05,
+                  "maximum": 6.942622417771079e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 0.6278853561092919,
+                    "absolute_heat_fraction": 0.8143048092061551
+                  },
+                  "stagnant_radial_screening": {
+                    "time_fraction": 0.3721146438907081,
+                    "absolute_heat_fraction": 0.18569519079384506
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 160.6487851838237
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.023292015469939188
+                },
+                "knudsen": {
+                  "minimum": 9.829419709152103e-05,
+                  "maximum": 0.00021698634740803906
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0071937836373048
+                }
+              },
+              "absolute_gas_heat_J": 35.25452795765555
+            },
+            "Ho.outlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0021646536690642106,
+                  "maximum": 594.3278922802989
+                },
+                "prandtl": {
+                  "minimum": 0.7041816817320856,
+                  "maximum": 0.7125841753097251
+                },
+                "mach": {
+                  "minimum": 1.8452908344927094e-07,
+                  "maximum": 0.022570004345205105
+                },
+                "knudsen": {
+                  "minimum": 5.61085272716009e-05,
+                  "maximum": 0.00018941064886611022
+                },
+                "mean_knudsen": {
+                  "minimum": 5.610849794879995e-05,
+                  "maximum": 0.0001889525664405461
+                },
+                "graetz": {
+                  "minimum": 2.1128996272170906e-05,
+                  "maximum": 5.812824209932823
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000304179584,
+                  "maximum": 1.00484896117014
+                },
+                "compressibility_parameter": {
+                  "minimum": 3.041795791170306e-08,
+                  "maximum": 0.004837233391696489
+                },
+                "womersley": {
+                  "minimum": 0.15140212221121555,
+                  "maximum": 0.2790512083175821
+                },
+                "strouhal": {
+                  "minimum": 0.006040420774367131,
+                  "maximum": 731.6946569570192
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0018241227569611032,
+                  "maximum": 0.006196664037150364
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0012930553556454538,
+                  "maximum": 0.004398299324818288
+                },
+                "residence_time_s": {
+                  "minimum": 0.0030202103871835653,
+                  "maximum": 365.8473284785096
+                },
+                "acoustic_time_s": {
+                  "minimum": 6.550220310269383e-05,
+                  "maximum": 6.942622417771079e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0020066015031883653,
+                  "maximum": 594.3278922802989
+                },
+                "mach": {
+                  "minimum": 1.941672609167315e-07,
+                  "maximum": 0.022570004345205105
+                },
+                "knudsen": {
+                  "minimum": 5.610877460980456e-05,
+                  "maximum": 0.00018941064886611022
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000304179584,
+                  "maximum": 1.00484896117014
+                }
+              },
+              "absolute_gas_heat_J": 35.220591546301534
+            }
+          },
+          "model_validity": "valid",
+          "failed_criteria": [],
+          "time_weighting": "trapezoidal physical time",
+          "heat_weighting": "absolute wall-to-gas heat, split by instantaneous half-film conductance",
+          "limitations": [
+            "quasi_steady_pulse_response_unvalidated",
+            "stagnant_radial_heat_is_lumped_screening",
+            "no_axial_wall_or_gas_temperature_resolution",
+            "external_air_film_unchanged"
+          ]
+        },
+        "total_mass_kg": 0.001381857606326334,
+        "maximum_pressure_pa": 383193.82428631926,
+        "maximum_temperature_k": 494.3722891266372
+      },
+      "carnot_efficiency": 0.4014854963364448,
+      "fraction_of_carnot": 0.4427249656378424,
+      "feasible": true,
+      "physical_constraint_failures": [],
+      "elapsed_seconds": 3.260966116009513,
+      "warm_start_source": "078550a9baccc251134659f8e1ae70efd683889d893e7fc1187bdf543926ec50",
+      "last_complete_state": [
+        0.00020027594768668217,
+        42.49347568668307,
+        0.0010925610737654368,
+        273.30626508549693,
+        3.6732237769319214e-05,
+        12.907499538434578,
+        5.22883471048958e-05,
+        11.451057499508925,
+        85799.46270395807,
+        31602.01969591273
+      ],
+      "index": 1,
+      "proposal_index": 1,
+      "kind": "adaptive_local_thermo5d"
+    }
+  },
+  "motion_pass": {
+    "complete": true,
+    "target_nonseed_evaluations": 24,
+    "attempted_total": 25,
+    "completed_nonseed_evaluations": 24,
+    "best_feasible": {
+      "candidate_id": "46841815f824101290be785072c37be2b5812bd7a689521ef69f738a252fdbdb",
+      "phase": "motion",
+      "radius_index": 3,
+      "timing_radius": 0.001,
+      "level_radius": 0.0005,
+      "parameters": {
+        "swept_ratio": 0.9368102807365357,
+        "n_i": 4273,
+        "length_i_m": 0.043767900835703116,
+        "n_o": 4548,
+        "length_o_m": 0.02394915263966498,
+        "t1": 0.5004508524180078,
+        "t2": 0.6324814470484851,
+        "t3": 0.917862598029586,
+        "a_l": 0.40723559035869045,
+        "b_l": 0.10752432227466965,
+        "a_s": 0.3894825242698625,
+        "b_s": 0.14830323605110277
+      },
+      "phase_degrees": {
+        "low_pressure_exchange_deg": 180.1623068704828,
+        "compression_deg": 47.53101406697182,
+        "high_pressure_exchange_deg": 102.73721435319634,
+        "expansion_deg": 29.569464709349027
+      },
+      "symmetry": {
+        "delta_a": 0.01775306608882793,
+        "delta_b": -0.04077891377643311,
+        "rms": 0.03144909509302341
+      },
+      "hardware": {
+        "H_i": {
+          "tube_count": 4273,
+          "tube_length_m": 0.043767900835703116,
+          "inner_diameter_m": 0.00033,
+          "outlet_valve_cda_m2": 0.0006845688313977029,
+          "tube_flow_area_m2": 0.0003654690917542856,
+          "working_gas_volume_m3": 4.480831496641606e-05,
+          "tube_gas_volume_m3": 1.5995814966416056e-05,
+          "header_gas_volume_m3": 2.6812500000000005e-05,
+          "core_width_m": 0.0825,
+          "core_height_m": 0.08125,
+          "wall_capacity_j_k": 174.77891433687918,
+          "static_conductance_reference_w_k": 14.37220798634744,
+          "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+        },
+        "H_o": {
+          "tube_count": 4548,
+          "tube_length_m": 0.02394915263966498,
+          "inner_diameter_m": 0.00033,
+          "outlet_valve_cda_m2": 0.00020401528964546946,
+          "tube_flow_area_m2": 0.0003889898032526307,
+          "working_gas_volume_m3": 3.979097617337051e-05,
+          "tube_gas_volume_m3": 9.315976173370502e-06,
+          "header_gas_volume_m3": 2.8475000000000004e-05,
+          "core_width_m": 0.085,
+          "core_height_m": 0.08375,
+          "wall_capacity_j_k": 102.62658592904624,
+          "static_conductance_reference_w_k": 8.380769416887272,
+          "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+        }
+      },
+      "derived_geometry": {
+        "small_swept_volume_m3": 0.0008811726635238842,
+        "large_swept_volume_m3": 0.0009406095146939374,
+        "total_swept_volume_m3": 0.0018217821782178217,
+        "small_clearance_ratio": 0.009999999999999998,
+        "large_clearance_ratio": 0.01,
+        "swept_ratio": 0.9368102807365358,
+        "gas_inventory_kg": 0.0013721168870476695
+      },
+      "result": {
+        "label": "temperature_200_motion_24",
+        "status": "converged",
+        "message": "Periodic steady state converged.",
+        "convergence": {
+          "cycles_completed": 4,
+          "first_normalized_periodic_error": 2416.4812293900154,
+          "last_normalized_periodic_error": 0.9607863911329138,
+          "normalized_periodic_error_ratio": 0.00039759729123798823,
+          "improving": true,
+          "history": [
+            {
+              "cycle": 1,
+              "normalized_state_error": 2416.4812293900154
+            },
+            {
+              "cycle": 2,
+              "normalized_state_error": 10.918702052183807
+            },
+            {
+              "cycle": 3,
+              "normalized_state_error": 1.1291251003885765
+            },
+            {
+              "cycle": 4,
+              "normalized_state_error": 0.9607863911329138
+            }
+          ]
+        },
+        "indicated_power_w": 22.8396325133349,
+        "heat_input_w": 127.22083145796738,
+        "heat_out_w": -104.4096211489457,
+        "indicated_thermal_efficiency": 0.17952745829114403,
+        "maximum_tube_reynolds": 595.4717164535374,
+        "maximum_tube_mach_number": 0.023167261121153818,
+        "maximum_absolute_mass_flow_kg_s": 0.013231607110457608,
+        "validity": {
+          "verdict": "valid",
+          "maximum_pressure_equalization_error": 0.007162525527906866,
+          "cold_isothermality_error": 0.017834004527666154,
+          "hot_isothermality_error": 0.11878941568793128,
+          "maximum_mach_number": 0.023167261121153818,
+          "mach_number_status": "available",
+          "maximum_compressibility_deviation": 0.0,
+          "maximum_cp_variation": 0.0,
+          "failed_criteria": [],
+          "unavailable_criteria": []
+        },
+        "diagnostics": {
+          "pressure_extrema": {
+            "S": {
+              "minimum": 114371.293521984,
+              "maximum": 378741.6000689842
+            },
+            "L": {
+              "minimum": 115286.38846404353,
+              "maximum": 379077.6300571181
+            },
+            "C": {
+              "minimum": 114371.6525700766,
+              "maximum": 378289.4381819276
+            },
+            "H": {
+              "minimum": 114923.02442419225,
+              "maximum": 378687.4697820075
+            }
+          },
+          "temperature_extrema": {
+            "S": {
+              "minimum": 292.4723697172406,
+              "maximum": 434.50773032172833
+            },
+            "L": {
+              "minimum": 349.6518839466004,
+              "maximum": 491.2903777405306
+            },
+            "C": {
+              "minimum": 483.3159951590088,
+              "maximum": 493.98340496723233
+            },
+            "H": {
+              "minimum": 296.3324325384773,
+              "maximum": 331.749496825834
+            }
+          },
+          "mass_flow_extrema": {
+            "large_to_hot": {
+              "minimum": 0.0,
+              "maximum": 0.0038850406297251615
+            },
+            "small_to_cold": {
+              "minimum": -0.003460774799532997,
+              "maximum": 0.008014982794673565
+            },
+            "hot_to_small": {
+              "minimum": -0.001892953114635712,
+              "maximum": 0.013231607110457608
+            },
+            "cold_to_large": {
+              "minimum": 0.0,
+              "maximum": 0.007363871746888423
+            }
+          },
+          "cold_heat_rate_extrema": {
+            "minimum": -247.27751614616426,
+            "maximum": 641.8237158098788
+          },
+          "hot_heat_rate_extrema": {
+            "minimum": -857.0119339101165,
+            "maximum": 387.70738944020957
+          },
+          "valve_events": [],
+          "topology": {
+            "classification": "non_nominal",
+            "reasons": [
+              "observed_event_sequence_differs_from_nominal_sequence"
+            ]
+          },
+          "orifice_pressure_regularization": 0.0,
+          "regularization_sample_fraction": 0.0
+        },
+        "microtube_gas_domains": {
+          "passages": {
+            "Hi.inlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0008669531630471611,
+                  "maximum": 273.54633141089624
+                },
+                "prandtl": {
+                  "minimum": 0.6891304096671419,
+                  "maximum": 0.6892434372474145
+                },
+                "mach": {
+                  "minimum": 1.9346104113975443e-07,
+                  "maximum": 0.0185757081397699
+                },
+                "knudsen": {
+                  "minimum": 9.874641262832377e-05,
+                  "maximum": 0.0003290326437215617
+                },
+                "mean_knudsen": {
+                  "minimum": 9.860372748785252e-05,
+                  "maximum": 0.00032903254100042414
+                },
+                "graetz": {
+                  "minimum": 4.504729738841804e-06,
+                  "maximum": 1.421334223337793
+                },
+                "pressure_ratio": {
+                  "minimum": 1.000000082311093,
+                  "maximum": 1.0032003931883893
+                },
+                "compressibility_parameter": {
+                  "minimum": 8.231108966500935e-08,
+                  "maximum": 0.003195280112036494
+                },
+                "womersley": {
+                  "minimum": 0.10256798164992126,
+                  "maximum": 0.1876468630083705
+                },
+                "strouhal": {
+                  "minimum": 0.010653211616384859,
+                  "maximum": 1024.5896164568042
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0008371701887987859,
+                  "maximum": 0.0028020298204994316
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0005769373247739311,
+                  "maximum": 0.0019311530641339652
+                },
+                "residence_time_s": {
+                  "minimum": 0.0053266058081924295,
+                  "maximum": 512.2948082284021
+                },
+                "acoustic_time_s": {
+                  "minimum": 9.880733131074455e-05,
+                  "maximum": 9.985341981847421e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0008669531630471611,
+                  "maximum": 298.4059899848283
+                },
+                "mach": {
+                  "minimum": 1.9346104113975443e-07,
+                  "maximum": 0.017413387065457923
+                },
+                "knudsen": {
+                  "minimum": 8.580973511724139e-05,
+                  "maximum": 0.0003290326437215617
+                },
+                "pressure_ratio": {
+                  "minimum": 1.000000082311093,
+                  "maximum": 1.0032003931883893
+                }
+              },
+              "absolute_gas_heat_J": 34.50192942121916
+            },
+            "Hi.outlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 253.44488181396338
+                },
+                "prandtl": {
+                  "minimum": 0.6891304096671419,
+                  "maximum": 0.6892434372474145
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.017032791096471354
+                },
+                "knudsen": {
+                  "minimum": 9.90986243773263e-05,
+                  "maximum": 0.00032903253165170643
+                },
+                "mean_knudsen": {
+                  "minimum": 9.89222049920934e-05,
+                  "maximum": 0.00032903253165170643
+                },
+                "graetz": {
+                  "minimum": 0.0,
+                  "maximum": 1.316999922411179
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0036140854046076
+                },
+                "compressibility_parameter": {
+                  "minimum": 0.0,
+                  "maximum": 0.003607566378110972
+                },
+                "womersley": {
+                  "minimum": 0.10256798164992126,
+                  "maximum": 0.18731310328366177
+                },
+                "strouhal": {
+                  "minimum": 0.011687827314518359,
+                  "maximum": 84.49766593677684
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0008371701887987859,
+                  "maximum": 0.002792070975661335
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0005769373247739311,
+                  "maximum": 0.0019242894491989535
+                },
+                "residence_time_s": {
+                  "minimum": 0.005843913657259179,
+                  "maximum": 42.24883296838842
+                },
+                "acoustic_time_s": {
+                  "minimum": 9.880733131074455e-05,
+                  "maximum": 9.985341981847421e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 0.3676894133211549,
+                    "absolute_heat_fraction": 0.9550290695309431
+                  },
+                  "stagnant_radial_screening": {
+                    "time_fraction": 0.6323105866788451,
+                    "absolute_heat_fraction": 0.04497093046905697
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 253.44488181396338
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.017032791096471354
+                },
+                "knudsen": {
+                  "minimum": 9.90986243773263e-05,
+                  "maximum": 0.00032903253165170643
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.0036140854046076
+                }
+              },
+              "absolute_gas_heat_J": 34.48389186015397
+            },
+            "Ho.inlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 173.01939439714235
+                },
+                "prandtl": {
+                  "minimum": 0.7045930300347351,
+                  "maximum": 0.7127271199613094
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.02184687619946602
+                },
+                "knudsen": {
+                  "minimum": 5.6316910206741955e-05,
+                  "maximum": 0.00018829612323946338
+                },
+                "mean_knudsen": {
+                  "minimum": 5.6316910206741955e-05,
+                  "maximum": 0.00018762383352856614
+                },
+                "graetz": {
+                  "minimum": 0.0,
+                  "maximum": 1.6897837216329774
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.007188268606605
+                },
+                "compressibility_parameter": {
+                  "minimum": 0.0,
+                  "maximum": 0.007162525527906802
+                },
+                "womersley": {
+                  "minimum": 0.15183318647957444,
+                  "maximum": 0.2785184233160836
+                },
+                "strouhal": {
+                  "minimum": 0.006197297716156443,
+                  "maximum": 2243.5492190826367
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0018345246391347847,
+                  "maximum": 0.006173024376492416
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0013003727960872937,
+                  "maximum": 0.004381415378531828
+                },
+                "residence_time_s": {
+                  "minimum": 0.0030986488580782216,
+                  "maximum": 1121.7746095413183
+                },
+                "acoustic_time_s": {
+                  "minimum": 6.570419836215574e-05,
+                  "maximum": 6.949018499915598e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 0.6377064048374845,
+                    "absolute_heat_fraction": 0.8036725817512038
+                  },
+                  "stagnant_radial_screening": {
+                    "time_fraction": 0.3622935951625155,
+                    "absolute_heat_fraction": 0.19632741824879624
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0,
+                  "maximum": 158.54991565981135
+                },
+                "mach": {
+                  "minimum": 0.0,
+                  "maximum": 0.023167261121153818
+                },
+                "knudsen": {
+                  "minimum": 9.867082398813708e-05,
+                  "maximum": 0.00021737993185078086
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0,
+                  "maximum": 1.007188268606605
+                }
+              },
+              "absolute_gas_heat_J": 35.42801383051861
+            },
+            "Ho.outlet": {
+              "ranges": {
+                "reynolds": {
+                  "minimum": 0.0025583714014710095,
+                  "maximum": 595.4717164535374
+                },
+                "prandtl": {
+                  "minimum": 0.7045930300347351,
+                  "maximum": 0.7127271199613094
+                },
+                "mach": {
+                  "minimum": 2.6132333893931e-07,
+                  "maximum": 0.022697893123534745
+                },
+                "knudsen": {
+                  "minimum": 5.6316910206741955e-05,
+                  "maximum": 0.00018920835747225192
+                },
+                "mean_knudsen": {
+                  "minimum": 5.6316844830243646e-05,
+                  "maximum": 0.00018875113815530376
+                },
+                "graetz": {
+                  "minimum": 2.4990839576126838e-05,
+                  "maximum": 5.823872924436006
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000475133384,
+                  "maximum": 1.0048447984207258
+                },
+                "compressibility_parameter": {
+                  "minimum": 4.751333724606856e-08,
+                  "maximum": 0.004833090745520266
+                },
+                "womersley": {
+                  "minimum": 0.1514667226000804,
+                  "maximum": 0.2785184233160836
+                },
+                "strouhal": {
+                  "minimum": 0.006005704700501492,
+                  "maximum": 518.5680231110101
+                },
+                "viscous_diffusion_time_s": {
+                  "minimum": 0.0018256797256157998,
+                  "maximum": 0.006173024376492416
+                },
+                "thermal_diffusion_time_s": {
+                  "minimum": 0.0012941031989648758,
+                  "maximum": 0.004381415378531828
+                },
+                "residence_time_s": {
+                  "minimum": 0.003002852350250746,
+                  "maximum": 259.28401155550506
+                },
+                "acoustic_time_s": {
+                  "minimum": 6.570419836215574e-05,
+                  "maximum": 6.949018499915598e-05
+                }
+              },
+              "domains": {
+                "correlation_id": {
+                  "hausen_constant_wall": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "continuum_regime": {
+                  "continuum": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "slip_regime": {
+                  "negligible": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "model_validity": {
+                  "valid": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "thermal_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "hydrodynamic_developing": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                },
+                "compressibility_significant": {
+                  "False": {
+                    "time_fraction": 1.0,
+                    "absolute_heat_fraction": 1.0
+                  }
+                }
+              },
+              "hydraulic_upstream_ranges": {
+                "reynolds": {
+                  "minimum": 0.0024569760456701136,
+                  "maximum": 595.4717164535374
+                },
+                "mach": {
+                  "minimum": 2.6845231316177273e-07,
+                  "maximum": 0.022697893123534745
+                },
+                "knudsen": {
+                  "minimum": 5.631708829029672e-05,
+                  "maximum": 0.00018920835747225192
+                },
+                "pressure_ratio": {
+                  "minimum": 1.0000000475133384,
+                  "maximum": 1.0048447984207258
+                }
+              },
+              "absolute_gas_heat_J": 35.420190698828776
+            }
+          },
+          "model_validity": "valid",
+          "failed_criteria": [],
+          "time_weighting": "trapezoidal physical time",
+          "heat_weighting": "absolute wall-to-gas heat, split by instantaneous half-film conductance",
+          "limitations": [
+            "quasi_steady_pulse_response_unvalidated",
+            "stagnant_radial_heat_is_lumped_screening",
+            "no_axial_wall_or_gas_temperature_resolution",
+            "external_air_film_unchanged"
+          ]
+        },
+        "total_mass_kg": 0.0013721168870476697,
+        "maximum_pressure_pa": 379077.6300571181,
+        "maximum_temperature_k": 493.98340496723233
+      },
+      "carnot_efficiency": 0.4014854963364448,
+      "fraction_of_carnot": 0.447158016738667,
+      "feasible": true,
+      "physical_constraint_failures": [],
+      "elapsed_seconds": 1.8134966389916372,
+      "warm_start_source": "6bf2608de9a88315d5e2477763628e9298bd9fa44693007f02a0bbeed416df6e",
+      "last_complete_state": [
+        0.0001914482004237737,
+        40.1956627467938,
+        0.001091417734523442,
+        273.8096716075513,
+        3.681908437030926e-05,
+        12.93589828617105,
+        5.243186773014468e-05,
+        11.479515595849502,
+        85793.05605532111,
+        31604.971388432437
+      ],
+      "index": 24,
+      "proposal_index": 24,
+      "kind": "adaptive_local_motion7d"
+    }
+  },
+  "campaign_complete": true,
+  "champion": {
+    "candidate_id": "46841815f824101290be785072c37be2b5812bd7a689521ef69f738a252fdbdb",
+    "phase": "motion",
+    "radius_index": 3,
+    "timing_radius": 0.001,
+    "level_radius": 0.0005,
+    "parameters": {
+      "swept_ratio": 0.9368102807365357,
+      "n_i": 4273,
+      "length_i_m": 0.043767900835703116,
+      "n_o": 4548,
+      "length_o_m": 0.02394915263966498,
+      "t1": 0.5004508524180078,
+      "t2": 0.6324814470484851,
+      "t3": 0.917862598029586,
+      "a_l": 0.40723559035869045,
+      "b_l": 0.10752432227466965,
+      "a_s": 0.3894825242698625,
+      "b_s": 0.14830323605110277
+    },
+    "phase_degrees": {
+      "low_pressure_exchange_deg": 180.1623068704828,
+      "compression_deg": 47.53101406697182,
+      "high_pressure_exchange_deg": 102.73721435319634,
+      "expansion_deg": 29.569464709349027
+    },
+    "symmetry": {
+      "delta_a": 0.01775306608882793,
+      "delta_b": -0.04077891377643311,
+      "rms": 0.03144909509302341
+    },
+    "hardware": {
+      "H_i": {
+        "tube_count": 4273,
+        "tube_length_m": 0.043767900835703116,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.0006845688313977029,
+        "tube_flow_area_m2": 0.0003654690917542856,
+        "working_gas_volume_m3": 4.480831496641606e-05,
+        "tube_gas_volume_m3": 1.5995814966416056e-05,
+        "header_gas_volume_m3": 2.6812500000000005e-05,
+        "core_width_m": 0.0825,
+        "core_height_m": 0.08125,
+        "wall_capacity_j_k": 174.77891433687918,
+        "static_conductance_reference_w_k": 14.37220798634744,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      },
+      "H_o": {
+        "tube_count": 4548,
+        "tube_length_m": 0.02394915263966498,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.00020401528964546946,
+        "tube_flow_area_m2": 0.0003889898032526307,
+        "working_gas_volume_m3": 3.979097617337051e-05,
+        "tube_gas_volume_m3": 9.315976173370502e-06,
+        "header_gas_volume_m3": 2.8475000000000004e-05,
+        "core_width_m": 0.085,
+        "core_height_m": 0.08375,
+        "wall_capacity_j_k": 102.62658592904624,
+        "static_conductance_reference_w_k": 8.380769416887272,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      }
+    },
+    "derived_geometry": {
+      "small_swept_volume_m3": 0.0008811726635238842,
+      "large_swept_volume_m3": 0.0009406095146939374,
+      "total_swept_volume_m3": 0.0018217821782178217,
+      "small_clearance_ratio": 0.009999999999999998,
+      "large_clearance_ratio": 0.01,
+      "swept_ratio": 0.9368102807365358,
+      "gas_inventory_kg": 0.0013721168870476695
+    },
+    "result": {
+      "label": "temperature_200_motion_24",
+      "status": "converged",
+      "message": "Periodic steady state converged.",
+      "convergence": {
+        "cycles_completed": 4,
+        "first_normalized_periodic_error": 2416.4812293900154,
+        "last_normalized_periodic_error": 0.9607863911329138,
+        "normalized_periodic_error_ratio": 0.00039759729123798823,
+        "improving": true,
+        "history": [
+          {
+            "cycle": 1,
+            "normalized_state_error": 2416.4812293900154
+          },
+          {
+            "cycle": 2,
+            "normalized_state_error": 10.918702052183807
+          },
+          {
+            "cycle": 3,
+            "normalized_state_error": 1.1291251003885765
+          },
+          {
+            "cycle": 4,
+            "normalized_state_error": 0.9607863911329138
+          }
+        ]
+      },
+      "indicated_power_w": 22.8396325133349,
+      "heat_input_w": 127.22083145796738,
+      "heat_out_w": -104.4096211489457,
+      "indicated_thermal_efficiency": 0.17952745829114403,
+      "maximum_tube_reynolds": 595.4717164535374,
+      "maximum_tube_mach_number": 0.023167261121153818,
+      "maximum_absolute_mass_flow_kg_s": 0.013231607110457608,
+      "validity": {
+        "verdict": "valid",
+        "maximum_pressure_equalization_error": 0.007162525527906866,
+        "cold_isothermality_error": 0.017834004527666154,
+        "hot_isothermality_error": 0.11878941568793128,
+        "maximum_mach_number": 0.023167261121153818,
+        "mach_number_status": "available",
+        "maximum_compressibility_deviation": 0.0,
+        "maximum_cp_variation": 0.0,
+        "failed_criteria": [],
+        "unavailable_criteria": []
+      },
+      "diagnostics": {
+        "pressure_extrema": {
+          "S": {
+            "minimum": 114371.293521984,
+            "maximum": 378741.6000689842
+          },
+          "L": {
+            "minimum": 115286.38846404353,
+            "maximum": 379077.6300571181
+          },
+          "C": {
+            "minimum": 114371.6525700766,
+            "maximum": 378289.4381819276
+          },
+          "H": {
+            "minimum": 114923.02442419225,
+            "maximum": 378687.4697820075
+          }
+        },
+        "temperature_extrema": {
+          "S": {
+            "minimum": 292.4723697172406,
+            "maximum": 434.50773032172833
+          },
+          "L": {
+            "minimum": 349.6518839466004,
+            "maximum": 491.2903777405306
+          },
+          "C": {
+            "minimum": 483.3159951590088,
+            "maximum": 493.98340496723233
+          },
+          "H": {
+            "minimum": 296.3324325384773,
+            "maximum": 331.749496825834
+          }
+        },
+        "mass_flow_extrema": {
+          "large_to_hot": {
+            "minimum": 0.0,
+            "maximum": 0.0038850406297251615
+          },
+          "small_to_cold": {
+            "minimum": -0.003460774799532997,
+            "maximum": 0.008014982794673565
+          },
+          "hot_to_small": {
+            "minimum": -0.001892953114635712,
+            "maximum": 0.013231607110457608
+          },
+          "cold_to_large": {
+            "minimum": 0.0,
+            "maximum": 0.007363871746888423
+          }
+        },
+        "cold_heat_rate_extrema": {
+          "minimum": -247.27751614616426,
+          "maximum": 641.8237158098788
+        },
+        "hot_heat_rate_extrema": {
+          "minimum": -857.0119339101165,
+          "maximum": 387.70738944020957
+        },
+        "valve_events": [],
+        "topology": {
+          "classification": "non_nominal",
+          "reasons": [
+            "observed_event_sequence_differs_from_nominal_sequence"
+          ]
+        },
+        "orifice_pressure_regularization": 0.0,
+        "regularization_sample_fraction": 0.0
+      },
+      "microtube_gas_domains": {
+        "passages": {
+          "Hi.inlet": {
+            "ranges": {
+              "reynolds": {
+                "minimum": 0.0008669531630471611,
+                "maximum": 273.54633141089624
+              },
+              "prandtl": {
+                "minimum": 0.6891304096671419,
+                "maximum": 0.6892434372474145
+              },
+              "mach": {
+                "minimum": 1.9346104113975443e-07,
+                "maximum": 0.0185757081397699
+              },
+              "knudsen": {
+                "minimum": 9.874641262832377e-05,
+                "maximum": 0.0003290326437215617
+              },
+              "mean_knudsen": {
+                "minimum": 9.860372748785252e-05,
+                "maximum": 0.00032903254100042414
+              },
+              "graetz": {
+                "minimum": 4.504729738841804e-06,
+                "maximum": 1.421334223337793
+              },
+              "pressure_ratio": {
+                "minimum": 1.000000082311093,
+                "maximum": 1.0032003931883893
+              },
+              "compressibility_parameter": {
+                "minimum": 8.231108966500935e-08,
+                "maximum": 0.003195280112036494
+              },
+              "womersley": {
+                "minimum": 0.10256798164992126,
+                "maximum": 0.1876468630083705
+              },
+              "strouhal": {
+                "minimum": 0.010653211616384859,
+                "maximum": 1024.5896164568042
+              },
+              "viscous_diffusion_time_s": {
+                "minimum": 0.0008371701887987859,
+                "maximum": 0.0028020298204994316
+              },
+              "thermal_diffusion_time_s": {
+                "minimum": 0.0005769373247739311,
+                "maximum": 0.0019311530641339652
+              },
+              "residence_time_s": {
+                "minimum": 0.0053266058081924295,
+                "maximum": 512.2948082284021
+              },
+              "acoustic_time_s": {
+                "minimum": 9.880733131074455e-05,
+                "maximum": 9.985341981847421e-05
+              }
+            },
+            "domains": {
+              "correlation_id": {
+                "hausen_constant_wall": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "continuum_regime": {
+                "continuum": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "slip_regime": {
+                "negligible": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "model_validity": {
+                "valid": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "thermal_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "hydrodynamic_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "compressibility_significant": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              }
+            },
+            "hydraulic_upstream_ranges": {
+              "reynolds": {
+                "minimum": 0.0008669531630471611,
+                "maximum": 298.4059899848283
+              },
+              "mach": {
+                "minimum": 1.9346104113975443e-07,
+                "maximum": 0.017413387065457923
+              },
+              "knudsen": {
+                "minimum": 8.580973511724139e-05,
+                "maximum": 0.0003290326437215617
+              },
+              "pressure_ratio": {
+                "minimum": 1.000000082311093,
+                "maximum": 1.0032003931883893
+              }
+            },
+            "absolute_gas_heat_J": 34.50192942121916
+          },
+          "Hi.outlet": {
+            "ranges": {
+              "reynolds": {
+                "minimum": 0.0,
+                "maximum": 253.44488181396338
+              },
+              "prandtl": {
+                "minimum": 0.6891304096671419,
+                "maximum": 0.6892434372474145
+              },
+              "mach": {
+                "minimum": 0.0,
+                "maximum": 0.017032791096471354
+              },
+              "knudsen": {
+                "minimum": 9.90986243773263e-05,
+                "maximum": 0.00032903253165170643
+              },
+              "mean_knudsen": {
+                "minimum": 9.89222049920934e-05,
+                "maximum": 0.00032903253165170643
+              },
+              "graetz": {
+                "minimum": 0.0,
+                "maximum": 1.316999922411179
+              },
+              "pressure_ratio": {
+                "minimum": 1.0,
+                "maximum": 1.0036140854046076
+              },
+              "compressibility_parameter": {
+                "minimum": 0.0,
+                "maximum": 0.003607566378110972
+              },
+              "womersley": {
+                "minimum": 0.10256798164992126,
+                "maximum": 0.18731310328366177
+              },
+              "strouhal": {
+                "minimum": 0.011687827314518359,
+                "maximum": 84.49766593677684
+              },
+              "viscous_diffusion_time_s": {
+                "minimum": 0.0008371701887987859,
+                "maximum": 0.002792070975661335
+              },
+              "thermal_diffusion_time_s": {
+                "minimum": 0.0005769373247739311,
+                "maximum": 0.0019242894491989535
+              },
+              "residence_time_s": {
+                "minimum": 0.005843913657259179,
+                "maximum": 42.24883296838842
+              },
+              "acoustic_time_s": {
+                "minimum": 9.880733131074455e-05,
+                "maximum": 9.985341981847421e-05
+              }
+            },
+            "domains": {
+              "correlation_id": {
+                "hausen_constant_wall": {
+                  "time_fraction": 0.3676894133211549,
+                  "absolute_heat_fraction": 0.9550290695309431
+                },
+                "stagnant_radial_screening": {
+                  "time_fraction": 0.6323105866788451,
+                  "absolute_heat_fraction": 0.04497093046905697
+                }
+              },
+              "continuum_regime": {
+                "continuum": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "slip_regime": {
+                "negligible": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "model_validity": {
+                "valid": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "thermal_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "hydrodynamic_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "compressibility_significant": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              }
+            },
+            "hydraulic_upstream_ranges": {
+              "reynolds": {
+                "minimum": 0.0,
+                "maximum": 253.44488181396338
+              },
+              "mach": {
+                "minimum": 0.0,
+                "maximum": 0.017032791096471354
+              },
+              "knudsen": {
+                "minimum": 9.90986243773263e-05,
+                "maximum": 0.00032903253165170643
+              },
+              "pressure_ratio": {
+                "minimum": 1.0,
+                "maximum": 1.0036140854046076
+              }
+            },
+            "absolute_gas_heat_J": 34.48389186015397
+          },
+          "Ho.inlet": {
+            "ranges": {
+              "reynolds": {
+                "minimum": 0.0,
+                "maximum": 173.01939439714235
+              },
+              "prandtl": {
+                "minimum": 0.7045930300347351,
+                "maximum": 0.7127271199613094
+              },
+              "mach": {
+                "minimum": 0.0,
+                "maximum": 0.02184687619946602
+              },
+              "knudsen": {
+                "minimum": 5.6316910206741955e-05,
+                "maximum": 0.00018829612323946338
+              },
+              "mean_knudsen": {
+                "minimum": 5.6316910206741955e-05,
+                "maximum": 0.00018762383352856614
+              },
+              "graetz": {
+                "minimum": 0.0,
+                "maximum": 1.6897837216329774
+              },
+              "pressure_ratio": {
+                "minimum": 1.0,
+                "maximum": 1.007188268606605
+              },
+              "compressibility_parameter": {
+                "minimum": 0.0,
+                "maximum": 0.007162525527906802
+              },
+              "womersley": {
+                "minimum": 0.15183318647957444,
+                "maximum": 0.2785184233160836
+              },
+              "strouhal": {
+                "minimum": 0.006197297716156443,
+                "maximum": 2243.5492190826367
+              },
+              "viscous_diffusion_time_s": {
+                "minimum": 0.0018345246391347847,
+                "maximum": 0.006173024376492416
+              },
+              "thermal_diffusion_time_s": {
+                "minimum": 0.0013003727960872937,
+                "maximum": 0.004381415378531828
+              },
+              "residence_time_s": {
+                "minimum": 0.0030986488580782216,
+                "maximum": 1121.7746095413183
+              },
+              "acoustic_time_s": {
+                "minimum": 6.570419836215574e-05,
+                "maximum": 6.949018499915598e-05
+              }
+            },
+            "domains": {
+              "correlation_id": {
+                "hausen_constant_wall": {
+                  "time_fraction": 0.6377064048374845,
+                  "absolute_heat_fraction": 0.8036725817512038
+                },
+                "stagnant_radial_screening": {
+                  "time_fraction": 0.3622935951625155,
+                  "absolute_heat_fraction": 0.19632741824879624
+                }
+              },
+              "continuum_regime": {
+                "continuum": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "slip_regime": {
+                "negligible": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "model_validity": {
+                "valid": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "thermal_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "hydrodynamic_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "compressibility_significant": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              }
+            },
+            "hydraulic_upstream_ranges": {
+              "reynolds": {
+                "minimum": 0.0,
+                "maximum": 158.54991565981135
+              },
+              "mach": {
+                "minimum": 0.0,
+                "maximum": 0.023167261121153818
+              },
+              "knudsen": {
+                "minimum": 9.867082398813708e-05,
+                "maximum": 0.00021737993185078086
+              },
+              "pressure_ratio": {
+                "minimum": 1.0,
+                "maximum": 1.007188268606605
+              }
+            },
+            "absolute_gas_heat_J": 35.42801383051861
+          },
+          "Ho.outlet": {
+            "ranges": {
+              "reynolds": {
+                "minimum": 0.0025583714014710095,
+                "maximum": 595.4717164535374
+              },
+              "prandtl": {
+                "minimum": 0.7045930300347351,
+                "maximum": 0.7127271199613094
+              },
+              "mach": {
+                "minimum": 2.6132333893931e-07,
+                "maximum": 0.022697893123534745
+              },
+              "knudsen": {
+                "minimum": 5.6316910206741955e-05,
+                "maximum": 0.00018920835747225192
+              },
+              "mean_knudsen": {
+                "minimum": 5.6316844830243646e-05,
+                "maximum": 0.00018875113815530376
+              },
+              "graetz": {
+                "minimum": 2.4990839576126838e-05,
+                "maximum": 5.823872924436006
+              },
+              "pressure_ratio": {
+                "minimum": 1.0000000475133384,
+                "maximum": 1.0048447984207258
+              },
+              "compressibility_parameter": {
+                "minimum": 4.751333724606856e-08,
+                "maximum": 0.004833090745520266
+              },
+              "womersley": {
+                "minimum": 0.1514667226000804,
+                "maximum": 0.2785184233160836
+              },
+              "strouhal": {
+                "minimum": 0.006005704700501492,
+                "maximum": 518.5680231110101
+              },
+              "viscous_diffusion_time_s": {
+                "minimum": 0.0018256797256157998,
+                "maximum": 0.006173024376492416
+              },
+              "thermal_diffusion_time_s": {
+                "minimum": 0.0012941031989648758,
+                "maximum": 0.004381415378531828
+              },
+              "residence_time_s": {
+                "minimum": 0.003002852350250746,
+                "maximum": 259.28401155550506
+              },
+              "acoustic_time_s": {
+                "minimum": 6.570419836215574e-05,
+                "maximum": 6.949018499915598e-05
+              }
+            },
+            "domains": {
+              "correlation_id": {
+                "hausen_constant_wall": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "continuum_regime": {
+                "continuum": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "slip_regime": {
+                "negligible": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "model_validity": {
+                "valid": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "thermal_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "hydrodynamic_developing": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              },
+              "compressibility_significant": {
+                "False": {
+                  "time_fraction": 1.0,
+                  "absolute_heat_fraction": 1.0
+                }
+              }
+            },
+            "hydraulic_upstream_ranges": {
+              "reynolds": {
+                "minimum": 0.0024569760456701136,
+                "maximum": 595.4717164535374
+              },
+              "mach": {
+                "minimum": 2.6845231316177273e-07,
+                "maximum": 0.022697893123534745
+              },
+              "knudsen": {
+                "minimum": 5.631708829029672e-05,
+                "maximum": 0.00018920835747225192
+              },
+              "pressure_ratio": {
+                "minimum": 1.0000000475133384,
+                "maximum": 1.0048447984207258
+              }
+            },
+            "absolute_gas_heat_J": 35.420190698828776
+          }
+        },
+        "model_validity": "valid",
+        "failed_criteria": [],
+        "time_weighting": "trapezoidal physical time",
+        "heat_weighting": "absolute wall-to-gas heat, split by instantaneous half-film conductance",
+        "limitations": [
+          "quasi_steady_pulse_response_unvalidated",
+          "stagnant_radial_heat_is_lumped_screening",
+          "no_axial_wall_or_gas_temperature_resolution",
+          "external_air_film_unchanged"
+        ]
+      },
+      "total_mass_kg": 0.0013721168870476697,
+      "maximum_pressure_pa": 379077.6300571181,
+      "maximum_temperature_k": 493.98340496723233
+    },
+    "carnot_efficiency": 0.4014854963364448,
+    "fraction_of_carnot": 0.447158016738667,
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 1.8134966389916372,
+    "warm_start_source": "6bf2608de9a88315d5e2477763628e9298bd9fa44693007f02a0bbeed416df6e",
+    "last_complete_state": [
+      0.0001914482004237737,
+      40.1956627467938,
+      0.001091417734523442,
+      273.8096716075513,
+      3.681908437030926e-05,
+      12.93589828617105,
+      5.243186773014468e-05,
+      11.479515595849502,
+      85793.05605532111,
+      31604.971388432437
+    ],
+    "index": 24,
+    "proposal_index": 24,
+    "kind": "adaptive_local_motion7d"
+  }
+}
