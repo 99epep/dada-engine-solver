@@ -51,6 +51,8 @@ class WallCycleResult:
     solver_statistics: tuple[dict, ...] = ()
     backend_statistics: dict = field(default_factory=dict)
 
+    anderson_statistics: dict = field(default_factory=dict)
+
     @property
     def converged(self):
         return self.status == 'converged'
@@ -59,18 +61,26 @@ class WallCycleResult:
 def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
         progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
         statistics_callback=None, measure_rhs_time=False,
-        adaptive_acceleration=None, backend=WallBackendSettings(), exact_kinematics_cache=True) -> WallCycleResult:
+        adaptive_acceleration=None, backend=WallBackendSettings(), exact_kinematics_cache=True,
+        anderson_acceleration=None) -> WallCycleResult:
     """Repeat complete physical cycles at the original periodic tolerances.
 
     Optional adaptive wall guesses replace the fixed ten-cycle schedule. Failed
     trials consume the attempt budget and are reported, then roll back to the
     retained physical endpoint. Only retained cycles notify cycle_callback.
     Campaign defaults and their serialized numerical settings remain unchanged.
+    Experimental Anderson mixing instead uses recent full physical map pairs;
+    it suppresses fixed wall extrapolation and cannot certify convergence itself.
     """
     from dada_solver.exchangers.wall_iteration import (
-        extrapolate_wall_energies, adaptive_wall_proposal, AdaptiveWallAccelerationSettings)
+        extrapolate_wall_energies, adaptive_wall_proposal, AdaptiveWallAccelerationSettings,
+        AndersonAccelerationSettings, PeriodicMapPair, anderson_proposal, mass_compatible, MASS_INDICES, _physical_state)
     if adaptive_acceleration is not None and not isinstance(adaptive_acceleration, AdaptiveWallAccelerationSettings):
         raise TypeError('Expected AdaptiveWallAccelerationSettings or None.')
+    if anderson_acceleration is not None and not isinstance(anderson_acceleration,AndersonAccelerationSettings):
+        raise TypeError('Expected AndersonAccelerationSettings or None.')
+    if adaptive_acceleration is not None and anderson_acceleration is not None:
+        raise ValueError('Anderson and adaptive wall acceleration are mutually exclusive.')
     if not isinstance(backend,WallBackendSettings):
         raise TypeError('Expected WallBackendSettings.')
     from dada_solver.kinematics_cache import prepare_exact_kinematics, ExactAngleKinematics
@@ -85,6 +95,12 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
     statistics = []
     last_angles = last_trajectory = None
     pending = None
+    anderson_pending = None
+    pairs = []
+    anderson_counts = (dict(attempted_cycles=0,retained_cycles=0,proposal_count=0,
+        accepted_trial_count=0,rejected_trial_count=0,rollback_count=0,domain_failure_count=0)
+        if anderson_acceleration is not None else {})
+    charge = float(_physical_state(state)[MASS_INDICES].sum()) if anderson_acceleration is not None else None
     recovery_remaining = 0
     capacities = (np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
                   if adaptive_acceleration is not None else None)
@@ -97,6 +113,8 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
         return snapshot
     atol = np.asarray(settings.integration_absolute_tolerances)
     for cycle in range(1, maximum_cycles+1):
+        input_state = state.copy() if anderson_acceleration is not None else None
+        if anderson_acceleration is not None: anderson_counts['attempted_cycles'] += 1
         def record_segment(record):
             record = dict(record, cycle=cycle)
             statistics.append(record)
@@ -114,6 +132,15 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             wall_history = []
             recovery_remaining = adaptive_acceleration.recovery_cycles
 
+        def rollback_anderson(reason, **details):
+            nonlocal state, anderson_pending, pairs
+            state=anderson_pending['state'].copy()
+            anderson_counts['rejected_trial_count']+=1
+            anderson_counts['rollback_count']+=1
+            record_segment(dict(phase='anderson_trial',status='rolled_back',anderson_trial=True,
+                rollback_reason=reason,previous_normalized_error=anderson_pending['error'],**details))
+            anderson_pending=None;pairs=[]
+
         try:
             if rhs is None and (backend.name!='python' or backend.profile):
                 # Keep Python's preflight-before-first-progress ordering.
@@ -126,11 +153,24 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
                 progress_callback=progress_callback,
                 progress_interval_seconds=settings.progress_interval_seconds,
                 statistics_callback=record_segment, measure_rhs_time=measure_rhs_time, **backend_options)
+            if anderson_acceleration is not None:
+                if not np.all(np.isfinite(trajectory)) or np.any(trajectory[:10]<=0):
+                    raise ValueError('Physical cycle returned nonfinite or nonpositive states.')
+                if not mass_compatible(trajectory[:10,-1],charge):
+                    raise ValueError('Physical cycle changed the fixed gas charge.')
         except IntegrationInterrupted as error:
+            if anderson_pending is not None:
+                record_segment(dict(phase='anderson_trial',status='interrupted',anderson_trial=True,
+                    previous_normalized_error=anderson_pending['error']))
             return WallCycleResult('interrupted', str(error), tuple(history),
                 last_angles, last_trajectory,
-                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot())
+                last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot(), dict(anderson_counts))
         except (ValueError, RuntimeError, ArithmeticError) as error:
+            if anderson_pending is not None:
+                from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
+                if isinstance(error,MicrotubeDomainError):anderson_counts['domain_failure_count']+=1
+                rollback_anderson('integration_failed',exception=type(error).__name__,message=str(error))
+                continue
             if pending is None:
                 raise
             restore_anchor('accelerated_integration_failed', exception=type(error).__name__, message=str(error))
@@ -143,6 +183,21 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             settings.periodic_absolute_tolerance + settings.periodic_relative_tolerance*np.maximum(np.abs(end), np.abs(state)))
         error = float(np.max(normalized))
         history.append(dict(cycle=cycle, normalized_state_error=error))
+        if anderson_acceleration is not None:
+            history[-1].update(anderson_trial=anderson_pending is not None,retained=False)
+            if anderson_pending is not None:
+                history[-1]['trial_normalized_error']=error
+                if error>1 and error>anderson_acceleration.maximum_residual_growth*anderson_pending['error']:
+                    history[-1].update(anderson_rolled_back=True,rollback_reason='residual_growth')
+                    rollback_anderson('residual_growth',trial_normalized_error=error)
+                    continue
+                anderson_counts['accepted_trial_count']+=1
+                history[-1]['anderson_accepted']=True
+                record_segment(dict(phase='anderson_trial',status='accepted',anderson_trial=True,trial_normalized_error=error))
+                anderson_pending=None
+            history[-1]['retained']=True
+            anderson_counts['retained_cycles']+=1
+            pairs.append(PeriodicMapPair(input_state,end,error));pairs=pairs[-anderson_acceleration.memory:]
         if adaptive_acceleration is not None:
             history[-1].update(normalized_gas_error=float(np.max(normalized[:8])),
                                normalized_wall_error=float(np.max(normalized[8:10])))
@@ -180,7 +235,18 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
             cycle_callback(cycle, end.copy(), error, history[-1])
         if error <= 1:
             return WallCycleResult('converged', 'Periodic steady state converged.',
-                tuple(history), angles, trajectory, end.copy(), tuple(statistics), backend_snapshot())
+                tuple(history), angles, trajectory, end.copy(), tuple(statistics), backend_snapshot(), dict(anderson_counts))
+        if anderson_acceleration is not None:
+            if cycle<maximum_cycles:
+                started=time.perf_counter()
+                proposal=anderson_proposal(pairs,settings=anderson_acceleration)
+                record_segment(dict(phase='anderson_decision',**proposal.statistics,
+                    previous_normalized_error=error,elapsed_seconds=time.perf_counter()-started))
+                if proposal.state is not None:
+                    anderson_counts['proposal_count']+=1
+                    anderson_pending=dict(state=end.copy(),error=error)
+                    state=proposal.state.copy()
+            continue
         wall_history.append(end[8:10].copy())
         if adaptive_acceleration is not None:
             wall_history = wall_history[-4:]
@@ -212,7 +278,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
     return WallCycleResult('maximum_cycles',
         'Maximum cycle count reached before periodic convergence.', tuple(history),
         last_angles, last_trajectory,
-        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot())
+        last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot(), dict(anderson_counts))
 
 
 class WallDiagnosticCycle:
