@@ -100,6 +100,17 @@ there. This establishes algorithm behavior, not superiority to the production
 wall-extrapolation policy. A separate scalar test verifies that a 0.95 mode can
 require coefficient L1 =39 and is correctly rejected by the experimental cap10.
 Test logs are in `outputs/periodic_anderson/`.
+The complete source-checkout regression suite passes **547 tests** (580 existing
+deprecation warnings) in 75.28 s, using `PYTHONPATH=src python3 -m pytest -q`.
+
+A separate default-policy regression replay covers production warm, nearby warm,
+production cold, smooth four-bar, historical fallback, invalid domain and controlled
+interruption. Against the saved Stage-5 `p2_shared` artifacts, all seven cases
+retain exactly equal public reports, final states, exceptions and trajectory
+presence. Where trajectories exist, the complete angle arrays and all 15 rows
+are bitwise identical. See `default_comparison.json` and
+`interruption_comparison.json` under `outputs/periodic_anderson/`. These are
+correctness checks, not additional Anderson adoption measurements.
 
 ## 5. Parameter screen
 
