@@ -15,19 +15,8 @@ from refine_motor_four_stage_hx9d_variable_gas import _load_basis, _build_design
 from dada_solver.exchangers.wall_cycle import WallCycleNumericalSettings
 from dada_solver.wall_backend import WallRHS, WallBackendSettings
 
-MASS = np.array([0, 2, 4, 6])
+from dada_solver.exchangers.wall_iteration import tangent_coordinates, MASS_INDICES as MASS
 LABELS = ['m_S', 'U_S', 'm_L', 'U_L', 'm_Hi', 'U_Hi', 'm_Ho', 'U_Ho', 'E_wall_Hi', 'E_wall_Ho']
-
-
-def tangent_coordinates(anchor):
-    """Orthonormal coordinates in relative-state space at fixed total gas mass."""
-    scales = np.abs(np.asarray(anchor, dtype=float))
-    if np.any(scales <= 0):
-        raise ValueError('Positive anchor states are required.')
-    normal = np.zeros(10)
-    normal[MASS] = scales[MASS]
-    _, _, vh = np.linalg.svd(normal[None, :] / np.linalg.norm(normal), full_matrices=True)
-    return scales, vh[1:].T
 
 
 def central_jacobian(function, dimension, step):

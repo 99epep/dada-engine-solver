@@ -111,6 +111,7 @@ def _evaluate(
         **({"backend": definition.wall_backend} if hasattr(definition,"wall_backend") else {}),
         exact_kinematics_cache=getattr(definition, "exact_kinematics_cache", True),
         adaptive_acceleration=getattr(definition, "adaptive_wall_acceleration", None),
+        anderson_acceleration=getattr(definition, "anderson_acceleration", None),
         progress_callback=progress_callback,
         statistics_callback=statistics_callback, measure_rhs_time=measure_rhs_time,
     )

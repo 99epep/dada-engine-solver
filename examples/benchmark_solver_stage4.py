@@ -14,6 +14,17 @@ from dada_solver.integration import IntegrationInterrupted
 from compare_motor_motion_laws_stage7A5 import _evaluate
 
 
+def build_frozen_design(base,case):
+    design=legacy_design() if case.get('legacy') else _build_design(base,case['parameters'])
+    if case.get('motion')=='base': design=replace(design,kinematics=base.kinematics)
+    if case.get('motion')=='six_bar':
+        from stage5_mechanisms import six_bar
+        design=replace(design,kinematics=six_bar(design.configuration.machine_volumes))
+    design=replace(design,configuration=replace(design.configuration,
+        numerical=replace(design.configuration.numerical,maximum_cycles=case['maximum_cycles'])))
+    return design
+
+
 def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=None,profile=False,exact_cache=True,warm_compile=False,shared_replay=True,**backend_options):
     if output.exists(): raise FileExistsError('Use a new measurement directory.')
     manifest=json.loads(manifest_path.read_text())
@@ -42,13 +53,7 @@ def run(output,manifest_path=DEFAULT_MANIFEST,backend='python',repeats=3,cases=N
         if cases and case['name'] not in cases: continue
         for repeat in range(repeats):
             start=time.perf_counter();records=[];capture=[]
-            design=legacy_design() if case.get('legacy') else _build_design(base,case['parameters'])
-            if case.get('motion')=='base': design=replace(design,kinematics=base.kinematics)
-            if case.get('motion')=='six_bar':
-                from stage5_mechanisms import six_bar
-                design=replace(design,kinematics=six_bar(design.configuration.machine_volumes))
-            design=replace(design,configuration=replace(design.configuration,
-                numerical=replace(design.configuration.numerical,maximum_cycles=case['maximum_cycles'])))
+            design=build_frozen_design(base,case)
             candidate_seconds=time.perf_counter()-start
             raw=dict(manifest['numerical_settings']);raw['integration_absolute_tolerances']=tuple(raw['integration_absolute_tolerances'])
             settings=WallCycleNumericalSettings() if case.get('legacy') else WallCycleNumericalSettings(**raw)
