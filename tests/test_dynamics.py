@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -9,7 +10,7 @@ from dada_solver.geometry import CylinderVolumeLimits, MachineVolumes
 from dada_solver.heat_transfer import ReservoirHeatTransfer
 from dada_solver.hydraulics import CompressibleOrifice
 from dada_solver.hydraulics import FlowResult
-from dada_solver.state import UniformCharge
+from dada_solver.state import ThermodynamicState, UniformCharge
 from dada_solver.valves import PassiveCheckValve, ValveState
 from dada_solver.verification import (
     adiabatic_donor_log_rate_residual,
@@ -251,3 +252,31 @@ def test_adiabatic_outflow_only_donor_matches_appendix_a5(
     )
 
     assert residual == pytest.approx(0.0, abs=1.0e-12)
+
+
+@pytest.mark.parametrize('heat_in,heat_out', [
+    ('downstream','downstream'), ('upstream','downstream'),
+    ('downstream','upstream'), ('upstream','upstream'),
+])
+def test_valve_half_links_block_reverse_flow_and_free_halves_accept_it(
+    ideal_gas, heat_in, heat_out,
+) -> None:
+    model=replace(create_model(ideal_gas,
+        LinearInstantKinematics(2e-4,5e-4,0.,0.)),continuous_ideal_diodes=True,
+        heat_in_valve_placement=heat_in,heat_out_valve_placement=heat_out)
+    topology=ValveTopology(ValveState.CLOSED,ValveState.CLOSED)
+    pairs=((1,3,heat_out=='upstream'),(0,2,heat_in=='upstream'),
+           (3,0,heat_out=='downstream'),(2,1,heat_in=='downstream'))
+    names=('large_to_hot','small_to_cold','hot_to_small','cold_to_large')
+    v=model.volumes(0);volumes=np.asarray((v.small_cylinder,v.large_cylinder,
+        v.cold_heat_exchanger,v.hot_heat_exchanger))
+    for name,(source,destination,one_way) in zip(names,pairs):
+        pressures=np.full(4,2e5);pressures[source]=1.9e5;pressures[destination]=2.1e5
+        temperature=350.;masses=pressures*volumes/(ideal_gas.gas_constant*temperature)
+        energies=masses*ideal_gas.heat_capacity_cv*temperature
+        values=np.empty(8);values[0::2]=masses;values[1::2]=energies
+        rates=model.evaluate(0,ThermodynamicState.from_array(values),topology)
+        flow=getattr(rates.flows,name)
+        assert (flow==0) if one_way else (flow<0)
+        assert rates.mass_residual_rate == pytest.approx(0,abs=1e-15)
+        assert rates.energy_residual_rate == pytest.approx(0,abs=1e-10)

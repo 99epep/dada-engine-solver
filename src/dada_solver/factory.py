@@ -180,6 +180,8 @@ def build_model(configuration: SimulationConfiguration, *, kinematics: Kinematic
         continuous_ideal_diodes=(
             configuration.valve_model == "continuous_ideal_diode"
         ),
+        heat_in_valve_placement=configuration.heat_in_valve_placement,
+        heat_out_valve_placement=configuration.heat_out_valve_placement,
     )
 
 

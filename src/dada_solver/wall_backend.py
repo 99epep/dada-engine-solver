@@ -223,7 +223,10 @@ class CompiledWallRHS:
         self.kinematics_seconds=0.;self.dispatch_seconds=0.;self.total_seconds=0.
         self.sources=np.array((1,0,3,2),dtype=np.int64)
         self.destinations=np.array((3,2,0,1),dtype=np.int64)
-        self.one_way=np.array((False,False,True,True))
+        self.one_way=np.array((model.heat_out_valve_placement=='upstream',
+            model.heat_in_valve_placement=='upstream',
+            model.heat_out_valve_placement=='downstream',
+            model.heat_in_valve_placement=='downstream'))
         self.ports=np.array(((1,3),(0,2)),dtype=np.int64)
         self.links=np.array(links);self.walls=np.array(walls)
         g=model.gas

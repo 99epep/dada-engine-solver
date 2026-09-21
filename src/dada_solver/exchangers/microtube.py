@@ -10,6 +10,11 @@ class MicrotubeExchanger:
     bank: MicrotubeBank
     inputs: HardwareInputs
     outlet_valve_cda_m2: float
+    valve_placement: str = 'downstream'
+
+    def __post_init__(self):
+        if self.valve_placement not in {'upstream', 'downstream'}:
+            raise ValueError("Valve placement must be 'upstream' or 'downstream'.")
 
     def build(self) -> ExchangerComponents:
         thermal, report = build_exchanger(self.bank, self.inputs)
@@ -17,8 +22,10 @@ class MicrotubeExchanger:
             return TubeHalfLink(self.bank, self.inputs.gas_viscosity_pa_s,
                 self.inputs.core_loss_multiplier, self.inputs.header_loss_coefficient, valve,
                 self.inputs.gas_model)
-        return ExchangerComponents(report['working_gas_volume_m3'], passage(),
-            passage(self.outlet_valve_cda_m2), wall_thermal=thermal,
+        inlet_valve = self.outlet_valve_cda_m2 if self.valve_placement == 'upstream' else None
+        outlet_valve = self.outlet_valve_cda_m2 if self.valve_placement == 'downstream' else None
+        return ExchangerComponents(report['working_gas_volume_m3'], passage(inlet_valve),
+            passage(outlet_valve), wall_thermal=thermal,
             metadata=tuple(report.items()),
             validity_domain=(('variable_internal_transport', 'instantaneous_correlation_domain',
                 'quasi_steady_not_pulse_calibrated') if self.inputs.gas_model is not None else

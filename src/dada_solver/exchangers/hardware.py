@@ -217,8 +217,10 @@ def connect_hardware(model, heat_in_bank, heat_out_bank, heat_in_inputs, heat_ou
     # Compatibility constructor; geometry-specific assembly stays at this boundary.
     from dada_solver.exchangers.microtube import MicrotubeExchanger
     from dada_solver.exchangers.base import connect_exchangers
-    incoming = MicrotubeExchanger(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2)
-    outgoing = MicrotubeExchanger(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2)
+    incoming = MicrotubeExchanger(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2,
+        getattr(model, 'heat_in_valve_placement', 'downstream'))
+    outgoing = MicrotubeExchanger(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2,
+        getattr(model, 'heat_out_valve_placement', 'downstream'))
     hi_report = dict(incoming.build().metadata)
     ho_report = dict(outgoing.build().metadata)
     return connect_exchangers(model, incoming, outgoing), dict(H_i=hi_report, H_o=ho_report,

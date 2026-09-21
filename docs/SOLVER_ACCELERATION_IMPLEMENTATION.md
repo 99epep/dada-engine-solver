@@ -275,7 +275,10 @@ valve orientations, not obtained by reversing every hydraulic flow.
 
 These changes clarify reference reductions and chronology; they do not require
 replacing the full four-volume balances used by the acceleration benchmarks.
-The existing solver already retains heat exchange and passive pressure-driven
-valves throughout all kinematic phases. Upstream valve placement remains a
-separate, not-yet-implemented physical feature in the production compiled adapter.
+The existing solver retains heat exchange and passive pressure-driven valves
+throughout all kinematic phases. Independent upstream/downstream placement for
+the H_i and H_o check valves is now supported by the Python and production Numba
+paths for `continuous_ideal_diode`; the valve CdA moves with the directed half-link.
+The historical DD placement remains the default. Alternative placements remain
+unsupported for `discrete_hysteretic`.
 No new pressure-equalization or exact-isobaric constraint is introduced here.

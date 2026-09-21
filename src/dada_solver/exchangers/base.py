@@ -48,6 +48,13 @@ def connect_exchangers(model, heat_in: ExchangerModel, heat_out: ExchangerModel)
     The graph, two gas storage nodes and passive outlet valves are retained.
     Current integrations support two static closures or two one-wall closures.
     """
+    # Placement belongs to the connected thermodynamic model.  Microtube
+    # designs expose this optional field; other exchanger families remain
+    # untouched and keep using their generic interface.
+    if hasattr(heat_in, 'valve_placement'):
+        heat_in = replace(heat_in, valve_placement=model.heat_in_valve_placement)
+    if hasattr(heat_out, 'valve_placement'):
+        heat_out = replace(heat_out, valve_placement=model.heat_out_valve_placement)
     incoming, outgoing = heat_in.build(), heat_out.build()
     changed = replace(model,
         machine_volumes=replace(model.machine_volumes,

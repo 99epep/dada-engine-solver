@@ -47,8 +47,10 @@ def test_point_and_balance_match_frozen_reference(ideal_gas, continuous, stored,
     assert_rates_equal(model.assemble_rates(point,expected.cold_heat_rate,expected.hot_heat_rate),expected)
 
 
-def variable_wrapper():
+def variable_wrapper(heat_in='downstream', heat_out='downstream'):
     config=load_simulation_configuration(ROOT/'examples/motor_demonstrator_original_325c.toml')
+    config=replace(config, heat_in_valve_placement=heat_in,
+                   heat_out_valve_placement=heat_out)
     model=build_model(config)
     limits=config.machine_volumes
     model=replace(model,kinematics=FourStageVolumeKinematics(limits.small_cylinder,limits.large_cylinder,
@@ -59,6 +61,27 @@ def variable_wrapper():
         heat_in_valve_cda_m2=config.hydraulics.cold_to_large_valve_cda,
         heat_out_valve_cda_m2=config.hydraulics.hot_to_small_valve_cda)
     return wrapper
+
+
+@pytest.mark.parametrize('heat_in,heat_out,expected', [
+    ('downstream','downstream',(False,False,True,True)),
+    ('upstream','downstream',(False,True,True,False)),
+    ('downstream','upstream',(True,False,False,True)),
+    ('upstream','upstream',(True,True,False,False)),
+])
+def test_all_valve_placements_match_python_and_compiled_rhs(heat_in, heat_out, expected):
+    from dada_solver.wall_backend import WallRHS, WallBackendSettings
+    wrapper=variable_wrapper(heat_in,heat_out)
+    compiled=WallRHS(wrapper,WallBackendSettings('numba'))
+    assert tuple(compiled.implementation.one_way) == expected
+    for angle,scale in ((.2,.99999),(.9,1.),(2.1,1.00001)):
+        gas=UniformCharge(2e5,350).create_state(wrapper.model.gas,wrapper.model.volumes(angle))
+        values=np.r_[gas.as_array(),wrapper.heat_in.wall_capacity_j_k*450,
+                     wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
+        values[1]*=scale; values[7]/=scale
+        np.testing.assert_allclose(compiled(angle,values),wrapper.derivative(angle,values),
+                                   rtol=2e-11,atol=1e-11)
+    assert compiled.snapshot()['fallback_calls'] == 0
 
 
 @pytest.mark.parametrize('temperature',[298.15,598.15])
