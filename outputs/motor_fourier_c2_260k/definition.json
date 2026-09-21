@@ -1,0 +1,80 @@
+{
+  "study": "260 K UU smooth Fourier-motion search",
+  "source_report": "outputs/motor_valve_optimization_260K/UU/report.json",
+  "source_sha256": "9dcc69670a675aba24b3e224d6b9ecbfbe780a24930b6aa5156421fc05c252fe",
+  "delta_t_k": 260.0,
+  "topology": "UU",
+  "harmonics": 4,
+  "shape_dimensions": 16,
+  "thermo_dimensions": 5,
+  "thermo_hard_relative_limit": 0.03,
+  "thermo_bounds": {
+    "swept_ratio": [
+      0.8355583780715242,
+      0.8872424014573917
+    ],
+    "length_i_m": [
+      0.03908760854735771,
+      0.0415053987667819
+    ],
+    "length_o_m": [
+      0.025477546718741185,
+      0.027053477443611775
+    ],
+    "n_i": [
+      3718,
+      3950
+    ],
+    "n_o": [
+      4035,
+      4285
+    ]
+  },
+  "shape_radii": [
+    0.45,
+    0.28,
+    0.16,
+    0.09,
+    0.05,
+    0.025
+  ],
+  "evaluations_per_radius": 64,
+  "sobol_seed": 26092101,
+  "linear_source_parameters": {
+    "swept_ratio": 0.861400389764458,
+    "n_i": 3834,
+    "length_i_m": 0.040296503657069806,
+    "n_o": 4160,
+    "length_o_m": 0.02626551208117648,
+    "t1": 0.4941168666590625,
+    "t2": 0.6464125418616458,
+    "t3": 0.9043245726159456,
+    "a_l": 0.3723139140167804,
+    "b_l": 0.09962140337570348,
+    "a_s": 0.36085337375537135,
+    "b_s": 0.11349146926925864
+  },
+  "small_seed_coefficients": [
+    -0.853066540974573,
+    0.47426094622451104,
+    0.157073989118303,
+    -0.022069063692764894,
+    -0.11541317560719541,
+    0.05689708017141838,
+    0.07304848000974018,
+    0.017354845392364687
+  ],
+  "large_seed_coefficients": [
+    0.7959696112545432,
+    0.5450089949748704,
+    0.17883317374150823,
+    0.08553963402390803,
+    0.1175911047067977,
+    0.07545030825501084,
+    0.09659961689614346,
+    0.03531766455961665
+  ],
+  "kinematic_constraint": "exactly one maximum and one minimum per piston per revolution",
+  "normalization": "each Fourier curve is numerically normalized to full [0,1] stroke",
+  "strategy": "Seed with least-squares Fourier projection of the retained linear UU champion; then alternating broad incumbent-centered and occasional global smooth-shape proposals. Thermodynamics remains within +/-3% of the retained UU champion."
+}
