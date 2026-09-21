@@ -132,10 +132,32 @@ def test_published_e0_configuration_builds_shared_crank_kinematics() -> None:
 
     assert configuration.kinematics_type == "published_e0_opposed"
     assert configuration.valve_model == "continuous_ideal_diode"
+    assert configuration.heat_in_valve_placement == "downstream"
+    assert configuration.heat_out_valve_placement == "downstream"
     assert configuration.numerical.integration_method == "LSODA"
     assert model.kinematics.crank_radius == pytest.approx(0.073)
     small, large = model.kinematics.slider_states(1.27)
     np.testing.assert_allclose(small.crank_pin, large.crank_pin)
+
+
+def test_valve_placement_parsing_and_validation(tmp_path: Path) -> None:
+    source = EXAMPLE_PATH.read_text(encoding="utf-8").replace(
+        '[valves.hot_to_small]\n',
+        '[valves]\nmodel = "continuous_ideal_diode"\nheat_in_placement = "upstream"\nheat_out_placement = "downstream"\n\n[valves.hot_to_small]\n'
+    )
+    path = tmp_path / 'placements.toml'
+    path.write_text(source, encoding='utf-8')
+    configuration = load_simulation_configuration(path)
+    assert configuration.heat_in_valve_placement == 'upstream'
+    assert configuration.heat_out_valve_placement == 'downstream'
+    path.write_text(source.replace('heat_in_placement = "upstream"',
+                                   'heat_in_placement = "sideways"'), encoding='utf-8')
+    with pytest.raises(ValueError, match='placement'):
+        load_simulation_configuration(path)
+    path.write_text(source.replace('model = "continuous_ideal_diode"',
+                                   'model = "discrete_hysteretic"'), encoding='utf-8')
+    with pytest.raises(ValueError, match='unsupported for discrete_hysteretic'):
+        load_simulation_configuration(path)
 
 
 def test_general_shared_crank_configuration_builds_independent_loops(tmp_path) -> None:

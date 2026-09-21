@@ -4,6 +4,7 @@ import tomllib
 import pytest
 
 from dada_solver.exchangers.hardware import HardwareInputs, TubeHalfLink, build_exchanger, connect_hardware
+from dada_solver.exchangers.microtube import MicrotubeExchanger
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model
@@ -48,6 +49,14 @@ def test_hardware_replaces_hold_up_and_all_four_port_losses():
     assert isinstance(coupled.model.small_cold_link, TubeHalfLink)
     assert coupled.model.cold_large_valve.flow_model.valve_cda_m2 == .0001
     assert coupled.model.hot_small_valve.flow_model.valve_cda_m2 == .0002
+
+
+@pytest.mark.parametrize('placement', ['downstream', 'upstream'])
+def test_microtube_valve_cda_moves_with_placement(placement):
+    bank, props = inputs()
+    components = MicrotubeExchanger(bank, props, .0001, placement).build()
+    expected = (None, .0001) if placement == 'downstream' else (.0001, None)
+    assert (components.inlet.valve_cda_m2, components.outlet.valve_cda_m2) == expected
 
 
 @pytest.mark.parametrize('field,value',[('fan_total_efficiency',2),('gas_nusselt',0),('extra_wall_capacity_j_k',-1),('air_density_kg_m3',float('nan'))])

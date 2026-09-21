@@ -20,7 +20,7 @@ from dada_solver.valves import PassiveCheckValve, ValveState
 
 @dataclass(frozen=True, slots=True)
 class ValveTopology:
-    """Current hydraulic state of both independently passive valves."""
+    """States of H_o and H_i valves, retaining their legacy field names."""
 
     hot_to_small: ValveState
     cold_to_large: ValveState
@@ -86,6 +86,8 @@ class ThermodynamicModel:
     cold_large_valve: PassiveCheckValve
     continuous_ideal_diodes: bool = False
     study_crank_direction: int = 1
+    heat_in_valve_placement: str = "downstream"
+    heat_out_valve_placement: str = "downstream"
 
     @property
     def signed_angular_speed(self) -> float:
@@ -97,6 +99,11 @@ class ThermodynamicModel:
             raise ValueError("Angular speed must be finite and positive.")
         if self.study_crank_direction not in (-1, 1):
             raise ValueError("Study crank direction must be -1 or 1.")
+        placements = (self.heat_in_valve_placement, self.heat_out_valve_placement)
+        if any(value not in {"upstream", "downstream"} for value in placements):
+            raise ValueError("Valve placement must be 'upstream' or 'downstream'.")
+        if not self.continuous_ideal_diodes and "upstream" in placements:
+            raise ValueError("Upstream valve placement is unsupported for discrete hysteretic valves.")
 
     def volumes(self, theta: float) -> InstantaneousVolumes:
         """Return all four control-volume values at an angular position."""
@@ -158,27 +165,19 @@ class ThermodynamicModel:
             volume_rate_large = self.angular_speed * large_derivative
         temperatures, pressures = state.temperatures_and_pressures(self.gas, volumes)
 
-        large_hot = self.large_hot_link.bidirectional_flow(
-            pressures[1], pressures[3], temperatures[1], temperatures[3], self.gas
-        )
-        small_cold = self.small_cold_link.bidirectional_flow(
-            pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas
-        )
         effective_topology = self._topology_from_pressures(pressures, topology)
-        hot_small = self.hot_small_valve.flow(
-            effective_topology.hot_to_small,
-            pressures[3],
-            pressures[0],
-            temperatures[3],
-            self.gas,
-        )
-        cold_large = self.cold_large_valve.flow(
-            effective_topology.cold_to_large,
-            pressures[2],
-            pressures[1],
-            temperatures[2],
-            self.gas,
-        )
+        if self.heat_out_valve_placement == 'upstream':
+            large_hot = self.large_hot_link.directed_flow(pressures[1], pressures[3], temperatures[1], self.gas)
+            hot_small = self.hot_small_valve.flow_model.bidirectional_flow(pressures[3], pressures[0], temperatures[3], temperatures[0], self.gas)
+        else:
+            large_hot = self.large_hot_link.bidirectional_flow(pressures[1], pressures[3], temperatures[1], temperatures[3], self.gas)
+            hot_small = self.hot_small_valve.flow(effective_topology.hot_to_small, pressures[3], pressures[0], temperatures[3], self.gas)
+        if self.heat_in_valve_placement == 'upstream':
+            small_cold = self.small_cold_link.directed_flow(pressures[0], pressures[2], temperatures[0], self.gas)
+            cold_large = self.cold_large_valve.flow_model.bidirectional_flow(pressures[2], pressures[1], temperatures[2], temperatures[1], self.gas)
+        else:
+            small_cold = self.small_cold_link.bidirectional_flow(pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas)
+            cold_large = self.cold_large_valve.flow(effective_topology.cold_to_large, pressures[2], pressures[1], temperatures[2], self.gas)
 
         temperatures.flags.writeable = False
         pressures.flags.writeable = False
@@ -209,18 +208,17 @@ class ThermodynamicModel:
         cold_large = FlowResult(flows.cold_to_large, flows.cold_to_large_choked)
         mass_rates = np.zeros(4, dtype=float)
         energy_rates = np.zeros(4, dtype=float)
-        self._apply_bidirectional_link(
-            mass_rates, energy_rates, 1, 3, large_hot, temperatures
-        )
-        self._apply_bidirectional_link(
-            mass_rates, energy_rates, 0, 2, small_cold, temperatures
-        )
-        self._apply_directed_link(
-            mass_rates, energy_rates, 3, 0, hot_small, temperatures[3]
-        )
-        self._apply_directed_link(
-            mass_rates, energy_rates, 2, 1, cold_large, temperatures[2]
-        )
+        links = ((1, 3, large_hot, self.heat_out_valve_placement == 'upstream'),
+                 (0, 2, small_cold, self.heat_in_valve_placement == 'upstream'),
+                 (3, 0, hot_small, self.heat_out_valve_placement == 'downstream'),
+                 (2, 1, cold_large, self.heat_in_valve_placement == 'downstream'))
+        for source, destination, flow, directed in links:
+            if directed:
+                self._apply_directed_link(mass_rates, energy_rates, source, destination,
+                                          flow, temperatures[source])
+            else:
+                self._apply_bidirectional_link(mass_rates, energy_rates, source,
+                                               destination, flow, temperatures)
 
         energy_rates[2] += cold_heat_rate
         energy_rates[3] += hot_heat_rate
@@ -269,8 +267,8 @@ class ThermodynamicModel:
         if not self.continuous_ideal_diodes:
             return stored_topology
         return ValveTopology(
-            ValveState.OPEN if pressures[3] > pressures[0] else ValveState.CLOSED,
-            ValveState.OPEN if pressures[2] > pressures[1] else ValveState.CLOSED,
+            ValveState.OPEN if (pressures[1] > pressures[3] if self.heat_out_valve_placement == 'upstream' else pressures[3] > pressures[0]) else ValveState.CLOSED,
+            ValveState.OPEN if (pressures[0] > pressures[2] if self.heat_in_valve_placement == 'upstream' else pressures[2] > pressures[1]) else ValveState.CLOSED,
         )
 
     def valve_transitions(

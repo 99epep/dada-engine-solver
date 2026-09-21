@@ -161,6 +161,8 @@ class SimulationConfiguration:
     adiabatic_sector_fraction: float | None
     example_data: bool
     valve_model: str = "discrete_hysteretic"
+    heat_in_valve_placement: str = "downstream"
+    heat_out_valve_placement: str = "downstream"
     four_bar_ground_distance: float | None = None
     four_bar_connecting_rod_ratio: float | None = None
     four_bar_crank_angle_offset_degrees: float | None = None
@@ -197,6 +199,11 @@ class SimulationConfiguration:
             "continuous_ideal_diode",
         }:
             raise ValueError(f"Unsupported valve model: {self.valve_model}.")
+        placements = (self.heat_in_valve_placement, self.heat_out_valve_placement)
+        if any(value not in {"upstream", "downstream"} for value in placements):
+            raise ValueError("Valve placement must be 'upstream' or 'downstream'.")
+        if self.valve_model == "discrete_hysteretic" and "upstream" in placements:
+            raise ValueError("Upstream valve placement is unsupported for discrete_hysteretic valves.")
         for name, value in (
             ("cold reservoir temperature", self.cold_reservoir_temperature),
             ("hot reservoir temperature", self.hot_reservoir_temperature),
@@ -368,6 +375,8 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
             adiabatic_sector_fraction=_optional_float(kinematics_data, "adiabatic_sector_fraction"),
             example_data=bool(data["metadata"]["example_data"]),
             valve_model=str(valve_data.get("model", "discrete_hysteretic")),
+            heat_in_valve_placement=str(valve_data.get("heat_in_placement", "downstream")),
+            heat_out_valve_placement=str(valve_data.get("heat_out_placement", "downstream")),
             four_bar_ground_distance=_optional_float(kinematics_data, "ground_distance"),
             four_bar_connecting_rod_ratio=_optional_float(
                 kinematics_data, "connecting_rod_to_projected_stroke_ratio"
