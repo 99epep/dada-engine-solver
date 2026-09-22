@@ -1,0 +1,72 @@
+{
+  "study": "260 K seven-mobile-knot spline refinement v1",
+  "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+  "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+  "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+  "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+  "source_candidate_id": "192bb871d7b4fdcdcda456b34421e39f4b91df9c6b4f8d8e912658a8f61027c7",
+  "knots_per_piston": 7,
+  "mobile_knot_positions": true,
+  "minimum_gap_deg": 12.0,
+  "projection_smoothing_passes": 0,
+  "projection_distance_vs_source16": {
+    "small_position_rms": 0.0673338170810946,
+    "large_position_rms": 0.051026322847451996,
+    "combined_position_rms": 0.05973913518809386,
+    "small_velocity_rms": 1.1705230273786849,
+    "large_velocity_rms": 1.2273496786554596,
+    "combined_velocity_rms": 1.1992729862961604,
+    "maximum_position_difference": 0.18611459534832298
+  },
+  "fixed_total_mass_kg": 0.0012027347024506055,
+  "fixed_thermo": {
+    "swept_ratio": 0.8549159568269702,
+    "n_i": 3938,
+    "length_i_m": 0.03920273588759638,
+    "n_o": 4225,
+    "length_o_m": 0.026772470159823387
+  },
+  "shape_radii": [
+    0.06,
+    0.038,
+    0.024,
+    0.014,
+    0.008,
+    0.004,
+    0.0018
+  ],
+  "knot_radii": [
+    0.4,
+    0.28,
+    0.18,
+    0.11,
+    0.065,
+    0.035,
+    0.016
+  ],
+  "phase_radii_deg": [
+    2.5,
+    1.7,
+    1.1,
+    0.7,
+    0.4,
+    0.22,
+    0.1
+  ],
+  "evaluations_per_radius": 192,
+  "wide_probe_every": 32,
+  "wide_shape_radius": 0.1,
+  "wide_knot_radius": 0.75,
+  "wide_phase_radius_deg": 4.0,
+  "sobol_seed": 26092317,
+  "constraints": {
+    "exactly_one_minimum_and_one_maximum_per_piston": true,
+    "C2_periodic_position": true,
+    "knot_order_preserved": true,
+    "minimum_knot_separation_deg": 12.0,
+    "hardware_frozen": true,
+    "gas_inventory_frozen": true,
+    "velocity_penalty": false,
+    "acceleration_penalty": false
+  }
+}
