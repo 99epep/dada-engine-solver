@@ -1,0 +1,64 @@
+{
+  "study": "260 K fixed-machine independent free-spline motion search v2-fast",
+  "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+  "source_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+  "source_harmonics": 8,
+  "source_candidate_id": "a75cff7fe9e431bd73b6d5cd2ae269004b2f0304bfd78c48283312e60445573b",
+  "source_efficiency": 0.23136168322415715,
+  "source_power_W": 38.7859581406485,
+  "fixed_total_mass_kg": 0.001202734702450619,
+  "fixed_thermo": {
+    "swept_ratio": 0.8549159568269702,
+    "n_i": 3938,
+    "length_i_m": 0.03920273588759638,
+    "n_o": 4225,
+    "length_o_m": 0.026772470159823387
+  },
+  "controls_per_piston": 16,
+  "effective_shape_dof_per_piston": 14,
+  "independent_phase_dof": 2,
+  "shape_radii": [
+    0.18,
+    0.12,
+    0.08,
+    0.05,
+    0.032,
+    0.02,
+    0.012,
+    0.007,
+    0.0035
+  ],
+  "phase_radii_deg": [
+    10.0,
+    7.0,
+    5.0,
+    3.5,
+    2.4,
+    1.5,
+    0.9,
+    0.5,
+    0.25
+  ],
+  "evaluations_per_radius": 96,
+  "sobol_seed": 26092231,
+  "projected_seed_rms_vs_source": {
+    "small_position_rms": 0.0007169489055732072,
+    "large_position_rms": 0.0007711872333187196,
+    "combined_position_rms": 0.0007445621136065146,
+    "small_velocity_rms": 0.03626206347037769,
+    "large_velocity_rms": 0.038087816760605575,
+    "combined_velocity_rms": 0.03718614683399698,
+    "maximum_position_difference": 0.0022647784545063443
+  },
+  "constraints": {
+    "exactly_one_minimum_and_one_maximum_per_piston": true,
+    "C2_periodic_position": true,
+    "hardware_frozen": true,
+    "gas_inventory_frozen": true,
+    "fast_scalar_spline_rhs": true,
+    "four_stage_boundaries_imposed": false,
+    "velocity_limit_imposed": false,
+    "acceleration_limit_imposed": false
+  },
+  "strategy": "Periodic cubic FreeKinematics; local tangent-space Sobol refinement with independent piston phase shifts. Every eighth evaluated proposal probes around the original projected Fourier seed rather than the incumbent."
+}
