@@ -1,0 +1,77 @@
+{
+  "study": "260 K spline independently seeded from retained linear UU v1",
+  "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+  "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+  "reference_spline_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_free_spline_260k_refine/report.json",
+  "reference_spline_sha256": "3af4b924085a657e3de464d8c338f1e690353453f46f258544c5f5130e718563",
+  "reference_spline_is_diagnostic_only": true,
+  "linear_parameters": {
+    "swept_ratio": 0.861400389764458,
+    "n_i": 3834,
+    "length_i_m": 0.040296503657069806,
+    "n_o": 4160,
+    "length_o_m": 0.02626551208117648,
+    "t1": 0.4941168666590625,
+    "t2": 0.6464125418616458,
+    "t3": 0.9043245726159456,
+    "a_l": 0.3723139140167804,
+    "b_l": 0.09962140337570348,
+    "a_s": 0.36085337375537135,
+    "b_s": 0.11349146926925864
+  },
+  "controls_per_piston": 16,
+  "linear_seed_smoothing_passes": 0,
+  "linear_seed_distance_vs_exact_linear": {
+    "small_position_rms": 0.01883105739644225,
+    "large_position_rms": 0.015680761203376074,
+    "combined_position_rms": 0.017327651234160482,
+    "small_velocity_rms": 0.590734502259528,
+    "large_velocity_rms": 0.738989748695095,
+    "combined_velocity_rms": 0.6689817265203333,
+    "maximum_position_difference": 0.04239243818625349
+  },
+  "fixed_total_mass_kg": 0.001202734702450619,
+  "fixed_thermo": {
+    "swept_ratio": 0.8549159568269702,
+    "n_i": 3938,
+    "length_i_m": 0.03920273588759638,
+    "n_o": 4225,
+    "length_o_m": 0.026772470159823387
+  },
+  "shape_radii": [
+    0.1,
+    0.07,
+    0.048,
+    0.032,
+    0.021,
+    0.013,
+    0.008,
+    0.0045,
+    0.0025,
+    0.0012
+  ],
+  "phase_radii_deg": [
+    7.0,
+    5.0,
+    3.5,
+    2.5,
+    1.7,
+    1.1,
+    0.7,
+    0.4,
+    0.22,
+    0.1
+  ],
+  "evaluations_per_radius": 160,
+  "wide_probe_every": 24,
+  "wide_shape_radius": 0.14,
+  "wide_phase_radius_deg": 9.0,
+  "sobol_seed": 26092273,
+  "constraints": {
+    "exactly_one_minimum_and_one_maximum_per_piston": true,
+    "C2_periodic_position": true,
+    "hardware_frozen_to_final_8H": true,
+    "gas_inventory_frozen_to_final_8H": true,
+    "four_stage_boundaries_imposed_after_seed": false
+  }
+}
