@@ -1,0 +1,139 @@
+{
+  "best_feasible": {
+    "index": 433,
+    "proposal_index": 433,
+    "candidate_id": "5a3bf2bd369dadb1e35b87d0d7ea74f93ce7dab1848d930434aa6482701127dd",
+    "kind": "power_sigmoid_refinement",
+    "radius_index": 7,
+    "angle_radius_deg": 0.35,
+    "logk_radius": 0.028,
+    "parameters": {
+      "small_max_deg": 155.40739709838516,
+      "small_down_duration_deg": 142.48249070940466,
+      "large_down_duration_deg": 198.2218351664623,
+      "small_k_down": 2.0516071832212956,
+      "small_k_up": 2.0505363572099187,
+      "large_k_down": 2.0704284294382425,
+      "large_k_up": 2.050913419468494
+    },
+    "shape_diagnostics": {
+      "small_max_deg": 155.390625,
+      "small_min_deg": 297.9052734375,
+      "large_max_deg": 0.0,
+      "large_min_deg": 198.2373046875,
+      "small_peak_abs_dq_dt": 5.18364306251838,
+      "large_peak_abs_dq_dt": 4.563834423671491,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    },
+    "shape_distance_vs_source16_aligned": {
+      "small_position_rms": 0.13632406496545738,
+      "large_position_rms": 0.2077691138070832,
+      "combined_position_rms": 0.1757160427236041,
+      "small_velocity_rms": 1.704689910733363,
+      "large_velocity_rms": 2.234920037939142,
+      "combined_velocity_rms": 1.9875657558604216,
+      "maximum_position_difference": 0.5036161259989644
+    },
+    "result": {
+      "status": "converged",
+      "indicated_thermal_efficiency": 0.18184870008503867,
+      "indicated_power_w": 35.89644334273129,
+      "heat_input_w": 197.3973051550266,
+      "heat_out_w": -161.51883387133967,
+      "maximum_tube_reynolds": 615.4119645806134,
+      "maximum_tube_mach_number": 0.042822333636326204,
+      "maximum_absolute_mass_flow_kg_s": 0.016259018859656103,
+      "maximum_pressure_pa": 395125.47632070247,
+      "maximum_temperature_k": 571.0041075930174,
+      "total_mass_kg": 0.0012027347024505565,
+      "validity_verdict": "valid",
+      "failed_criteria": [],
+      "cycles_completed": 2,
+      "last_normalized_periodic_error": 0.8992271570391732,
+      "normalized_periodic_error_ratio": 0.0007562758934410105,
+      "message": null
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 1.4610943790175952,
+    "warm_start_source": "39e0c23f07ce9d59d214407926ddf1394105d1a52333296c8c9bb3c700d0af4b",
+    "warm_start_mode": "nearest_periodic_state",
+    "warm_start_distance": 0.03715754400323809,
+    "backend": {
+      "actual_backend": "numba",
+      "fallback_calls": 0,
+      "exact_cache_hit_fraction": 0.6273694508988626
+    },
+    "safe_retry_used": false,
+    "last_complete_state": [
+      0.0001523851623001708,
+      32.95380382555183,
+      0.0009755116781996637,
+      277.5583008771599,
+      2.8686486998088672e-05,
+      11.203602113800978,
+      4.615137495263326e-05,
+      10.561480228486433,
+      78759.53441822236,
+      33311.7078610106
+    ]
+  },
+  "source16": {
+    "candidate_id": "192bb871d7b4fdcdcda456b34421e39f4b91df9c6b4f8d8e912658a8f61027c7",
+    "efficiency": 0.23490451868204598,
+    "power_W": 40.92298995037397,
+    "shape_diagnostics": {
+      "small_max_deg": 159.697265625,
+      "small_min_deg": 312.890625,
+      "large_max_deg": 355.9130859375,
+      "large_min_deg": 205.048828125,
+      "small_peak_abs_dq_dt": 5.82290346729158,
+      "large_peak_abs_dq_dt": 8.128606159319727,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    },
+    "phase_alignment_large_max_deg": 355.9130859375
+  },
+  "fitted_seed": {
+    "parameters": {
+      "small_max_deg": 149.40686756056957,
+      "small_down_duration_deg": 153.74441087253317,
+      "large_down_duration_deg": 244.9347721354706,
+      "small_k_down": 2.05,
+      "small_k_up": 2.05,
+      "large_k_down": 2.05,
+      "large_k_up": 2.05
+    },
+    "fit": {
+      "success": true,
+      "cost": 32.77985719807219,
+      "nfev": 19,
+      "shape_distance_vs_source16_aligned": {
+        "small_position_rms": 0.13567620491375249,
+        "large_position_rms": 0.16468013498448375,
+        "combined_position_rms": 0.150876736838895,
+        "small_velocity_rms": 1.6460459755129775,
+        "large_velocity_rms": 2.1585594615455768,
+        "combined_velocity_rms": 1.9194851266069244,
+        "maximum_position_difference": 0.39642791427846447
+      }
+    },
+    "shape_diagnostics": {
+      "small_max_deg": 149.4140625,
+      "small_min_deg": 303.134765625,
+      "large_max_deg": 0.0,
+      "large_min_deg": 244.9072265625,
+      "small_peak_abs_dq_dt": 4.80017443971123,
+      "large_peak_abs_dq_dt": 6.413753013716126,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    }
+  },
+  "attempted_total": 512,
+  "completed_this_run": 512,
+  "requested_duration_seconds": 21600.0,
+  "actual_duration_seconds": 2490.654992391006,
+  "definition_file": "definition.json",
+  "best_diagnostics_file": "best_diagnostics.json"
+}
