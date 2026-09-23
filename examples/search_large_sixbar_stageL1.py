@@ -66,7 +66,6 @@ NAMES = [
     "slider_axis_angle",
 ]
 
-
 def wrap_pi(a: float) -> float:
     return (a + math.pi) % (2.0 * math.pi) - math.pi
 
@@ -148,6 +147,9 @@ def signed_local(v: float, frac: float, min_span: float):
     span = max(abs(v) * frac, min_span)
     return (v - span, v + span)
 
+def unwrapped_angle_local(v: float, span_deg: float):
+    span = math.radians(span_deg)
+    return (v - span, v + span)
 
 def angle_local(v: float, span_deg: float):
     span = math.radians(span_deg)
@@ -171,7 +173,7 @@ def local_bounds(x: np.ndarray, args) -> list[tuple[float, float]]:
     b.append(signed_local(x[3], args.primary_point_fraction, 0.50))
     b.append(signed_local(x[4], args.primary_point_fraction, 0.50))
 
-    b.append(angle_local(x[5], args.primary_phase_span_deg))
+    b.append(unwrapped_angle_local(x[5], args.primary_phase_span_deg))
 
     b.append((x[6] - args.pivot_span, x[6] + args.pivot_span))
     b.append((x[7] - args.pivot_span, x[7] + args.pivot_span))
