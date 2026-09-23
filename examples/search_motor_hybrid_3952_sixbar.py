@@ -16,11 +16,14 @@ Pipeline
    diagnostics around the two structured kink centers.
 6. Replay the actual six-bar pair in the same 260 K thermodynamic configuration.
 
-The geometry search deliberately keeps the historical Stage-2F/L1 objective:
-position is dominant and velocity has the existing moderate weight. Acceleration
-is *diagnostic only*. In particular, the sharp HP-side acceleration feature of
-the structured target is not forced onto the mechanism. The thermodynamic replay
-decides whether any natural mechanical smoothing is acceptable.
+The geometry search keeps acceleration diagnostic-only, but adapts the historical
+Stage-2F/L1 objective to candidate 3952: samples in the HP-sensitive window are
+repeated in the motion score, so position and velocity there receive extra weight,
+while acceleration is never fitted. The local geometry neighborhoods are also
+substantially broader than the historical K2 refinement. The large mechanism is
+still synthesized only from the physical mirror of the newly optimized small
+mechanism; the historical K2 large mechanism is deliberately not used as a seed.
+The thermodynamic replay decides whether natural mechanical smoothing is acceptable.
 
 Run
 ---
@@ -66,7 +69,6 @@ DEFAULT_TARGET = ROOT / "outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_
 DEFAULT_TARGET_META = ROOT / "outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_target.json"
 
 OLD_SMALL = ROOT / "outputs/small_sixbar_stage2f_r4_freeH_tightaxis.json"
-OLD_LARGE = ROOT / "outputs/large_sixbar_stageL1.json"
 
 DEFAULT_SMALL = ROOT / "outputs/small_sixbar_3952.json"
 DEFAULT_SMALL_SEED = ROOT / "outputs/small_sixbar_3952_best_seed.json"
@@ -205,16 +207,116 @@ def _export_target(
     return meta
 
 
-def _call_search_main(module, argv: list[str], target: Path) -> None:
+def _objective_wrapper(
+    module,
+    side: str,
+    hp_center_t_deg: float,
+    hp_half_width_deg: float,
+    hp_extra_repeats: int,
+    velocity_weight: float,
+):
+    """Return an evaluate() wrapper with extra HP position/velocity emphasis.
+
+    The underlying Stage-2F/L1 evaluator is called twice.  The first call is the
+    ordinary full-cycle evaluation and therefore remains authoritative for all
+    geometric constraints.  The second call contains the same full cycle plus
+    repeated samples inside the HP window.  Repeating samples changes only the
+    RMS motion mismatch; acceleration is not part of either objective.
+
+    Keeping every original full-cycle sample in the weighted call is important:
+    the Stage evaluators normalize slider motion from the sampled global stroke.
+    """
+    if side not in ("small", "large"):
+        raise ValueError(side)
+    if hp_extra_repeats < 0:
+        raise ValueError("hp_extra_repeats must be >= 0")
+    if velocity_weight < 0.0:
+        raise ValueError("velocity_weight must be >= 0")
+
+    base_evaluate = module.evaluate
+    theta_index = 2 if side == "small" else 3
+    q_index = theta_index + 1
+    dq_index = theta_index + 2
+
+    def wrapped(*args, **kwargs):
+        base = base_evaluate(*args, **kwargs)
+        if hp_extra_repeats == 0:
+            base["position_rms_raw"] = base["position_rms"]
+            base["derivative_rms_raw"] = base["derivative_rms"]
+            base["weighted_position_rms"] = base["position_rms"]
+            base["weighted_derivative_rms"] = base["derivative_rms"]
+            base["score"] = math.sqrt(
+                base["position_rms"]**2
+                + velocity_weight*base["derivative_rms"]**2
+            )
+            base["motion_score"] = base["score"]
+            return base
+
+        theta = np.asarray(args[theta_index], dtype=float)
+        target_q = np.asarray(args[q_index], dtype=float)
+        target_dq = np.asarray(args[dq_index], dtype=float)
+        t_deg = np.mod(-np.degrees(theta), 360.0)
+        hp_mask = _cyclic_distance_deg(t_deg, hp_center_t_deg) <= hp_half_width_deg
+        hp_indices = np.flatnonzero(hp_mask)
+
+        if hp_indices.size == 0:
+            weighted = base
+        else:
+            repeats = np.repeat(hp_indices, hp_extra_repeats)
+            indices = np.concatenate((np.arange(theta.size), repeats))
+            weighted_args = list(args)
+            weighted_args[theta_index] = theta[indices]
+            weighted_args[q_index] = target_q[indices]
+            weighted_args[dq_index] = target_dq[indices]
+            weighted = base_evaluate(*weighted_args, **kwargs)
+
+        base["position_rms_raw"] = base["position_rms"]
+        base["derivative_rms_raw"] = base["derivative_rms"]
+        base["weighted_position_rms"] = weighted["position_rms"]
+        base["weighted_derivative_rms"] = weighted["derivative_rms"]
+        base["hp_objective_half_width_deg"] = hp_half_width_deg
+        base["hp_objective_extra_repeats"] = hp_extra_repeats
+        base["velocity_objective_weight"] = velocity_weight
+        base["score"] = math.sqrt(
+            weighted["position_rms"]**2
+            + velocity_weight*weighted["derivative_rms"]**2
+        )
+        base["motion_score"] = base["score"]
+        return base
+
+    return wrapped
+
+
+def _call_search_main(
+    module,
+    argv: list[str],
+    target: Path,
+    *,
+    side: str,
+    hp_center_t_deg: float,
+    hp_half_width_deg: float,
+    hp_extra_repeats: int,
+    velocity_weight: float,
+) -> None:
     old_argv = sys.argv
     old_target = module.TARGET
+    old_evaluate = module.evaluate
     module.TARGET = target
+    module.evaluate = _objective_wrapper(
+        module,
+        side,
+        hp_center_t_deg,
+        hp_half_width_deg,
+        hp_extra_repeats,
+        velocity_weight,
+    )
     sys.argv = [str(Path(module.__file__).name), *argv]
     try:
         module.main()
     finally:
         sys.argv = old_argv
         module.TARGET = old_target
+        module.evaluate = old_evaluate
 
 
 
@@ -530,7 +632,6 @@ def main():
     ap.add_argument("--target-metadata", type=Path, default=DEFAULT_TARGET_META)
 
     ap.add_argument("--old-small", type=Path, default=OLD_SMALL)
-    ap.add_argument("--old-large", type=Path, default=OLD_LARGE)
     ap.add_argument("--small-output", type=Path, default=DEFAULT_SMALL)
     ap.add_argument("--small-seed-output", type=Path, default=DEFAULT_SMALL_SEED)
     ap.add_argument("--large-output", type=Path, default=DEFAULT_LARGE)
@@ -547,6 +648,24 @@ def main():
         type=float,
         default=18.0,
         help="Diagnostic HP half-window in normalized structured-motion degrees.",
+    )
+    ap.add_argument(
+        "--hp-objective-half-width-deg",
+        type=float,
+        default=20.0,
+        help="HP half-window used to overweight position/velocity in synthesis.",
+    )
+    ap.add_argument(
+        "--hp-extra-repeats",
+        type=int,
+        default=4,
+        help="Extra copies of each HP-window sample in the motion objective.",
+    )
+    ap.add_argument(
+        "--velocity-weight",
+        type=float,
+        default=0.15,
+        help="Velocity RMS coefficient in score^2 (historical value was 0.10).",
     )
     ap.add_argument("--comparison-csv", type=Path, default=DEFAULT_COMPARE)
     ap.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -588,6 +707,13 @@ def main():
         f"S={hp['small_t_deg']:.3f} deg, L={hp['large_t_deg']:.3f} deg",
         flush=True,
     )
+    print(
+        "Synthesis objective: "
+        f"HP +/-{args.hp_objective_half_width_deg:.1f}deg repeated "
+        f"{args.hp_extra_repeats} extra times; velocity weight="
+        f"{args.velocity_weight:.3f}; acceleration diagnostic only",
+        flush=True,
+    )
 
     small_restart = 0
     small_branch = 1
@@ -597,7 +723,7 @@ def main():
             raise FileNotFoundError(args.old_small)
 
         small_max_ef, small_max_gf = _seed_link_caps(
-            args.old_small, 0, +1, secondary_fraction=0.25
+            args.old_small, 0, +1, secondary_fraction=0.45
         )
         print(
             f"Small warm-start link caps: max-EF={small_max_ef:.6f}, "
@@ -616,14 +742,28 @@ def main():
                 "--restarts", str(args.restarts),
                 "--seed", str(args.small_seed),
                 "--stroke-floor", "2.5",
-                "--h-line-rms-max", "0.07",
-                "--h-axis-angle-max", "5",
+                "--h-line-rms-max", "0.12",
+                "--h-axis-angle-max", "8",
                 "--crank-clearance-floor", "0.50",
+                "--primary-length-fraction", "0.40",
+                "--primary-point-fraction", "0.65",
+                "--primary-phase-span-deg", "50",
+                "--pivot-span", "3.0",
+                "--secondary-length-fraction", "0.45",
+                "--h-point-fraction", "0.55",
+                "--rod-fraction", "0.65",
+                "--axis-offset-span", "3.0",
+                "--axis-angle-span-deg", "25",
                 "--max-EF", f"{small_max_ef:.12g}",
                 "--max-GF", f"{small_max_gf:.12g}",
                 "--output", str(args.small_output),
             ],
             args.target,
+            side="small",
+            hp_center_t_deg=float(hp["small_t_deg"]),
+            hp_half_width_deg=args.hp_objective_half_width_deg,
+            hp_extra_repeats=args.hp_extra_repeats,
+            velocity_weight=args.velocity_weight,
         )
 
         small_restart, small_branch = _normalize_small_best(
@@ -634,10 +774,10 @@ def main():
             args.small_seed_output,
             small_restart,
             small_branch,
-            secondary_fraction=0.30,
+            secondary_fraction=0.45,
         )
-        large_max_ef = max(3.5, large_max_ef)
-        large_max_gf = max(8.0, large_max_gf)
+        large_max_ef = max(4.0, large_max_ef)
+        large_max_gf = max(10.0, large_max_gf)
         print(
             f"Large mirrored-seed link caps: max-EF={large_max_ef:.6f}, "
             f"max-GF={large_max_gf:.6f}",
@@ -655,14 +795,28 @@ def main():
                 "--restarts", str(args.restarts),
                 "--seed", str(args.large_seed),
                 "--stroke-floor", "2.5",
-                "--h-line-rms-max", "0.15",
-                "--h-axis-angle-max", "3",
+                "--h-line-rms-max", "0.20",
+                "--h-axis-angle-max", "6",
                 "--crank-clearance-floor", "0.50",
+                "--primary-length-fraction", "0.35",
+                "--primary-point-fraction", "0.55",
+                "--primary-phase-span-deg", "45",
+                "--pivot-span", "3.0",
+                "--secondary-length-fraction", "0.45",
+                "--h-point-fraction", "0.55",
+                "--rod-fraction", "0.65",
+                "--axis-offset-span", "3.0",
+                "--axis-angle-span-deg", "25",
                 "--max-EF", f"{large_max_ef:.12g}",
                 "--max-GF", f"{large_max_gf:.12g}",
                 "--output", str(args.large_output),
             ],
             args.target,
+            side="large",
+            hp_center_t_deg=float(hp["large_t_deg"]),
+            hp_half_width_deg=args.hp_objective_half_width_deg,
+            hp_extra_repeats=args.hp_extra_repeats,
+            velocity_weight=args.velocity_weight,
         )
     else:
         # The normalized seed is preferred because it always contains the
@@ -702,15 +856,20 @@ def main():
         "candidate": target_meta,
         "search_policy": {
             "small_warm_start": str(args.old_small),
-            "historical_large_reference": str(args.old_large),
             "small_iterations": args.small_iterations,
             "large_iterations": args.large_iterations,
             "restarts": args.restarts,
             "population_size": args.population_size,
+            "large_seed_policy": "physical_mirror_of_new_small_only",
+            "hp_objective_half_width_deg": args.hp_objective_half_width_deg,
+            "hp_extra_repeats": args.hp_extra_repeats,
+            "velocity_weight": args.velocity_weight,
             "objective_note": (
-                "Historical six-bar objective retained: position plus moderate "
-                "velocity mismatch. Acceleration, including the sharp HP feature, "
-                "is diagnostic only and is not forced onto the mechanism."
+                "Position and velocity samples around the HP-sensitive feature are "
+                "overweighted by repetition; acceleration remains diagnostic only. "
+                "The geometry neighborhoods are deliberately broader than the K2 "
+                "local refinements. The large mechanism starts only from the physical "
+                "mirror of the newly optimized small mechanism."
             ),
         },
         "motion_comparison": motion_report,
