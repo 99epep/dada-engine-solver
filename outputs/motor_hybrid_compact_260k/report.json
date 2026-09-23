@@ -1,0 +1,145 @@
+{
+  "best_feasible": {
+    "index": 501,
+    "proposal_index": 501,
+    "candidate_id": "6e2cf812d1de11645615512e0614171557da98233db2c3d301ba3c2452db601e",
+    "kind": "hybrid_refinement",
+    "radius_index": 8,
+    "angle_radius_deg": 0.12,
+    "round_radius": 0.0025,
+    "kink_radius": 0.0035,
+    "parameters": {
+      "small_max_deg": 159.9896807151838,
+      "small_down_duration_deg": 154.34898715570617,
+      "large_down_duration_deg": 204.75091539779868,
+      "large_down_rounding": 0.09031610971409856,
+      "small_up_rounding": 0.1257187427943574,
+      "small_down_kink_u": 0.5641084556417698,
+      "small_down_kink_q": 0.7123342432191856,
+      "large_up_kink_u": 0.6898642219110528,
+      "large_up_kink_q": 0.445918856800329
+    },
+    "shape_diagnostics": {
+      "small_max_deg": 160.0048828125,
+      "small_min_deg": 314.3408203125,
+      "large_max_deg": 0.0,
+      "large_min_deg": 204.7412109375,
+      "small_peak_abs_dq_dt": 4.716866741820485,
+      "large_peak_abs_dq_dt": 6.8643660089276555,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    },
+    "shape_distance_vs_source16_aligned": {
+      "small_position_rms": 0.07501546484500177,
+      "large_position_rms": 0.05474341451729835,
+      "combined_position_rms": 0.06566643510548005,
+      "small_velocity_rms": 1.0308824569720645,
+      "large_velocity_rms": 0.8375684583828493,
+      "combined_velocity_rms": 0.9392123195983384,
+      "maximum_position_difference": 0.20316757447160572
+    },
+    "result": {
+      "status": "converged",
+      "indicated_thermal_efficiency": 0.22525540307940708,
+      "indicated_power_w": 40.555304211350325,
+      "heat_input_w": 180.04142700654225,
+      "heat_out_w": -139.49444247238625,
+      "maximum_tube_reynolds": 444.4108126338285,
+      "maximum_tube_mach_number": 0.027920345994535873,
+      "maximum_absolute_mass_flow_kg_s": 0.01158496032695602,
+      "maximum_pressure_pa": 417508.90267302067,
+      "maximum_temperature_k": 561.7873563166515,
+      "total_mass_kg": 0.0012027347024507421,
+      "validity_verdict": "valid",
+      "failed_criteria": [],
+      "cycles_completed": 7,
+      "last_normalized_periodic_error": 0.9412689442522466,
+      "normalized_periodic_error_ratio": 0.002400782488351041,
+      "message": null
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 4.9996147570200264,
+    "warm_start_source": "205e9fbac039cf4c3eeedf0c9d08ac83e4acbd12e467d415897190c5af6e7c9a",
+    "warm_start_mode": "nearest_periodic_state",
+    "warm_start_distance": 0.040207653077253006,
+    "backend": {
+      "actual_backend": "numba",
+      "fallback_calls": 0,
+      "exact_cache_hit_fraction": 0.6383271315321145
+    },
+    "safe_retry_used": false,
+    "last_complete_state": [
+      0.0002012607581522253,
+      39.73167119080461,
+      0.0009340833449346529,
+      248.21644056569428,
+      2.5599630655090033e-05,
+      10.019916225243495,
+      4.1790968708773913e-05,
+      9.442384401427937,
+      78927.34066415986,
+      33099.86455507873
+    ]
+  },
+  "source16": {
+    "candidate_id": "192bb871d7b4fdcdcda456b34421e39f4b91df9c6b4f8d8e912658a8f61027c7",
+    "efficiency": 0.23490451868204598,
+    "power_W": 40.92298995037397,
+    "shape_diagnostics": {
+      "small_max_deg": 159.697265625,
+      "small_min_deg": 312.890625,
+      "large_max_deg": 355.9130859375,
+      "large_min_deg": 205.048828125,
+      "small_peak_abs_dq_dt": 5.82290346729158,
+      "large_peak_abs_dq_dt": 8.128606159319727,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    },
+    "phase_alignment_large_max_deg": 355.9130859375
+  },
+  "fitted_seed": {
+    "parameters": {
+      "small_max_deg": 159.6956007157817,
+      "small_down_duration_deg": 173.36121118875266,
+      "large_down_duration_deg": 191.62052342252994,
+      "large_down_rounding": 0.008000000000000002,
+      "small_up_rounding": 0.008000000000000002,
+      "small_down_kink_u": 0.32900632410553976,
+      "small_down_kink_q": 0.5908614005510023,
+      "large_up_kink_u": 0.7740272614547187,
+      "large_up_kink_q": 0.4245917638230884
+    },
+    "fit": {
+      "success": true,
+      "cost": 0.5295376015055353,
+      "nfev": 20,
+      "velocity_fit_weight": 0.025,
+      "shape_distance_vs_source16_aligned": {
+        "small_position_rms": 0.01745136508205249,
+        "large_position_rms": 0.012767874003973832,
+        "combined_position_rms": 0.015290008989670865,
+        "small_velocity_rms": 0.47420014112114356,
+        "large_velocity_rms": 0.45141668155599884,
+        "combined_velocity_rms": 0.4629485901406022,
+        "maximum_position_difference": 0.04213220197181736
+      }
+    },
+    "shape_diagnostics": {
+      "small_max_deg": 159.697265625,
+      "small_min_deg": 333.017578125,
+      "large_max_deg": 0.0,
+      "large_min_deg": 191.6455078125,
+      "small_peak_abs_dq_dt": 6.2135117964106215,
+      "large_peak_abs_dq_dt": 9.394689790448473,
+      "small_extrema_count": 2,
+      "large_extrema_count": 2
+    }
+  },
+  "attempted_total": 512,
+  "completed_this_run": 512,
+  "requested_duration_seconds": 21600.0,
+  "actual_duration_seconds": 2941.988999842026,
+  "definition_file": "definition.json",
+  "best_diagnostics_file": "best_diagnostics.json"
+}
