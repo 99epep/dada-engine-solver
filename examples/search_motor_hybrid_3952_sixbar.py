@@ -825,6 +825,11 @@ def main():
                 "--h-axis-angle-max", "12",
                 "--crank-clearance-floor", "0.50",
                 "--primary-length-fraction", "0.40",
+                "--primary-ground-down-fraction", "0.80",
+                "--primary-coupler-down-fraction", "0.80",
+                "--primary-rocker-up-fraction", "1.50",
+                "--free-primary-phase",
+                "--seed-first-restart-only",
                 "--primary-point-along-fraction", "1.25",
                 "--primary-point-normal-fraction", "0.65",
                 "--primary-phase-span-deg", "50",
@@ -879,6 +884,11 @@ def main():
                 "--h-axis-angle-max", "10",
                 "--crank-clearance-floor", "0.50",
                 "--primary-length-fraction", "0.45",
+                "--primary-ground-down-fraction", "0.80",
+                "--primary-coupler-down-fraction", "0.80",
+                "--primary-rocker-up-fraction", "1.50",
+                "--free-primary-phase",
+                "--seed-first-restart-only",
                 "--primary-point-along-fraction", "1.25",
                 "--primary-point-normal-fraction", "0.70",
                 "--primary-phase-span-deg", "60",
@@ -945,12 +955,22 @@ def main():
             "velocity_weight": args.velocity_weight,
             "stroke_over_crank_range": [1.0, 3.0],
             "primary_point_along_fraction": 1.25,
+            "primary_search": {
+                "ground_down_fraction": 0.80,
+                "coupler_down_fraction": 0.80,
+                "rocker_up_fraction": 1.50,
+                "phase": "full_period",
+                "seed_first_restart_only": True,
+            },
             "objective_note": (
                 "Position RMS is fitted everywhere except the automatically detected "
                 "compact six-front acceleration-noise band on each piston. Velocity "
                 "has only a tiny tie-breaking weight; target acceleration is not fitted. "
-                "Primary length and phase freedoms are unchanged. The coupler point has "
-                "extra longitudinal freedom, and 1 <= stroke/r <= 3 is enforced."
+                "The primary is allowed to leave the seed family: ground and coupler may "
+                "shrink by 80%, rocker may grow by 150%, and phase spans the full period. "
+                "Only the first restart receives the seed explicitly; later restarts sample "
+                "the whole search box. The coupler point has extra longitudinal freedom, "
+                "and 1 <= stroke/r <= 3 is enforced."
             ),
         },
         "motion_comparison": motion_report,

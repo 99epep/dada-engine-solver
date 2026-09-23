@@ -147,6 +147,17 @@ def signed_local(v: float, frac: float, min_span: float):
     span = max(abs(v) * frac, min_span)
     return (v - span, v + span)
 
+
+def asymmetric_positive_relative(
+    v: float,
+    down_frac: float,
+    up_frac: float,
+    lo_floor: float = 1e-3,
+):
+    lo = max(lo_floor, v * (1.0 - down_frac))
+    hi = max(lo + 1e-6, v * (1.0 + up_frac))
+    return (lo, hi)
+
 def unwrapped_angle_local(v: float, span_deg: float):
     span = math.radians(span_deg)
     return (v - span, v + span)
@@ -166,9 +177,30 @@ def angle_local(v: float, span_deg: float):
 def local_bounds(x: np.ndarray, args) -> list[tuple[float, float]]:
     b = []
 
-    b.append(positive_relative(x[0], args.primary_length_fraction, 0.5))
-    b.append(positive_relative(x[1], args.primary_length_fraction, 0.5))
-    b.append(positive_relative(x[2], args.primary_length_fraction, 0.5))
+    ground_down = (
+        args.primary_ground_down_fraction
+        if args.primary_ground_down_fraction is not None
+        else args.primary_length_fraction
+    )
+    coupler_down = (
+        args.primary_coupler_down_fraction
+        if args.primary_coupler_down_fraction is not None
+        else args.primary_length_fraction
+    )
+    rocker_up = (
+        args.primary_rocker_up_fraction
+        if args.primary_rocker_up_fraction is not None
+        else args.primary_length_fraction
+    )
+    b.append(asymmetric_positive_relative(
+        x[0], ground_down, args.primary_length_fraction, 0.5
+    ))
+    b.append(asymmetric_positive_relative(
+        x[1], coupler_down, args.primary_length_fraction, 0.5
+    ))
+    b.append(asymmetric_positive_relative(
+        x[2], args.primary_length_fraction, rocker_up, 0.5
+    ))
 
     along_fraction = (
         args.primary_point_along_fraction
@@ -183,7 +215,10 @@ def local_bounds(x: np.ndarray, args) -> list[tuple[float, float]]:
     b.append(signed_local(x[3], along_fraction, 0.50))
     b.append(signed_local(x[4], normal_fraction, 0.50))
 
-    b.append(unwrapped_angle_local(x[5], args.primary_phase_span_deg))
+    if args.free_primary_phase:
+        b.append((-math.pi, math.pi))
+    else:
+        b.append(unwrapped_angle_local(x[5], args.primary_phase_span_deg))
 
     b.append((x[6] - args.pivot_span, x[6] + args.pivot_span))
     b.append((x[7] - args.pivot_span, x[7] + args.pivot_span))
@@ -550,6 +585,11 @@ def main():
 
     # Local neighborhood around mirrored S.
     ap.add_argument("--primary-length-fraction", type=float, default=0.20)
+    ap.add_argument("--primary-ground-down-fraction", type=float, default=None)
+    ap.add_argument("--primary-coupler-down-fraction", type=float, default=None)
+    ap.add_argument("--primary-rocker-up-fraction", type=float, default=None)
+    ap.add_argument("--free-primary-phase", action="store_true")
+    ap.add_argument("--seed-first-restart-only", action="store_true")
     ap.add_argument("--primary-point-fraction", type=float, default=0.35)
     ap.add_argument("--primary-point-along-fraction", type=float, default=None)
     ap.add_argument("--primary-point-normal-fraction", type=float, default=None)
@@ -653,6 +693,13 @@ def main():
             "crank_axis_to_EFH_clearance_over_crank_minimum": args.crank_clearance_floor,
         },
         "mirrored_phase_fitted_seed": seed_dense,
+        "restart_initialization": {
+            "seed_first_restart_only": args.seed_first_restart_only,
+            "free_primary_phase": args.free_primary_phase,
+            "primary_ground_down_fraction": args.primary_ground_down_fraction,
+            "primary_coupler_down_fraction": args.primary_coupler_down_fraction,
+            "primary_rocker_up_fraction": args.primary_rocker_up_fraction,
+        },
         "runs": [],
     }
 
@@ -745,7 +792,11 @@ def main():
             tol=1e-8,
             updating="immediate",
             workers=1,
-            x0=x0,
+            x0=(
+                x0
+                if (restart == 0 or not args.seed_first_restart_only)
+                else None
+            ),
         )
 
         dense_candidates = [np.array(opt.x, dtype=float)]
