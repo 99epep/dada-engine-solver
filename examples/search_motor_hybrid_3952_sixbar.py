@@ -653,19 +653,19 @@ def main():
         "--hp-objective-half-width-deg",
         type=float,
         default=20.0,
-        help="HP half-window used to overweight position/velocity in synthesis.",
+        help="HP half-window used only if --hp-extra-repeats is nonzero.",
     )
     ap.add_argument(
         "--hp-extra-repeats",
         type=int,
-        default=4,
-        help="Extra copies of each HP-window sample in the motion objective.",
+        default=0,
+        help="Extra HP-window copies in the objective; default 0 disables HP weighting.",
     )
     ap.add_argument(
         "--velocity-weight",
         type=float,
-        default=0.15,
-        help="Velocity RMS coefficient in score^2 (historical value was 0.10).",
+        default=0.001,
+        help="Velocity RMS coefficient in score^2; tiny default makes position dominant.",
     )
     ap.add_argument("--comparison-csv", type=Path, default=DEFAULT_COMPARE)
     ap.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -708,10 +708,10 @@ def main():
         flush=True,
     )
     print(
-        "Synthesis objective: "
-        f"HP +/-{args.hp_objective_half_width_deg:.1f}deg repeated "
-        f"{args.hp_extra_repeats} extra times; velocity weight="
-        f"{args.velocity_weight:.3f}; acceleration diagnostic only",
+        "Synthesis objective: full-cycle position RMS; "
+        f"velocity tie-break weight={args.velocity_weight:.4g}; "
+        f"HP extra repeats={args.hp_extra_repeats}; "
+        "acceleration diagnostic only",
         flush=True,
     )
 
@@ -723,7 +723,7 @@ def main():
             raise FileNotFoundError(args.old_small)
 
         small_max_ef, small_max_gf = _seed_link_caps(
-            args.old_small, 0, +1, secondary_fraction=0.45
+            args.old_small, 0, +1, secondary_fraction=0.60
         )
         print(
             f"Small warm-start link caps: max-EF={small_max_ef:.6f}, "
@@ -742,14 +742,15 @@ def main():
                 "--restarts", str(args.restarts),
                 "--seed", str(args.small_seed),
                 "--stroke-floor", "2.5",
-                "--h-line-rms-max", "0.12",
-                "--h-axis-angle-max", "8",
+                "--maximum-EH", "6.0",
+                "--h-line-rms-max", "0.18",
+                "--h-axis-angle-max", "12",
                 "--crank-clearance-floor", "0.50",
                 "--primary-length-fraction", "0.40",
                 "--primary-point-fraction", "0.65",
                 "--primary-phase-span-deg", "50",
                 "--pivot-span", "3.0",
-                "--secondary-length-fraction", "0.45",
+                "--secondary-length-fraction", "0.60",
                 "--h-point-fraction", "0.55",
                 "--rod-fraction", "0.65",
                 "--axis-offset-span", "3.0",
@@ -774,10 +775,10 @@ def main():
             args.small_seed_output,
             small_restart,
             small_branch,
-            secondary_fraction=0.45,
+            secondary_fraction=0.70,
         )
-        large_max_ef = max(4.0, large_max_ef)
-        large_max_gf = max(10.0, large_max_gf)
+        large_max_ef = max(4.5, large_max_ef)
+        large_max_gf = max(12.0, large_max_gf)
         print(
             f"Large mirrored-seed link caps: max-EF={large_max_ef:.6f}, "
             f"max-GF={large_max_gf:.6f}",
@@ -795,18 +796,19 @@ def main():
                 "--restarts", str(args.restarts),
                 "--seed", str(args.large_seed),
                 "--stroke-floor", "2.5",
-                "--h-line-rms-max", "0.20",
-                "--h-axis-angle-max", "6",
+                "--maximum-EH", "7.0",
+                "--h-line-rms-max", "0.25",
+                "--h-axis-angle-max", "10",
                 "--crank-clearance-floor", "0.50",
-                "--primary-length-fraction", "0.35",
-                "--primary-point-fraction", "0.55",
-                "--primary-phase-span-deg", "45",
-                "--pivot-span", "3.0",
-                "--secondary-length-fraction", "0.45",
-                "--h-point-fraction", "0.55",
-                "--rod-fraction", "0.65",
-                "--axis-offset-span", "3.0",
-                "--axis-angle-span-deg", "25",
+                "--primary-length-fraction", "0.45",
+                "--primary-point-fraction", "0.70",
+                "--primary-phase-span-deg", "60",
+                "--pivot-span", "4.0",
+                "--secondary-length-fraction", "0.70",
+                "--h-point-fraction", "0.70",
+                "--rod-fraction", "0.80",
+                "--axis-offset-span", "4.0",
+                "--axis-angle-span-deg", "35",
                 "--max-EF", f"{large_max_ef:.12g}",
                 "--max-GF", f"{large_max_gf:.12g}",
                 "--output", str(args.large_output),
@@ -865,11 +867,11 @@ def main():
             "hp_extra_repeats": args.hp_extra_repeats,
             "velocity_weight": args.velocity_weight,
             "objective_note": (
-                "Position and velocity samples around the HP-sensitive feature are "
-                "overweighted by repetition; acceleration remains diagnostic only. "
-                "The geometry neighborhoods are deliberately broader than the K2 "
-                "local refinements. The large mechanism starts only from the physical "
-                "mirror of the newly optimized small mechanism."
+                "Whole-cycle position RMS dominates the synthesis objective. Velocity "
+                "has only a tiny tie-breaking weight; HP is not overweighted and "
+                "acceleration remains diagnostic only. Geometry neighborhoods are "
+                "deliberately broader than the K2 local refinements. The large mechanism "
+                "starts only from the physical mirror of the newly optimized small."
             ),
         },
         "motion_comparison": motion_report,
