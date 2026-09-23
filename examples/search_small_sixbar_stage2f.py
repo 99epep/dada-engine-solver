@@ -141,9 +141,20 @@ def local_bounds(x: np.ndarray, args) -> list[tuple[float, float]]:
     b.append(positive_relative(x[1], args.primary_length_fraction, 0.5))
     b.append(positive_relative(x[2], args.primary_length_fraction, 0.5))
 
-    # Primary output point: deliberately somewhat freer.
-    b.append(signed_local(x[3], args.primary_point_fraction, 0.50))
-    b.append(signed_local(x[4], args.primary_point_fraction, 0.50))
+    # Independent longitudinal and normal freedom for the point carried
+    # by the primary coupler. Longitudinal freedom may extend beyond segment BC.
+    along_fraction = (
+        args.primary_point_along_fraction
+        if args.primary_point_along_fraction is not None
+        else args.primary_point_fraction
+    )
+    normal_fraction = (
+        args.primary_point_normal_fraction
+        if args.primary_point_normal_fraction is not None
+        else args.primary_point_fraction
+    )
+    b.append(signed_local(x[3], along_fraction, 0.50))
+    b.append(signed_local(x[4], normal_fraction, 0.50))
 
     b.append(unwrapped_angle_local(x[5], args.primary_phase_span_deg))
 
@@ -305,6 +316,7 @@ def evaluate(
     target_q: np.ndarray,
     target_dq: np.ndarray,
     maximum_eh: float,
+    score_mask: np.ndarray | None = None,
 ):
     E, Ed, primary_sine, pdata = primary(theta, v)
 
@@ -377,8 +389,15 @@ def evaluate(
     q = 1.0 - (slider - float(np.min(slider))) / stroke
     dq = -slider_d / stroke
 
-    pos = float(np.sqrt(np.mean((q - target_q)**2)))
-    der = float(np.sqrt(np.mean((dq - target_dq)**2)))
+    if score_mask is None:
+        fit = np.ones(q.shape, dtype=bool)
+    else:
+        fit = np.asarray(score_mask, dtype=bool)
+        if fit.shape != q.shape or not np.any(fit):
+            raise ValueError("invalid score mask")
+
+    pos = float(np.sqrt(np.mean((q[fit] - target_q[fit])**2)))
+    der = float(np.sqrt(np.mean((dq[fit] - target_dq[fit])**2)))
     motion = math.sqrt(pos*pos + 0.1*der*der)
 
     rod_cos = float(np.min(margin / rod))
@@ -413,6 +432,7 @@ def evaluate(
 def feasible(r: dict, args) -> bool:
     return (
         r["stroke_over_crank"] >= args.stroke_floor
+        and r["stroke_over_crank"] <= args.stroke_ceiling
         and r["minimum_primary_transmission_sine"] >= args.primary_sine_floor
         and r["minimum_secondary_transmission_sine"] >= args.secondary_sine_floor
         and r["minimum_rod_axis_cosine"] >= args.rod_cos_floor
@@ -434,6 +454,7 @@ def main():
     ap.add_argument("--seed", type=int, default=2600)
 
     ap.add_argument("--stroke-floor", type=float, default=2.5)
+    ap.add_argument("--stroke-ceiling", type=float, default=float("inf"))
     ap.add_argument("--primary-sine-floor", type=float, default=0.30)
     ap.add_argument("--secondary-sine-floor", type=float, default=0.30)
     ap.add_argument("--rod-cos-floor", type=float, default=0.95)
@@ -446,6 +467,8 @@ def main():
     # Local neighborhood controls.
     ap.add_argument("--primary-length-fraction", type=float, default=0.20)
     ap.add_argument("--primary-point-fraction", type=float, default=0.35)
+    ap.add_argument("--primary-point-along-fraction", type=float, default=None)
+    ap.add_argument("--primary-point-normal-fraction", type=float, default=None)
     ap.add_argument("--primary-phase-span-deg", type=float, default=20.0)
     ap.add_argument("--pivot-span", type=float, default=1.25)
     ap.add_argument("--secondary-length-fraction", type=float, default=0.25)
@@ -504,6 +527,7 @@ def main():
         "bounds": dict(zip(NAMES, bounds)),
         "constraints": {
             "stroke_over_crank_minimum": args.stroke_floor,
+            "stroke_over_crank_maximum": args.stroke_ceiling,
             "primary_sine_minimum": args.primary_sine_floor,
             "secondary_sine_minimum": args.secondary_sine_floor,
             "rod_axis_cosine_minimum": args.rod_cos_floor,
@@ -540,6 +564,10 @@ def main():
                 0.0,
                 args.stroke_floor - r["stroke_over_crank"],
             ) / max(args.stroke_floor, 1e-9)
+            violation += max(
+                0.0,
+                r["stroke_over_crank"] - args.stroke_ceiling,
+            ) / max(args.stroke_ceiling, 1e-9)
 
             violation += max(
                 0.0,

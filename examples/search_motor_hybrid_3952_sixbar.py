@@ -207,79 +207,156 @@ def _export_target(
     return meta
 
 
+def _local_extrema_mask(y: np.ndarray, maxima: bool) -> np.ndarray:
+    y = np.asarray(y, dtype=float)
+    if maxima:
+        return (y > np.roll(y, 1)) & (y >= np.roll(y, -1))
+    return (y < np.roll(y, 1)) & (y <= np.roll(y, -1))
+
+
+def _detect_acceleration_noise_band(
+    theta_deg: np.ndarray,
+    target_ddq: np.ndarray,
+    front_count: int = 6,
+) -> dict:
+    theta_deg = np.asarray(theta_deg, dtype=float)
+    ddq = np.asarray(target_ddq, dtype=float)
+    if theta_deg.shape != ddq.shape or theta_deg.ndim != 1:
+        raise ValueError("theta/ddq shape mismatch")
+    if len(ddq) < 4 * front_count:
+        raise ValueError("not enough samples for automatic front detection")
+
+    front_signal = np.abs(np.roll(ddq, -1) - np.roll(ddq, 1))
+    peak_idx = np.flatnonzero(_local_extrema_mask(front_signal, True))
+    if peak_idx.size < front_count + 1:
+        raise ValueError("not enough acceleration fronts for automatic detection")
+
+    ranked = peak_idx[np.argsort(front_signal[peak_idx])[::-1]]
+    selected = np.sort(ranked[:front_count])
+
+    sixth = float(front_signal[ranked[front_count - 1]])
+    seventh = float(front_signal[ranked[front_count]])
+    isolation = sixth / max(seventh, 1e-30)
+    if isolation < 2.0:
+        raise ValueError(
+            "dominant acceleration fronts are not sufficiently isolated "
+            f"(front {front_count}/{front_count + 1} ratio={isolation:.3f})"
+        )
+
+    n = len(ddq)
+    cyclic_gaps = np.diff(np.r_[selected, selected[0] + n])
+    cut = int(np.argmax(cyclic_gaps))
+    first = int(selected[(cut + 1) % front_count])
+    offsets = np.sort((selected - first) % n)
+    last = int((first + int(offsets[-1])) % n)
+
+    abs_acc = np.abs(ddq)
+    calm = _local_extrema_mask(abs_acc, False)
+
+    def previous_calm(i: int) -> int:
+        for step in range(1, n):
+            j = (i - step) % n
+            if calm[j]:
+                return j
+        return (i - 1) % n
+
+    def next_calm(i: int) -> int:
+        for step in range(1, n):
+            j = (i + step) % n
+            if calm[j]:
+                return j
+        return (i + 1) % n
+
+    start = previous_calm(first)
+    end = next_calm(last)
+
+    idx = np.arange(n)
+    excluded = ((idx - start) % n) <= ((end - start) % n)
+    fraction = float(np.mean(excluded))
+    if fraction >= 0.25:
+        raise ValueError(
+            f"automatic acceleration-noise band is implausibly wide ({fraction:.1%})"
+        )
+
+    fronts = [int((first + int(x)) % n) for x in offsets]
+    return {
+        "start_theta_deg": float(theta_deg[start] % 360.0),
+        "end_theta_deg": float(theta_deg[end] % 360.0),
+        "front_theta_deg": [float(theta_deg[i] % 360.0) for i in fronts],
+        "excluded_fraction": fraction,
+        "front_isolation_ratio": isolation,
+        "boundary_abs_acceleration": [
+            float(abs_acc[start]),
+            float(abs_acc[end]),
+        ],
+    }
+
+
+def _theta_band_mask(theta: np.ndarray, band: dict) -> np.ndarray:
+    deg = np.mod(np.degrees(np.asarray(theta, dtype=float)), 360.0)
+    start = float(band["start_theta_deg"])
+    end = float(band["end_theta_deg"])
+    if start <= end:
+        return (deg >= start) & (deg <= end)
+    return (deg >= start) | (deg <= end)
+
+
+def _detect_noise_bands(target_path: Path, front_count: int) -> dict:
+    raw = np.genfromtxt(target_path, delimiter=",", names=True)
+    if raw["theta_rad"][-1] >= 2.0 * math.pi - 1e-9:
+        raw = raw[:-1]
+    theta_deg = np.asarray(raw["theta_deg"], dtype=float)
+    return {
+        "small": _detect_acceleration_noise_band(
+            theta_deg,
+            np.asarray(raw["small_d2q_dtheta2_per_rad2"], dtype=float),
+            front_count,
+        ),
+        "large": _detect_acceleration_noise_band(
+            theta_deg,
+            np.asarray(raw["large_d2q_dtheta2_per_rad2"], dtype=float),
+            front_count,
+        ),
+    }
+
+
 def _objective_wrapper(
     module,
     side: str,
-    hp_center_t_deg: float,
-    hp_half_width_deg: float,
-    hp_extra_repeats: int,
+    exclusion_band: dict,
     velocity_weight: float,
 ):
-    """Return an evaluate() wrapper with extra HP position/velocity emphasis.
-
-    The underlying Stage-2F/L1 evaluator is called twice.  The first call is the
-    ordinary full-cycle evaluation and therefore remains authoritative for all
-    geometric constraints.  The second call contains the same full cycle plus
-    repeated samples inside the HP window.  Repeating samples changes only the
-    RMS motion mismatch; acceleration is not part of either objective.
-
-    Keeping every original full-cycle sample in the weighted call is important:
-    the Stage evaluators normalize slider motion from the sampled global stroke.
-    """
     if side not in ("small", "large"):
         raise ValueError(side)
-    if hp_extra_repeats < 0:
-        raise ValueError("hp_extra_repeats must be >= 0")
     if velocity_weight < 0.0:
         raise ValueError("velocity_weight must be >= 0")
 
     base_evaluate = module.evaluate
     theta_index = 2 if side == "small" else 3
-    q_index = theta_index + 1
-    dq_index = theta_index + 2
 
     def wrapped(*args, **kwargs):
         base = base_evaluate(*args, **kwargs)
-        if hp_extra_repeats == 0:
-            base["position_rms_raw"] = base["position_rms"]
-            base["derivative_rms_raw"] = base["derivative_rms"]
-            base["weighted_position_rms"] = base["position_rms"]
-            base["weighted_derivative_rms"] = base["derivative_rms"]
-            base["score"] = math.sqrt(
-                base["position_rms"]**2
-                + velocity_weight*base["derivative_rms"]**2
-            )
-            base["motion_score"] = base["score"]
-            return base
 
         theta = np.asarray(args[theta_index], dtype=float)
-        target_q = np.asarray(args[q_index], dtype=float)
-        target_dq = np.asarray(args[dq_index], dtype=float)
-        t_deg = np.mod(-np.degrees(theta), 360.0)
-        hp_mask = _cyclic_distance_deg(t_deg, hp_center_t_deg) <= hp_half_width_deg
-        hp_indices = np.flatnonzero(hp_mask)
+        excluded = _theta_band_mask(theta, exclusion_band)
+        fit_mask = ~excluded
+        if not np.any(fit_mask):
+            raise ValueError("automatic acceleration-noise mask removed all samples")
 
-        if hp_indices.size == 0:
-            weighted = base
-        else:
-            repeats = np.repeat(hp_indices, hp_extra_repeats)
-            indices = np.concatenate((np.arange(theta.size), repeats))
-            weighted_args = list(args)
-            weighted_args[theta_index] = theta[indices]
-            weighted_args[q_index] = target_q[indices]
-            weighted_args[dq_index] = target_dq[indices]
-            weighted = base_evaluate(*weighted_args, **kwargs)
+        fitted = base_evaluate(*args, score_mask=fit_mask, **kwargs)
 
         base["position_rms_raw"] = base["position_rms"]
         base["derivative_rms_raw"] = base["derivative_rms"]
-        base["weighted_position_rms"] = weighted["position_rms"]
-        base["weighted_derivative_rms"] = weighted["derivative_rms"]
-        base["hp_objective_half_width_deg"] = hp_half_width_deg
-        base["hp_objective_extra_repeats"] = hp_extra_repeats
+        base["fit_position_rms"] = fitted["position_rms"]
+        base["fit_derivative_rms"] = fitted["derivative_rms"]
+        base["position_rms"] = fitted["position_rms"]
+        base["derivative_rms"] = fitted["derivative_rms"]
+        base["excluded_acceleration_noise_fraction"] = float(np.mean(excluded))
+        base["acceleration_noise_band"] = exclusion_band
         base["velocity_objective_weight"] = velocity_weight
         base["score"] = math.sqrt(
-            weighted["position_rms"]**2
-            + velocity_weight*weighted["derivative_rms"]**2
+            fitted["position_rms"]**2
+            + velocity_weight*fitted["derivative_rms"]**2
         )
         base["motion_score"] = base["score"]
         return base
@@ -293,9 +370,7 @@ def _call_search_main(
     target: Path,
     *,
     side: str,
-    hp_center_t_deg: float,
-    hp_half_width_deg: float,
-    hp_extra_repeats: int,
+    exclusion_band: dict,
     velocity_weight: float,
 ) -> None:
     old_argv = sys.argv
@@ -305,9 +380,7 @@ def _call_search_main(
     module.evaluate = _objective_wrapper(
         module,
         side,
-        hp_center_t_deg,
-        hp_half_width_deg,
-        hp_extra_repeats,
+        exclusion_band,
         velocity_weight,
     )
     sys.argv = [str(Path(module.__file__).name), *argv]
@@ -317,8 +390,6 @@ def _call_search_main(
         sys.argv = old_argv
         module.TARGET = old_target
         module.evaluate = old_evaluate
-
-
 
 
 def _seed_link_caps(path: Path, restart: int, branch: int, secondary_fraction: float = 0.25) -> tuple[float, float]:
@@ -650,16 +721,10 @@ def main():
         help="Diagnostic HP half-window in normalized structured-motion degrees.",
     )
     ap.add_argument(
-        "--hp-objective-half-width-deg",
-        type=float,
-        default=20.0,
-        help="HP half-window used only if --hp-extra-repeats is nonzero.",
-    )
-    ap.add_argument(
-        "--hp-extra-repeats",
+        "--acceleration-noise-fronts",
         type=int,
-        default=0,
-        help="Extra HP-window copies in the objective; default 0 disables HP weighting.",
+        default=6,
+        help="Dominant acceleration fronts defining the automatically excluded band.",
     )
     ap.add_argument(
         "--velocity-weight",
@@ -707,13 +772,25 @@ def main():
         f"S={hp['small_t_deg']:.3f} deg, L={hp['large_t_deg']:.3f} deg",
         flush=True,
     )
+    noise_bands = _detect_noise_bands(
+        args.target, args.acceleration_noise_fronts
+    )
     print(
-        "Synthesis objective: full-cycle position RMS; "
-        f"velocity tie-break weight={args.velocity_weight:.4g}; "
-        f"HP extra repeats={args.hp_extra_repeats}; "
-        "acceleration diagnostic only",
+        "Synthesis objective: position RMS outside automatically detected "
+        f"{args.acceleration_noise_fronts}-front acceleration-noise bands; "
+        f"velocity tie-break weight={args.velocity_weight:.4g}",
         flush=True,
     )
+    for side in ("small", "large"):
+        band = noise_bands[side]
+        print(
+            f"{side} excluded band: "
+            f"{band['start_theta_deg']:.3f}..{band['end_theta_deg']:.3f} deg "
+            f"({100.0*band['excluded_fraction']:.2f}% cycle), "
+            f"fronts={','.join(f'{x:.3f}' for x in band['front_theta_deg'])}, "
+            f"isolation={band['front_isolation_ratio']:.2f}",
+            flush=True,
+        )
 
     small_restart = 0
     small_branch = 1
@@ -741,13 +818,15 @@ def main():
                 "--population-size", str(args.population_size),
                 "--restarts", str(args.restarts),
                 "--seed", str(args.small_seed),
-                "--stroke-floor", "2.5",
+                "--stroke-floor", "1.0",
+                "--stroke-ceiling", "3.0",
                 "--maximum-EH", "6.0",
                 "--h-line-rms-max", "0.18",
                 "--h-axis-angle-max", "12",
                 "--crank-clearance-floor", "0.50",
                 "--primary-length-fraction", "0.40",
-                "--primary-point-fraction", "0.65",
+                "--primary-point-along-fraction", "1.25",
+                "--primary-point-normal-fraction", "0.65",
                 "--primary-phase-span-deg", "50",
                 "--pivot-span", "3.0",
                 "--secondary-length-fraction", "0.60",
@@ -761,9 +840,7 @@ def main():
             ],
             args.target,
             side="small",
-            hp_center_t_deg=float(hp["small_t_deg"]),
-            hp_half_width_deg=args.hp_objective_half_width_deg,
-            hp_extra_repeats=args.hp_extra_repeats,
+            exclusion_band=noise_bands["small"],
             velocity_weight=args.velocity_weight,
         )
 
@@ -795,13 +872,15 @@ def main():
                 "--population-size", str(args.population_size),
                 "--restarts", str(args.restarts),
                 "--seed", str(args.large_seed),
-                "--stroke-floor", "2.5",
+                "--stroke-floor", "1.0",
+                "--stroke-ceiling", "3.0",
                 "--maximum-EH", "7.0",
                 "--h-line-rms-max", "0.25",
                 "--h-axis-angle-max", "10",
                 "--crank-clearance-floor", "0.50",
                 "--primary-length-fraction", "0.45",
-                "--primary-point-fraction", "0.70",
+                "--primary-point-along-fraction", "1.25",
+                "--primary-point-normal-fraction", "0.70",
                 "--primary-phase-span-deg", "60",
                 "--pivot-span", "4.0",
                 "--secondary-length-fraction", "0.70",
@@ -815,9 +894,7 @@ def main():
             ],
             args.target,
             side="large",
-            hp_center_t_deg=float(hp["large_t_deg"]),
-            hp_half_width_deg=args.hp_objective_half_width_deg,
-            hp_extra_repeats=args.hp_extra_repeats,
+            exclusion_band=noise_bands["large"],
             velocity_weight=args.velocity_weight,
         )
     else:
@@ -863,15 +940,17 @@ def main():
             "restarts": args.restarts,
             "population_size": args.population_size,
             "large_seed_policy": "physical_mirror_of_new_small_only",
-            "hp_objective_half_width_deg": args.hp_objective_half_width_deg,
-            "hp_extra_repeats": args.hp_extra_repeats,
+            "acceleration_noise_fronts": args.acceleration_noise_fronts,
+            "acceleration_noise_bands": noise_bands,
             "velocity_weight": args.velocity_weight,
+            "stroke_over_crank_range": [1.0, 3.0],
+            "primary_point_along_fraction": 1.25,
             "objective_note": (
-                "Whole-cycle position RMS dominates the synthesis objective. Velocity "
-                "has only a tiny tie-breaking weight; HP is not overweighted and "
-                "acceleration remains diagnostic only. Geometry neighborhoods are "
-                "deliberately broader than the K2 local refinements. The large mechanism "
-                "starts only from the physical mirror of the newly optimized small."
+                "Position RMS is fitted everywhere except the automatically detected "
+                "compact six-front acceleration-noise band on each piston. Velocity "
+                "has only a tiny tie-breaking weight; target acceleration is not fitted. "
+                "Primary length and phase freedoms are unchanged. The coupler point has "
+                "extra longitudinal freedom, and 1 <= stroke/r <= 3 is enforced."
             ),
         },
         "motion_comparison": motion_report,
