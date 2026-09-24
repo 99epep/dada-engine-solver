@@ -1,0 +1,4867 @@
+{
+  "description": "L primary cadence library for candidate 3952",
+  "length_unit": "primary_crank_radius",
+  "target": "/home/edada/Documents/dada-engine-solver/outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_target.csv",
+  "target_noise_band": {
+    "start_theta_deg": 34.0,
+    "end_theta_deg": 44.25,
+    "front_theta_deg": [
+      34.25,
+      36.5,
+      38.75,
+      39.5,
+      41.75,
+      43.75
+    ],
+    "excluded_fraction": 0.029166666666666667,
+    "front_isolation_ratio": 3.7254110858780014,
+    "boundary_abs_acceleration": [
+      0.11512578515446939,
+      0.0024481491507495805
+    ]
+  },
+  "target_blocks": [
+    {
+      "sign": -1,
+      "start_deg": 329.5,
+      "end_deg": 20.5,
+      "center_deg": 4.296624206169792,
+      "span_deg": 51.25,
+      "delta_speed": -1.6113096609285325,
+      "strength": 1.6113096609285325,
+      "peak_abs_acceleration": 4.837272078526998
+    },
+    {
+      "sign": 1,
+      "start_deg": 20.75,
+      "end_deg": 50.25000000000001,
+      "center_deg": 35.57879963628558,
+      "span_deg": 29.75,
+      "delta_speed": 1.0523427706818078,
+      "strength": 1.0523427706818078,
+      "peak_abs_acceleration": 3.390293043172652
+    },
+    {
+      "sign": 1,
+      "start_deg": 96.75,
+      "end_deg": 212.0,
+      "center_deg": 159.3925153378671,
+      "span_deg": 115.5,
+      "delta_speed": 0.6378468474330812,
+      "strength": 0.6378468474330812,
+      "peak_abs_acceleration": 0.5159521684091186
+    }
+  ],
+  "target_all_lobes": [
+    {
+      "sign": -1,
+      "start_deg": 329.5,
+      "end_deg": 20.5,
+      "center_deg": 4.296624206169792,
+      "span_deg": 51.25,
+      "delta_speed": -1.6113096609285325,
+      "strength": 1.6113096609285325,
+      "peak_abs_acceleration": 4.837272078526998
+    },
+    {
+      "sign": 1,
+      "start_deg": 20.75,
+      "end_deg": 50.25000000000001,
+      "center_deg": 35.57879963628558,
+      "span_deg": 29.75,
+      "delta_speed": 1.0523427706818078,
+      "strength": 1.0523427706818078,
+      "peak_abs_acceleration": 3.390293043172652
+    },
+    {
+      "sign": 1,
+      "start_deg": 96.75,
+      "end_deg": 212.0,
+      "center_deg": 159.3925153378671,
+      "span_deg": 115.5,
+      "delta_speed": 0.6378468474330812,
+      "strength": 0.6378468474330812,
+      "peak_abs_acceleration": 0.5159521684091186
+    },
+    {
+      "sign": -1,
+      "start_deg": 218.75,
+      "end_deg": 256.25,
+      "center_deg": 237.46031287346983,
+      "span_deg": 37.75,
+      "delta_speed": -0.0975939301612613,
+      "strength": 0.0975939301612613,
+      "peak_abs_acceleration": 0.20532658143690002
+    },
+    {
+      "sign": 1,
+      "start_deg": 285.25,
+      "end_deg": 324.5,
+      "center_deg": 305.81074678585264,
+      "span_deg": 39.5,
+      "delta_speed": 0.08878478289631293,
+      "strength": 0.08878478289631293,
+      "peak_abs_acceleration": 0.17329181333066065
+    },
+    {
+      "sign": -1,
+      "start_deg": 50.75,
+      "end_deg": 84.75,
+      "center_deg": 66.99988926814986,
+      "span_deg": 34.25,
+      "delta_speed": -0.061531298141697215,
+      "strength": 0.061531298141697215,
+      "peak_abs_acceleration": 0.1269044870568701
+    }
+  ],
+  "bounds": {
+    "primary_ground": [
+      0.5,
+      12.0
+    ],
+    "primary_coupler": [
+      0.5,
+      12.0
+    ],
+    "primary_rocker": [
+      0.35,
+      6.0
+    ],
+    "primary_E_along": [
+      -12.0,
+      18.0
+    ],
+    "primary_E_normal": [
+      -15.0,
+      15.0
+    ],
+    "primary_phase": [
+      -3.141592653589793,
+      3.141592653589793
+    ]
+  },
+  "settings": {
+    "target": "/home/edada/Documents/dada-engine-solver/outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_target.csv",
+    "output": "/home/edada/Documents/dada-engine-solver/outputs/large_primary_cadence_3952.json",
+    "trace_output": "/home/edada/Documents/dada-engine-solver/outputs/large_primary_cadence_3952_best_trace.csv",
+    "islands": 24,
+    "hours": 0.0,
+    "generations": 220,
+    "population_size": 16,
+    "seed": 3952100,
+    "coarse_step_deg": 1.0,
+    "dense_step_deg": 0.25,
+    "target_smoothing_deg": 12.0,
+    "primary_smoothing_deg": 8.0,
+    "lobe_epsilon_fraction": 0.01,
+    "noise_fronts": 6,
+    "center_scale_deg": 20.0,
+    "width_weight": 0.2,
+    "strength_weight": 0.1,
+    "sign_weight": 0.1,
+    "extra_activity_weight": 0.4,
+    "primary_sine_floor": 0.3,
+    "E_span_floor": 0.75,
+    "library_size": 200,
+    "diversity_distance": 0.08,
+    "population_candidates_per_island": 24
+  },
+  "islands": [
+    {
+      "index": 0,
+      "branch": 1,
+      "seed": 3952100,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21363,
+      "wall_seconds": 31.273627042770386,
+      "cpu_seconds": 31.132629704999996,
+      "best": {
+        "score": 0.38650888330532984,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 6.420723267373614,
+          "primary_coupler": 6.911837341357099,
+          "primary_rocker": 1.5850355321602336,
+          "primary_E_along": 5.599305427438584,
+          "primary_E_normal": -0.9011863025892164,
+          "primary_phase": -0.34294320959519947
+        },
+        "primary": {
+          "ground": 6.420723267373614,
+          "coupler": 6.911837341357099,
+          "rocker": 1.5850355321602336,
+          "assembly_branch": 1,
+          "E_along": 5.599305427438584,
+          "E_normal": -0.9011863025892164,
+          "phase": -0.34294320959519947
+        },
+        "cadence_match": {
+          "score": 0.38650888330532984,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 321.25,
+              "end_deg": 19.75,
+              "center_deg": 3.9865942014204863,
+              "span_deg": 58.75,
+              "delta_speed": -0.9319507285991019,
+              "strength": 0.9319507285991019,
+              "peak_abs_acceleration": 2.6198792420279546
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.25,
+              "end_deg": 75.75,
+              "center_deg": 35.60793607607485,
+              "span_deg": 55.75,
+              "delta_speed": 0.9253055695549475,
+              "strength": 0.9253055695549475,
+              "peak_abs_acceleration": 2.612405368688845
+            },
+            {
+              "sign": -1,
+              "start_deg": 81.75,
+              "end_deg": 206.75000000000003,
+              "center_deg": 159.53502829073716,
+              "span_deg": 125.25,
+              "delta_speed": -0.8604350163923601,
+              "strength": 0.8604350163923601,
+              "peak_abs_acceleration": 0.6859967734100266
+            }
+          ],
+          "center_rms_deg": 0.1977182150639232,
+          "center_max_abs_deg": 0.31003000474930786,
+          "width_log_rms": 0.3740165746850911,
+          "relative_strength_rms": 0.11070229075653562,
+          "extra_activity_ratio": 0.319076941614693,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.30002963633740465,
+        "E_span_over_crank": 1.9962058730149943,
+        "E_path_length_over_crank": 4.831614119392065,
+        "direction_total_variation_rad": 8.722828135069726,
+        "normal_acceleration_rms": 0.7631672953726207,
+        "tangential_acceleration_rms": 0.7985796059107433,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 321.25,
+            "end_deg": 19.75,
+            "center_deg": 3.9865942014204863,
+            "span_deg": 58.75,
+            "delta_speed": -0.9319507285991019,
+            "strength": 0.9319507285991019,
+            "peak_abs_acceleration": 2.6198792420279546
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 75.75,
+            "center_deg": 35.60793607607485,
+            "span_deg": 55.75,
+            "delta_speed": 0.9253055695549475,
+            "strength": 0.9253055695549475,
+            "peak_abs_acceleration": 2.612405368688845
+          },
+          {
+            "sign": 1,
+            "start_deg": 207.75,
+            "end_deg": 316.25,
+            "center_deg": 252.07327019062515,
+            "span_deg": 108.75,
+            "delta_speed": 0.867152632898283,
+            "strength": 0.867152632898283,
+            "peak_abs_acceleration": 0.7210082224546706
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.75,
+            "end_deg": 206.75000000000003,
+            "center_deg": 159.53502829073716,
+            "span_deg": 125.25,
+            "delta_speed": -0.8604350163923601,
+            "strength": 0.8604350163923601,
+            "peak_abs_acceleration": 0.6859967734100266
+          }
+        ],
+        "library_rank": 11
+      }
+    },
+    {
+      "index": 1,
+      "branch": -1,
+      "seed": 3952101,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21720,
+      "wall_seconds": 35.78195285797119,
+      "cpu_seconds": 35.890565447,
+      "best": {
+        "score": 0.28083413680077496,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.438440890937238,
+          "primary_coupler": 1.2178426149440753,
+          "primary_rocker": 1.269315693323829,
+          "primary_E_along": 0.019429323383681477,
+          "primary_E_normal": 0.3313087228160904,
+          "primary_phase": -0.3558457257424949
+        },
+        "primary": {
+          "ground": 1.438440890937238,
+          "coupler": 1.2178426149440753,
+          "rocker": 1.269315693323829,
+          "assembly_branch": -1,
+          "E_along": 0.019429323383681477,
+          "E_normal": 0.3313087228160904,
+          "phase": -0.3558457257424949
+        },
+        "cadence_match": {
+          "score": 0.28083413680077496,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 328.25,
+              "end_deg": 19.5,
+              "center_deg": 5.243034881730872,
+              "span_deg": 51.5,
+              "delta_speed": -0.7927619871688848,
+              "strength": 0.7927619871688848,
+              "peak_abs_acceleration": 2.3964078031349865
+            },
+            {
+              "sign": 1,
+              "start_deg": 19.75,
+              "end_deg": 73.75,
+              "center_deg": 34.06158329524332,
+              "span_deg": 54.25,
+              "delta_speed": 0.7937374909104605,
+              "strength": 0.7937374909104605,
+              "peak_abs_acceleration": 2.389414948120357
+            },
+            {
+              "sign": -1,
+              "start_deg": 95.75,
+              "end_deg": 200.75,
+              "center_deg": 158.92191922328064,
+              "span_deg": 105.25,
+              "delta_speed": -0.09305499473526024,
+              "strength": 0.09305499473526024,
+              "peak_abs_acceleration": 0.09050275573520562
+            }
+          ],
+          "center_rms_deg": 1.0675672180875422,
+          "center_max_abs_deg": 1.517216341042257,
+          "width_log_rms": 0.3509934844926509,
+          "relative_strength_rms": 0.11959926126643405,
+          "extra_activity_ratio": 0.05563327840548001,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.34479504134000316,
+        "E_span_over_crank": 2.252492446429724,
+        "E_path_length_over_crank": 6.150439320465431,
+        "direction_total_variation_rad": 6.606746797337339,
+        "normal_acceleration_rms": 0.9840140340481058,
+        "tangential_acceleration_rms": 0.6361179849641081,
+        "lobes": [
+          {
+            "sign": 1,
+            "start_deg": 19.75,
+            "end_deg": 73.75,
+            "center_deg": 34.06158329524332,
+            "span_deg": 54.25,
+            "delta_speed": 0.7937374909104605,
+            "strength": 0.7937374909104605,
+            "peak_abs_acceleration": 2.389414948120357
+          },
+          {
+            "sign": -1,
+            "start_deg": 328.25,
+            "end_deg": 19.5,
+            "center_deg": 5.243034881730872,
+            "span_deg": 51.5,
+            "delta_speed": -0.7927619871688848,
+            "strength": 0.7927619871688848,
+            "peak_abs_acceleration": 2.3964078031349865
+          },
+          {
+            "sign": 1,
+            "start_deg": 207.0,
+            "end_deg": 315.25,
+            "center_deg": 256.03903877413234,
+            "span_deg": 108.5,
+            "delta_speed": 0.0934391215832643,
+            "strength": 0.0934391215832643,
+            "peak_abs_acceleration": 0.0669668937569679
+          },
+          {
+            "sign": -1,
+            "start_deg": 95.75,
+            "end_deg": 200.75,
+            "center_deg": 158.92191922328064,
+            "span_deg": 105.25,
+            "delta_speed": -0.09305499473526024,
+            "strength": 0.09305499473526024,
+            "peak_abs_acceleration": 0.09050275573520562
+          }
+        ],
+        "library_rank": 1
+      }
+    },
+    {
+      "index": 2,
+      "branch": 1,
+      "seed": 3952102,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21874,
+      "wall_seconds": 37.70664668083191,
+      "cpu_seconds": 37.30211534,
+      "best": {
+        "score": 0.3322885204007574,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 11.369129981509875,
+          "primary_coupler": 11.055097175689914,
+          "primary_rocker": 1.3884249960548214,
+          "primary_E_along": 15.073796206548332,
+          "primary_E_normal": -1.0665852439090484,
+          "primary_phase": 2.7241224225366216
+        },
+        "primary": {
+          "ground": 11.369129981509875,
+          "coupler": 11.055097175689914,
+          "rocker": 1.3884249960548214,
+          "assembly_branch": 1,
+          "E_along": 15.073796206548332,
+          "E_normal": -1.0665852439090484,
+          "phase": 2.7241224225366216
+        },
+        "cadence_match": {
+          "score": 0.3322885204007574,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 322.5,
+              "end_deg": 20.0,
+              "center_deg": 4.6403131840117355,
+              "span_deg": 57.75,
+              "delta_speed": -0.9743600280434848,
+              "strength": 0.9743600280434848,
+              "peak_abs_acceleration": 2.9828230795085977
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.5,
+              "end_deg": 64.75,
+              "center_deg": 34.779680699907544,
+              "span_deg": 44.5,
+              "delta_speed": 1.2380234837943132,
+              "strength": 1.2380234837943132,
+              "peak_abs_acceleration": 3.530073809079117
+            },
+            {
+              "sign": -1,
+              "start_deg": 67.25,
+              "end_deg": 216.5,
+              "center_deg": 159.06399088977676,
+              "span_deg": 149.5,
+              "delta_speed": -1.0311417129048657,
+              "strength": 1.0311417129048657,
+              "peak_abs_acceleration": 0.990621480136295
+            }
+          ],
+          "center_rms_deg": 0.5368555053770814,
+          "center_max_abs_deg": 0.7991189363780222,
+          "width_log_rms": 0.28458781531190674,
+          "relative_strength_rms": 0.13506487032069786,
+          "extra_activity_ratio": 0.23653162275632453,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3415322722198748,
+        "E_span_over_crank": 1.9968169304011507,
+        "E_path_length_over_crank": 5.69055258489017,
+        "direction_total_variation_rad": 8.603806138459284,
+        "normal_acceleration_rms": 0.8436997209090372,
+        "tangential_acceleration_rms": 0.9593200161551975,
+        "lobes": [
+          {
+            "sign": 1,
+            "start_deg": 20.5,
+            "end_deg": 64.75,
+            "center_deg": 34.779680699907544,
+            "span_deg": 44.5,
+            "delta_speed": 1.2380234837943132,
+            "strength": 1.2380234837943132,
+            "peak_abs_acceleration": 3.530073809079117
+          },
+          {
+            "sign": -1,
+            "start_deg": 67.25,
+            "end_deg": 216.5,
+            "center_deg": 159.06399088977676,
+            "span_deg": 149.5,
+            "delta_speed": -1.0311417129048657,
+            "strength": 1.0311417129048657,
+            "peak_abs_acceleration": 0.990621480136295
+          },
+          {
+            "sign": -1,
+            "start_deg": 322.5,
+            "end_deg": 20.0,
+            "center_deg": 4.6403131840117355,
+            "span_deg": 57.75,
+            "delta_speed": -0.9743600280434848,
+            "strength": 0.9743600280434848,
+            "peak_abs_acceleration": 2.9828230795085977
+          },
+          {
+            "sign": 1,
+            "start_deg": 217.5,
+            "end_deg": 314.50000000000006,
+            "center_deg": 252.9217342413601,
+            "span_deg": 97.25,
+            "delta_speed": 0.7671962848594541,
+            "strength": 0.7671962848594541,
+            "peak_abs_acceleration": 0.8478767402096858
+          }
+        ],
+        "library_rank": 2
+      }
+    },
+    {
+      "index": 3,
+      "branch": -1,
+      "seed": 3952103,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21601,
+      "wall_seconds": 29.34803056716919,
+      "cpu_seconds": 29.28008961799999,
+      "best": {
+        "score": 0.3361050476415718,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 11.767903846216575,
+          "primary_coupler": 11.863388277878396,
+          "primary_rocker": 1.1811558715976,
+          "primary_E_along": 14.920591012705907,
+          "primary_E_normal": 0.36539508660023534,
+          "primary_phase": -0.47430476521107157
+        },
+        "primary": {
+          "ground": 11.767903846216575,
+          "coupler": 11.863388277878396,
+          "rocker": 1.1811558715976,
+          "assembly_branch": -1,
+          "E_along": 14.920591012705907,
+          "E_normal": 0.36539508660023534,
+          "phase": -0.47430476521107157
+        },
+        "cadence_match": {
+          "score": 0.3361050476415718,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 318.25,
+              "end_deg": 20.75,
+              "center_deg": 4.719859503462513,
+              "span_deg": 62.75,
+              "delta_speed": -0.8469708911420926,
+              "strength": 0.8469708911420926,
+              "peak_abs_acceleration": 2.435681669656288
+            },
+            {
+              "sign": 1,
+              "start_deg": 21.25,
+              "end_deg": 59.75,
+              "center_deg": 35.01269091966858,
+              "span_deg": 38.75,
+              "delta_speed": 1.2240567962036324,
+              "strength": 1.2240567962036324,
+              "peak_abs_acceleration": 3.5088579572129572
+            },
+            {
+              "sign": -1,
+              "start_deg": 61.50000000000001,
+              "end_deg": 211.0,
+              "center_deg": 158.98003278038985,
+              "span_deg": 149.75,
+              "delta_speed": -1.246414529441797,
+              "strength": 1.246414529441797,
+              "peak_abs_acceleration": 1.3949950588474385
+            }
+          ],
+          "center_rms_deg": 0.4724930532565916,
+          "center_max_abs_deg": 0.5661087166170091,
+          "width_log_rms": 0.24377645500364223,
+          "relative_strength_rms": 0.1732105321736714,
+          "extra_activity_ratio": 0.2620718578645236,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.35615463526502034,
+        "E_span_over_crank": 2.0100454400735863,
+        "E_path_length_over_crank": 5.402750597866774,
+        "direction_total_variation_rad": 9.470200015602796,
+        "normal_acceleration_rms": 0.9409322455497787,
+        "tangential_acceleration_rms": 0.9837143256604701,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 61.50000000000001,
+            "end_deg": 211.0,
+            "center_deg": 158.98003278038985,
+            "span_deg": 149.75,
+            "delta_speed": -1.246414529441797,
+            "strength": 1.246414529441797,
+            "peak_abs_acceleration": 1.3949950588474385
+          },
+          {
+            "sign": 1,
+            "start_deg": 21.25,
+            "end_deg": 59.75,
+            "center_deg": 35.01269091966858,
+            "span_deg": 38.75,
+            "delta_speed": 1.2240567962036324,
+            "strength": 1.2240567962036324,
+            "peak_abs_acceleration": 3.5088579572129572
+          },
+          {
+            "sign": 1,
+            "start_deg": 211.75,
+            "end_deg": 306.0,
+            "center_deg": 239.95608625541269,
+            "span_deg": 94.5,
+            "delta_speed": 0.8694082451117098,
+            "strength": 0.8694082451117098,
+            "peak_abs_acceleration": 1.2667136100420187
+          },
+          {
+            "sign": -1,
+            "start_deg": 318.25,
+            "end_deg": 20.75,
+            "center_deg": 4.719859503462513,
+            "span_deg": 62.75,
+            "delta_speed": -0.8469708911420926,
+            "strength": 0.8469708911420926,
+            "peak_abs_acceleration": 2.435681669656288
+          }
+        ],
+        "library_rank": 4
+      }
+    },
+    {
+      "index": 4,
+      "branch": 1,
+      "seed": 3952104,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21706,
+      "wall_seconds": 29.16320538520813,
+      "cpu_seconds": 29.720037571000006,
+      "best": {
+        "score": 0.2755340415497223,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 1.502580803687229,
+          "primary_coupler": 1.3825268064048215,
+          "primary_rocker": 1.1735666014498978,
+          "primary_E_along": 0.07722030710236684,
+          "primary_E_normal": -0.39605857144093304,
+          "primary_phase": -0.4704948440111305
+        },
+        "primary": {
+          "ground": 1.502580803687229,
+          "coupler": 1.3825268064048215,
+          "rocker": 1.1735666014498978,
+          "assembly_branch": 1,
+          "E_along": 0.07722030710236684,
+          "E_normal": -0.39605857144093304,
+          "phase": -0.4704948440111305
+        },
+        "cadence_match": {
+          "score": 0.2755340415497223,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 323.25,
+              "end_deg": 20.5,
+              "center_deg": 4.673570062645617,
+              "span_deg": 57.5,
+              "delta_speed": -0.8135319438998616,
+              "strength": 0.8135319438998616,
+              "peak_abs_acceleration": 2.216487393659019
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.75,
+              "end_deg": 72.75,
+              "center_deg": 35.050257941762155,
+              "span_deg": 52.25,
+              "delta_speed": 0.788793435200266,
+              "strength": 0.788793435200266,
+              "peak_abs_acceleration": 2.3377983415298087
+            },
+            {
+              "sign": -1,
+              "start_deg": 92.75,
+              "end_deg": 204.25,
+              "center_deg": 159.49813842942433,
+              "span_deg": 111.75,
+              "delta_speed": -0.09038997805043347,
+              "strength": 0.09038997805043347,
+              "peak_abs_acceleration": 0.08203309274632886
+            }
+          ],
+          "center_rms_deg": 0.37973707528327855,
+          "center_max_abs_deg": 0.528541694523426,
+          "width_log_rms": 0.33243381554416424,
+          "relative_strength_rms": 0.11730417598443398,
+          "extra_activity_ratio": 0.06897814254275957,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.35301898556095784,
+        "E_span_over_crank": 2.2486358369023565,
+        "E_path_length_over_crank": 6.039983489222953,
+        "direction_total_variation_rad": 6.698001313093208,
+        "normal_acceleration_rms": 0.9681078269704201,
+        "tangential_acceleration_rms": 0.6248849134986553,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 323.25,
+            "end_deg": 20.5,
+            "center_deg": 4.673570062645617,
+            "span_deg": 57.5,
+            "delta_speed": -0.8135319438998616,
+            "strength": 0.8135319438998616,
+            "peak_abs_acceleration": 2.216487393659019
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 72.75,
+            "center_deg": 35.050257941762155,
+            "span_deg": 52.25,
+            "delta_speed": 0.788793435200266,
+            "strength": 0.788793435200266,
+            "peak_abs_acceleration": 2.3377983415298087
+          },
+          {
+            "sign": 1,
+            "start_deg": 209.75,
+            "end_deg": 311.0,
+            "center_deg": 253.74565435692682,
+            "span_deg": 101.5,
+            "delta_speed": 0.11676036118984967,
+            "strength": 0.11676036118984967,
+            "peak_abs_acceleration": 0.0963014998654121
+          },
+          {
+            "sign": -1,
+            "start_deg": 92.75,
+            "end_deg": 204.25,
+            "center_deg": 159.49813842942433,
+            "span_deg": 111.75,
+            "delta_speed": -0.09038997805043347,
+            "strength": 0.09038997805043347,
+            "peak_abs_acceleration": 0.08203309274632886
+          }
+        ],
+        "library_rank": 0
+      }
+    },
+    {
+      "index": 5,
+      "branch": -1,
+      "seed": 3952105,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21944,
+      "wall_seconds": 27.348817825317383,
+      "cpu_seconds": 27.505962186000005,
+      "best": {
+        "score": 0.3366029214230987,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 11.433589283815461,
+          "primary_coupler": 11.547756015065865,
+          "primary_rocker": 1.2016332373632483,
+          "primary_E_along": 14.61584652768428,
+          "primary_E_normal": 0.6545383014949668,
+          "primary_phase": -0.47989594657031226
+        },
+        "primary": {
+          "ground": 11.433589283815461,
+          "coupler": 11.547756015065865,
+          "rocker": 1.2016332373632483,
+          "assembly_branch": -1,
+          "E_along": 14.61584652768428,
+          "E_normal": 0.6545383014949668,
+          "phase": -0.47989594657031226
+        },
+        "cadence_match": {
+          "score": 0.3366029214230987,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 319.75,
+              "end_deg": 21.0,
+              "center_deg": 4.920432907706334,
+              "span_deg": 61.5,
+              "delta_speed": -0.8352043930780138,
+              "strength": 0.8352043930780138,
+              "peak_abs_acceleration": 2.3613599415859854
+            },
+            {
+              "sign": 1,
+              "start_deg": 21.5,
+              "end_deg": 59.75,
+              "center_deg": 35.25501286151388,
+              "span_deg": 38.5,
+              "delta_speed": 1.2178178089267304,
+              "strength": 1.2178178089267304,
+              "peak_abs_acceleration": 3.481102068235639
+            },
+            {
+              "sign": -1,
+              "start_deg": 61.25000000000001,
+              "end_deg": 212.0,
+              "center_deg": 158.88339287100567,
+              "span_deg": 151.0,
+              "delta_speed": -1.260184487269469,
+              "strength": 1.260184487269469,
+              "peak_abs_acceleration": 1.3461354558172525
+            }
+          ],
+          "center_rms_deg": 0.5010591641356156,
+          "center_max_abs_deg": 0.6238087015365466,
+          "width_log_rms": 0.23912757281079877,
+          "relative_strength_rms": 0.17615468338814486,
+          "extra_activity_ratio": 0.26480209030401397,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3559395682932338,
+        "E_span_over_crank": 2.00420544620998,
+        "E_path_length_over_crank": 5.39638834990455,
+        "direction_total_variation_rad": 9.339988652763209,
+        "normal_acceleration_rms": 0.9529664023986122,
+        "tangential_acceleration_rms": 0.9763171646086312,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 61.25000000000001,
+            "end_deg": 212.0,
+            "center_deg": 158.88339287100567,
+            "span_deg": 151.0,
+            "delta_speed": -1.260184487269469,
+            "strength": 1.260184487269469,
+            "peak_abs_acceleration": 1.3461354558172525
+          },
+          {
+            "sign": 1,
+            "start_deg": 21.5,
+            "end_deg": 59.75,
+            "center_deg": 35.25501286151388,
+            "span_deg": 38.5,
+            "delta_speed": 1.2178178089267304,
+            "strength": 1.2178178089267304,
+            "peak_abs_acceleration": 3.481102068235639
+          },
+          {
+            "sign": 1,
+            "start_deg": 212.5,
+            "end_deg": 308.5,
+            "center_deg": 241.94892428060297,
+            "span_deg": 96.25,
+            "delta_speed": 0.8773440569290534,
+            "strength": 0.8773440569290534,
+            "peak_abs_acceleration": 1.2176984440836254
+          },
+          {
+            "sign": -1,
+            "start_deg": 319.75,
+            "end_deg": 21.0,
+            "center_deg": 4.920432907706334,
+            "span_deg": 61.5,
+            "delta_speed": -0.8352043930780138,
+            "strength": 0.8352043930780138,
+            "peak_abs_acceleration": 2.3613599415859854
+          }
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "branch": 1,
+      "seed": 3952106,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21629,
+      "wall_seconds": 29.38730812072754,
+      "cpu_seconds": 29.453512173000007,
+      "best": {
+        "score": 0.3423809801502158,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 5.9488326648095295,
+          "primary_coupler": 1.1186178112789955,
+          "primary_rocker": 5.97856685661049,
+          "primary_E_along": 5.658279609849451,
+          "primary_E_normal": -1.9422883307292749,
+          "primary_phase": -0.5068618295630776
+        },
+        "primary": {
+          "ground": 5.9488326648095295,
+          "coupler": 1.1186178112789955,
+          "rocker": 5.97856685661049,
+          "assembly_branch": 1,
+          "E_along": 5.658279609849451,
+          "E_normal": -1.9422883307292749,
+          "phase": -0.5068618295630776
+        },
+        "cadence_match": {
+          "score": 0.3423809801502158,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 315.5,
+              "end_deg": 21.75,
+              "center_deg": 5.256860577530511,
+              "span_deg": 66.5,
+              "delta_speed": -3.5523234411092663,
+              "strength": 3.5523234411092663,
+              "peak_abs_acceleration": 10.01272789575868
+            },
+            {
+              "sign": 1,
+              "start_deg": 22.25,
+              "end_deg": 58.00000000000001,
+              "center_deg": 35.54866328764547,
+              "span_deg": 36.0,
+              "delta_speed": 5.376902764886326,
+              "strength": 5.376902764886326,
+              "peak_abs_acceleration": 15.977921699666226
+            },
+            {
+              "sign": -1,
+              "start_deg": 59.25000000000001,
+              "end_deg": 209.75,
+              "center_deg": 159.37475270851235,
+              "span_deg": 150.75,
+              "delta_speed": -5.888332513282829,
+              "strength": 5.888332513282829,
+              "peak_abs_acceleration": 7.901614323178349
+            }
+          ],
+          "center_rms_deg": 0.5547604886780514,
+          "center_max_abs_deg": 0.9602363713607076,
+          "width_log_rms": 0.24163283506395686,
+          "relative_strength_rms": 0.1873514382612343,
+          "extra_activity_ratio": 0.27420795918515123,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3551278905401685,
+        "E_span_over_crank": 8.256289318235119,
+        "E_path_length_over_crank": 23.93521709808031,
+        "direction_total_variation_rad": 10.056456988511403,
+        "normal_acceleration_rms": 4.414199488307214,
+        "tangential_acceleration_rms": 4.519452312565741,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 59.25000000000001,
+            "end_deg": 209.75,
+            "center_deg": 159.37475270851235,
+            "span_deg": 150.75,
+            "delta_speed": -5.888332513282829,
+            "strength": 5.888332513282829,
+            "peak_abs_acceleration": 7.901614323178349
+          },
+          {
+            "sign": 1,
+            "start_deg": 22.25,
+            "end_deg": 58.00000000000001,
+            "center_deg": 35.54866328764547,
+            "span_deg": 36.0,
+            "delta_speed": 5.376902764886326,
+            "strength": 5.376902764886326,
+            "peak_abs_acceleration": 15.977921699666226
+          },
+          {
+            "sign": 1,
+            "start_deg": 210.25,
+            "end_deg": 298.25,
+            "center_deg": 233.5237520968879,
+            "span_deg": 88.25,
+            "delta_speed": 4.063092536519479,
+            "strength": 4.063092536519479,
+            "peak_abs_acceleration": 7.7210934582118
+          },
+          {
+            "sign": -1,
+            "start_deg": 315.5,
+            "end_deg": 21.75,
+            "center_deg": 5.256860577530511,
+            "span_deg": 66.5,
+            "delta_speed": -3.5523234411092663,
+            "strength": 3.5523234411092663,
+            "peak_abs_acceleration": 10.01272789575868
+          }
+        ],
+        "library_rank": 5
+      }
+    },
+    {
+      "index": 7,
+      "branch": -1,
+      "seed": 3952107,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21594,
+      "wall_seconds": 33.50835347175598,
+      "cpu_seconds": 33.48555806000002,
+      "best": {
+        "score": 0.36627258075304475,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 2.696695893657996,
+          "primary_coupler": 1.6237499030244462,
+          "primary_rocker": 3.1739168133116356,
+          "primary_E_along": -1.3157325163950269,
+          "primary_E_normal": 1.1384612130055953,
+          "primary_phase": -0.339627389016679
+        },
+        "primary": {
+          "ground": 2.696695893657996,
+          "coupler": 1.6237499030244462,
+          "rocker": 3.1739168133116356,
+          "assembly_branch": -1,
+          "E_along": -1.3157325163950269,
+          "E_normal": 1.1384612130055953,
+          "phase": -0.339627389016679
+        },
+        "cadence_match": {
+          "score": 0.36627258075304475,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 326.5,
+              "end_deg": 19.25,
+              "center_deg": 2.6362515308525176,
+              "span_deg": 53.0,
+              "delta_speed": -1.808350350759794,
+              "strength": 1.808350350759794,
+              "peak_abs_acceleration": 4.6563923475690165
+            },
+            {
+              "sign": 1,
+              "start_deg": 19.5,
+              "end_deg": 78.0,
+              "center_deg": 35.64688733498943,
+              "span_deg": 58.75,
+              "delta_speed": 1.7512676020089462,
+              "strength": 1.7512676020089462,
+              "peak_abs_acceleration": 4.743570430259653
+            },
+            {
+              "sign": -1,
+              "start_deg": 85.0,
+              "end_deg": 218.25,
+              "center_deg": 160.46128987738126,
+              "span_deg": 133.5,
+              "delta_speed": -1.0610617938827314,
+              "strength": 1.0610617938827314,
+              "peak_abs_acceleration": 0.7106229663231695
+            }
+          ],
+          "center_rms_deg": 1.140723801214047,
+          "center_max_abs_deg": 1.6603726753172623,
+          "width_log_rms": 0.4021326203932159,
+          "relative_strength_rms": 0.06906114657434889,
+          "extra_activity_ratio": 0.24205979677922995,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3003079152657592,
+        "E_span_over_crank": 3.506692159408907,
+        "E_path_length_over_crank": 9.482469236993978,
+        "direction_total_variation_rad": 8.91697965703278,
+        "normal_acceleration_rms": 1.599377056001241,
+        "tangential_acceleration_rms": 1.388719982432398,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 326.5,
+            "end_deg": 19.25,
+            "center_deg": 2.6362515308525176,
+            "span_deg": 53.0,
+            "delta_speed": -1.808350350759794,
+            "strength": 1.808350350759794,
+            "peak_abs_acceleration": 4.6563923475690165
+          },
+          {
+            "sign": 1,
+            "start_deg": 19.5,
+            "end_deg": 78.0,
+            "center_deg": 35.64688733498943,
+            "span_deg": 58.75,
+            "delta_speed": 1.7512676020089462,
+            "strength": 1.7512676020089462,
+            "peak_abs_acceleration": 4.743570430259653
+          },
+          {
+            "sign": 1,
+            "start_deg": 221.5,
+            "end_deg": 324.0,
+            "center_deg": 273.20953645803456,
+            "span_deg": 102.75,
+            "delta_speed": 1.1184808004563587,
+            "strength": 1.1184808004563587,
+            "peak_abs_acceleration": 0.8819746774915456
+          },
+          {
+            "sign": -1,
+            "start_deg": 85.0,
+            "end_deg": 218.25,
+            "center_deg": 160.46128987738126,
+            "span_deg": 133.5,
+            "delta_speed": -1.0610617938827314,
+            "strength": 1.0610617938827314,
+            "peak_abs_acceleration": 0.7106229663231695
+          }
+        ],
+        "library_rank": 7
+      }
+    },
+    {
+      "index": 8,
+      "branch": 1,
+      "seed": 3952108,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21363,
+      "wall_seconds": 29.808284759521484,
+      "cpu_seconds": 29.77563452000001,
+      "best": {
+        "score": 0.27039454424502274,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 1.516802106824911,
+          "primary_coupler": 1.4594863332504948,
+          "primary_rocker": 1.139377664937748,
+          "primary_E_along": 0.07404366503881388,
+          "primary_E_normal": -0.3738139998423079,
+          "primary_phase": -0.5191914194030429
+        },
+        "primary": {
+          "ground": 1.516802106824911,
+          "coupler": 1.4594863332504948,
+          "rocker": 1.139377664937748,
+          "assembly_branch": 1,
+          "E_along": 0.07404366503881388,
+          "E_normal": -0.3738139998423079,
+          "phase": -0.5191914194030429
+        },
+        "cadence_match": {
+          "score": 0.27039454424502274,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 322.75,
+              "end_deg": 20.0,
+              "center_deg": 4.001541096227408,
+              "span_deg": 57.5,
+              "delta_speed": -0.7655939773323266,
+              "strength": 0.7655939773323266,
+              "peak_abs_acceleration": 2.0630146468183965
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.25,
+              "end_deg": 68.0,
+              "center_deg": 33.71809704890355,
+              "span_deg": 48.0,
+              "delta_speed": 0.7310478900883434,
+              "strength": 0.7310478900883434,
+              "peak_abs_acceleration": 2.304742804308267
+            },
+            {
+              "sign": -1,
+              "start_deg": 93.0,
+              "end_deg": 205.0,
+              "center_deg": 158.92524385385028,
+              "span_deg": 112.25,
+              "delta_speed": -0.07635375044263713,
+              "strength": 0.07635375044263713,
+              "peak_abs_acceleration": 0.06382594694842181
+            }
+          ],
+          "center_rms_deg": 1.1206591513091413,
+          "center_max_abs_deg": 1.8607025873820362,
+          "width_log_rms": 0.2845436411458512,
+          "relative_strength_rms": 0.11866553851133947,
+          "extra_activity_ratio": 0.07259289359834546,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.31071274099048213,
+        "E_span_over_crank": 2.2056587345982828,
+        "E_path_length_over_crank": 6.010817043193375,
+        "direction_total_variation_rad": 6.743230504115035,
+        "normal_acceleration_rms": 0.9768550685367109,
+        "tangential_acceleration_rms": 0.5929429811819856,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 322.75,
+            "end_deg": 20.0,
+            "center_deg": 4.001541096227408,
+            "span_deg": 57.5,
+            "delta_speed": -0.7655939773323266,
+            "strength": 0.7655939773323266,
+            "peak_abs_acceleration": 2.0630146468183965
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 68.0,
+            "center_deg": 33.71809704890355,
+            "span_deg": 48.0,
+            "delta_speed": 0.7310478900883434,
+            "strength": 0.7310478900883434,
+            "peak_abs_acceleration": 2.304742804308267
+          },
+          {
+            "sign": 1,
+            "start_deg": 212.75,
+            "end_deg": 311.25,
+            "center_deg": 257.51805275909817,
+            "span_deg": 98.75,
+            "delta_speed": 0.11418830351821481,
+            "strength": 0.11418830351821481,
+            "peak_abs_acceleration": 0.08908621467087022
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.0,
+            "end_deg": 205.0,
+            "center_deg": 158.92524385385028,
+            "span_deg": 112.25,
+            "delta_speed": -0.07635375044263713,
+            "strength": 0.07635375044263713,
+            "peak_abs_acceleration": 0.06382594694842181
+          }
+        ],
+        "library_rank": 1
+      }
+    },
+    {
+      "index": 9,
+      "branch": -1,
+      "seed": 3952109,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 22875,
+      "wall_seconds": 36.58730864524841,
+      "cpu_seconds": 39.55072642600004,
+      "best": {
+        "score": 0.26347616611018837,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.4322232282440786,
+          "primary_coupler": 1.1474626824736713,
+          "primary_rocker": 1.322067862336516,
+          "primary_E_along": 0.013343103250351963,
+          "primary_E_normal": 0.22654942083630086,
+          "primary_phase": -0.4613725699609225
+        },
+        "primary": {
+          "ground": 1.4322232282440786,
+          "coupler": 1.1474626824736713,
+          "rocker": 1.322067862336516,
+          "assembly_branch": -1,
+          "E_along": 0.013343103250351963,
+          "E_normal": 0.22654942083630086,
+          "phase": -0.4613725699609225
+        },
+        "cadence_match": {
+          "score": 0.26347616611018837,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 327.25,
+              "end_deg": 21.0,
+              "center_deg": 5.91917604591258,
+              "span_deg": 54.0,
+              "delta_speed": -0.6121802012561506,
+              "strength": 0.6121802012561506,
+              "peak_abs_acceleration": 1.754847122443453
+            },
+            {
+              "sign": 1,
+              "start_deg": 21.25,
+              "end_deg": 68.75,
+              "center_deg": 34.61435856597683,
+              "span_deg": 47.75,
+              "delta_speed": 0.5965047475526565,
+              "strength": 0.5965047475526565,
+              "peak_abs_acceleration": 1.9229061667071297
+            },
+            {
+              "sign": -1,
+              "start_deg": 97.25,
+              "end_deg": 203.5,
+              "center_deg": 160.02529205775824,
+              "span_deg": 106.5,
+              "delta_speed": -0.05200880923398616,
+              "strength": 0.05200880923398616,
+              "peak_abs_acceleration": 0.04969177662950516
+            }
+          ],
+          "center_rms_deg": 1.1493806198683891,
+          "center_max_abs_deg": 1.6225518397427834,
+          "width_log_rms": 0.2787975391885878,
+          "relative_strength_rms": 0.1250806492109076,
+          "extra_activity_ratio": 0.05633774783349987,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3168544766682596,
+        "E_span_over_crank": 2.170291550341877,
+        "E_path_length_over_crank": 6.155308940014871,
+        "direction_total_variation_rad": 6.336631016680076,
+        "normal_acceleration_rms": 0.9919012498842027,
+        "tangential_acceleration_rms": 0.48999988917876935,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 327.25,
+            "end_deg": 21.0,
+            "center_deg": 5.91917604591258,
+            "span_deg": 54.0,
+            "delta_speed": -0.6121802012561506,
+            "strength": 0.6121802012561506,
+            "peak_abs_acceleration": 1.754847122443453
+          },
+          {
+            "sign": 1,
+            "start_deg": 21.25,
+            "end_deg": 68.75,
+            "center_deg": 34.61435856597683,
+            "span_deg": 47.75,
+            "delta_speed": 0.5965047475526565,
+            "strength": 0.5965047475526565,
+            "peak_abs_acceleration": 1.9229061667071297
+          },
+          {
+            "sign": 1,
+            "start_deg": 210.25,
+            "end_deg": 312.5,
+            "center_deg": 255.87129842527006,
+            "span_deg": 102.5,
+            "delta_speed": 0.0710246470358823,
+            "strength": 0.0710246470358823,
+            "peak_abs_acceleration": 0.055570415786393206
+          },
+          {
+            "sign": -1,
+            "start_deg": 97.25,
+            "end_deg": 203.5,
+            "center_deg": 160.02529205775824,
+            "span_deg": 106.5,
+            "delta_speed": -0.05200880923398616,
+            "strength": 0.05200880923398616,
+            "peak_abs_acceleration": 0.04969177662950516
+          }
+        ],
+        "library_rank": 0
+      }
+    },
+    {
+      "index": 10,
+      "branch": 1,
+      "seed": 3952110,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21790,
+      "wall_seconds": 31.706629276275635,
+      "cpu_seconds": 31.981182152999963,
+      "best": {
+        "score": 0.3409014964538568,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 2.518511924793763,
+          "primary_coupler": 1.1570417258969554,
+          "primary_rocker": 2.5270563044655012,
+          "primary_E_along": -0.27498967361330173,
+          "primary_E_normal": -2.358172826510543,
+          "primary_phase": -0.5063927562546005
+        },
+        "primary": {
+          "ground": 2.518511924793763,
+          "coupler": 1.1570417258969554,
+          "rocker": 2.5270563044655012,
+          "assembly_branch": 1,
+          "E_along": -0.27498967361330173,
+          "E_normal": -2.358172826510543,
+          "phase": -0.5063927562546005
+        },
+        "cadence_match": {
+          "score": 0.3409014964538568,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 316.5,
+              "end_deg": 22.75,
+              "center_deg": 4.64214490148586,
+              "span_deg": 66.5,
+              "delta_speed": -1.5337111820032148,
+              "strength": 1.5337111820032148,
+              "peak_abs_acceleration": 3.6646351459772393
+            },
+            {
+              "sign": 1,
+              "start_deg": 23.25,
+              "end_deg": 55.75,
+              "center_deg": 35.500348842407355,
+              "span_deg": 32.75,
+              "delta_speed": 1.544141047447522,
+              "strength": 1.544141047447522,
+              "peak_abs_acceleration": 5.224191358267336
+            },
+            {
+              "sign": -1,
+              "start_deg": 93.0,
+              "end_deg": 200.0,
+              "center_deg": 158.98753783328783,
+              "span_deg": 107.25,
+              "delta_speed": -1.4704111072172628,
+              "strength": 1.4704111072172628,
+              "peak_abs_acceleration": 1.3713667456603569
+            }
+          ],
+          "center_rms_deg": 0.3106690936066187,
+          "center_max_abs_deg": 0.4049775045792785,
+          "width_log_rms": 0.1659069019016987,
+          "relative_strength_rms": 0.11562728989030747,
+          "extra_activity_ratio": 0.3291326333606182,
+          "all_lobe_count": 5,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.37592570816341825,
+        "E_span_over_crank": 4.125938709884606,
+        "E_path_length_over_crank": 12.205624521304319,
+        "direction_total_variation_rad": 9.063263438783697,
+        "normal_acceleration_rms": 2.885438020090101,
+        "tangential_acceleration_rms": 1.4305348221487812,
+        "lobes": [
+          {
+            "sign": 1,
+            "start_deg": 23.25,
+            "end_deg": 55.75,
+            "center_deg": 35.500348842407355,
+            "span_deg": 32.75,
+            "delta_speed": 1.544141047447522,
+            "strength": 1.544141047447522,
+            "peak_abs_acceleration": 5.224191358267336
+          },
+          {
+            "sign": -1,
+            "start_deg": 316.5,
+            "end_deg": 22.75,
+            "center_deg": 4.64214490148586,
+            "span_deg": 66.5,
+            "delta_speed": -1.5337111820032148,
+            "strength": 1.5337111820032148,
+            "peak_abs_acceleration": 3.6646351459772393
+          },
+          {
+            "sign": 1,
+            "start_deg": 200.75,
+            "end_deg": 305.25,
+            "center_deg": 234.97734732080343,
+            "span_deg": 104.75,
+            "delta_speed": 1.4760511599272583,
+            "strength": 1.4760511599272583,
+            "peak_abs_acceleration": 1.8290300319048511
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.0,
+            "end_deg": 200.0,
+            "center_deg": 158.98753783328783,
+            "span_deg": 107.25,
+            "delta_speed": -1.4704111072172628,
+            "strength": 1.4704111072172628,
+            "peak_abs_acceleration": 1.3713667456603569
+          },
+          {
+            "sign": -1,
+            "start_deg": 58.00000000000001,
+            "end_deg": 69.5,
+            "center_deg": 63.547291233155626,
+            "span_deg": 11.75,
+            "delta_speed": -0.02093072928783268,
+            "strength": 0.02093072928783268,
+            "peak_abs_acceleration": 0.12976298773776207
+          }
+        ],
+        "library_rank": 5
+      }
+    },
+    {
+      "index": 11,
+      "branch": -1,
+      "seed": 3952111,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21734,
+      "wall_seconds": 31.360470294952393,
+      "cpu_seconds": 31.623391728,
+      "best": {
+        "score": 0.33646009611882455,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 11.720938443440176,
+          "primary_coupler": 11.827771434859994,
+          "primary_rocker": 1.1915577413402225,
+          "primary_E_along": 14.899347162966826,
+          "primary_E_normal": 0.5279191245836545,
+          "primary_phase": -0.477111801380158
+        },
+        "primary": {
+          "ground": 11.720938443440176,
+          "coupler": 11.827771434859994,
+          "rocker": 1.1915577413402225,
+          "assembly_branch": -1,
+          "E_along": 14.899347162966826,
+          "E_normal": 0.5279191245836545,
+          "phase": -0.477111801380158
+        },
+        "cadence_match": {
+          "score": 0.33646009611882455,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 319.5,
+              "end_deg": 21.0,
+              "center_deg": 5.046469268235172,
+              "span_deg": 61.75,
+              "delta_speed": -0.8414260286025349,
+              "strength": 0.8414260286025349,
+              "peak_abs_acceleration": 2.4196238756462063
+            },
+            {
+              "sign": 1,
+              "start_deg": 21.5,
+              "end_deg": 59.75,
+              "center_deg": 35.145503314651684,
+              "span_deg": 38.5,
+              "delta_speed": 1.219441220120046,
+              "strength": 1.219441220120046,
+              "peak_abs_acceleration": 3.520045350812354
+            },
+            {
+              "sign": -1,
+              "start_deg": 61.25000000000001,
+              "end_deg": 211.5,
+              "center_deg": 158.97083041762284,
+              "span_deg": 150.5,
+              "delta_speed": -1.2533935173219206,
+              "strength": 1.2533935173219206,
+              "peak_abs_acceleration": 1.3665760525023147
+            }
+          ],
+          "center_rms_deg": 0.5561269313765002,
+          "center_max_abs_deg": 0.7498450620653898,
+          "width_log_rms": 0.23893854859027425,
+          "relative_strength_rms": 0.17461916956794668,
+          "extra_activity_ratio": 0.2640816062016774,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3525223381733,
+        "E_span_over_crank": 2.0067877782171077,
+        "E_path_length_over_crank": 5.399205300686498,
+        "direction_total_variation_rad": 9.412718640329636,
+        "normal_acceleration_rms": 0.946694471093069,
+        "tangential_acceleration_rms": 0.9817252540986315,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 61.25000000000001,
+            "end_deg": 211.5,
+            "center_deg": 158.97083041762284,
+            "span_deg": 150.5,
+            "delta_speed": -1.2533935173219206,
+            "strength": 1.2533935173219206,
+            "peak_abs_acceleration": 1.3665760525023147
+          },
+          {
+            "sign": 1,
+            "start_deg": 21.5,
+            "end_deg": 59.75,
+            "center_deg": 35.145503314651684,
+            "span_deg": 38.5,
+            "delta_speed": 1.219441220120046,
+            "strength": 1.219441220120046,
+            "peak_abs_acceleration": 3.520045350812354
+          },
+          {
+            "sign": 1,
+            "start_deg": 212.0,
+            "end_deg": 307.5,
+            "center_deg": 241.04800125880814,
+            "span_deg": 95.75,
+            "delta_speed": 0.8752353064682339,
+            "strength": 0.8752353064682339,
+            "peak_abs_acceleration": 1.239638513778202
+          },
+          {
+            "sign": -1,
+            "start_deg": 319.5,
+            "end_deg": 21.0,
+            "center_deg": 5.046469268235172,
+            "span_deg": 61.75,
+            "delta_speed": -0.8414260286025349,
+            "strength": 0.8414260286025349,
+            "peak_abs_acceleration": 2.4196238756462063
+          }
+        ]
+      }
+    },
+    {
+      "index": 12,
+      "branch": 1,
+      "seed": 3952112,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21629,
+      "wall_seconds": 30.407628297805786,
+      "cpu_seconds": 30.706891245999998,
+      "best": {
+        "score": 0.34364831085732855,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 4.6174725911320085,
+          "primary_coupler": 1.1035990766087656,
+          "primary_rocker": 4.633936868205103,
+          "primary_E_along": 4.185326017550835,
+          "primary_E_normal": -3.4023790112438697,
+          "primary_phase": -0.5096519647455124
+        },
+        "primary": {
+          "ground": 4.6174725911320085,
+          "coupler": 1.1035990766087656,
+          "rocker": 4.633936868205103,
+          "assembly_branch": 1,
+          "E_along": 4.185326017550835,
+          "E_normal": -3.4023790112438697,
+          "phase": -0.5096519647455124
+        },
+        "cadence_match": {
+          "score": 0.34364831085732855,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 316.25,
+              "end_deg": 22.0,
+              "center_deg": 5.351505003211157,
+              "span_deg": 66.0,
+              "delta_speed": -3.1126977313792836,
+              "strength": 3.1126977313792836,
+              "peak_abs_acceleration": 8.6524533346843
+            },
+            {
+              "sign": 1,
+              "start_deg": 22.25,
+              "end_deg": 55.25,
+              "center_deg": 35.05892373340444,
+              "span_deg": 33.25,
+              "delta_speed": 4.764551032649065,
+              "strength": 4.764551032649065,
+              "peak_abs_acceleration": 15.022824852979019
+            },
+            {
+              "sign": -1,
+              "start_deg": 56.5,
+              "end_deg": 208.75,
+              "center_deg": 159.0453544709933,
+              "span_deg": 152.5,
+              "delta_speed": -5.390142662518005,
+              "strength": 5.390142662518005,
+              "peak_abs_acceleration": 7.261004840356636
+            }
+          ],
+          "center_rms_deg": 0.7079465888167222,
+          "center_max_abs_deg": 1.0548807970413634,
+          "width_log_rms": 0.2262553530307136,
+          "relative_strength_rms": 0.1925802250558291,
+          "extra_activity_ratio": 0.2816801913079405,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3436280054250145,
+        "E_span_over_crank": 7.303302105646576,
+        "E_path_length_over_crank": 22.656169519674798,
+        "direction_total_variation_rad": 10.129523608547125,
+        "normal_acceleration_rms": 4.604286081797704,
+        "tangential_acceleration_rms": 4.123681004939508,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 56.5,
+            "end_deg": 208.75,
+            "center_deg": 159.0453544709933,
+            "span_deg": 152.5,
+            "delta_speed": -5.390142662518005,
+            "strength": 5.390142662518005,
+            "peak_abs_acceleration": 7.261004840356636
+          },
+          {
+            "sign": 1,
+            "start_deg": 22.25,
+            "end_deg": 55.25,
+            "center_deg": 35.05892373340444,
+            "span_deg": 33.25,
+            "delta_speed": 4.764551032649065,
+            "strength": 4.764551032649065,
+            "peak_abs_acceleration": 15.022824852979019
+          },
+          {
+            "sign": 1,
+            "start_deg": 209.25,
+            "end_deg": 297.0,
+            "center_deg": 232.07336145496987,
+            "span_deg": 88.0,
+            "delta_speed": 3.7371613551869074,
+            "strength": 3.7371613551869074,
+            "peak_abs_acceleration": 7.232830152890488
+          },
+          {
+            "sign": -1,
+            "start_deg": 316.25,
+            "end_deg": 22.0,
+            "center_deg": 5.351505003211157,
+            "span_deg": 66.0,
+            "delta_speed": -3.1126977313792836,
+            "strength": 3.1126977313792836,
+            "peak_abs_acceleration": 8.6524533346843
+          }
+        ],
+        "library_rank": 7
+      }
+    },
+    {
+      "index": 13,
+      "branch": -1,
+      "seed": 3952113,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21706,
+      "wall_seconds": 28.907774448394775,
+      "cpu_seconds": 29.49636939300001,
+      "best": {
+        "score": 0.2624120650975895,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.4555613301660655,
+          "primary_coupler": 1.148855727646449,
+          "primary_rocker": 1.3420132288440463,
+          "primary_E_along": 0.012194427958744036,
+          "primary_E_normal": 0.22610245832396347,
+          "primary_phase": -0.4594187207746204
+        },
+        "primary": {
+          "ground": 1.4555613301660655,
+          "coupler": 1.148855727646449,
+          "rocker": 1.3420132288440463,
+          "assembly_branch": -1,
+          "E_along": 0.012194427958744036,
+          "E_normal": 0.22610245832396347,
+          "phase": -0.4594187207746204
+        },
+        "cadence_match": {
+          "score": 0.2624120650975895,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 325.5,
+              "end_deg": 20.25,
+              "center_deg": 4.828668139570408,
+              "span_deg": 55.0,
+              "delta_speed": -0.5920691130477214,
+              "strength": 0.5920691130477214,
+              "peak_abs_acceleration": 1.630574857458604
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.75,
+              "end_deg": 69.25,
+              "center_deg": 34.51660042215792,
+              "span_deg": 48.75,
+              "delta_speed": 0.57541204873281,
+              "strength": 0.57541204873281,
+              "peak_abs_acceleration": 1.7952922748934197
+            },
+            {
+              "sign": -1,
+              "start_deg": 93.5,
+              "end_deg": 204.0,
+              "center_deg": 159.2558542551093,
+              "span_deg": 110.75,
+              "delta_speed": -0.053502344130226594,
+              "strength": 0.053502344130226594,
+              "peak_abs_acceleration": 0.05103602652780739
+            }
+          ],
+          "center_rms_deg": 0.6904139263519913,
+          "center_max_abs_deg": 1.062199214127645,
+          "width_log_rms": 0.289058240392635,
+          "relative_strength_rms": 0.12327119136834644,
+          "extra_activity_ratio": 0.05932840442852655,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3276627515535232,
+        "E_span_over_crank": 2.1713404176421247,
+        "E_path_length_over_crank": 6.165575390274138,
+        "direction_total_variation_rad": 6.307518505627499,
+        "normal_acceleration_rms": 0.9915606138383377,
+        "tangential_acceleration_rms": 0.46563391532947085,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 325.5,
+            "end_deg": 20.25,
+            "center_deg": 4.828668139570408,
+            "span_deg": 55.0,
+            "delta_speed": -0.5920691130477214,
+            "strength": 0.5920691130477214,
+            "peak_abs_acceleration": 1.630574857458604
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 69.25,
+            "center_deg": 34.51660042215792,
+            "span_deg": 48.75,
+            "delta_speed": 0.57541204873281,
+            "strength": 0.57541204873281,
+            "peak_abs_acceleration": 1.7952922748934197
+          },
+          {
+            "sign": 1,
+            "start_deg": 209.75,
+            "end_deg": 312.0,
+            "center_deg": 255.30510428040373,
+            "span_deg": 102.5,
+            "delta_speed": 0.0724390032392338,
+            "strength": 0.0724390032392338,
+            "peak_abs_acceleration": 0.056895287107522126
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.5,
+            "end_deg": 204.0,
+            "center_deg": 159.2558542551093,
+            "span_deg": 110.75,
+            "delta_speed": -0.053502344130226594,
+            "strength": 0.053502344130226594,
+            "peak_abs_acceleration": 0.05103602652780739
+          }
+        ],
+        "library_rank": 1
+      }
+    },
+    {
+      "index": 14,
+      "branch": 1,
+      "seed": 3952114,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21825,
+      "wall_seconds": 25.758036851882935,
+      "cpu_seconds": 25.66349909400003,
+      "best": {
+        "score": 0.13746378174967205,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 1.4987244643194586,
+          "primary_coupler": 1.6602076958468173,
+          "primary_rocker": 1.5610343077594935,
+          "primary_E_along": 1.363491676116781,
+          "primary_E_normal": -1.3930953297974575,
+          "primary_phase": -0.39495203226676057
+        },
+        "primary": {
+          "ground": 1.4987244643194586,
+          "coupler": 1.6602076958468173,
+          "rocker": 1.5610343077594935,
+          "assembly_branch": 1,
+          "E_along": 1.363491676116781,
+          "E_normal": -1.3930953297974575,
+          "phase": -0.39495203226676057
+        },
+        "cadence_match": {
+          "score": 0.13746378174967205,
+          "sign_multiplier": -1,
+          "assigned_blocks": [
+            {
+              "sign": 1,
+              "start_deg": 335.5,
+              "end_deg": 20.0,
+              "center_deg": 4.021119168333983,
+              "span_deg": 44.75,
+              "delta_speed": 2.0719246306407237,
+              "strength": 2.0719246306407237,
+              "peak_abs_acceleration": 5.410676787761
+            },
+            {
+              "sign": -1,
+              "start_deg": 20.25,
+              "end_deg": 54.75000000000001,
+              "center_deg": 34.860807397000954,
+              "span_deg": 34.75,
+              "delta_speed": -2.169345855238584,
+              "strength": 2.169345855238584,
+              "peak_abs_acceleration": 6.333024655729219
+            },
+            {
+              "sign": -1,
+              "start_deg": 97.25,
+              "end_deg": 205.50000000000003,
+              "center_deg": 159.6158951206969,
+              "span_deg": 108.5,
+              "delta_speed": -0.7700314247633716,
+              "strength": 0.7700314247633716,
+              "peak_abs_acceleration": 0.6169510518314241
+            }
+          ],
+          "center_rms_deg": 0.46235426854413697,
+          "center_max_abs_deg": 0.7179922392846265,
+          "width_log_rms": 0.12441392022049177,
+          "relative_strength_rms": 0.08197135550701863,
+          "extra_activity_ratio": 0.1725389001063694,
+          "all_lobe_count": 5,
+          "significant_lobe_count": 5
+        },
+        "minimum_primary_transmission_sine": 0.30009279100869296,
+        "E_span_over_crank": 2.0021394147073845,
+        "E_path_length_over_crank": 5.991189858899017,
+        "direction_total_variation_rad": 9.6332234982392,
+        "normal_acceleration_rms": 2.677022037482974,
+        "tangential_acceleration_rms": 1.7548647270438984,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 20.25,
+            "end_deg": 54.75000000000001,
+            "center_deg": 34.860807397000954,
+            "span_deg": 34.75,
+            "delta_speed": -2.169345855238584,
+            "strength": 2.169345855238584,
+            "peak_abs_acceleration": 6.333024655729219
+          },
+          {
+            "sign": 1,
+            "start_deg": 335.5,
+            "end_deg": 20.0,
+            "center_deg": 4.021119168333983,
+            "span_deg": 44.75,
+            "delta_speed": 2.0719246306407237,
+            "strength": 2.0719246306407237,
+            "peak_abs_acceleration": 5.410676787761
+          },
+          {
+            "sign": -1,
+            "start_deg": 97.25,
+            "end_deg": 205.50000000000003,
+            "center_deg": 159.6158951206969,
+            "span_deg": 108.5,
+            "delta_speed": -0.7700314247633716,
+            "strength": 0.7700314247633716,
+            "peak_abs_acceleration": 0.6169510518314241
+          },
+          {
+            "sign": 1,
+            "start_deg": 208.5,
+            "end_deg": 314.25,
+            "center_deg": 253.2601634811411,
+            "span_deg": 106.0,
+            "delta_speed": 0.7071401916845592,
+            "strength": 0.7071401916845592,
+            "peak_abs_acceleration": 0.5794569250051846
+          },
+          {
+            "sign": 1,
+            "start_deg": 56.0,
+            "end_deg": 87.5,
+            "center_deg": 69.31104869198332,
+            "span_deg": 31.75,
+            "delta_speed": 0.15750432807867576,
+            "strength": 0.15750432807867576,
+            "peak_abs_acceleration": 0.44036133353385437
+          }
+        ],
+        "library_rank": 0
+      }
+    },
+    {
+      "index": 15,
+      "branch": -1,
+      "seed": 3952115,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21594,
+      "wall_seconds": 32.58538317680359,
+      "cpu_seconds": 32.50486043799998,
+      "best": {
+        "score": 0.3069911105263071,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.8108157709947779,
+          "primary_coupler": 1.3171995114315944,
+          "primary_rocker": 1.964371899028991,
+          "primary_E_along": -0.11120874822167436,
+          "primary_E_normal": 0.445366455625665,
+          "primary_phase": -0.5629564790058891
+        },
+        "primary": {
+          "ground": 1.8108157709947779,
+          "coupler": 1.3171995114315944,
+          "rocker": 1.964371899028991,
+          "assembly_branch": -1,
+          "E_along": -0.11120874822167436,
+          "E_normal": 0.445366455625665,
+          "phase": -0.5629564790058891
+        },
+        "cadence_match": {
+          "score": 0.3069911105263071,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 325.25,
+              "end_deg": 20.5,
+              "center_deg": 3.4137446075094404,
+              "span_deg": 55.5,
+              "delta_speed": -0.9731505224696406,
+              "strength": 0.9731505224696406,
+              "peak_abs_acceleration": 2.3452954422529824
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.75,
+              "end_deg": 78.0,
+              "center_deg": 36.842385699475656,
+              "span_deg": 57.5,
+              "delta_speed": 0.9536463169060045,
+              "strength": 0.9536463169060045,
+              "peak_abs_acceleration": 2.4216417249117836
+            },
+            {
+              "sign": -1,
+              "start_deg": 89.75,
+              "end_deg": 215.0,
+              "center_deg": 158.61269210299687,
+              "span_deg": 125.5,
+              "delta_speed": -0.19846740366578994,
+              "strength": 0.19846740366578994,
+              "peak_abs_acceleration": 0.1306732542707484
+            }
+          ],
+          "center_rms_deg": 0.9973716128675931,
+          "center_max_abs_deg": 1.2635860631900755,
+          "width_log_rms": 0.386205692794523,
+          "relative_strength_rms": 0.09620309925901335,
+          "extra_activity_ratio": 0.1028648650824519,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.30014023755910735,
+        "E_span_over_crank": 2.248685453447634,
+        "E_path_length_over_crank": 6.238395465090487,
+        "direction_total_variation_rad": 6.999379431956994,
+        "normal_acceleration_rms": 0.9737481716774343,
+        "tangential_acceleration_rms": 0.7133096546619551,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 325.25,
+            "end_deg": 20.5,
+            "center_deg": 3.4137446075094404,
+            "span_deg": 55.5,
+            "delta_speed": -0.9731505224696406,
+            "strength": 0.9731505224696406,
+            "peak_abs_acceleration": 2.3452954422529824
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 78.0,
+            "center_deg": 36.842385699475656,
+            "span_deg": 57.5,
+            "delta_speed": 0.9536463169060045,
+            "strength": 0.9536463169060045,
+            "peak_abs_acceleration": 2.4216417249117836
+          },
+          {
+            "sign": 1,
+            "start_deg": 224.0,
+            "end_deg": 320.75,
+            "center_deg": 274.27912020794935,
+            "span_deg": 97.0,
+            "delta_speed": 0.2186150196250164,
+            "strength": 0.2186150196250164,
+            "peak_abs_acceleration": 0.17449938364842182
+          },
+          {
+            "sign": -1,
+            "start_deg": 89.75,
+            "end_deg": 215.0,
+            "center_deg": 158.61269210299687,
+            "span_deg": 125.5,
+            "delta_speed": -0.19846740366578994,
+            "strength": 0.19846740366578994,
+            "peak_abs_acceleration": 0.1306732542707484
+          }
+        ]
+      }
+    },
+    {
+      "index": 16,
+      "branch": 1,
+      "seed": 3952116,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21930,
+      "wall_seconds": 29.309995651245117,
+      "cpu_seconds": 29.602359954000008,
+      "best": {
+        "score": 0.342133216674931,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 5.9332782143013185,
+          "primary_coupler": 1.1320120241105678,
+          "primary_rocker": 5.9757152934183715,
+          "primary_E_along": 5.30142366818481,
+          "primary_E_normal": -2.1416058101594344,
+          "primary_phase": -0.5089733775565379
+        },
+        "primary": {
+          "ground": 5.9332782143013185,
+          "coupler": 1.1320120241105678,
+          "rocker": 5.9757152934183715,
+          "assembly_branch": 1,
+          "E_along": 5.30142366818481,
+          "E_normal": -2.1416058101594344,
+          "phase": -0.5089733775565379
+        },
+        "cadence_match": {
+          "score": 0.342133216674931,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 317.25,
+              "end_deg": 21.75,
+              "center_deg": 5.364989477257427,
+              "span_deg": 64.75,
+              "delta_speed": -3.276855392337021,
+              "strength": 3.276855392337021,
+              "peak_abs_acceleration": 9.152688468380298
+            },
+            {
+              "sign": 1,
+              "start_deg": 22.25,
+              "end_deg": 57.74999999999999,
+              "center_deg": 35.59848161992558,
+              "span_deg": 35.75,
+              "delta_speed": 5.015428680486564,
+              "strength": 5.015428680486564,
+              "peak_abs_acceleration": 14.917537248510063
+            },
+            {
+              "sign": -1,
+              "start_deg": 59.00000000000001,
+              "end_deg": 210.25,
+              "center_deg": 159.25594509992692,
+              "span_deg": 151.5,
+              "delta_speed": -5.577357095564927,
+              "strength": 5.577357095564927,
+              "peak_abs_acceleration": 7.058330169330142
+            }
+          ],
+          "center_rms_deg": 0.6219440389716715,
+          "center_max_abs_deg": 1.0683652710876288,
+          "width_log_rms": 0.23240498613108793,
+          "relative_strength_rms": 0.19051502884670635,
+          "extra_activity_ratio": 0.2767688786935388,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.35394362264155527,
+        "E_span_over_crank": 7.619818211351539,
+        "E_path_length_over_crank": 22.395729892800176,
+        "direction_total_variation_rad": 9.958121856618575,
+        "normal_acceleration_rms": 4.189092255323417,
+        "tangential_acceleration_rms": 4.200483836351073,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 59.00000000000001,
+            "end_deg": 210.25,
+            "center_deg": 159.25594509992692,
+            "span_deg": 151.5,
+            "delta_speed": -5.577357095564927,
+            "strength": 5.577357095564927,
+            "peak_abs_acceleration": 7.058330169330142
+          },
+          {
+            "sign": 1,
+            "start_deg": 22.25,
+            "end_deg": 57.74999999999999,
+            "center_deg": 35.59848161992558,
+            "span_deg": 35.75,
+            "delta_speed": 5.015428680486564,
+            "strength": 5.015428680486564,
+            "peak_abs_acceleration": 14.917537248510063
+          },
+          {
+            "sign": 1,
+            "start_deg": 210.75,
+            "end_deg": 301.5,
+            "center_deg": 235.31817773118456,
+            "span_deg": 91.0,
+            "delta_speed": 3.838685034056631,
+            "strength": 3.838685034056631,
+            "peak_abs_acceleration": 6.849351152118956
+          },
+          {
+            "sign": -1,
+            "start_deg": 317.25,
+            "end_deg": 21.75,
+            "center_deg": 5.364989477257427,
+            "span_deg": 64.75,
+            "delta_speed": -3.276855392337021,
+            "strength": 3.276855392337021,
+            "peak_abs_acceleration": 9.152688468380298
+          }
+        ],
+        "library_rank": 6
+      }
+    },
+    {
+      "index": 17,
+      "branch": -1,
+      "seed": 3952117,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 22154,
+      "wall_seconds": 30.43355917930603,
+      "cpu_seconds": 31.501363087000072,
+      "best": {
+        "score": 0.2917526543815765,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.4642345726726855,
+          "primary_coupler": 1.224155832223964,
+          "primary_rocker": 1.3427491502730136,
+          "primary_E_along": 0.03248903131472547,
+          "primary_E_normal": 0.48385525291968157,
+          "primary_phase": -0.3775292451756623
+        },
+        "primary": {
+          "ground": 1.4642345726726855,
+          "coupler": 1.224155832223964,
+          "rocker": 1.3427491502730136,
+          "assembly_branch": -1,
+          "E_along": 0.03248903131472547,
+          "E_normal": 0.48385525291968157,
+          "phase": -0.3775292451756623
+        },
+        "cadence_match": {
+          "score": 0.2917526543815765,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 327.0,
+              "end_deg": 19.25,
+              "center_deg": 4.544703952714334,
+              "span_deg": 52.5,
+              "delta_speed": -0.9529652330342033,
+              "strength": 0.9529652330342033,
+              "peak_abs_acceleration": 2.7423620417487076
+            },
+            {
+              "sign": 1,
+              "start_deg": 19.5,
+              "end_deg": 76.0,
+              "center_deg": 34.485139032434084,
+              "span_deg": 56.75,
+              "delta_speed": 0.9507479260701522,
+              "strength": 0.9507479260701522,
+              "peak_abs_acceleration": 2.7235144378327827
+            },
+            {
+              "sign": -1,
+              "start_deg": 93.5,
+              "end_deg": 203.25,
+              "center_deg": 158.98097715448034,
+              "span_deg": 110.0,
+              "delta_speed": -0.15597676993713916,
+              "strength": 0.15597676993713916,
+              "peak_abs_acceleration": 0.13753582402511944
+            }
+          ],
+          "center_rms_deg": 0.6896861009299124,
+          "center_max_abs_deg": 1.0936606038515038,
+          "width_log_rms": 0.3741893779409281,
+          "relative_strength_rms": 0.10778041278965335,
+          "extra_activity_ratio": 0.07730635261084005,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.34468036246050965,
+        "E_span_over_crank": 2.322844271018621,
+        "E_path_length_over_crank": 6.16625636448245,
+        "direction_total_variation_rad": 9.623584128240463,
+        "normal_acceleration_rms": 1.1096304502937369,
+        "tangential_acceleration_rms": 0.7438168362974212,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 327.0,
+            "end_deg": 19.25,
+            "center_deg": 4.544703952714334,
+            "span_deg": 52.5,
+            "delta_speed": -0.9529652330342033,
+            "strength": 0.9529652330342033,
+            "peak_abs_acceleration": 2.7423620417487076
+          },
+          {
+            "sign": 1,
+            "start_deg": 19.5,
+            "end_deg": 76.0,
+            "center_deg": 34.485139032434084,
+            "span_deg": 56.75,
+            "delta_speed": 0.9507479260701522,
+            "strength": 0.9507479260701522,
+            "peak_abs_acceleration": 2.7235144378327827
+          },
+          {
+            "sign": 1,
+            "start_deg": 209.5,
+            "end_deg": 317.75,
+            "center_deg": 259.36232572473233,
+            "span_deg": 108.5,
+            "delta_speed": 0.1592271159234781,
+            "strength": 0.1592271159234781,
+            "peak_abs_acceleration": 0.10979962944820847
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.5,
+            "end_deg": 203.25,
+            "center_deg": 158.98097715448034,
+            "span_deg": 110.0,
+            "delta_speed": -0.15597676993713916,
+            "strength": 0.15597676993713916,
+            "peak_abs_acceleration": 0.13753582402511944
+          }
+        ]
+      }
+    },
+    {
+      "index": 18,
+      "branch": 1,
+      "seed": 3952118,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21797,
+      "wall_seconds": 27.144501209259033,
+      "cpu_seconds": 27.711224885999968,
+      "best": {
+        "score": 0.27202178201233945,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 1.8279914538536144,
+          "primary_coupler": 1.7922056796266916,
+          "primary_rocker": 1.084484069104161,
+          "primary_E_along": 0.13863523394463753,
+          "primary_E_normal": -0.9334893974522332,
+          "primary_phase": -0.8478306812166911
+        },
+        "primary": {
+          "ground": 1.8279914538536144,
+          "coupler": 1.7922056796266916,
+          "rocker": 1.084484069104161,
+          "assembly_branch": 1,
+          "E_along": 0.13863523394463753,
+          "E_normal": -0.9334893974522332,
+          "phase": -0.8478306812166911
+        },
+        "cadence_match": {
+          "score": 0.27202178201233945,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 313.25,
+              "end_deg": 23.75,
+              "center_deg": 4.7984650153673085,
+              "span_deg": 70.75,
+              "delta_speed": -1.1291221913338914,
+              "strength": 1.1291221913338914,
+              "peak_abs_acceleration": 2.786957474634752
+            },
+            {
+              "sign": 1,
+              "start_deg": 24.000000000000004,
+              "end_deg": 54.5,
+              "center_deg": 35.038376852708765,
+              "span_deg": 30.75,
+              "delta_speed": 0.9419712092109631,
+              "strength": 0.9419712092109631,
+              "peak_abs_acceleration": 3.3522664438449157
+            },
+            {
+              "sign": -1,
+              "start_deg": 81.25,
+              "end_deg": 216.25,
+              "center_deg": 159.38051500345594,
+              "span_deg": 135.25,
+              "delta_speed": -0.11799057841626959,
+              "strength": 0.11799057841626959,
+              "peak_abs_acceleration": 0.09002277558704246
+            }
+          ],
+          "center_rms_deg": 0.4258501265355033,
+          "center_max_abs_deg": 0.5404227835768154,
+          "width_log_rms": 0.20814785991765977,
+          "relative_strength_rms": 0.10427365500780728,
+          "extra_activity_ratio": 0.1388901128547012,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3045864737616189,
+        "E_span_over_crank": 2.524337525755582,
+        "E_path_length_over_crank": 6.31918143407357,
+        "direction_total_variation_rad": 8.893391668248736,
+        "normal_acceleration_rms": 1.1192425282901979,
+        "tangential_acceleration_rms": 0.8309084129990492,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 313.25,
+            "end_deg": 23.75,
+            "center_deg": 4.7984650153673085,
+            "span_deg": 70.75,
+            "delta_speed": -1.1291221913338914,
+            "strength": 1.1291221913338914,
+            "peak_abs_acceleration": 2.786957474634752
+          },
+          {
+            "sign": 1,
+            "start_deg": 24.000000000000004,
+            "end_deg": 54.5,
+            "center_deg": 35.038376852708765,
+            "span_deg": 30.75,
+            "delta_speed": 0.9419712092109631,
+            "strength": 0.9419712092109631,
+            "peak_abs_acceleration": 3.3522664438449157
+          },
+          {
+            "sign": 1,
+            "start_deg": 220.5,
+            "end_deg": 302.5,
+            "center_deg": 252.65936999784276,
+            "span_deg": 82.25,
+            "delta_speed": 0.3040421208863287,
+            "strength": 0.3040421208863287,
+            "peak_abs_acceleration": 0.40317704524679276
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.25,
+            "end_deg": 216.25,
+            "center_deg": 159.38051500345594,
+            "span_deg": 135.25,
+            "delta_speed": -0.11799057841626959,
+            "strength": 0.11799057841626959,
+            "peak_abs_acceleration": 0.09002277558704246
+          }
+        ]
+      }
+    },
+    {
+      "index": 19,
+      "branch": -1,
+      "seed": 3952119,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21986,
+      "wall_seconds": 30.222246885299683,
+      "cpu_seconds": 31.13041659099997,
+      "best": {
+        "score": 0.3369820490808235,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 1.8273276431790946,
+          "primary_coupler": 1.6481835885531915,
+          "primary_rocker": 2.2263659094638926,
+          "primary_E_along": -0.47711698698866295,
+          "primary_E_normal": 0.709856392677326,
+          "primary_phase": -0.33611374858731324
+        },
+        "primary": {
+          "ground": 1.8273276431790946,
+          "coupler": 1.6481835885531915,
+          "rocker": 2.2263659094638926,
+          "assembly_branch": -1,
+          "E_along": -0.47711698698866295,
+          "E_normal": 0.709856392677326,
+          "phase": -0.33611374858731324
+        },
+        "cadence_match": {
+          "score": 0.3369820490808235,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 333.0,
+              "end_deg": 19.5,
+              "center_deg": 4.227086668815033,
+              "span_deg": 46.75,
+              "delta_speed": -1.236729147622327,
+              "strength": 1.236729147622327,
+              "peak_abs_acceleration": 3.37396053400981
+            },
+            {
+              "sign": 1,
+              "start_deg": 19.75,
+              "end_deg": 79.25,
+              "center_deg": 35.789713467851726,
+              "span_deg": 59.75,
+              "delta_speed": 1.2215553212805657,
+              "strength": 1.2215553212805657,
+              "peak_abs_acceleration": 3.36134918184262
+            },
+            {
+              "sign": -1,
+              "start_deg": 87.5,
+              "end_deg": 220.5,
+              "center_deg": 157.55517573834385,
+              "span_deg": 133.25,
+              "delta_speed": -0.4514764628725967,
+              "strength": 0.4514764628725967,
+              "peak_abs_acceleration": 0.2799067374558688
+            }
+          ],
+          "center_rms_deg": 1.0685093849881977,
+          "center_max_abs_deg": 1.8373395995232613,
+          "width_log_rms": 0.4143933672153003,
+          "relative_strength_rms": 0.07218879798828332,
+          "extra_activity_ratio": 0.16046145201802198,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3052101030125428,
+        "E_span_over_crank": 2.6249024860312544,
+        "E_path_length_over_crank": 6.884991643898509,
+        "direction_total_variation_rad": 9.248629661256317,
+        "normal_acceleration_rms": 1.1180522589559385,
+        "tangential_acceleration_rms": 0.9455617070985023,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 333.0,
+            "end_deg": 19.5,
+            "center_deg": 4.227086668815033,
+            "span_deg": 46.75,
+            "delta_speed": -1.236729147622327,
+            "strength": 1.236729147622327,
+            "peak_abs_acceleration": 3.37396053400981
+          },
+          {
+            "sign": 1,
+            "start_deg": 19.75,
+            "end_deg": 79.25,
+            "center_deg": 35.789713467851726,
+            "span_deg": 59.75,
+            "delta_speed": 1.2215553212805657,
+            "strength": 1.2215553212805657,
+            "peak_abs_acceleration": 3.36134918184262
+          },
+          {
+            "sign": 1,
+            "start_deg": 228.5,
+            "end_deg": 330.5,
+            "center_deg": 284.42675929795183,
+            "span_deg": 102.25,
+            "delta_speed": 0.4669044641380071,
+            "strength": 0.4669044641380071,
+            "peak_abs_acceleration": 0.3719259876413413
+          },
+          {
+            "sign": -1,
+            "start_deg": 87.5,
+            "end_deg": 220.5,
+            "center_deg": 157.55517573834385,
+            "span_deg": 133.25,
+            "delta_speed": -0.4514764628725967,
+            "strength": 0.4514764628725967,
+            "peak_abs_acceleration": 0.2799067374558688
+          }
+        ]
+      }
+    },
+    {
+      "index": 20,
+      "branch": 1,
+      "seed": 3952120,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21615,
+      "wall_seconds": 28.80909490585327,
+      "cpu_seconds": 28.798228596999934,
+      "best": {
+        "score": 0.38821199051920596,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 6.7061526347240346,
+          "primary_coupler": 7.261475282460677,
+          "primary_rocker": 1.6532292623517224,
+          "primary_E_along": 5.911856375634931,
+          "primary_E_normal": -0.9673180947941734,
+          "primary_phase": -0.34286250583263644
+        },
+        "primary": {
+          "ground": 6.7061526347240346,
+          "coupler": 7.261475282460677,
+          "rocker": 1.6532292623517224,
+          "assembly_branch": 1,
+          "E_along": 5.911856375634931,
+          "E_normal": -0.9673180947941734,
+          "phase": -0.34286250583263644
+        },
+        "cadence_match": {
+          "score": 0.38821199051920596,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 321.75,
+              "end_deg": 19.75,
+              "center_deg": 3.9949751130124573,
+              "span_deg": 58.25,
+              "delta_speed": -0.9383611995736103,
+              "strength": 0.9383611995736103,
+              "peak_abs_acceleration": 2.6065251474507978
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.25,
+              "end_deg": 75.5,
+              "center_deg": 35.786389418681516,
+              "span_deg": 55.5,
+              "delta_speed": 0.9340709379220412,
+              "strength": 0.9340709379220412,
+              "peak_abs_acceleration": 2.594596455789449
+            },
+            {
+              "sign": -1,
+              "start_deg": 81.0,
+              "end_deg": 206.0,
+              "center_deg": 158.39690971251287,
+              "span_deg": 125.25,
+              "delta_speed": -0.8797467256604459,
+              "strength": 0.8797467256604459,
+              "peak_abs_acceleration": 0.6899200533817016
+            }
+          ],
+          "center_rms_deg": 0.6124585031915332,
+          "center_max_abs_deg": 0.9956056253542442,
+          "width_log_rms": 0.37048545638194064,
+          "relative_strength_rms": 0.11262948329808875,
+          "extra_activity_ratio": 0.3212697981784295,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.3002472998974602,
+        "E_span_over_crank": 1.9949056221442296,
+        "E_path_length_over_crank": 4.848467569818494,
+        "direction_total_variation_rad": 8.663101177064245,
+        "normal_acceleration_rms": 0.7581468976995128,
+        "tangential_acceleration_rms": 0.8044249569007471,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 321.75,
+            "end_deg": 19.75,
+            "center_deg": 3.9949751130124573,
+            "span_deg": 58.25,
+            "delta_speed": -0.9383611995736103,
+            "strength": 0.9383611995736103,
+            "peak_abs_acceleration": 2.6065251474507978
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 75.5,
+            "center_deg": 35.786389418681516,
+            "span_deg": 55.5,
+            "delta_speed": 0.9340709379220412,
+            "strength": 0.9340709379220412,
+            "peak_abs_acceleration": 2.594596455789449
+          },
+          {
+            "sign": 1,
+            "start_deg": 207.25,
+            "end_deg": 316.75,
+            "center_deg": 251.64048843698055,
+            "span_deg": 109.75,
+            "delta_speed": 0.8841919479170993,
+            "strength": 0.8841919479170993,
+            "peak_abs_acceleration": 0.7287538498866696
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.0,
+            "end_deg": 206.0,
+            "center_deg": 158.39690971251287,
+            "span_deg": 125.25,
+            "delta_speed": -0.8797467256604459,
+            "strength": 0.8797467256604459,
+            "peak_abs_acceleration": 0.6899200533817016
+          }
+        ]
+      }
+    },
+    {
+      "index": 21,
+      "branch": -1,
+      "seed": 3952121,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 22000,
+      "wall_seconds": 33.359622955322266,
+      "cpu_seconds": 33.346677849,
+      "best": {
+        "score": 0.3832471355039272,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 5.275613549115095,
+          "primary_coupler": 1.7390156718579721,
+          "primary_rocker": 5.902281746783839,
+          "primary_E_along": -3.790834912980327,
+          "primary_E_normal": 2.5393220730737642,
+          "primary_phase": -0.3428345086385946
+        },
+        "primary": {
+          "ground": 5.275613549115095,
+          "coupler": 1.7390156718579721,
+          "rocker": 5.902281746783839,
+          "assembly_branch": -1,
+          "E_along": -3.790834912980327,
+          "E_normal": 2.5393220730737642,
+          "phase": -0.3428345086385946
+        },
+        "cadence_match": {
+          "score": 0.3832471355039272,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 323.50000000000006,
+              "end_deg": 19.75,
+              "center_deg": 3.553606208820353,
+              "span_deg": 56.5,
+              "delta_speed": -3.4673587487625155,
+              "strength": 3.4673587487625155,
+              "peak_abs_acceleration": 9.369699451772153
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.25,
+              "end_deg": 76.75,
+              "center_deg": 35.99646699729652,
+              "span_deg": 56.75,
+              "delta_speed": 3.3673344636335036,
+              "strength": 3.3673344636335036,
+              "peak_abs_acceleration": 9.304039597309172
+            },
+            {
+              "sign": -1,
+              "start_deg": 82.5,
+              "end_deg": 210.5,
+              "center_deg": 159.4766754023817,
+              "span_deg": 128.25,
+              "delta_speed": -2.865893903461774,
+              "strength": 2.865893903461774,
+              "peak_abs_acceleration": 2.1083405520099685
+            }
+          ],
+          "center_rms_deg": 0.4945046967414654,
+          "center_max_abs_deg": 0.7430179973494262,
+          "width_log_rms": 0.38191072824156996,
+          "relative_strength_rms": 0.09715643875955307,
+          "extra_activity_ratio": 0.30575711969583225,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.300395379876441,
+        "E_span_over_crank": 5.545388375425004,
+        "E_path_length_over_crank": 17.087851370258278,
+        "direction_total_variation_rad": 8.624550522522433,
+        "normal_acceleration_rms": 2.5274279044958265,
+        "tangential_acceleration_rms": 2.834748838000713,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 323.50000000000006,
+            "end_deg": 19.75,
+            "center_deg": 3.553606208820353,
+            "span_deg": 56.5,
+            "delta_speed": -3.4673587487625155,
+            "strength": 3.4673587487625155,
+            "peak_abs_acceleration": 9.369699451772153
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 76.75,
+            "center_deg": 35.99646699729652,
+            "span_deg": 56.75,
+            "delta_speed": 3.3673344636335036,
+            "strength": 3.3673344636335036,
+            "peak_abs_acceleration": 9.304039597309172
+          },
+          {
+            "sign": 1,
+            "start_deg": 212.0,
+            "end_deg": 319.75,
+            "center_deg": 259.20757222457775,
+            "span_deg": 108.0,
+            "delta_speed": 2.966023575903179,
+            "strength": 2.966023575903179,
+            "peak_abs_acceleration": 2.3319232562829675
+          },
+          {
+            "sign": -1,
+            "start_deg": 82.5,
+            "end_deg": 210.5,
+            "center_deg": 159.4766754023817,
+            "span_deg": 128.25,
+            "delta_speed": -2.865893903461774,
+            "strength": 2.865893903461774,
+            "peak_abs_acceleration": 2.1083405520099685
+          }
+        ],
+        "library_rank": 10
+      }
+    },
+    {
+      "index": 22,
+      "branch": 1,
+      "seed": 3952122,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21545,
+      "wall_seconds": 31.255330324172974,
+      "cpu_seconds": 31.350133898999957,
+      "best": {
+        "score": 0.33291844316934954,
+        "branch": 1,
+        "parameters": {
+          "primary_ground": 9.53885311031962,
+          "primary_coupler": 9.185826338122082,
+          "primary_rocker": 1.4267928663200244,
+          "primary_E_along": 12.64849329743035,
+          "primary_E_normal": -0.9799096061383578,
+          "primary_phase": 2.723945532061957
+        },
+        "primary": {
+          "ground": 9.53885311031962,
+          "coupler": 9.185826338122082,
+          "rocker": 1.4267928663200244,
+          "assembly_branch": 1,
+          "E_along": 12.64849329743035,
+          "E_normal": -0.9799096061383578,
+          "phase": 2.723945532061957
+        },
+        "cadence_match": {
+          "score": 0.33291844316934954,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 323.25,
+              "end_deg": 20.25,
+              "center_deg": 4.978656272494747,
+              "span_deg": 57.25,
+              "delta_speed": -0.9928273234569029,
+              "strength": 0.9928273234569029,
+              "peak_abs_acceleration": 3.0404031770185243
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.75,
+              "end_deg": 65.75,
+              "center_deg": 35.160158837536045,
+              "span_deg": 45.25,
+              "delta_speed": 1.2380582180480293,
+              "strength": 1.2380582180480293,
+              "peak_abs_acceleration": 3.5365481976568343
+            },
+            {
+              "sign": -1,
+              "start_deg": 68.25,
+              "end_deg": 217.75,
+              "center_deg": 159.4715784069453,
+              "span_deg": 149.75,
+              "delta_speed": -1.0087481877689715,
+              "strength": 1.0087481877689715,
+              "peak_abs_acceleration": 0.9531149645143285
+            }
+          ],
+          "center_rms_deg": 0.46428397443992725,
+          "center_max_abs_deg": 0.6820320663249504,
+          "width_log_rms": 0.29187537094820537,
+          "relative_strength_rms": 0.13033622161728206,
+          "extra_activity_ratio": 0.23562828885409365,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.33986016826923976,
+        "E_span_over_crank": 1.9829566737265374,
+        "E_path_length_over_crank": 5.744343288474611,
+        "direction_total_variation_rad": 8.501357749974503,
+        "normal_acceleration_rms": 0.8361027546038717,
+        "tangential_acceleration_rms": 0.9596439398849974,
+        "lobes": [
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 65.75,
+            "center_deg": 35.160158837536045,
+            "span_deg": 45.25,
+            "delta_speed": 1.2380582180480293,
+            "strength": 1.2380582180480293,
+            "peak_abs_acceleration": 3.5365481976568343
+          },
+          {
+            "sign": -1,
+            "start_deg": 68.25,
+            "end_deg": 217.75,
+            "center_deg": 159.4715784069453,
+            "span_deg": 149.75,
+            "delta_speed": -1.0087481877689715,
+            "strength": 1.0087481877689715,
+            "peak_abs_acceleration": 0.9531149645143285
+          },
+          {
+            "sign": -1,
+            "start_deg": 323.25,
+            "end_deg": 20.25,
+            "center_deg": 4.978656272494747,
+            "span_deg": 57.25,
+            "delta_speed": -0.9928273234569029,
+            "strength": 0.9928273234569029,
+            "peak_abs_acceleration": 3.0404031770185243
+          },
+          {
+            "sign": 1,
+            "start_deg": 218.75,
+            "end_deg": 315.75,
+            "center_deg": 254.77863547295405,
+            "span_deg": 97.25,
+            "delta_speed": 0.7633493521428162,
+            "strength": 0.7633493521428162,
+            "peak_abs_acceleration": 0.8254981715934789
+          }
+        ],
+        "library_rank": 3
+      }
+    },
+    {
+      "index": 23,
+      "branch": -1,
+      "seed": 3952123,
+      "optimizer_success": false,
+      "optimizer_message": "Maximum number of iterations has been exceeded.",
+      "function_evaluations": 21601,
+      "wall_seconds": 32.57289743423462,
+      "cpu_seconds": 32.55510383000001,
+      "best": {
+        "score": 0.382249049231597,
+        "branch": -1,
+        "parameters": {
+          "primary_ground": 4.9313637126087695,
+          "primary_coupler": 1.7382891086909567,
+          "primary_rocker": 5.554612527712355,
+          "primary_E_along": -3.481872210589147,
+          "primary_E_normal": 2.447559433275658,
+          "primary_phase": -0.34068046159536824
+        },
+        "primary": {
+          "ground": 4.9313637126087695,
+          "coupler": 1.7382891086909567,
+          "rocker": 5.554612527712355,
+          "assembly_branch": -1,
+          "E_along": -3.481872210589147,
+          "E_normal": 2.447559433275658,
+          "phase": -0.34068046159536824
+        },
+        "cadence_match": {
+          "score": 0.382249049231597,
+          "sign_multiplier": 1,
+          "assigned_blocks": [
+            {
+              "sign": -1,
+              "start_deg": 323.75,
+              "end_deg": 19.75,
+              "center_deg": 3.5562285784997956,
+              "span_deg": 56.25,
+              "delta_speed": -3.2670945423472038,
+              "strength": 3.2670945423472038,
+              "peak_abs_acceleration": 8.793935377441004
+            },
+            {
+              "sign": 1,
+              "start_deg": 20.25,
+              "end_deg": 76.75,
+              "center_deg": 36.008280493917404,
+              "span_deg": 56.75,
+              "delta_speed": 3.1661721986074123,
+              "strength": 3.1661721986074123,
+              "peak_abs_acceleration": 8.702233208324722
+            },
+            {
+              "sign": -1,
+              "start_deg": 82.5,
+              "end_deg": 211.0,
+              "center_deg": 159.3213681096816,
+              "span_deg": 128.75,
+              "delta_speed": -2.6610295573926637,
+              "strength": 2.6610295573926637,
+              "peak_abs_acceleration": 1.9401724967959235
+            }
+          ],
+          "center_rms_deg": 0.4958835282010893,
+          "center_max_abs_deg": 0.740395627669983,
+          "width_log_rms": 0.38190405554778106,
+          "relative_strength_rms": 0.09545889846254083,
+          "extra_activity_ratio": 0.3036743747284824,
+          "all_lobe_count": 4,
+          "significant_lobe_count": 4
+        },
+        "minimum_primary_transmission_sine": 0.30029863679233415,
+        "E_span_over_crank": 5.26042025051178,
+        "E_path_length_over_crank": 16.17796795245161,
+        "direction_total_variation_rad": 8.630926726562596,
+        "normal_acceleration_rms": 2.4489127275922753,
+        "tangential_acceleration_rms": 2.660578915982569,
+        "lobes": [
+          {
+            "sign": -1,
+            "start_deg": 323.75,
+            "end_deg": 19.75,
+            "center_deg": 3.5562285784997956,
+            "span_deg": 56.25,
+            "delta_speed": -3.2670945423472038,
+            "strength": 3.2670945423472038,
+            "peak_abs_acceleration": 8.793935377441004
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 76.75,
+            "center_deg": 36.008280493917404,
+            "span_deg": 56.75,
+            "delta_speed": 3.1661721986074123,
+            "strength": 3.1661721986074123,
+            "peak_abs_acceleration": 8.702233208324722
+          },
+          {
+            "sign": 1,
+            "start_deg": 212.5,
+            "end_deg": 320.25,
+            "center_deg": 260.1256864434655,
+            "span_deg": 108.0,
+            "delta_speed": 2.7617047419961622,
+            "strength": 2.7617047419961622,
+            "peak_abs_acceleration": 2.1605824723348928
+          },
+          {
+            "sign": -1,
+            "start_deg": 82.5,
+            "end_deg": 211.0,
+            "center_deg": 159.3213681096816,
+            "span_deg": 128.75,
+            "delta_speed": -2.6610295573926637,
+            "strength": 2.6610295573926637,
+            "peak_abs_acceleration": 1.9401724967959235
+          }
+        ],
+        "library_rank": 10
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "score": 0.13746378174967205,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 1.4987244643194586,
+        "primary_coupler": 1.6602076958468173,
+        "primary_rocker": 1.5610343077594935,
+        "primary_E_along": 1.363491676116781,
+        "primary_E_normal": -1.3930953297974575,
+        "primary_phase": -0.39495203226676057
+      },
+      "primary": {
+        "ground": 1.4987244643194586,
+        "coupler": 1.6602076958468173,
+        "rocker": 1.5610343077594935,
+        "assembly_branch": 1,
+        "E_along": 1.363491676116781,
+        "E_normal": -1.3930953297974575,
+        "phase": -0.39495203226676057
+      },
+      "cadence_match": {
+        "score": 0.13746378174967205,
+        "sign_multiplier": -1,
+        "assigned_blocks": [
+          {
+            "sign": 1,
+            "start_deg": 335.5,
+            "end_deg": 20.0,
+            "center_deg": 4.021119168333983,
+            "span_deg": 44.75,
+            "delta_speed": 2.0719246306407237,
+            "strength": 2.0719246306407237,
+            "peak_abs_acceleration": 5.410676787761
+          },
+          {
+            "sign": -1,
+            "start_deg": 20.25,
+            "end_deg": 54.75000000000001,
+            "center_deg": 34.860807397000954,
+            "span_deg": 34.75,
+            "delta_speed": -2.169345855238584,
+            "strength": 2.169345855238584,
+            "peak_abs_acceleration": 6.333024655729219
+          },
+          {
+            "sign": -1,
+            "start_deg": 97.25,
+            "end_deg": 205.50000000000003,
+            "center_deg": 159.6158951206969,
+            "span_deg": 108.5,
+            "delta_speed": -0.7700314247633716,
+            "strength": 0.7700314247633716,
+            "peak_abs_acceleration": 0.6169510518314241
+          }
+        ],
+        "center_rms_deg": 0.46235426854413697,
+        "center_max_abs_deg": 0.7179922392846265,
+        "width_log_rms": 0.12441392022049177,
+        "relative_strength_rms": 0.08197135550701863,
+        "extra_activity_ratio": 0.1725389001063694,
+        "all_lobe_count": 5,
+        "significant_lobe_count": 5
+      },
+      "minimum_primary_transmission_sine": 0.30009279100869296,
+      "E_span_over_crank": 2.0021394147073845,
+      "E_path_length_over_crank": 5.991189858899017,
+      "direction_total_variation_rad": 9.6332234982392,
+      "normal_acceleration_rms": 2.677022037482974,
+      "tangential_acceleration_rms": 1.7548647270438984,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 20.25,
+          "end_deg": 54.75000000000001,
+          "center_deg": 34.860807397000954,
+          "span_deg": 34.75,
+          "delta_speed": -2.169345855238584,
+          "strength": 2.169345855238584,
+          "peak_abs_acceleration": 6.333024655729219
+        },
+        {
+          "sign": 1,
+          "start_deg": 335.5,
+          "end_deg": 20.0,
+          "center_deg": 4.021119168333983,
+          "span_deg": 44.75,
+          "delta_speed": 2.0719246306407237,
+          "strength": 2.0719246306407237,
+          "peak_abs_acceleration": 5.410676787761
+        },
+        {
+          "sign": -1,
+          "start_deg": 97.25,
+          "end_deg": 205.50000000000003,
+          "center_deg": 159.6158951206969,
+          "span_deg": 108.5,
+          "delta_speed": -0.7700314247633716,
+          "strength": 0.7700314247633716,
+          "peak_abs_acceleration": 0.6169510518314241
+        },
+        {
+          "sign": 1,
+          "start_deg": 208.5,
+          "end_deg": 314.25,
+          "center_deg": 253.2601634811411,
+          "span_deg": 106.0,
+          "delta_speed": 0.7071401916845592,
+          "strength": 0.7071401916845592,
+          "peak_abs_acceleration": 0.5794569250051846
+        },
+        {
+          "sign": 1,
+          "start_deg": 56.0,
+          "end_deg": 87.5,
+          "center_deg": 69.31104869198332,
+          "span_deg": 31.75,
+          "delta_speed": 0.15750432807867576,
+          "strength": 0.15750432807867576,
+          "peak_abs_acceleration": 0.44036133353385437
+        }
+      ],
+      "library_rank": 0
+    },
+    {
+      "score": 0.2624120650975895,
+      "branch": -1,
+      "parameters": {
+        "primary_ground": 1.4555613301660655,
+        "primary_coupler": 1.148855727646449,
+        "primary_rocker": 1.3420132288440463,
+        "primary_E_along": 0.012194427958744036,
+        "primary_E_normal": 0.22610245832396347,
+        "primary_phase": -0.4594187207746204
+      },
+      "primary": {
+        "ground": 1.4555613301660655,
+        "coupler": 1.148855727646449,
+        "rocker": 1.3420132288440463,
+        "assembly_branch": -1,
+        "E_along": 0.012194427958744036,
+        "E_normal": 0.22610245832396347,
+        "phase": -0.4594187207746204
+      },
+      "cadence_match": {
+        "score": 0.2624120650975895,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 325.5,
+            "end_deg": 20.25,
+            "center_deg": 4.828668139570408,
+            "span_deg": 55.0,
+            "delta_speed": -0.5920691130477214,
+            "strength": 0.5920691130477214,
+            "peak_abs_acceleration": 1.630574857458604
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 69.25,
+            "center_deg": 34.51660042215792,
+            "span_deg": 48.75,
+            "delta_speed": 0.57541204873281,
+            "strength": 0.57541204873281,
+            "peak_abs_acceleration": 1.7952922748934197
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.5,
+            "end_deg": 204.0,
+            "center_deg": 159.2558542551093,
+            "span_deg": 110.75,
+            "delta_speed": -0.053502344130226594,
+            "strength": 0.053502344130226594,
+            "peak_abs_acceleration": 0.05103602652780739
+          }
+        ],
+        "center_rms_deg": 0.6904139263519913,
+        "center_max_abs_deg": 1.062199214127645,
+        "width_log_rms": 0.289058240392635,
+        "relative_strength_rms": 0.12327119136834644,
+        "extra_activity_ratio": 0.05932840442852655,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.3276627515535232,
+      "E_span_over_crank": 2.1713404176421247,
+      "E_path_length_over_crank": 6.165575390274138,
+      "direction_total_variation_rad": 6.307518505627499,
+      "normal_acceleration_rms": 0.9915606138383377,
+      "tangential_acceleration_rms": 0.46563391532947085,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 325.5,
+          "end_deg": 20.25,
+          "center_deg": 4.828668139570408,
+          "span_deg": 55.0,
+          "delta_speed": -0.5920691130477214,
+          "strength": 0.5920691130477214,
+          "peak_abs_acceleration": 1.630574857458604
+        },
+        {
+          "sign": 1,
+          "start_deg": 20.75,
+          "end_deg": 69.25,
+          "center_deg": 34.51660042215792,
+          "span_deg": 48.75,
+          "delta_speed": 0.57541204873281,
+          "strength": 0.57541204873281,
+          "peak_abs_acceleration": 1.7952922748934197
+        },
+        {
+          "sign": 1,
+          "start_deg": 209.75,
+          "end_deg": 312.0,
+          "center_deg": 255.30510428040373,
+          "span_deg": 102.5,
+          "delta_speed": 0.0724390032392338,
+          "strength": 0.0724390032392338,
+          "peak_abs_acceleration": 0.056895287107522126
+        },
+        {
+          "sign": -1,
+          "start_deg": 93.5,
+          "end_deg": 204.0,
+          "center_deg": 159.2558542551093,
+          "span_deg": 110.75,
+          "delta_speed": -0.053502344130226594,
+          "strength": 0.053502344130226594,
+          "peak_abs_acceleration": 0.05103602652780739
+        }
+      ],
+      "library_rank": 1
+    },
+    {
+      "score": 0.3322885204007574,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 11.369129981509875,
+        "primary_coupler": 11.055097175689914,
+        "primary_rocker": 1.3884249960548214,
+        "primary_E_along": 15.073796206548332,
+        "primary_E_normal": -1.0665852439090484,
+        "primary_phase": 2.7241224225366216
+      },
+      "primary": {
+        "ground": 11.369129981509875,
+        "coupler": 11.055097175689914,
+        "rocker": 1.3884249960548214,
+        "assembly_branch": 1,
+        "E_along": 15.073796206548332,
+        "E_normal": -1.0665852439090484,
+        "phase": 2.7241224225366216
+      },
+      "cadence_match": {
+        "score": 0.3322885204007574,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 322.5,
+            "end_deg": 20.0,
+            "center_deg": 4.6403131840117355,
+            "span_deg": 57.75,
+            "delta_speed": -0.9743600280434848,
+            "strength": 0.9743600280434848,
+            "peak_abs_acceleration": 2.9828230795085977
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.5,
+            "end_deg": 64.75,
+            "center_deg": 34.779680699907544,
+            "span_deg": 44.5,
+            "delta_speed": 1.2380234837943132,
+            "strength": 1.2380234837943132,
+            "peak_abs_acceleration": 3.530073809079117
+          },
+          {
+            "sign": -1,
+            "start_deg": 67.25,
+            "end_deg": 216.5,
+            "center_deg": 159.06399088977676,
+            "span_deg": 149.5,
+            "delta_speed": -1.0311417129048657,
+            "strength": 1.0311417129048657,
+            "peak_abs_acceleration": 0.990621480136295
+          }
+        ],
+        "center_rms_deg": 0.5368555053770814,
+        "center_max_abs_deg": 0.7991189363780222,
+        "width_log_rms": 0.28458781531190674,
+        "relative_strength_rms": 0.13506487032069786,
+        "extra_activity_ratio": 0.23653162275632453,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.3415322722198748,
+      "E_span_over_crank": 1.9968169304011507,
+      "E_path_length_over_crank": 5.69055258489017,
+      "direction_total_variation_rad": 8.603806138459284,
+      "normal_acceleration_rms": 0.8436997209090372,
+      "tangential_acceleration_rms": 0.9593200161551975,
+      "lobes": [
+        {
+          "sign": 1,
+          "start_deg": 20.5,
+          "end_deg": 64.75,
+          "center_deg": 34.779680699907544,
+          "span_deg": 44.5,
+          "delta_speed": 1.2380234837943132,
+          "strength": 1.2380234837943132,
+          "peak_abs_acceleration": 3.530073809079117
+        },
+        {
+          "sign": -1,
+          "start_deg": 67.25,
+          "end_deg": 216.5,
+          "center_deg": 159.06399088977676,
+          "span_deg": 149.5,
+          "delta_speed": -1.0311417129048657,
+          "strength": 1.0311417129048657,
+          "peak_abs_acceleration": 0.990621480136295
+        },
+        {
+          "sign": -1,
+          "start_deg": 322.5,
+          "end_deg": 20.0,
+          "center_deg": 4.6403131840117355,
+          "span_deg": 57.75,
+          "delta_speed": -0.9743600280434848,
+          "strength": 0.9743600280434848,
+          "peak_abs_acceleration": 2.9828230795085977
+        },
+        {
+          "sign": 1,
+          "start_deg": 217.5,
+          "end_deg": 314.50000000000006,
+          "center_deg": 252.9217342413601,
+          "span_deg": 97.25,
+          "delta_speed": 0.7671962848594541,
+          "strength": 0.7671962848594541,
+          "peak_abs_acceleration": 0.8478767402096858
+        }
+      ],
+      "library_rank": 2
+    },
+    {
+      "score": 0.33291844316934954,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 9.53885311031962,
+        "primary_coupler": 9.185826338122082,
+        "primary_rocker": 1.4267928663200244,
+        "primary_E_along": 12.64849329743035,
+        "primary_E_normal": -0.9799096061383578,
+        "primary_phase": 2.723945532061957
+      },
+      "primary": {
+        "ground": 9.53885311031962,
+        "coupler": 9.185826338122082,
+        "rocker": 1.4267928663200244,
+        "assembly_branch": 1,
+        "E_along": 12.64849329743035,
+        "E_normal": -0.9799096061383578,
+        "phase": 2.723945532061957
+      },
+      "cadence_match": {
+        "score": 0.33291844316934954,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 323.25,
+            "end_deg": 20.25,
+            "center_deg": 4.978656272494747,
+            "span_deg": 57.25,
+            "delta_speed": -0.9928273234569029,
+            "strength": 0.9928273234569029,
+            "peak_abs_acceleration": 3.0404031770185243
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.75,
+            "end_deg": 65.75,
+            "center_deg": 35.160158837536045,
+            "span_deg": 45.25,
+            "delta_speed": 1.2380582180480293,
+            "strength": 1.2380582180480293,
+            "peak_abs_acceleration": 3.5365481976568343
+          },
+          {
+            "sign": -1,
+            "start_deg": 68.25,
+            "end_deg": 217.75,
+            "center_deg": 159.4715784069453,
+            "span_deg": 149.75,
+            "delta_speed": -1.0087481877689715,
+            "strength": 1.0087481877689715,
+            "peak_abs_acceleration": 0.9531149645143285
+          }
+        ],
+        "center_rms_deg": 0.46428397443992725,
+        "center_max_abs_deg": 0.6820320663249504,
+        "width_log_rms": 0.29187537094820537,
+        "relative_strength_rms": 0.13033622161728206,
+        "extra_activity_ratio": 0.23562828885409365,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.33986016826923976,
+      "E_span_over_crank": 1.9829566737265374,
+      "E_path_length_over_crank": 5.744343288474611,
+      "direction_total_variation_rad": 8.501357749974503,
+      "normal_acceleration_rms": 0.8361027546038717,
+      "tangential_acceleration_rms": 0.9596439398849974,
+      "lobes": [
+        {
+          "sign": 1,
+          "start_deg": 20.75,
+          "end_deg": 65.75,
+          "center_deg": 35.160158837536045,
+          "span_deg": 45.25,
+          "delta_speed": 1.2380582180480293,
+          "strength": 1.2380582180480293,
+          "peak_abs_acceleration": 3.5365481976568343
+        },
+        {
+          "sign": -1,
+          "start_deg": 68.25,
+          "end_deg": 217.75,
+          "center_deg": 159.4715784069453,
+          "span_deg": 149.75,
+          "delta_speed": -1.0087481877689715,
+          "strength": 1.0087481877689715,
+          "peak_abs_acceleration": 0.9531149645143285
+        },
+        {
+          "sign": -1,
+          "start_deg": 323.25,
+          "end_deg": 20.25,
+          "center_deg": 4.978656272494747,
+          "span_deg": 57.25,
+          "delta_speed": -0.9928273234569029,
+          "strength": 0.9928273234569029,
+          "peak_abs_acceleration": 3.0404031770185243
+        },
+        {
+          "sign": 1,
+          "start_deg": 218.75,
+          "end_deg": 315.75,
+          "center_deg": 254.77863547295405,
+          "span_deg": 97.25,
+          "delta_speed": 0.7633493521428162,
+          "strength": 0.7633493521428162,
+          "peak_abs_acceleration": 0.8254981715934789
+        }
+      ],
+      "library_rank": 3
+    },
+    {
+      "score": 0.3361050476415718,
+      "branch": -1,
+      "parameters": {
+        "primary_ground": 11.767903846216575,
+        "primary_coupler": 11.863388277878396,
+        "primary_rocker": 1.1811558715976,
+        "primary_E_along": 14.920591012705907,
+        "primary_E_normal": 0.36539508660023534,
+        "primary_phase": -0.47430476521107157
+      },
+      "primary": {
+        "ground": 11.767903846216575,
+        "coupler": 11.863388277878396,
+        "rocker": 1.1811558715976,
+        "assembly_branch": -1,
+        "E_along": 14.920591012705907,
+        "E_normal": 0.36539508660023534,
+        "phase": -0.47430476521107157
+      },
+      "cadence_match": {
+        "score": 0.3361050476415718,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 318.25,
+            "end_deg": 20.75,
+            "center_deg": 4.719859503462513,
+            "span_deg": 62.75,
+            "delta_speed": -0.8469708911420926,
+            "strength": 0.8469708911420926,
+            "peak_abs_acceleration": 2.435681669656288
+          },
+          {
+            "sign": 1,
+            "start_deg": 21.25,
+            "end_deg": 59.75,
+            "center_deg": 35.01269091966858,
+            "span_deg": 38.75,
+            "delta_speed": 1.2240567962036324,
+            "strength": 1.2240567962036324,
+            "peak_abs_acceleration": 3.5088579572129572
+          },
+          {
+            "sign": -1,
+            "start_deg": 61.50000000000001,
+            "end_deg": 211.0,
+            "center_deg": 158.98003278038985,
+            "span_deg": 149.75,
+            "delta_speed": -1.246414529441797,
+            "strength": 1.246414529441797,
+            "peak_abs_acceleration": 1.3949950588474385
+          }
+        ],
+        "center_rms_deg": 0.4724930532565916,
+        "center_max_abs_deg": 0.5661087166170091,
+        "width_log_rms": 0.24377645500364223,
+        "relative_strength_rms": 0.1732105321736714,
+        "extra_activity_ratio": 0.2620718578645236,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.35615463526502034,
+      "E_span_over_crank": 2.0100454400735863,
+      "E_path_length_over_crank": 5.402750597866774,
+      "direction_total_variation_rad": 9.470200015602796,
+      "normal_acceleration_rms": 0.9409322455497787,
+      "tangential_acceleration_rms": 0.9837143256604701,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 61.50000000000001,
+          "end_deg": 211.0,
+          "center_deg": 158.98003278038985,
+          "span_deg": 149.75,
+          "delta_speed": -1.246414529441797,
+          "strength": 1.246414529441797,
+          "peak_abs_acceleration": 1.3949950588474385
+        },
+        {
+          "sign": 1,
+          "start_deg": 21.25,
+          "end_deg": 59.75,
+          "center_deg": 35.01269091966858,
+          "span_deg": 38.75,
+          "delta_speed": 1.2240567962036324,
+          "strength": 1.2240567962036324,
+          "peak_abs_acceleration": 3.5088579572129572
+        },
+        {
+          "sign": 1,
+          "start_deg": 211.75,
+          "end_deg": 306.0,
+          "center_deg": 239.95608625541269,
+          "span_deg": 94.5,
+          "delta_speed": 0.8694082451117098,
+          "strength": 0.8694082451117098,
+          "peak_abs_acceleration": 1.2667136100420187
+        },
+        {
+          "sign": -1,
+          "start_deg": 318.25,
+          "end_deg": 20.75,
+          "center_deg": 4.719859503462513,
+          "span_deg": 62.75,
+          "delta_speed": -0.8469708911420926,
+          "strength": 0.8469708911420926,
+          "peak_abs_acceleration": 2.435681669656288
+        }
+      ],
+      "library_rank": 4
+    },
+    {
+      "score": 0.3409014964538568,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 2.518511924793763,
+        "primary_coupler": 1.1570417258969554,
+        "primary_rocker": 2.5270563044655012,
+        "primary_E_along": -0.27498967361330173,
+        "primary_E_normal": -2.358172826510543,
+        "primary_phase": -0.5063927562546005
+      },
+      "primary": {
+        "ground": 2.518511924793763,
+        "coupler": 1.1570417258969554,
+        "rocker": 2.5270563044655012,
+        "assembly_branch": 1,
+        "E_along": -0.27498967361330173,
+        "E_normal": -2.358172826510543,
+        "phase": -0.5063927562546005
+      },
+      "cadence_match": {
+        "score": 0.3409014964538568,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 316.5,
+            "end_deg": 22.75,
+            "center_deg": 4.64214490148586,
+            "span_deg": 66.5,
+            "delta_speed": -1.5337111820032148,
+            "strength": 1.5337111820032148,
+            "peak_abs_acceleration": 3.6646351459772393
+          },
+          {
+            "sign": 1,
+            "start_deg": 23.25,
+            "end_deg": 55.75,
+            "center_deg": 35.500348842407355,
+            "span_deg": 32.75,
+            "delta_speed": 1.544141047447522,
+            "strength": 1.544141047447522,
+            "peak_abs_acceleration": 5.224191358267336
+          },
+          {
+            "sign": -1,
+            "start_deg": 93.0,
+            "end_deg": 200.0,
+            "center_deg": 158.98753783328783,
+            "span_deg": 107.25,
+            "delta_speed": -1.4704111072172628,
+            "strength": 1.4704111072172628,
+            "peak_abs_acceleration": 1.3713667456603569
+          }
+        ],
+        "center_rms_deg": 0.3106690936066187,
+        "center_max_abs_deg": 0.4049775045792785,
+        "width_log_rms": 0.1659069019016987,
+        "relative_strength_rms": 0.11562728989030747,
+        "extra_activity_ratio": 0.3291326333606182,
+        "all_lobe_count": 5,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.37592570816341825,
+      "E_span_over_crank": 4.125938709884606,
+      "E_path_length_over_crank": 12.205624521304319,
+      "direction_total_variation_rad": 9.063263438783697,
+      "normal_acceleration_rms": 2.885438020090101,
+      "tangential_acceleration_rms": 1.4305348221487812,
+      "lobes": [
+        {
+          "sign": 1,
+          "start_deg": 23.25,
+          "end_deg": 55.75,
+          "center_deg": 35.500348842407355,
+          "span_deg": 32.75,
+          "delta_speed": 1.544141047447522,
+          "strength": 1.544141047447522,
+          "peak_abs_acceleration": 5.224191358267336
+        },
+        {
+          "sign": -1,
+          "start_deg": 316.5,
+          "end_deg": 22.75,
+          "center_deg": 4.64214490148586,
+          "span_deg": 66.5,
+          "delta_speed": -1.5337111820032148,
+          "strength": 1.5337111820032148,
+          "peak_abs_acceleration": 3.6646351459772393
+        },
+        {
+          "sign": 1,
+          "start_deg": 200.75,
+          "end_deg": 305.25,
+          "center_deg": 234.97734732080343,
+          "span_deg": 104.75,
+          "delta_speed": 1.4760511599272583,
+          "strength": 1.4760511599272583,
+          "peak_abs_acceleration": 1.8290300319048511
+        },
+        {
+          "sign": -1,
+          "start_deg": 93.0,
+          "end_deg": 200.0,
+          "center_deg": 158.98753783328783,
+          "span_deg": 107.25,
+          "delta_speed": -1.4704111072172628,
+          "strength": 1.4704111072172628,
+          "peak_abs_acceleration": 1.3713667456603569
+        },
+        {
+          "sign": -1,
+          "start_deg": 58.00000000000001,
+          "end_deg": 69.5,
+          "center_deg": 63.547291233155626,
+          "span_deg": 11.75,
+          "delta_speed": -0.02093072928783268,
+          "strength": 0.02093072928783268,
+          "peak_abs_acceleration": 0.12976298773776207
+        }
+      ],
+      "library_rank": 5
+    },
+    {
+      "score": 0.342133216674931,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 5.9332782143013185,
+        "primary_coupler": 1.1320120241105678,
+        "primary_rocker": 5.9757152934183715,
+        "primary_E_along": 5.30142366818481,
+        "primary_E_normal": -2.1416058101594344,
+        "primary_phase": -0.5089733775565379
+      },
+      "primary": {
+        "ground": 5.9332782143013185,
+        "coupler": 1.1320120241105678,
+        "rocker": 5.9757152934183715,
+        "assembly_branch": 1,
+        "E_along": 5.30142366818481,
+        "E_normal": -2.1416058101594344,
+        "phase": -0.5089733775565379
+      },
+      "cadence_match": {
+        "score": 0.342133216674931,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 317.25,
+            "end_deg": 21.75,
+            "center_deg": 5.364989477257427,
+            "span_deg": 64.75,
+            "delta_speed": -3.276855392337021,
+            "strength": 3.276855392337021,
+            "peak_abs_acceleration": 9.152688468380298
+          },
+          {
+            "sign": 1,
+            "start_deg": 22.25,
+            "end_deg": 57.74999999999999,
+            "center_deg": 35.59848161992558,
+            "span_deg": 35.75,
+            "delta_speed": 5.015428680486564,
+            "strength": 5.015428680486564,
+            "peak_abs_acceleration": 14.917537248510063
+          },
+          {
+            "sign": -1,
+            "start_deg": 59.00000000000001,
+            "end_deg": 210.25,
+            "center_deg": 159.25594509992692,
+            "span_deg": 151.5,
+            "delta_speed": -5.577357095564927,
+            "strength": 5.577357095564927,
+            "peak_abs_acceleration": 7.058330169330142
+          }
+        ],
+        "center_rms_deg": 0.6219440389716715,
+        "center_max_abs_deg": 1.0683652710876288,
+        "width_log_rms": 0.23240498613108793,
+        "relative_strength_rms": 0.19051502884670635,
+        "extra_activity_ratio": 0.2767688786935388,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.35394362264155527,
+      "E_span_over_crank": 7.619818211351539,
+      "E_path_length_over_crank": 22.395729892800176,
+      "direction_total_variation_rad": 9.958121856618575,
+      "normal_acceleration_rms": 4.189092255323417,
+      "tangential_acceleration_rms": 4.200483836351073,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 59.00000000000001,
+          "end_deg": 210.25,
+          "center_deg": 159.25594509992692,
+          "span_deg": 151.5,
+          "delta_speed": -5.577357095564927,
+          "strength": 5.577357095564927,
+          "peak_abs_acceleration": 7.058330169330142
+        },
+        {
+          "sign": 1,
+          "start_deg": 22.25,
+          "end_deg": 57.74999999999999,
+          "center_deg": 35.59848161992558,
+          "span_deg": 35.75,
+          "delta_speed": 5.015428680486564,
+          "strength": 5.015428680486564,
+          "peak_abs_acceleration": 14.917537248510063
+        },
+        {
+          "sign": 1,
+          "start_deg": 210.75,
+          "end_deg": 301.5,
+          "center_deg": 235.31817773118456,
+          "span_deg": 91.0,
+          "delta_speed": 3.838685034056631,
+          "strength": 3.838685034056631,
+          "peak_abs_acceleration": 6.849351152118956
+        },
+        {
+          "sign": -1,
+          "start_deg": 317.25,
+          "end_deg": 21.75,
+          "center_deg": 5.364989477257427,
+          "span_deg": 64.75,
+          "delta_speed": -3.276855392337021,
+          "strength": 3.276855392337021,
+          "peak_abs_acceleration": 9.152688468380298
+        }
+      ],
+      "library_rank": 6
+    },
+    {
+      "score": 0.34364831085732855,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 4.6174725911320085,
+        "primary_coupler": 1.1035990766087656,
+        "primary_rocker": 4.633936868205103,
+        "primary_E_along": 4.185326017550835,
+        "primary_E_normal": -3.4023790112438697,
+        "primary_phase": -0.5096519647455124
+      },
+      "primary": {
+        "ground": 4.6174725911320085,
+        "coupler": 1.1035990766087656,
+        "rocker": 4.633936868205103,
+        "assembly_branch": 1,
+        "E_along": 4.185326017550835,
+        "E_normal": -3.4023790112438697,
+        "phase": -0.5096519647455124
+      },
+      "cadence_match": {
+        "score": 0.34364831085732855,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 316.25,
+            "end_deg": 22.0,
+            "center_deg": 5.351505003211157,
+            "span_deg": 66.0,
+            "delta_speed": -3.1126977313792836,
+            "strength": 3.1126977313792836,
+            "peak_abs_acceleration": 8.6524533346843
+          },
+          {
+            "sign": 1,
+            "start_deg": 22.25,
+            "end_deg": 55.25,
+            "center_deg": 35.05892373340444,
+            "span_deg": 33.25,
+            "delta_speed": 4.764551032649065,
+            "strength": 4.764551032649065,
+            "peak_abs_acceleration": 15.022824852979019
+          },
+          {
+            "sign": -1,
+            "start_deg": 56.5,
+            "end_deg": 208.75,
+            "center_deg": 159.0453544709933,
+            "span_deg": 152.5,
+            "delta_speed": -5.390142662518005,
+            "strength": 5.390142662518005,
+            "peak_abs_acceleration": 7.261004840356636
+          }
+        ],
+        "center_rms_deg": 0.7079465888167222,
+        "center_max_abs_deg": 1.0548807970413634,
+        "width_log_rms": 0.2262553530307136,
+        "relative_strength_rms": 0.1925802250558291,
+        "extra_activity_ratio": 0.2816801913079405,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.3436280054250145,
+      "E_span_over_crank": 7.303302105646576,
+      "E_path_length_over_crank": 22.656169519674798,
+      "direction_total_variation_rad": 10.129523608547125,
+      "normal_acceleration_rms": 4.604286081797704,
+      "tangential_acceleration_rms": 4.123681004939508,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 56.5,
+          "end_deg": 208.75,
+          "center_deg": 159.0453544709933,
+          "span_deg": 152.5,
+          "delta_speed": -5.390142662518005,
+          "strength": 5.390142662518005,
+          "peak_abs_acceleration": 7.261004840356636
+        },
+        {
+          "sign": 1,
+          "start_deg": 22.25,
+          "end_deg": 55.25,
+          "center_deg": 35.05892373340444,
+          "span_deg": 33.25,
+          "delta_speed": 4.764551032649065,
+          "strength": 4.764551032649065,
+          "peak_abs_acceleration": 15.022824852979019
+        },
+        {
+          "sign": 1,
+          "start_deg": 209.25,
+          "end_deg": 297.0,
+          "center_deg": 232.07336145496987,
+          "span_deg": 88.0,
+          "delta_speed": 3.7371613551869074,
+          "strength": 3.7371613551869074,
+          "peak_abs_acceleration": 7.232830152890488
+        },
+        {
+          "sign": -1,
+          "start_deg": 316.25,
+          "end_deg": 22.0,
+          "center_deg": 5.351505003211157,
+          "span_deg": 66.0,
+          "delta_speed": -3.1126977313792836,
+          "strength": 3.1126977313792836,
+          "peak_abs_acceleration": 8.6524533346843
+        }
+      ],
+      "library_rank": 7
+    },
+    {
+      "score": 0.35230554595925817,
+      "branch": -1,
+      "parameters": {
+        "primary_ground": 2.033801376529542,
+        "primary_coupler": 1.7554358414634263,
+        "primary_rocker": 2.5054823239500976,
+        "primary_E_along": -0.6313441286505221,
+        "primary_E_normal": 0.7992268671770164,
+        "primary_phase": -0.3327231701260899
+      },
+      "primary": {
+        "ground": 2.033801376529542,
+        "coupler": 1.7554358414634263,
+        "rocker": 2.5054823239500976,
+        "assembly_branch": -1,
+        "E_along": -0.6313441286505221,
+        "E_normal": 0.7992268671770164,
+        "phase": -0.3327231701260899
+      },
+      "cadence_match": {
+        "score": 0.35230554595925817,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 330.0,
+            "end_deg": 19.0,
+            "center_deg": 2.81644574953099,
+            "span_deg": 49.25,
+            "delta_speed": -1.3219829164052008,
+            "strength": 1.3219829164052008,
+            "peak_abs_acceleration": 3.2696803820155074
+          },
+          {
+            "sign": 1,
+            "start_deg": 19.5,
+            "end_deg": 82.0,
+            "center_deg": 36.86976912924123,
+            "span_deg": 62.75,
+            "delta_speed": 1.3000174165378406,
+            "strength": 1.3000174165378406,
+            "peak_abs_acceleration": 3.2174850496891647
+          },
+          {
+            "sign": -1,
+            "start_deg": 89.0,
+            "end_deg": 220.5,
+            "center_deg": 158.52249542474289,
+            "span_deg": 131.75,
+            "delta_speed": -0.5345567607105283,
+            "strength": 0.5345567607105283,
+            "peak_abs_acceleration": 0.3381026694766145
+          }
+        ],
+        "center_rms_deg": 1.2402237895466655,
+        "center_max_abs_deg": 1.4801784566388108,
+        "width_log_rms": 0.4381476638009414,
+        "relative_strength_rms": 0.0683905392334026,
+        "extra_activity_ratio": 0.17640083369727114,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.3343290790674439,
+      "E_span_over_crank": 2.7543346621487768,
+      "E_path_length_over_crank": 7.137205238733438,
+      "direction_total_variation_rad": 8.05351730497938,
+      "normal_acceleration_rms": 1.0825587813115933,
+      "tangential_acceleration_rms": 0.9751765280862461,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 330.0,
+          "end_deg": 19.0,
+          "center_deg": 2.81644574953099,
+          "span_deg": 49.25,
+          "delta_speed": -1.3219829164052008,
+          "strength": 1.3219829164052008,
+          "peak_abs_acceleration": 3.2696803820155074
+        },
+        {
+          "sign": 1,
+          "start_deg": 19.5,
+          "end_deg": 82.0,
+          "center_deg": 36.86976912924123,
+          "span_deg": 62.75,
+          "delta_speed": 1.3000174165378406,
+          "strength": 1.3000174165378406,
+          "peak_abs_acceleration": 3.2174850496891647
+        },
+        {
+          "sign": 1,
+          "start_deg": 226.5,
+          "end_deg": 327.75,
+          "center_deg": 281.2757687652209,
+          "span_deg": 101.5,
+          "delta_speed": 0.5568193029335249,
+          "strength": 0.5568193029335249,
+          "peak_abs_acceleration": 0.4499669370276323
+        },
+        {
+          "sign": -1,
+          "start_deg": 89.0,
+          "end_deg": 220.5,
+          "center_deg": 158.52249542474289,
+          "span_deg": 131.75,
+          "delta_speed": -0.5345567607105283,
+          "strength": 0.5345567607105283,
+          "peak_abs_acceleration": 0.3381026694766145
+        }
+      ],
+      "library_rank": 8
+    },
+    {
+      "score": 0.3681513006317003,
+      "branch": -1,
+      "parameters": {
+        "primary_ground": 2.9449381686335596,
+        "primary_coupler": 1.7491885825828621,
+        "primary_rocker": 3.5411368289239546,
+        "primary_E_along": -1.5836014507977554,
+        "primary_E_normal": 1.2820384534142548,
+        "primary_phase": -0.34070101368082883
+      },
+      "primary": {
+        "ground": 2.9449381686335596,
+        "coupler": 1.7491885825828621,
+        "rocker": 3.5411368289239546,
+        "assembly_branch": -1,
+        "E_along": -1.5836014507977554,
+        "E_normal": 1.2820384534142548,
+        "phase": -0.34070101368082883
+      },
+      "cadence_match": {
+        "score": 0.3681513006317003,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 326.25,
+            "end_deg": 19.5,
+            "center_deg": 2.889241952629686,
+            "span_deg": 53.5,
+            "delta_speed": -1.9498430731161567,
+            "strength": 1.9498430731161567,
+            "peak_abs_acceleration": 4.976174156146947
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.0,
+            "end_deg": 78.25,
+            "center_deg": 36.23304044501953,
+            "span_deg": 58.5,
+            "delta_speed": 1.8803554458060203,
+            "strength": 1.8803554458060203,
+            "peak_abs_acceleration": 4.993401339853598
+          },
+          {
+            "sign": -1,
+            "start_deg": 84.5,
+            "end_deg": 217.25,
+            "center_deg": 159.43704908827524,
+            "span_deg": 133.0,
+            "delta_speed": -1.2105024318514654,
+            "strength": 1.2105024318514654,
+            "peak_abs_acceleration": 0.8035320527394719
+          }
+        ],
+        "center_rms_deg": 0.8964260702586146,
+        "center_max_abs_deg": 1.4073822535401064,
+        "width_log_rms": 0.3995799775839183,
+        "relative_strength_rms": 0.07164602222602487,
+        "extra_activity_ratio": 0.2540305778114638,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.300280785116248,
+      "E_span_over_crank": 3.6510396650525525,
+      "E_path_length_over_crank": 9.960743988445193,
+      "direction_total_variation_rad": 8.807078933804565,
+      "normal_acceleration_rms": 1.6217570193607818,
+      "tangential_acceleration_rms": 1.4972345786878027,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 326.25,
+          "end_deg": 19.5,
+          "center_deg": 2.889241952629686,
+          "span_deg": 53.5,
+          "delta_speed": -1.9498430731161567,
+          "strength": 1.9498430731161567,
+          "peak_abs_acceleration": 4.976174156146947
+        },
+        {
+          "sign": 1,
+          "start_deg": 20.0,
+          "end_deg": 78.25,
+          "center_deg": 36.23304044501953,
+          "span_deg": 58.5,
+          "delta_speed": 1.8803554458060203,
+          "strength": 1.8803554458060203,
+          "peak_abs_acceleration": 4.993401339853598
+        },
+        {
+          "sign": 1,
+          "start_deg": 220.25000000000003,
+          "end_deg": 323.75,
+          "center_deg": 271.7256541794414,
+          "span_deg": 103.75,
+          "delta_speed": 1.2804921750998233,
+          "strength": 1.2804921750998233,
+          "peak_abs_acceleration": 1.0049617552561045
+        },
+        {
+          "sign": -1,
+          "start_deg": 84.5,
+          "end_deg": 217.25,
+          "center_deg": 159.43704908827524,
+          "span_deg": 133.0,
+          "delta_speed": -1.2105024318514654,
+          "strength": 1.2105024318514654,
+          "peak_abs_acceleration": 0.8035320527394719
+        }
+      ],
+      "library_rank": 9
+    },
+    {
+      "score": 0.382249049231597,
+      "branch": -1,
+      "parameters": {
+        "primary_ground": 4.9313637126087695,
+        "primary_coupler": 1.7382891086909567,
+        "primary_rocker": 5.554612527712355,
+        "primary_E_along": -3.481872210589147,
+        "primary_E_normal": 2.447559433275658,
+        "primary_phase": -0.34068046159536824
+      },
+      "primary": {
+        "ground": 4.9313637126087695,
+        "coupler": 1.7382891086909567,
+        "rocker": 5.554612527712355,
+        "assembly_branch": -1,
+        "E_along": -3.481872210589147,
+        "E_normal": 2.447559433275658,
+        "phase": -0.34068046159536824
+      },
+      "cadence_match": {
+        "score": 0.382249049231597,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 323.75,
+            "end_deg": 19.75,
+            "center_deg": 3.5562285784997956,
+            "span_deg": 56.25,
+            "delta_speed": -3.2670945423472038,
+            "strength": 3.2670945423472038,
+            "peak_abs_acceleration": 8.793935377441004
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 76.75,
+            "center_deg": 36.008280493917404,
+            "span_deg": 56.75,
+            "delta_speed": 3.1661721986074123,
+            "strength": 3.1661721986074123,
+            "peak_abs_acceleration": 8.702233208324722
+          },
+          {
+            "sign": -1,
+            "start_deg": 82.5,
+            "end_deg": 211.0,
+            "center_deg": 159.3213681096816,
+            "span_deg": 128.75,
+            "delta_speed": -2.6610295573926637,
+            "strength": 2.6610295573926637,
+            "peak_abs_acceleration": 1.9401724967959235
+          }
+        ],
+        "center_rms_deg": 0.4958835282010893,
+        "center_max_abs_deg": 0.740395627669983,
+        "width_log_rms": 0.38190405554778106,
+        "relative_strength_rms": 0.09545889846254083,
+        "extra_activity_ratio": 0.3036743747284824,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.30029863679233415,
+      "E_span_over_crank": 5.26042025051178,
+      "E_path_length_over_crank": 16.17796795245161,
+      "direction_total_variation_rad": 8.630926726562596,
+      "normal_acceleration_rms": 2.4489127275922753,
+      "tangential_acceleration_rms": 2.660578915982569,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 323.75,
+          "end_deg": 19.75,
+          "center_deg": 3.5562285784997956,
+          "span_deg": 56.25,
+          "delta_speed": -3.2670945423472038,
+          "strength": 3.2670945423472038,
+          "peak_abs_acceleration": 8.793935377441004
+        },
+        {
+          "sign": 1,
+          "start_deg": 20.25,
+          "end_deg": 76.75,
+          "center_deg": 36.008280493917404,
+          "span_deg": 56.75,
+          "delta_speed": 3.1661721986074123,
+          "strength": 3.1661721986074123,
+          "peak_abs_acceleration": 8.702233208324722
+        },
+        {
+          "sign": 1,
+          "start_deg": 212.5,
+          "end_deg": 320.25,
+          "center_deg": 260.1256864434655,
+          "span_deg": 108.0,
+          "delta_speed": 2.7617047419961622,
+          "strength": 2.7617047419961622,
+          "peak_abs_acceleration": 2.1605824723348928
+        },
+        {
+          "sign": -1,
+          "start_deg": 82.5,
+          "end_deg": 211.0,
+          "center_deg": 159.3213681096816,
+          "span_deg": 128.75,
+          "delta_speed": -2.6610295573926637,
+          "strength": 2.6610295573926637,
+          "peak_abs_acceleration": 1.9401724967959235
+        }
+      ],
+      "library_rank": 10
+    },
+    {
+      "score": 0.38650888330532984,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 6.420723267373614,
+        "primary_coupler": 6.911837341357099,
+        "primary_rocker": 1.5850355321602336,
+        "primary_E_along": 5.599305427438584,
+        "primary_E_normal": -0.9011863025892164,
+        "primary_phase": -0.34294320959519947
+      },
+      "primary": {
+        "ground": 6.420723267373614,
+        "coupler": 6.911837341357099,
+        "rocker": 1.5850355321602336,
+        "assembly_branch": 1,
+        "E_along": 5.599305427438584,
+        "E_normal": -0.9011863025892164,
+        "phase": -0.34294320959519947
+      },
+      "cadence_match": {
+        "score": 0.38650888330532984,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 321.25,
+            "end_deg": 19.75,
+            "center_deg": 3.9865942014204863,
+            "span_deg": 58.75,
+            "delta_speed": -0.9319507285991019,
+            "strength": 0.9319507285991019,
+            "peak_abs_acceleration": 2.6198792420279546
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 75.75,
+            "center_deg": 35.60793607607485,
+            "span_deg": 55.75,
+            "delta_speed": 0.9253055695549475,
+            "strength": 0.9253055695549475,
+            "peak_abs_acceleration": 2.612405368688845
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.75,
+            "end_deg": 206.75000000000003,
+            "center_deg": 159.53502829073716,
+            "span_deg": 125.25,
+            "delta_speed": -0.8604350163923601,
+            "strength": 0.8604350163923601,
+            "peak_abs_acceleration": 0.6859967734100266
+          }
+        ],
+        "center_rms_deg": 0.1977182150639232,
+        "center_max_abs_deg": 0.31003000474930786,
+        "width_log_rms": 0.3740165746850911,
+        "relative_strength_rms": 0.11070229075653562,
+        "extra_activity_ratio": 0.319076941614693,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.30002963633740465,
+      "E_span_over_crank": 1.9962058730149943,
+      "E_path_length_over_crank": 4.831614119392065,
+      "direction_total_variation_rad": 8.722828135069726,
+      "normal_acceleration_rms": 0.7631672953726207,
+      "tangential_acceleration_rms": 0.7985796059107433,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 321.25,
+          "end_deg": 19.75,
+          "center_deg": 3.9865942014204863,
+          "span_deg": 58.75,
+          "delta_speed": -0.9319507285991019,
+          "strength": 0.9319507285991019,
+          "peak_abs_acceleration": 2.6198792420279546
+        },
+        {
+          "sign": 1,
+          "start_deg": 20.25,
+          "end_deg": 75.75,
+          "center_deg": 35.60793607607485,
+          "span_deg": 55.75,
+          "delta_speed": 0.9253055695549475,
+          "strength": 0.9253055695549475,
+          "peak_abs_acceleration": 2.612405368688845
+        },
+        {
+          "sign": 1,
+          "start_deg": 207.75,
+          "end_deg": 316.25,
+          "center_deg": 252.07327019062515,
+          "span_deg": 108.75,
+          "delta_speed": 0.867152632898283,
+          "strength": 0.867152632898283,
+          "peak_abs_acceleration": 0.7210082224546706
+        },
+        {
+          "sign": -1,
+          "start_deg": 81.75,
+          "end_deg": 206.75000000000003,
+          "center_deg": 159.53502829073716,
+          "span_deg": 125.25,
+          "delta_speed": -0.8604350163923601,
+          "strength": 0.8604350163923601,
+          "peak_abs_acceleration": 0.6859967734100266
+        }
+      ],
+      "library_rank": 11
+    },
+    {
+      "score": 0.3897416077705274,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 8.763734126256315,
+        "primary_coupler": 9.327137984795122,
+        "primary_rocker": 1.6567167377749075,
+        "primary_E_along": 7.881602882049275,
+        "primary_E_normal": -0.9854512589359765,
+        "primary_phase": -0.34892038957824234
+      },
+      "primary": {
+        "ground": 8.763734126256315,
+        "coupler": 9.327137984795122,
+        "rocker": 1.6567167377749075,
+        "assembly_branch": 1,
+        "E_along": 7.881602882049275,
+        "E_normal": -0.9854512589359765,
+        "phase": -0.34892038957824234
+      },
+      "cadence_match": {
+        "score": 0.3897416077705274,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 320.5,
+            "end_deg": 19.75,
+            "center_deg": 3.8003065318303104,
+            "span_deg": 59.5,
+            "delta_speed": -0.9569079181491775,
+            "strength": 0.9569079181491775,
+            "peak_abs_acceleration": 2.665959792158548
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 75.75,
+            "center_deg": 35.736387153380306,
+            "span_deg": 55.75,
+            "delta_speed": 0.9598948810653252,
+            "strength": 0.9598948810653252,
+            "peak_abs_acceleration": 2.6917312494193633
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.5,
+            "end_deg": 205.0,
+            "center_deg": 158.9198592614478,
+            "span_deg": 123.75,
+            "delta_speed": -0.9211319444381454,
+            "strength": 0.9211319444381454,
+            "peak_abs_acceleration": 0.7424018027336835
+          }
+        ],
+        "center_rms_deg": 0.4060249688471206,
+        "center_max_abs_deg": 0.4963176743394797,
+        "width_log_rms": 0.37482592012165483,
+        "relative_strength_rms": 0.11604868120179011,
+        "extra_activity_ratio": 0.3236286510762165,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.30171324622244533,
+      "E_span_over_crank": 1.9957653876564274,
+      "E_path_length_over_crank": 4.862996355412115,
+      "direction_total_variation_rad": 8.672776163570957,
+      "normal_acceleration_rms": 0.707025783210467,
+      "tangential_acceleration_rms": 0.8270368913792252,
+      "lobes": [
+        {
+          "sign": 1,
+          "start_deg": 20.25,
+          "end_deg": 75.75,
+          "center_deg": 35.736387153380306,
+          "span_deg": 55.75,
+          "delta_speed": 0.9598948810653252,
+          "strength": 0.9598948810653252,
+          "peak_abs_acceleration": 2.6917312494193633
+        },
+        {
+          "sign": -1,
+          "start_deg": 320.5,
+          "end_deg": 19.75,
+          "center_deg": 3.8003065318303104,
+          "span_deg": 59.5,
+          "delta_speed": -0.9569079181491775,
+          "strength": 0.9569079181491775,
+          "peak_abs_acceleration": 2.665959792158548
+        },
+        {
+          "sign": -1,
+          "start_deg": 81.5,
+          "end_deg": 205.0,
+          "center_deg": 158.9198592614478,
+          "span_deg": 123.75,
+          "delta_speed": -0.9211319444381454,
+          "strength": 0.9211319444381454,
+          "peak_abs_acceleration": 0.7424018027336835
+        },
+        {
+          "sign": 1,
+          "start_deg": 206.0,
+          "end_deg": 315.25,
+          "center_deg": 249.14609108430585,
+          "span_deg": 109.5,
+          "delta_speed": 0.9184369929306346,
+          "strength": 0.9184369929306346,
+          "peak_abs_acceleration": 0.7757158805383056
+        }
+      ],
+      "library_rank": 12
+    },
+    {
+      "score": 0.39014423053170744,
+      "branch": 1,
+      "parameters": {
+        "primary_ground": 10.303516348060416,
+        "primary_coupler": 10.86086270293288,
+        "primary_rocker": 1.6466311370034923,
+        "primary_E_along": 9.503268496490804,
+        "primary_E_normal": -0.9389413105384309,
+        "primary_phase": -0.34524727427084495
+      },
+      "primary": {
+        "ground": 10.303516348060416,
+        "coupler": 10.86086270293288,
+        "rocker": 1.6466311370034923,
+        "assembly_branch": 1,
+        "E_along": 9.503268496490804,
+        "E_normal": -0.9389413105384309,
+        "phase": -0.34524727427084495
+      },
+      "cadence_match": {
+        "score": 0.39014423053170744,
+        "sign_multiplier": 1,
+        "assigned_blocks": [
+          {
+            "sign": -1,
+            "start_deg": 322.5,
+            "end_deg": 19.75,
+            "center_deg": 4.203046766561405,
+            "span_deg": 57.5,
+            "delta_speed": -0.9755642929551311,
+            "strength": 0.9755642929551311,
+            "peak_abs_acceleration": 2.789133764424396
+          },
+          {
+            "sign": 1,
+            "start_deg": 20.25,
+            "end_deg": 75.5,
+            "center_deg": 35.524439452631995,
+            "span_deg": 55.5,
+            "delta_speed": 0.9713039555819722,
+            "strength": 0.9713039555819722,
+            "peak_abs_acceleration": 2.784704518332597
+          },
+          {
+            "sign": -1,
+            "start_deg": 81.5,
+            "end_deg": 204.5,
+            "center_deg": 159.42007676687035,
+            "span_deg": 123.25,
+            "delta_speed": -0.9578901353227147,
+            "strength": 0.9578901353227147,
+            "peak_abs_acceleration": 0.7879053671678254
+          }
+        ],
+        "center_rms_deg": 0.06447583304157527,
+        "center_max_abs_deg": 0.09357743960839571,
+        "width_log_rms": 0.36800279108320455,
+        "relative_strength_rms": 0.11840732459662726,
+        "extra_activity_ratio": 0.3312012976266146,
+        "all_lobe_count": 4,
+        "significant_lobe_count": 4
+      },
+      "minimum_primary_transmission_sine": 0.3005212408150305,
+      "E_span_over_crank": 2.001662035255146,
+      "E_path_length_over_crank": 4.890610514277508,
+      "direction_total_variation_rad": 8.730653460137415,
+      "normal_acceleration_rms": 0.6822973856710894,
+      "tangential_acceleration_rms": 0.8520514374918013,
+      "lobes": [
+        {
+          "sign": -1,
+          "start_deg": 322.5,
+          "end_deg": 19.75,
+          "center_deg": 4.203046766561405,
+          "span_deg": 57.5,
+          "delta_speed": -0.9755642929551311,
+          "strength": 0.9755642929551311,
+          "peak_abs_acceleration": 2.789133764424396
+        },
+        {
+          "sign": 1,
+          "start_deg": 20.25,
+          "end_deg": 75.5,
+          "center_deg": 35.524439452631995,
+          "span_deg": 55.5,
+          "delta_speed": 0.9713039555819722,
+          "strength": 0.9713039555819722,
+          "peak_abs_acceleration": 2.784704518332597
+        },
+        {
+          "sign": 1,
+          "start_deg": 205.25,
+          "end_deg": 316.75,
+          "center_deg": 248.1028469101061,
+          "span_deg": 111.75,
+          "delta_speed": 0.9620597460261594,
+          "strength": 0.9620597460261594,
+          "peak_abs_acceleration": 0.8122244661608562
+        },
+        {
+          "sign": -1,
+          "start_deg": 81.5,
+          "end_deg": 204.5,
+          "center_deg": 159.42007676687035,
+          "span_deg": 123.25,
+          "delta_speed": -0.9578901353227147,
+          "strength": 0.9578901353227147,
+          "peak_abs_acceleration": 0.7879053671678254
+        }
+      ],
+      "library_rank": 13
+    }
+  ],
+  "best": {
+    "score": 0.13746378174967205,
+    "branch": 1,
+    "parameters": {
+      "primary_ground": 1.4987244643194586,
+      "primary_coupler": 1.6602076958468173,
+      "primary_rocker": 1.5610343077594935,
+      "primary_E_along": 1.363491676116781,
+      "primary_E_normal": -1.3930953297974575,
+      "primary_phase": -0.39495203226676057
+    },
+    "primary": {
+      "ground": 1.4987244643194586,
+      "coupler": 1.6602076958468173,
+      "rocker": 1.5610343077594935,
+      "assembly_branch": 1,
+      "E_along": 1.363491676116781,
+      "E_normal": -1.3930953297974575,
+      "phase": -0.39495203226676057
+    },
+    "cadence_match": {
+      "score": 0.13746378174967205,
+      "sign_multiplier": -1,
+      "assigned_blocks": [
+        {
+          "sign": 1,
+          "start_deg": 335.5,
+          "end_deg": 20.0,
+          "center_deg": 4.021119168333983,
+          "span_deg": 44.75,
+          "delta_speed": 2.0719246306407237,
+          "strength": 2.0719246306407237,
+          "peak_abs_acceleration": 5.410676787761
+        },
+        {
+          "sign": -1,
+          "start_deg": 20.25,
+          "end_deg": 54.75000000000001,
+          "center_deg": 34.860807397000954,
+          "span_deg": 34.75,
+          "delta_speed": -2.169345855238584,
+          "strength": 2.169345855238584,
+          "peak_abs_acceleration": 6.333024655729219
+        },
+        {
+          "sign": -1,
+          "start_deg": 97.25,
+          "end_deg": 205.50000000000003,
+          "center_deg": 159.6158951206969,
+          "span_deg": 108.5,
+          "delta_speed": -0.7700314247633716,
+          "strength": 0.7700314247633716,
+          "peak_abs_acceleration": 0.6169510518314241
+        }
+      ],
+      "center_rms_deg": 0.46235426854413697,
+      "center_max_abs_deg": 0.7179922392846265,
+      "width_log_rms": 0.12441392022049177,
+      "relative_strength_rms": 0.08197135550701863,
+      "extra_activity_ratio": 0.1725389001063694,
+      "all_lobe_count": 5,
+      "significant_lobe_count": 5
+    },
+    "minimum_primary_transmission_sine": 0.30009279100869296,
+    "E_span_over_crank": 2.0021394147073845,
+    "E_path_length_over_crank": 5.991189858899017,
+    "direction_total_variation_rad": 9.6332234982392,
+    "normal_acceleration_rms": 2.677022037482974,
+    "tangential_acceleration_rms": 1.7548647270438984,
+    "lobes": [
+      {
+        "sign": -1,
+        "start_deg": 20.25,
+        "end_deg": 54.75000000000001,
+        "center_deg": 34.860807397000954,
+        "span_deg": 34.75,
+        "delta_speed": -2.169345855238584,
+        "strength": 2.169345855238584,
+        "peak_abs_acceleration": 6.333024655729219
+      },
+      {
+        "sign": 1,
+        "start_deg": 335.5,
+        "end_deg": 20.0,
+        "center_deg": 4.021119168333983,
+        "span_deg": 44.75,
+        "delta_speed": 2.0719246306407237,
+        "strength": 2.0719246306407237,
+        "peak_abs_acceleration": 5.410676787761
+      },
+      {
+        "sign": -1,
+        "start_deg": 97.25,
+        "end_deg": 205.50000000000003,
+        "center_deg": 159.6158951206969,
+        "span_deg": 108.5,
+        "delta_speed": -0.7700314247633716,
+        "strength": 0.7700314247633716,
+        "peak_abs_acceleration": 0.6169510518314241
+      },
+      {
+        "sign": 1,
+        "start_deg": 208.5,
+        "end_deg": 314.25,
+        "center_deg": 253.2601634811411,
+        "span_deg": 106.0,
+        "delta_speed": 0.7071401916845592,
+        "strength": 0.7071401916845592,
+        "peak_abs_acceleration": 0.5794569250051846
+      },
+      {
+        "sign": 1,
+        "start_deg": 56.0,
+        "end_deg": 87.5,
+        "center_deg": 69.31104869198332,
+        "span_deg": 31.75,
+        "delta_speed": 0.15750432807867576,
+        "strength": 0.15750432807867576,
+        "peak_abs_acceleration": 0.44036133353385437
+      }
+    ],
+    "library_rank": 0
+  },
+  "elapsed_wall_hours": 0.20689434972074297,
+  "elapsed_cpu_hours": 0.20892697030638888,
+  "completed_islands": 24,
+  "stopped_by_wall_time": false
+}
