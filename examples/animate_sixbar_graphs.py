@@ -6,7 +6,7 @@ Top panel:
 
 Bottom panels:
 - volumes
-- superposed P-V diagrams
+- global P-V diagram
 - combined P/T vs angle
 - heat exchanged between working gas and exchangers
 
@@ -795,35 +795,30 @@ def build_time_series_panel(
     return {"lines": lines, "markers": markers, "cursor": cursor, "legend": legend}
 
 
-def build_pv_panel(ax, vol_small: SeriesInfo | None, vol_large: SeriesInfo | None, p_small: SeriesInfo | None, p_large: SeriesInfo | None):
-    init_chart_axis(ax, "P-V")
-    artists = {"markers": []}
-    if vol_small is not None and p_small is not None:
-        line_s, = ax.plot(
-            vol_small.display_values, p_small.display_values,
-            lw=1.4, label="S", color=COLORS["S"],
-        )
-        mark_s, = ax.plot(
-            [vol_small.display_values[0]], [p_small.display_values[0]],
-            marker="o", ms=3.5, color=COLORS["S"], linestyle="None", zorder=12,
-        )
-        artists["markers"].append((mark_s, vol_small.display_values, p_small.display_values))
-    if vol_large is not None and p_large is not None:
-        line_l, = ax.plot(
-            vol_large.display_values, p_large.display_values,
-            lw=1.4, label="L", color=COLORS["L"],
-        )
-        mark_l, = ax.plot(
-            [vol_large.display_values[0]], [p_large.display_values[0]],
-            marker="o", ms=3.5, color=COLORS["L"], linestyle="None", zorder=12,
-        )
-        artists["markers"].append((mark_l, vol_large.display_values, p_large.display_values))
-    if ax.lines:
-        leg = ax.legend(loc="center right", fontsize=7, frameon=False, handlelength=1.8, borderpad=0.2)
-        leg.set_zorder(4)
-    ax.set_xlabel(vol_small.unit if vol_small is not None else (vol_large.unit if vol_large is not None else ""), fontsize=8)
-    ax.set_ylabel(p_small.unit if p_small is not None else (p_large.unit if p_large is not None else ""), fontsize=8, labelpad=1)
-    return artists
+def build_pv_panel(ax, vol_total: SeriesInfo, p_global: SeriesInfo):
+    init_chart_axis(ax, "Global P-V")
+    line, = ax.plot(
+        vol_total.display_values,
+        p_global.display_values,
+        lw=1.4,
+        color="#555555",
+    )
+    marker, = ax.plot(
+        [vol_total.display_values[0]],
+        [p_global.display_values[0]],
+        marker="o",
+        ms=3.5,
+        color=line.get_color(),
+        linestyle="None",
+        zorder=12,
+    )
+    ax.set_xlabel(vol_total.unit, fontsize=8)
+    ax.set_ylabel(p_global.unit, fontsize=8, labelpad=1)
+    return {
+        "markers": [
+            (marker, vol_total.display_values, p_global.display_values),
+        ]
+    }
 
 
 def update_time_series_panel(panel, idx: int, xcur: float):
@@ -985,8 +980,23 @@ def make_animation(
     p_large = make_series_info(p_large_key, "L", resampled(p_large_key), "pressure") if p_large_key else None
     temp_small_c = resampled("S_temperature_K") - 273.15
     temp_large_c = resampled("L_temperature_K") - 273.15
-    vol_small = next((s for s in vol_series if s.label == "S"), None)
-    vol_large = next((s for s in vol_series if s.label == "L"), None)
+
+    # Global P-V:
+    # V = sum of the two variable cylinder volumes.
+    # P = arithmetic mean of the two cylinder pressures. They remain very close
+    # in this solved cycle, so this gives a readable system-level representation.
+    volume_total = make_series_info(
+        "S_plus_L_volume_m3",
+        "S+L",
+        resampled(vol_small_key) + resampled(vol_large_key),
+        "volume",
+    )
+    pressure_global = make_series_info(
+        "mean_cylinder_pressure_Pa",
+        "P",
+        0.5 * (resampled(p_small_key) + resampled(p_large_key)),
+        "pressure",
+    )
 
     heat_labels = {
         "Hi_wall_to_gas_heat_W": "Hi",
@@ -1062,7 +1072,7 @@ def make_animation(
     if vol_series:
         ax_vol.set_ylim(*choose_ylim(vol_series))
 
-    pv_panel = build_pv_panel(ax_pv, vol_small, vol_large, p_small, p_large)
+    pv_panel = build_pv_panel(ax_pv, volume_total, pressure_global)
 
     pt_panel = build_pt_panel(
         ax_pt, motor_query, p_small, p_large, temp_small_c, temp_large_c
