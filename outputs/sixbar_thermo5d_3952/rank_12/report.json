@@ -1,0 +1,198 @@
+{
+  "family_rank": 12,
+  "fixed_pair": {
+    "path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_12/best_pair.json",
+    "candidate_id": "fdc7e9becf1833cbd7c777ba1b5bf6becb899048fe90984f8bed0b03dabd7469",
+    "efficiency_before_thermo5d": 0.21207178083034897,
+    "power_W_before_thermo5d": 40.871048454315
+  },
+  "definition": {
+    "study": "fixed-sixbar-pair thermo5D retuning around candidate 3952",
+    "fixed_delta_T_K": 260.0,
+    "fixed_total_gas_mass_kg": 0.0012027347024506055,
+    "free_parameters": [
+      "swept_ratio",
+      "n_i",
+      "length_i_m",
+      "n_o",
+      "length_o_m"
+    ],
+    "thermo_seed_3952": {
+      "swept_ratio": 0.8549159568269702,
+      "n_i": 3938,
+      "length_i_m": 0.03920273588759638,
+      "n_o": 4225,
+      "length_o_m": 0.026772470159823387
+    },
+    "bounds": {
+      "swept_ratio": [
+        0.5,
+        1.3
+      ],
+      "tube_count": [
+        2400,
+        5200
+      ],
+      "H_i_tube_length_m": [
+        0.03175,
+        0.0635
+      ],
+      "H_o_tube_length_m": [
+        0.016933333333333335,
+        0.03598333333333333
+      ]
+    },
+    "radii": [
+      [
+        0.08,
+        240,
+        0.1
+      ],
+      [
+        0.04,
+        120,
+        0.05
+      ],
+      [
+        0.02,
+        60,
+        0.025
+      ],
+      [
+        0.01,
+        30,
+        0.0125
+      ]
+    ],
+    "evaluations_per_radius": 24,
+    "power_floor_W": 25.0,
+    "strategy": "persistent round-robin 5D incumbent-centred scrambled Sobol; each S/L six-bar pair is strictly fixed",
+    "valve_policy": "outlet CdA scales linearly with tube count",
+    "basis": {
+      "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+      "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+      "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+      "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+      "fixed_total_mass_kg": 0.0012027347024506055,
+      "thermo_seed_3952": {
+        "swept_ratio": 0.8549159568269702,
+        "n_i": 3938,
+        "length_i_m": 0.03920273588759638,
+        "n_o": 4225,
+        "length_o_m": 0.026772470159823387
+      },
+      "total_swept_m3": 0.0018217821782178217,
+      "clearance_ratios": [
+        0.009999999999999998,
+        0.01
+      ]
+    },
+    "families": [
+      1,
+      4,
+      12,
+      50
+    ],
+    "seed": 3965000
+  },
+  "attempted_total": 97,
+  "completed_nonseed": 96,
+  "requested_nonseed": 96,
+  "complete": true,
+  "best_feasible": {
+    "index": 62,
+    "proposal_index": 66,
+    "family_rank": 12,
+    "candidate_id": "2acad2f0b4f7725bac8f4df4fe10b3a158fb058d2d65f89445d5aa5c3fdc9e74",
+    "pair_candidate_id": "fdc7e9becf1833cbd7c777ba1b5bf6becb899048fe90984f8bed0b03dabd7469",
+    "kind": "adaptive_local_thermo5d",
+    "radius_index": 2,
+    "radii": {
+      "swept_ratio": 0.02,
+      "tube_count": 60,
+      "tube_length_relative": 0.025
+    },
+    "parameters": {
+      "swept_ratio": 0.9479512415175294,
+      "n_i": 5039,
+      "length_i_m": 0.041990059984052544,
+      "n_o": 4889,
+      "length_o_m": 0.026006542454559377
+    },
+    "hardware": {
+      "H_i": {
+        "tube_count": 5039,
+        "tube_length_m": 0.041990059984052544,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.0008072881678944596,
+        "tube_flow_area_m2": 0.00043098496450967594,
+        "working_gas_volume_m3": 5.160333451198606e-05,
+        "tube_gas_volume_m3": 1.809708451198605e-05,
+        "header_gas_volume_m3": 3.1506250000000003e-05,
+        "core_width_m": 0.08875,
+        "core_height_m": 0.08875,
+        "wall_capacity_j_k": 197.47579296263106,
+        "static_conductance_reference_w_k": 16.27894143633385,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      },
+      "H_o": {
+        "tube_count": 4889,
+        "tube_length_m": 0.026006542454559377,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.00021931195054456908,
+        "tube_flow_area_m2": 0.0004181554855105786,
+        "working_gas_volume_m3": 4.349977838653776e-05,
+        "tube_gas_volume_m3": 1.087477838653775e-05,
+        "header_gas_volume_m3": 3.0625000000000006e-05,
+        "core_width_m": 0.08750000000000001,
+        "core_height_m": 0.08750000000000001,
+        "wall_capacity_j_k": 119.46399962896892,
+        "static_conductance_reference_w_k": 9.768806678612444,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      }
+    },
+    "result": {
+      "status": "converged",
+      "indicated_thermal_efficiency": 0.21656661825401932,
+      "indicated_power_w": 45.346956072664426,
+      "heat_input_w": 209.39033189074058,
+      "heat_out_w": -164.14709054129315,
+      "maximum_tube_reynolds": 275.39351966260887,
+      "maximum_tube_mach_number": 0.03337297832605695,
+      "maximum_absolute_mass_flow_kg_s": 0.00955867875554099,
+      "maximum_pressure_pa": 409332.5030041601,
+      "maximum_temperature_k": 572.5353070438229,
+      "total_mass_kg": 0.0012027347024505738,
+      "validity_verdict": "valid",
+      "failed_criteria": [],
+      "cycles_completed": 12,
+      "last_normalized_periodic_error": 0.6964639037512342,
+      "normalized_periodic_error_ratio": 5.113321344775116e-05,
+      "message": null
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 3.111330842002644,
+    "warm_start_source": "ae8aae46cb3c75bef2fda9efc4afafdce2872d76cb9e3751a1cfb475262a6fcf",
+    "warm_start_distance": 0.020600964264066934,
+    "warm_start_mode": "scaled_wall_periodic_state",
+    "safe_retry_used": false,
+    "backend": {
+      "actual_backend": "numba",
+      "fallback_calls": 0,
+      "exact_cache_hit_fraction": 0.6925623590126422
+    },
+    "last_complete_state": [
+      0.00018805219862984027,
+      38.37012892148715,
+      0.0009246456344321515,
+      261.1312199348849,
+      3.695353833936918e-05,
+      14.501354025058859,
+      5.308333104921301e-05,
+      12.088666545974396,
+      108122.44590967523,
+      37211.03447719444
+    ]
+  }
+}

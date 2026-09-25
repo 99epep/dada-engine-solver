@@ -1,0 +1,198 @@
+{
+  "family_rank": 1,
+  "fixed_pair": {
+    "path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/best_pair.json",
+    "candidate_id": "b7ceb1d75eff2f179d8f4a62ec44a33342d9fff1bc0b6eecd846afd741b92519",
+    "efficiency_before_thermo5d": 0.2315519075477837,
+    "power_W_before_thermo5d": 41.382611971586044
+  },
+  "definition": {
+    "study": "fixed-sixbar-pair thermo5D retuning around candidate 3952",
+    "fixed_delta_T_K": 260.0,
+    "fixed_total_gas_mass_kg": 0.0012027347024506055,
+    "free_parameters": [
+      "swept_ratio",
+      "n_i",
+      "length_i_m",
+      "n_o",
+      "length_o_m"
+    ],
+    "thermo_seed_3952": {
+      "swept_ratio": 0.8549159568269702,
+      "n_i": 3938,
+      "length_i_m": 0.03920273588759638,
+      "n_o": 4225,
+      "length_o_m": 0.026772470159823387
+    },
+    "bounds": {
+      "swept_ratio": [
+        0.5,
+        1.3
+      ],
+      "tube_count": [
+        2400,
+        5200
+      ],
+      "H_i_tube_length_m": [
+        0.03175,
+        0.0635
+      ],
+      "H_o_tube_length_m": [
+        0.016933333333333335,
+        0.03598333333333333
+      ]
+    },
+    "radii": [
+      [
+        0.08,
+        240,
+        0.1
+      ],
+      [
+        0.04,
+        120,
+        0.05
+      ],
+      [
+        0.02,
+        60,
+        0.025
+      ],
+      [
+        0.01,
+        30,
+        0.0125
+      ]
+    ],
+    "evaluations_per_radius": 24,
+    "power_floor_W": 25.0,
+    "strategy": "persistent round-robin 5D incumbent-centred scrambled Sobol; each S/L six-bar pair is strictly fixed",
+    "valve_policy": "outlet CdA scales linearly with tube count",
+    "basis": {
+      "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+      "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+      "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+      "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+      "fixed_total_mass_kg": 0.0012027347024506055,
+      "thermo_seed_3952": {
+        "swept_ratio": 0.8549159568269702,
+        "n_i": 3938,
+        "length_i_m": 0.03920273588759638,
+        "n_o": 4225,
+        "length_o_m": 0.026772470159823387
+      },
+      "total_swept_m3": 0.0018217821782178217,
+      "clearance_ratios": [
+        0.009999999999999998,
+        0.01
+      ]
+    },
+    "families": [
+      1,
+      4,
+      12,
+      50
+    ],
+    "seed": 3965000
+  },
+  "attempted_total": 97,
+  "completed_nonseed": 96,
+  "requested_nonseed": 96,
+  "complete": true,
+  "best_feasible": {
+    "index": 92,
+    "proposal_index": 92,
+    "family_rank": 1,
+    "candidate_id": "0540ad1c978421ef3ce0a1d114eb0cd842a456f597135d0b2f95cfceff38f130",
+    "pair_candidate_id": "b7ceb1d75eff2f179d8f4a62ec44a33342d9fff1bc0b6eecd846afd741b92519",
+    "kind": "adaptive_local_thermo5d",
+    "radius_index": 3,
+    "radii": {
+      "swept_ratio": 0.01,
+      "tube_count": 30,
+      "tube_length_relative": 0.0125
+    },
+    "parameters": {
+      "swept_ratio": 0.870608318550602,
+      "n_i": 4027,
+      "length_i_m": 0.03875101154227013,
+      "n_o": 4553,
+      "length_o_m": 0.023569908775648445
+    },
+    "hardware": {
+      "H_i": {
+        "tube_count": 4027,
+        "tube_length_m": 0.03875101154227013,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.0006451576606689796,
+        "tube_flow_area_m2": 0.000344428746195766,
+        "working_gas_volume_m3": 4.054696231932176e-05,
+        "tube_gas_volume_m3": 1.3346962319321759e-05,
+        "header_gas_volume_m3": 2.52e-05,
+        "core_width_m": 0.08,
+        "core_height_m": 0.07875,
+        "wall_capacity_j_k": 146.16731276708038,
+        "static_conductance_reference_w_k": 12.03401695071599,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      },
+      "H_o": {
+        "tube_count": 4553,
+        "tube_length_m": 0.023569908775648445,
+        "inner_diameter_m": 0.00033,
+        "outlet_valve_cda_m2": 0.00020423958086099878,
+        "tube_flow_area_m2": 0.00038941745255260057,
+        "working_gas_volume_m3": 3.9653533832310206e-05,
+        "tube_gas_volume_m3": 9.178533832310202e-06,
+        "header_gas_volume_m3": 2.8475000000000004e-05,
+        "core_width_m": 0.085,
+        "core_height_m": 0.08375,
+        "wall_capacity_j_k": 101.14200145978502,
+        "static_conductance_reference_w_k": 8.265705848366812,
+        "static_conductance_role": "Legacy reference only; dynamic internal conductance comes from instantaneous flow"
+      }
+    },
+    "result": {
+      "status": "converged",
+      "indicated_thermal_efficiency": 0.23240728344607423,
+      "indicated_power_w": 41.49833536197307,
+      "heat_input_w": 178.55866970538375,
+      "heat_out_w": -137.0486261634604,
+      "maximum_tube_reynolds": 276.75747463556837,
+      "maximum_tube_mach_number": 0.028011766426943426,
+      "maximum_absolute_mass_flow_kg_s": 0.007406354186543309,
+      "maximum_pressure_pa": 419376.27061143325,
+      "maximum_temperature_k": 553.9195842787087,
+      "total_mass_kg": 0.0012027347024506226,
+      "validity_verdict": "valid",
+      "failed_criteria": [],
+      "cycles_completed": 13,
+      "last_normalized_periodic_error": 0.11384975830266882,
+      "normalized_periodic_error_ratio": 4.3976747581880766e-05,
+      "message": null
+    },
+    "feasible": true,
+    "physical_constraint_failures": [],
+    "elapsed_seconds": 3.9364740460005123,
+    "warm_start_source": "30090fa22cace2d244f9ccfe593e185507a7d5d700e8f57228212f5dbdc938f5",
+    "warm_start_distance": 0.004840399923346737,
+    "warm_start_mode": "scaled_wall_periodic_state",
+    "safe_retry_used": false,
+    "backend": {
+      "actual_backend": "numba",
+      "fallback_calls": 0,
+      "exact_cache_hit_fraction": 0.6957562128812778
+    },
+    "last_complete_state": [
+      0.00017964053594743688,
+      34.70014293445359,
+      0.0009506173833587208,
+      255.77741327626742,
+      2.7067730238343874e-05,
+      10.598061928565254,
+      4.5409052906121024e-05,
+      10.278833279606271,
+      79816.52007356107,
+      31476.588239099583
+    ]
+  }
+}

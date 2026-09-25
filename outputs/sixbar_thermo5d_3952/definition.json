@@ -1,0 +1,89 @@
+{
+  "study": "fixed-sixbar-pair thermo5D retuning around candidate 3952",
+  "fixed_delta_T_K": 260.0,
+  "fixed_total_gas_mass_kg": 0.0012027347024506055,
+  "free_parameters": [
+    "swept_ratio",
+    "n_i",
+    "length_i_m",
+    "n_o",
+    "length_o_m"
+  ],
+  "thermo_seed_3952": {
+    "swept_ratio": 0.8549159568269702,
+    "n_i": 3938,
+    "length_i_m": 0.03920273588759638,
+    "n_o": 4225,
+    "length_o_m": 0.026772470159823387
+  },
+  "bounds": {
+    "swept_ratio": [
+      0.5,
+      1.3
+    ],
+    "tube_count": [
+      2400,
+      5200
+    ],
+    "H_i_tube_length_m": [
+      0.03175,
+      0.0635
+    ],
+    "H_o_tube_length_m": [
+      0.016933333333333335,
+      0.03598333333333333
+    ]
+  },
+  "radii": [
+    [
+      0.08,
+      240,
+      0.1
+    ],
+    [
+      0.04,
+      120,
+      0.05
+    ],
+    [
+      0.02,
+      60,
+      0.025
+    ],
+    [
+      0.01,
+      30,
+      0.0125
+    ]
+  ],
+  "evaluations_per_radius": 24,
+  "power_floor_W": 25.0,
+  "strategy": "persistent round-robin 5D incumbent-centred scrambled Sobol; each S/L six-bar pair is strictly fixed",
+  "valve_policy": "outlet CdA scales linearly with tube count",
+  "basis": {
+    "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+    "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+    "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+    "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+    "fixed_total_mass_kg": 0.0012027347024506055,
+    "thermo_seed_3952": {
+      "swept_ratio": 0.8549159568269702,
+      "n_i": 3938,
+      "length_i_m": 0.03920273588759638,
+      "n_o": 4225,
+      "length_o_m": 0.026772470159823387
+    },
+    "total_swept_m3": 0.0018217821782178217,
+    "clearance_ratios": [
+      0.009999999999999998,
+      0.01
+    ]
+  },
+  "families": [
+    1,
+    4,
+    12,
+    50
+  ],
+  "seed": 3965000
+}
