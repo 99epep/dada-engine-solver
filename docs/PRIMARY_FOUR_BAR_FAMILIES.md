@@ -237,6 +237,29 @@ For a new target:
 
 The appropriate starting side is the piston with the more restrictive kinematic demand. In the 3952 motor this was the LARGE piston. In another machine, especially a refrigeration cycle, it may be the SMALL piston.
 
+
+### 9.1 What the completed six-bar robustness test adds
+
+The primary four-bar geometry should not be assigned a manufacturing-tolerance rating in isolation.
+
+The completed robustness campaign perturbed the **final paired six-bar descendants**, because the downstream dyad, slider geometry and thermo-mechanical adaptation can either amplify or attenuate sensitivity inherited from the primary.
+
+The result reinforces the distinction already made in this catalogue:
+
+- primary V4.1 cadence score measures search usefulness;
+- primary transmission margin describes only one part of mechanical robustness;
+- final six-bar tolerance must be measured on the complete paired mechanism.
+
+For example, historical primary family 50 retained its expected robustness advantage at complete-mechanism level, while family 12 showed unusually good thermodynamic stability among mechanically accepted perturbations despite several active geometric margins.
+
+The complete tolerance data are therefore kept with the six-bar descendants rather than duplicated here:
+
+```text
+outputs/sixbar_robustness_3952/definition.json
+outputs/sixbar_robustness_3952/report.json
+docs/SIX_BAR_MECHANISM_FAMILIES.md
+```
+
 ---
 
 ## 10. What should not be inferred
