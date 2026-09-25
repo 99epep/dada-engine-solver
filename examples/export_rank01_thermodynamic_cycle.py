@@ -210,7 +210,7 @@ def main():
             "time_s": angle / model.angular_speed,
             "cycle_fraction": angle / (2 * math.pi),
             "motor_angle_deg": math.degrees(angle),
-            "study_angle_deg": math.degrees(angle),
+            "study_angle_deg": -math.degrees(angle),
         }
 
         for i, region in enumerate(("S", "L", "Hi", "Ho")):
