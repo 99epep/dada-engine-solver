@@ -591,29 +591,86 @@ Prototype choice should also include:
 
 ---
 
-## 10. Suggested demonstrator-selection step
+## 10. Completed robustness campaign
 
-Before choosing one family for the wiki demonstrator, perform a robustness campaign around the final normalized geometry.
+The four final pairs were subjected to the same manufacturing-tolerance experiment.
 
-Perturb, at minimum:
+For every family and each relative tolerance level (**±0.1%, ±0.5%, ±1%**):
 
-- link lengths;
-- fixed-pivot coordinates;
-- crank indexing / phase;
-- slider-axis angle and offset.
+- 2048 scrambled-Sobol 30-D perturbations were generated;
+- normalized perturbation coordinates were identical across families;
+- dimension-like variables received bounded independent uniform errors;
+- phase and slider-axis angles reached **±0.5° at the ±1% level**;
+- crank radius and assembly branches remained fixed;
+- the perturbed mechanism was **not re-optimized**;
+- mechanically accepted variants were replayed with that family's final 5-D thermodynamic machine.
 
-Report:
+The mechanical-screen survival fractions were:
 
-- efficiency distribution;
-- power distribution;
-- closure failures;
-- minimum transmission margins;
-- rod-angle margin;
-- critical clearances.
+| Family | ±0.1% | ±0.5% | ±1% |
+|---|---:|---:|---:|
+| 1 | **50.3%** | **36.8%** | **17.4%** |
+| 4 | **24.7%** | **9.3%** | **3.8%** |
+| 12 | **26.0%** | **19.6%** | **12.6%** |
+| 50 | **69.5%** | **37.6%** | **28.9%** |
 
-The nominal efficiency gap between families is important, but a demonstrator should also tolerate realistic fabrication error.
+The main rejection mechanisms were consistent with the nominal active margins:
 
-No family is designated as the demonstrator in this catalogue.
+- **family 1:** LARGE `H` lateral span first, then secondary transmission;
+- **family 4:** both transmission stages and stroke limits;
+- **family 12:** SMALL `H` span / rod angle and LARGE primary transmission;
+- **family 50:** SMALL stroke at tight tolerance, then closure / transmission at larger perturbations.
+
+These are failures of the retained **design screen**, not necessarily physical breakages. In particular, `H`-span and stroke-window limits are partly packaging/design choices.
+
+### 10.1 Thermodynamic robustness after the mechanical screen
+
+Every selected thermodynamic replay converged and remained feasible.
+
+Mean loss of indicated efficiency, in percentage points relative to the nominal family:
+
+| Family | ±0.1% | ±0.5% | ±1% |
+|---|---:|---:|---:|
+| 1 | **0.017 pp** | 0.104 pp | 0.306 pp |
+| 4 | 0.054 pp | 0.238 pp | 0.427 pp |
+| 12 | **0.016 pp** | **0.047 pp** | **0.085 pp** |
+| 50 | 0.034 pp | 0.168 pp | 0.562 pp |
+
+Fraction remaining within **0.1 percentage point** of nominal efficiency:
+
+| Family | ±0.1% | ±0.5% | ±1% |
+|---|---:|---:|---:|
+| 1 | **100%** | 55.5% | 15.6% |
+| 4 | 97.7% | 14.1% | 3.9% |
+| 12 | **100%** | **92.2%** | **62.5%** |
+| 50 | 96.1% | 37.5% | 7.8% |
+
+The experiment separates two notions that were previously conflated:
+
+- **mechanical survival:** staying inside the retained closure, transmission, rod-angle, stroke and packaging margins;
+- **thermodynamic survival:** retaining efficiency once the perturbed mechanism is mechanically acceptable.
+
+Family 50 is the strongest mechanical survivor under this screen, but family 12 is the least thermodynamically sensitive among the surviving variants at ±0.5% and ±1%.
+
+Family 1 remains the nominal efficiency champion. Its main weakness in this robustness test is not thermodynamic fragility at small error, but the fact that the optimized LARGE mechanism sits almost directly on the `H` lateral-span ceiling.
+
+Family 4 is confirmed as the most tolerance-critical of the four because both transmission stages were already optimized close to the 0.30 floor.
+
+### 10.2 Implication for the demonstrator
+
+The robustness test does not produce a single automatic winner.
+
+For the demonstrator, the next engineering step is to decide which active limits are real hardware requirements and which can be relaxed through packaging, bearing layout or modest mechanism re-optimization.
+
+The current data suggest that a small nominal-efficiency sacrifice could buy substantial manufacturing margin, but that trade should be made only after replacing the present normalized screening limits by actual dimensional tolerances and component constraints.
+
+Source artifacts:
+
+```text
+examples/test_sixbar_robustness_3952.py
+outputs/sixbar_robustness_3952/definition.json
+outputs/sixbar_robustness_3952/report.json
+```
 
 ---
 
@@ -662,6 +719,14 @@ Final thermodynamic re-tuning:
 
 ```text
 outputs/sixbar_thermo5d_3952/report.json
+```
+
+Robustness:
+
+```text
+examples/test_sixbar_robustness_3952.py
+outputs/sixbar_robustness_3952/definition.json
+outputs/sixbar_robustness_3952/report.json
 ```
 
 Mechanism implementation:

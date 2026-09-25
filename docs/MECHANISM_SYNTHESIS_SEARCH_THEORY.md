@@ -975,27 +975,102 @@ A four-bar or slider-crank may be preferred even with lower ideal performance if
 
 ---
 
-## 25. Robustness should precede prototype selection
+## 25. Completed manufacturing-tolerance robustness campaign
 
-The present search mainly optimizes nominal geometry.
+A separate robustness campaign was completed around the four final paired six-bar geometries after the 30-D thermo-mechanical optimization and the family-specific 5-D thermodynamic re-tuning.
 
-Before selecting a demonstrator mechanism for fabrication, a separate robustness analysis should perturb:
+The test intentionally used the **same normalized perturbations for every family** so that the comparison measures sensitivity of the mechanisms rather than differences in sampling.
 
-- link lengths;
-- fixed-pivot positions;
-- crank phase / indexing;
-- slider-axis position and angle;
-- plausible bearing and assembly tolerances.
+For each family and tolerance level:
 
-The useful outputs are not only mean efficiency but:
+- **2048** 30-dimensional scrambled-Sobol mechanical perturbations were generated;
+- dimension-like variables were perturbed by bounded independent uniform offsets;
+- the three relative tolerance levels were **±0.1%, ±0.5% and ±1%**;
+- phase and slider-axis angles were perturbed linearly up to **±0.5° at the ±1% level**;
+- crank radius `AB = 1` and assembly branches were held fixed;
+- no mechanical or thermodynamic re-optimization was allowed after perturbation;
+- mechanically accepted samples were replayed in the full periodic thermodynamic solver using the final family-specific thermodynamic machine.
 
-- efficiency dispersion;
-- power dispersion;
-- probability of crossing a closure or transmission limit;
-- sensitivity of the critical clearances;
-- required manufacturing tolerances.
+The mechanical screen retained the same synthesis limits:
 
-A mechanism slightly below the nominal champion may be the better demonstrator if its performance is much less sensitive to manufacturing error.
+- `1 <= stroke/crank <= 3`;
+- primary and secondary transmission sine >= **0.30**;
+- rod-axis cosine >= **0.95**;
+- `EH/crank <= 7`;
+- crank-axis clearance >= **0.5 crank radius**;
+- `H` lateral RMS <= **0.25 stroke**;
+- `H` lateral span <= **0.65 stroke**;
+- exactly two piston zero crossings.
+
+These limits are design-screening constraints, not literal predictions of breakage. A rejected perturbation means that it crossed one of the retained mechanism-design margins.
+
+### 25.1 Mechanical survival
+
+Fraction of the 2048 perturbed mechanisms remaining inside every retained mechanical limit:
+
+| Family | ±0.1% | ±0.5% | ±1% | Dominant active margins |
+|---|---:|---:|---:|---|
+| 1 | **50.3%** | **36.8%** | **17.4%** | LARGE `H` lateral span, then secondary transmission |
+| 4 | **24.7%** | **9.3%** | **3.8%** | both transmission stages and stroke limits |
+| 12 | **26.0%** | **19.6%** | **12.6%** | SMALL `H` span / rod angle, LARGE primary transmission |
+| 50 | **69.5%** | **37.6%** | **28.9%** | SMALL stroke at tight tolerance, then closure / transmission |
+
+The result confirms that the nominal constraint margins matter strongly.
+
+Family 4 is especially sensitive because the optimized geometry already lies close to the retained 0.30 transmission floors. Family 1 is penalized heavily by the LARGE `H` lateral-span ceiling that was already almost active at the nominal optimum. Family 50 has the highest mechanical survival at ±0.1% and remains the best survivor at ±1%.
+
+This does **not** by itself designate a demonstrator. Some of the dominant rejection causes, especially the `H`-span and stroke-window limits, are design choices that may be relaxed or redesigned in a physical prototype.
+
+### 25.2 Thermodynamic sensitivity of mechanically accepted variants
+
+Every selected thermodynamic replay converged and remained feasible. The following statistics therefore describe performance sensitivity **conditional on passing the mechanical screen**.
+
+| Family | Tolerance | Mean efficiency loss | 95th-percentile loss | Within 0.1 percentage point of nominal |
+|---|---:|---:|---:|---:|
+| 1 | ±0.1% | **0.017 pp** | **0.036 pp** | **100%** |
+| 1 | ±0.5% | 0.104 pp | 0.230 pp | 55.5% |
+| 1 | ±1% | 0.306 pp | 0.903 pp | 15.6% |
+| 4 | ±0.1% | 0.054 pp | 0.090 pp | 97.7% |
+| 4 | ±0.5% | 0.238 pp | 0.481 pp | 14.1% |
+| 4 | ±1% | 0.427 pp | 0.953 pp | 3.9% |
+| 12 | ±0.1% | **0.016 pp** | **0.030 pp** | **100%** |
+| 12 | ±0.5% | **0.047 pp** | **0.113 pp** | **92.2%** |
+| 12 | ±1% | **0.085 pp** | **0.193 pp** | **62.5%** |
+| 50 | ±0.1% | 0.034 pp | 0.093 pp | 96.1% |
+| 50 | ±0.5% | 0.168 pp | 0.430 pp | 37.5% |
+| 50 | ±1% | 0.562 pp | 1.228 pp | 7.8% |
+
+An important distinction appears:
+
+> **mechanical tolerance sensitivity and thermodynamic tolerance sensitivity are not the same property.**
+
+Family 50 is mechanically the most tolerant of the four under the retained screen, but its thermodynamic performance becomes relatively sensitive at the largest perturbation level.
+
+Family 12 shows the opposite behavior: its nominal geometry is constrained by several mechanical margins, yet the mechanically surviving variants preserve thermodynamic efficiency particularly well.
+
+Family 1 remains the nominal efficiency champion and is thermodynamically very stable at ±0.1%, but its LARGE `H` lateral-span limit makes the current geometry mechanically sensitive to even small random perturbations.
+
+### 25.3 Consequence for prototype selection
+
+The robustness campaign changes the interpretation of the four families.
+
+A prototype decision should not use nominal indicated efficiency alone. It should distinguish at least:
+
+1. **nominal thermodynamic performance**;
+2. **distance from chosen mechanical design limits**;
+3. **probability of remaining inside those limits under dimensional error**;
+4. **thermodynamic degradation among mechanically acceptable variants**;
+5. **whether an active limit is fundamental or merely an adjustable packaging/design choice**.
+
+The present results therefore support a further engineering pass before committing to hardware. In particular, the family-1 `H`-span constraint and the family-4 transmission margins should not be treated as minor details.
+
+Source artifacts:
+
+```text
+examples/test_sixbar_robustness_3952.py
+outputs/sixbar_robustness_3952/definition.json
+outputs/sixbar_robustness_3952/report.json
+```
 
 ---
 
