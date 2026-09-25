@@ -1,0 +1,103 @@
+{
+  "study": "sixbar manufacturing-tolerance robustness around final 3952 pairs",
+  "families": [
+    1,
+    4,
+    12,
+    50
+  ],
+  "tolerances": [
+    0.001,
+    0.005,
+    0.01
+  ],
+  "angle_deg_at_1pct": 0.5,
+  "mechanical_samples_per_family_tolerance": 2048,
+  "sampling": "30-D scrambled Sobol; identical normalized perturbations for all families/tolerances",
+  "distribution": "independent bounded uniform coordinates in [-1,+1]",
+  "perturbation_model": {
+    "AD_BC_CD_EF_GF_piston_rod": "multiplicative +/- tau",
+    "E_coordinates": "additive +/- tau*max(BC,1)",
+    "G_coordinates": "additive +/- tau crank radius",
+    "H_ratios": "additive +/- tau",
+    "slider_axis_offset": "additive +/- tau crank radius",
+    "phase_and_axis_angle": "+/- 0.5 deg at tau=0.01, linear with tau",
+    "crank_AB": "fixed dimensional datum = 1",
+    "assembly_branches": "fixed"
+  },
+  "mechanical_constraints": {
+    "stroke_over_crank": [
+      1.0,
+      3.0
+    ],
+    "primary_sine_minimum": 0.3,
+    "secondary_sine_minimum": 0.3,
+    "rod_axis_cosine_minimum": 0.95,
+    "EH_over_crank_maximum": 7.0,
+    "crank_axis_clearance_minimum": 0.5,
+    "H_lateral_rms_over_stroke_maximum": 0.25,
+    "H_lateral_span_over_stroke_maximum": 0.65,
+    "piston_zero_crossings_required": 2
+  },
+  "thermo_policy": {
+    "family_specific_final_thermo5d_machine": true,
+    "no_reoptimization_after_perturbation": true,
+    "power_floor_W": 25.0,
+    "source_report": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo5d_3952/report.json"
+  },
+  "seed": 3952701,
+  "family_sources": {
+    "1": {
+      "pair_path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/best_pair.json",
+      "pair_candidate_id": "b7ceb1d75eff2f179d8f4a62ec44a33342d9fff1bc0b6eecd846afd741b92519",
+      "nominal_efficiency": 0.23255335337157246,
+      "nominal_power_W": 41.4337050897658,
+      "thermo_parameters": {
+        "swept_ratio": 0.877401424506769,
+        "n_i": 4029,
+        "length_i_m": 0.03833674002331392,
+        "n_o": 4555,
+        "length_o_m": 0.023607543873307223
+      }
+    },
+    "4": {
+      "pair_path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_04/best_pair.json",
+      "pair_candidate_id": "8cb60200c89c6fa5d7918e40f8ac7f6ca726e9ced3729064298e7c054c9209f4",
+      "nominal_efficiency": 0.22449875654619056,
+      "nominal_power_W": 42.69471937684293,
+      "thermo_parameters": {
+        "swept_ratio": 0.8885624976550196,
+        "n_i": 4669,
+        "length_i_m": 0.03828786729920797,
+        "n_o": 4417,
+        "length_o_m": 0.026227179480775662
+      }
+    },
+    "12": {
+      "pair_path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_12/best_pair.json",
+      "pair_candidate_id": "fdc7e9becf1833cbd7c777ba1b5bf6becb899048fe90984f8bed0b03dabd7469",
+      "nominal_efficiency": 0.21656661825401932,
+      "nominal_power_W": 45.346956072664426,
+      "thermo_parameters": {
+        "swept_ratio": 0.9479512415175294,
+        "n_i": 5039,
+        "length_i_m": 0.041990059984052544,
+        "n_o": 4889,
+        "length_o_m": 0.026006542454559377
+      }
+    },
+    "50": {
+      "pair_path": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_50/best_pair.json",
+      "pair_candidate_id": "dd88e9f9aa19db45e236cb5629bfb45f60955e2a94e83e2b9eea846784fe838f",
+      "nominal_efficiency": 0.2265158313634313,
+      "nominal_power_W": 44.20379286704555,
+      "thermo_parameters": {
+        "swept_ratio": 0.8893573267479392,
+        "n_i": 4403,
+        "length_i_m": 0.044707545443575,
+        "n_o": 4622,
+        "length_o_m": 0.02702978145420983
+      }
+    }
+  }
+}
