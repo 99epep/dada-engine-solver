@@ -1,0 +1,70 @@
+{
+  "study": "candidate-3952 fixed-thermo simultaneous 30-D six-bar pair optimization",
+  "families": [
+    1,
+    4,
+    12,
+    50
+  ],
+  "fixed_260K_basis": {
+    "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+    "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+    "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+    "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+    "fixed_total_mass_kg": 0.0012027347024506055,
+    "fixed_thermo": {
+      "swept_ratio": 0.8549159568269702,
+      "n_i": 3938,
+      "length_i_m": 0.03920273588759638,
+      "n_o": 4225,
+      "length_o_m": 0.026772470159823387
+    },
+    "candidate_3952_selected_by": "index",
+    "candidate_3952_index": 3952,
+    "candidate_3952_proposal_index": 4024,
+    "candidate_3952_efficiency": 0.23508063005202154,
+    "candidate_3952_power_W": 40.719090181447584,
+    "power_floor_W": 25.0,
+    "motion_target": "/home/edada/Documents/dada-engine-solver/outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_target.csv",
+    "objective": "maximize indicated thermal efficiency; 3952 motion RMS is diagnostic only",
+    "free_dimensions": 30,
+    "discrete_branches": "fixed per source family"
+  },
+  "mechanical_constraints": {
+    "stroke_over_crank": [
+      1.0,
+      3.0
+    ],
+    "primary_sine_minimum": 0.3,
+    "secondary_sine_minimum": 0.3,
+    "rod_axis_cosine_minimum": 0.95,
+    "EH_over_crank_maximum": 7.0,
+    "crank_axis_clearance_minimum": 0.5,
+    "H_axis_lateral_rms_over_stroke_maximum": 0.25,
+    "H_axis_lateral_span_over_stroke_maximum": 0.65
+  },
+  "search": {
+    "strategy": "round-robin fine incumbent-centred 30-D scrambled Sobol; S and L always perturbed simultaneously; infeasible directions use scalar step backoff",
+    "evaluations_per_radius": 16,
+    "radius_multipliers": [
+      1.0,
+      0.75,
+      0.55,
+      0.4,
+      0.28,
+      0.2,
+      0.14
+    ],
+    "base_primary_length_fraction": 0.015,
+    "base_primary_point_fraction": 0.025,
+    "base_primary_point_min_span": 0.05,
+    "base_primary_phase_deg": 2.0,
+    "base_pivot_span": 0.2,
+    "base_secondary_length_fraction": 0.03,
+    "base_H_ratio_span": 0.05,
+    "base_rod_fraction": 0.04,
+    "base_axis_offset_span": 0.2,
+    "base_axis_angle_deg": 2.0,
+    "sobol_seed": 3959000
+  }
+}
