@@ -1,0 +1,73 @@
+{
+  "study": "final rank_01 thermo fixed; local 30-D six-bar search with compact aligned piston rods",
+  "fixed_thermo": {
+    "thermo5d_report": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_thermo5d_3952/rank_01/report.json",
+    "thermo5d_report_sha256": "c8ae9ade4a4ae8354a3fe3527b6c99163e9f5d244fc9cca68b9f314007df0656",
+    "thermo5d_candidate_id": "7118cb83769dcda54b49128a122bc576bafb880748a20eebd893189492cb1b4e",
+    "pair_candidate_id": "b7ceb1d75eff2f179d8f4a62ec44a33342d9fff1bc0b6eecd846afd741b92519",
+    "fixed_thermo5d_parameters": {
+      "swept_ratio": 0.877401424506769,
+      "n_i": 4029,
+      "length_i_m": 0.03833674002331392,
+      "n_o": 4555,
+      "length_o_m": 0.023607543873307223
+    },
+    "reference_efficiency": 0.23255335337157246,
+    "reference_power_W": 41.4337050897658,
+    "fixed_total_gas_mass_kg": 0.0012027347024506055,
+    "basis": {
+      "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+      "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+      "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+      "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+      "fixed_total_mass_kg": 0.0012027347024506055,
+      "thermo_seed_3952": {
+        "swept_ratio": 0.8549159568269702,
+        "n_i": 3938,
+        "length_i_m": 0.03920273588759638,
+        "n_o": 4225,
+        "length_o_m": 0.026772470159823387
+      },
+      "total_swept_m3": 0.0018217821782178217,
+      "clearance_ratios": [
+        0.009999999999999998,
+        0.01
+      ]
+    }
+  },
+  "source_pair": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_rank01_compact_rods_relaxed/best_pair.json",
+  "branches": {
+    "small_primary": 1,
+    "small_second": -1,
+    "large_primary": -1,
+    "large_second": 1
+  },
+  "rod_constraints": {
+    "small_rod_over_crank": [
+      9.222402682411229,
+      10.222402682411229
+    ],
+    "large_rod_over_crank": [
+      8.838247226318321,
+      9.838247226318321
+    ],
+    "max_abs_rod_axis_angle_deg": 10.0,
+    "max_abs_mean_rod_axis_angle_deg": 4.0,
+    "source_small_rod": 9.564562970311554,
+    "source_large_rod": 9.226771229543354
+  },
+  "seed_kind": "direct_PCA_aligned_seed",
+  "search": {
+    "evaluations": 2048,
+    "evaluations_per_radius": 256,
+    "radius_multipliers": [
+      1.0,
+      0.7,
+      0.45,
+      0.3
+    ],
+    "sobol_seed": 3974001,
+    "free_dimensions": 30,
+    "objective": "maximize indicated thermal efficiency"
+  }
+}
