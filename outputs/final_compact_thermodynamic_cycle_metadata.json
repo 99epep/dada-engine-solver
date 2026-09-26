@@ -1,0 +1,66 @@
+{
+  "study": "final rank_01 six-bar thermo-5D champion cycle export",
+  "family_rank": 1,
+  "thermo5d_report": "/home/edada/Documents/dada-engine-solver/outputs/sixbar_rank01_compact_thermo5d_deep/rank_01/report.json",
+  "thermo5d_report_sha256": "b3569c57255b4b6ac9c8e867fadb7035695f584e270f261063877ba74bb990b0",
+  "thermo5d_candidate_id": "f69e6ccbb1c30fb297d2e5cbdf6e0038466bf8a74c3d935625527991eee9c56d",
+  "pair_candidate_id": "918ad06fdf4e952fff6dfcb1c80c0db3a6d06377eddfc1b17d9944baf7c3ec53",
+  "thermo5d_parameters": {
+    "swept_ratio": 0.8710520361085389,
+    "n_i": 5009,
+    "length_i_m": 0.037909332572792394,
+    "n_o": 4900,
+    "length_o_m": 0.021402493511339583
+  },
+  "fixed_total_gas_mass_kg": 0.0012027347024506055,
+  "basis": {
+    "source_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_spline_from_linear_260k/report.json",
+    "source_sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+    "fourier_report": "/home/edada/Documents/dada-engine-solver/outputs/motor_fourier_c2_8h_refine/report.json",
+    "fourier_sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+    "fixed_total_mass_kg": 0.0012027347024506055,
+    "thermo_seed_3952": {
+      "swept_ratio": 0.8549159568269702,
+      "n_i": 3938,
+      "length_i_m": 0.03920273588759638,
+      "n_o": 4225,
+      "length_o_m": 0.026772470159823387
+    },
+    "total_swept_m3": 0.0018217821782178217,
+    "clearance_ratios": [
+      0.009999999999999998,
+      0.01
+    ]
+  },
+  "files": [
+    {
+      "file": "final_compact_thermodynamic_cycle_raw.csv",
+      "rows": 1798,
+      "columns": 52,
+      "sampling": "raw adaptive solver grid"
+    },
+    {
+      "file": "final_compact_thermodynamic_cycle.csv",
+      "rows": 1441,
+      "columns": 52,
+      "sampling": "regular 1441-point grid"
+    }
+  ],
+  "indicated_thermal_efficiency": 0.230013122926276,
+  "indicated_power_W": 42.86637173928663,
+  "reported_champion_efficiency": 0.23002590564075315,
+  "reported_champion_power_W": 42.86660429167427,
+  "convergence_history": [
+    {
+      "cycle": 1,
+      "normalized_state_error": 0.9261019365524625
+    }
+  ],
+  "period_s": 0.5,
+  "sampling": "Main CSV: regular angular grid, conservative states and quadratures linearly interpolated from the converged adaptive cycle; instantaneous rates recomputed. Raw CSV: adaptive solver samples.",
+  "signs": "Heat positive into gas/wall as named; indicated work positive on expansion; signed flows positive in column-name direction.",
+  "angle_convention": "For final IndependentSixBarVolumeKinematics, study angle equals solver/motor angle. No extra sign reversal is applied.",
+  "units": "SI units encoded in column names. Valve open: 1, closed: 0.",
+  "endpoint": "Both cycle endpoints retained, without forcing the final state equal to the initial state.",
+  "mechanical_losses": "unknown"
+}

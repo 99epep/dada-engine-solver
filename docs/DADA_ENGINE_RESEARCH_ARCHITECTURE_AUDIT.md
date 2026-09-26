@@ -5,6 +5,14 @@
 **Inspected branch:** `master`, tree `5e94be1e9f1f8aa70e0bad3a618378dcc237550a` (26 September 2026).  
 **Product name:** **Dada-Engine Research**. “Dada” is the inventor's surname; preserve the product's capitalization and hyphenation.
 
+**Local follow-up (27 September 2026):** The current checkout, rather than the
+GitHub tree above, has now been inventoried. See
+[the local migration audit](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) for the
+240-file matrix, verified corrections, source snapshots and a freshly replayed
+reference, and [the concrete implementation proposal](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md)
+for the first API/schema and acceptance gates. The original proposal below is
+retained as design history; the local follow-up qualifies its hypotheses.
+
 ## 1. Executive decision
 
 Build **Dada-Engine Research** as a thin, declarative research layer **on top of** the existing `dada_solver.campaign` and physical-model packages, not as another optimization framework. Retain existing numerical solvers, mechanical definitions, validity logic, cache/replay infrastructure, and the existing campaign journal. Make research strategies, study protocols, evaluators, result views, and renderers separately replaceable. Use TOML and a CLI first; generate standalone HTML reports with optional static publication exports. Defer a graphical editor, distributed scheduler, and database.
