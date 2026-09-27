@@ -41,8 +41,45 @@ class ContinuousParameter:
 
 
 @dataclass(frozen=True, slots=True)
+class IntegerParameter:
+    """Inclusive integer interval with explicitly recorded nearest-even decoding."""
+    name: str
+    lower: int
+    upper: int
+    initial: int
+    encoding: str = 'nearest_even_v1'
+
+    def __post_init__(self):
+        if not self.name or any(type(x) is not int for x in (self.lower, self.upper, self.initial)):
+            raise ValueError('Integer bounds and initial value must be integers, not bool or float.')
+        if not 0 < self.lower < self.upper or not self.lower <= self.initial <= self.upper:
+            raise ValueError('Integer counts require positive ordered bounds containing the initial value.')
+        if self.upper > 2**53 or self.encoding != 'nearest_even_v1':
+            raise ValueError('Unsupported integer range or encoding.')
+
+    def decode(self, normalized):
+        u = float(normalized)
+        if not math.isfinite(u) or not 0 <= u <= 1:
+            raise ValueError('Normalized coordinates must lie in [0, 1].')
+        return int(round((1-u)*self.lower + u*self.upper))
+
+    def encode(self, physical):
+        if type(physical) is not int or not self.lower <= physical <= self.upper:
+            raise ValueError('Physical count must be an integer within its bounds.')
+        return (physical-self.lower)/(self.upper-self.lower)
+
+
+def parameter_from_mapping(data):
+    settings = dict(data)
+    kind = settings.pop('kind', 'continuous')
+    if kind == 'continuous': return ContinuousParameter(**settings)
+    if kind == 'integer': return IntegerParameter(**settings)
+    raise ValueError(f'Unknown parameter kind: {kind}')
+
+
+@dataclass(frozen=True, slots=True)
 class ParameterSpace:
-    parameters: tuple[ContinuousParameter, ...]
+    parameters: tuple[ContinuousParameter | IntegerParameter, ...]
 
     def __post_init__(self):
         object.__setattr__(self, 'parameters', tuple(self.parameters))

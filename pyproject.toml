@@ -15,6 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
+dada-research = "dada_solver.research.cli:main"
 dada-optimize = "dada_solver.campaign.cli:main"
 dada-solver = "dada_solver.cli:main"
 dada-sizing = "dada_solver.sizing.cli:main"
@@ -30,6 +31,9 @@ plot = ["matplotlib>=3.6", "Pillow>=9.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"dada_solver.research" = ["data/*.json", "data/*.toml"]
 
 [tool.setuptools]
 license-files = ["LICENSE"]

@@ -42,10 +42,14 @@ class OptimizationCampaign:
                     raise ValueError('Campaign identity changed; use a new directory.')
             else:
                 if self.history.path.exists(): raise ValueError('History exists without a campaign definition.')
-                (self.directory/'campaign.toml').write_text(definition.source)
-                (self.directory/'base.toml').write_text(definition.base_source)
-                if definition.hardware_source is not None:
-                    (self.directory/'hardware.toml').write_text(definition.hardware_source)
+                snapshot = getattr(definition, 'write_snapshots', None)
+                if snapshot is not None:
+                    snapshot(self.directory)
+                else:
+                    (self.directory/'campaign.toml').write_text(definition.source)
+                    (self.directory/'base.toml').write_text(definition.base_source)
+                    if definition.hardware_source is not None:
+                        (self.directory/'hardware.toml').write_text(definition.hardware_source)
                 atomic_json(manifest, dict(definition_id=definition.definition_id, **definition.identity))
 
     @classmethod

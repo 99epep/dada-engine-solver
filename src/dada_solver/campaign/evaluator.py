@@ -120,13 +120,27 @@ class MachineEvaluator:
                 for c in self.definition.constraints]
 
     def evaluate_with_control(self, candidate, control):
+        timings = {}
+        if hasattr(self.definition, 'study'):
+            original_callback = control.statistics_callback
+            def observe(record):
+                if 'elapsed_seconds' in record:
+                    phase = record['phase']
+                    timings[phase] = timings.get(phase, 0.0) + record['elapsed_seconds']
+                if original_callback is not None: original_callback(record)
+            control = replace(control, statistics_callback=observe)
+        candidate_budget = getattr(self.definition, 'candidate_budget_seconds', None)
+        if candidate_budget is not None:
+            deadline = control.clock() + candidate_budget
+            control = replace(control, deadline=min(deadline, control.deadline) if control.deadline is not None else deadline)
         result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
+        if hasattr(self.definition, 'study'): result['timing_seconds'] = timings
         if control.statistics_callback is not None:
             control.statistics_callback(dict(phase='candidate_result', status=result['status'],
                 warm_start_source=result.get('warm_start_source'),
                 warm_start_normalized_distance=result.get('warm_start_normalized_distance'),
                 periodic_cycle_count=result['periodic_cycle_count']))
-        return result
+        return json_values(result) if hasattr(self.definition, 'study') else result
 
     def _evaluate_with_control(self, candidate, control):
         try:
@@ -203,27 +217,53 @@ class MachineEvaluator:
         layout, family = 'four_gas_volumes_m_U_plus_H_i_H_o_wall_energy', 'microtube_wall_10_state'
         source, distance = select_warm_start(control.previous_records, candidate.payload['normalized'], layout, family, direction)
         target = self._wall_initial(design.configuration, wrapper); state = target.copy()
+        external = getattr(self.definition, 'initial_wall_state', None) if source is None else None
+        caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         if source:
             saved = source.get('initial_guess_state') or source['final_periodic_state']; old = np.asarray(saved['values'], dtype=float)
             new_caps = np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
+        elif external:
+            # The fixed-inventory reference preserves the original gas state
+            # bit for bit. Only wall energies scale with changed wall capacity.
+            state = np.asarray(external['values'], dtype=float).copy()
+            state[8:10] *= np.asarray(caps)/np.asarray(external['wall_capacities_j_k'])
         backend_last = {}
         def record_backend(record):
             if record['phase']=='rhs_backend': backend_last.update(record)
             if control.statistics_callback is not None: control.statistics_callback(record)
-        try:
-            periodic = control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, state,
+        def solve(initial):
+            return control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, initial,
                 maximum_cycles=design.configuration.numerical.maximum_cycles,
                 progress_callback=control.check,
                 settings=self.definition.wall_numerical_settings,
                 backend=self.definition.wall_backend,
                 adaptive_acceleration=getattr(self.definition, "adaptive_wall_acceleration", None),
                 statistics_callback=record_backend)
+        safe_retry = False
+        try:
+            from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
+            try:
+                periodic = solve(state)
+            except MicrotubeDomainError:
+                if not getattr(self.definition, 'safe_domain_retry', False): raise
+                control.check()
+                safe_retry = True
+                safe = target.copy()
+                safe[8:10] = state[8:10]
+                periodic = solve(safe)
+        except IntegrationInterrupted as error:
+            result = rejected('budget_exhausted', str(error))
+            result.update(integrated=True, derived=derived, constraints=self._unavailable_constraints())
+            return result
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
             if backend_last: result['rhs_backend'] = backend_last
+            if hasattr(self.definition, 'safe_domain_retry'):
+                result.update(safe_retry_used=safe_retry,
+                    warm_start_source=source['candidate_id'] if source else external['source_candidate_id'] if external else None)
             return result
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         guess = (_state_record(periodic.last_complete_state, layout, family, direction,
@@ -233,11 +273,22 @@ class MachineEvaluator:
             convergence["rhs_backend"] = periodic.backend_statistics
         warm = dict(warm_start_source=source['candidate_id'] if source else None,
             warm_start_normalized_distance=distance, warm_start_source_status=source['status'] if source else None)
+        if external:
+            warm.update(warm_start_source=external['source_candidate_id'],
+                        warm_start_source_status='external_reference_initial_guess')
+        if hasattr(self.definition, 'safe_domain_retry'):
+            warm['safe_retry_used'] = safe_retry
         if periodic.status == 'interrupted':
             result = rejected('budget_exhausted', periodic.message)
             result.update(integrated=True, derived=derived, periodic_cycle_count=len(periodic.history),
                 periodic_convergence=convergence, initial_guess_state=guess, **warm)
             result['constraints'] = self._unavailable_constraints()
+            return result
+        if not periodic.converged:
+            result = rejected('periodic_non_convergence', periodic.message)
+            result.update(integrated=True, derived=derived, periodic_cycle_count=len(periodic.history),
+                          periodic_convergence=convergence, initial_guess_state=guess,
+                          constraints=self._unavailable_constraints(), **warm)
             return result
         cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
         performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
@@ -264,8 +315,34 @@ class MachineEvaluator:
         if gas_domains is not None:
             satisfied = gas_domains['model_validity']=='valid' and max_mach<=design.configuration.validity.maximum_mach_number
             domain.update(satisfied=satisfied, margin=1. if satisfied else -1.)
-        return self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
+        result = self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
+        if hasattr(self.definition, 'study'):
+            result.update(warm)
+            result['metrics'].update(
+                maximum_pressure_pa=max(v.maximum for v in diagnostics.pressure_extrema.values()),
+                maximum_temperature_k=max(v.maximum for v in diagnostics.temperature_extrema.values()),
+                maximum_absolute_mass_flow_kg_s=max(max(abs(v.minimum),abs(v.maximum)) for v in diagnostics.mass_flow_extrema.values()),
+                total_mass_kg=float(periodic.trajectory[:8:2,-1].sum()))
+            result['diagnostics'] = json_values(asdict(diagnostics))
+            result['derived']['hardware'] = dict(heat_in=dict(design.heat_in.build().metadata), heat_out=dict(design.heat_out.build().metadata))
+            result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.air_inlet_temperature_k, heat_out=wrapper.heat_out.air_inlet_temperature_k)
+            air = {}
+            for i, (side, exchanger, ports) in enumerate((
+                    ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
+                    ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
+                peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
+                capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
+                air[side] = dict(peak_internal_mass_flow_kg_s=peak,
+                    external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
+                    maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
+                    scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
+            result['derived']['external_air_capacity_diagnostics'] = air
+            result['derived']['local_reflux'] = dict(
+                threshold_kg_s=1e-8,
+                detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
+                minimum_signed_flows_kg_s={k:v.minimum for k,v in diagnostics.mass_flow_extrema.items()})
+        return result
 
     def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None, replay=None):
         if replay is not None: replay.require(wrapper=wrapper, angles=angles, trajectory=trajectory)

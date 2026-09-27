@@ -1,0 +1,193 @@
+"""Read-only inspection and offline candidate comparisons; never replay physics."""
+from collections import Counter
+import html
+import json
+from pathlib import Path
+
+from dada_solver.campaign.candidate import content_hash
+from dada_solver.campaign.definition import runtime_identity
+from dada_solver.campaign.report import elite_records
+
+PAYLOAD_KEYS = ('schema_version','definition_id','normalized','physical','families','numerical_settings')
+
+
+def verify_record(record):
+    if content_hash({k:record[k] for k in PAYLOAD_KEYS}) != record['candidate_id']:
+        raise ValueError('Candidate payload does not match its recorded identity.')
+
+
+def inspect(path):
+    """Read journal and completed orphans without creating a lock or repairing files."""
+    path = Path(path)
+    warnings = []
+    if path.is_file():
+        artifact = json.loads(path.read_text())
+        if artifact.get('artifact_type') != 'research_evaluation_v1':
+            raise ValueError(f'Expected a Research evaluation artifact: {path}')
+        records = [artifact['record']]
+        definition = artifact['definition']
+        title = artifact['name']
+    else:
+        definition = json.loads((path/'definition.json').read_text())
+        if definition.get('definition_kind') != 'research_v1':
+            raise ValueError('This report requires a Dada-Engine Research study directory.')
+        study = json.loads((path/'study.json').read_text())
+        if study['study_id'] != definition['study_id'] or study['definition_id'] != definition['definition_id']:
+            raise ValueError('Study manifest does not match the campaign definition.')
+        title = study['name']
+        records = []
+        journal = path/'history.jsonl'
+        lines = journal.read_bytes().splitlines(keepends=True) if journal.exists() else []
+        for i,line in enumerate(lines):
+            try:
+                if not line.endswith(b'\n'): raise ValueError('incomplete append')
+                records.append(json.loads(line))
+            except (ValueError, UnicodeDecodeError):
+                if i != len(lines)-1: raise ValueError('Corrupt non-final journal record.')
+                warnings.append('Incomplete final journal append ignored for inspection; resume performs recovery.')
+        known = {r['evaluation_number'] for r in records}
+        for candidate_file in sorted((path/'candidates').glob('*.json')):
+            record = json.loads(candidate_file.read_text())
+            if record['evaluation_number'] not in known:
+                records.append(record)
+                known.add(record['evaluation_number'])
+                warnings.append('Completed record awaiting journal recovery included read-only.')
+        records.sort(key=lambda r:r['evaluation_number'])
+        state_path = path/'state.json'
+        if state_path.exists() and json.loads(state_path.read_text()).get('pending'):
+            warnings.append('A pending candidate is recorded; resume will reconcile or retry it.')
+    if content_hash({k:v for k,v in definition.items() if k != 'definition_id'}) != definition['definition_id']:
+        raise ValueError('Stored definition does not match its identity.')
+    if content_hash(definition['scientific']) != definition['study_id']:
+        raise ValueError('Stored scientific inputs do not match their study identity.')
+    for record in records:
+        verify_record(record)
+        if record['definition_id'] != definition['definition_id']:
+            raise ValueError('A result belongs to a different study definition.')
+    compatible = definition['runtime'] == runtime_identity()
+    if not compatible: warnings.append('Stored runtime/source differs from the current checkout. Inspection is available; execution resume is not compatible.')
+    scientific = definition['scientific']
+    return dict(schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
+                scientific=scientific, runtime_compatible=compatible, warnings=warnings,
+                status_counts=dict(Counter(r['status'] for r in records)), records=records,
+                best=elite_records(records,5), source=str(path), replay='not_requested')
+
+
+def select_records(data, selectors=()):
+    distinct = {}
+    for row in data['records']: distinct[row['candidate_id']] = row
+    values = list(distinct.values())
+    if not selectors: return values
+    selected = []
+    for selector in selectors:
+        if selector == 'best':
+            matches = elite_records(values,1)
+        else:
+            matches = [r for r in values if r['candidate_id'].startswith(selector)]
+        if len(matches) != 1:
+            raise ValueError(f'Candidate selector {selector!r} is absent or ambiguous.')
+        selected.append(matches[0])
+    return selected
+
+
+def compare(paths, selectors=()):
+    studies = [inspect(path) for path in paths]
+    records = []
+    for study in studies: records.extend(select_records(study, selectors))
+    if len(studies) == 1:
+        result = studies[0]
+        result['selected'] = records
+        return result
+    compatible = len({s['study_id'] for s in studies}) == 1
+    result = dict(studies[0], name='Candidate comparison', records=records, selected=records,
+                  status_counts=dict(Counter(r['status'] for r in records)), comparison_compatible=compatible,
+                  compared_sources=[dict(source=s['source'], study_id=s['study_id'], scientific=s['scientific']) for s in studies],
+                  warnings=[w for s in studies for w in s['warnings']], best=elite_records(records,5) if compatible else [])
+    if not compatible:
+        result['warnings'].append('Different scientific study identities: values are shown side by side; no combined feasible ranking is assigned. Review each source definition before interpreting differences.')
+    return result
+
+
+def text_report(data):
+    lines = [data['name'], f"Study: {data['study_id']}",
+             f"Attempts: {len(data['records'])}; statuses: {data['status_counts']}",
+             'Power is indicated gas power. Useful output is unavailable; mechanical losses are unknown.']
+    for row in data.get('selected', data['best']):
+        m = row.get('metrics',{})
+        lines.append(f"{row['candidate_id']} {row['status']}: power={m.get('indicated_power_w')} W; efficiency={m.get('indicated_thermal_efficiency')}")
+    lines.extend(data['warnings'])
+    return '\n'.join(lines)+'\n'
+
+
+def render_html(data, destination):
+    destination = Path(destination)
+    if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
+    escaped_data = json.dumps(data, allow_nan=False).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
+    page = HTML.replace('TITLE_TEXT', html.escape(data['name'])).replace('EMBEDDED_DATA', escaped_data)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(page)
+    return destination
+
+
+HTML = '''<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TITLE_TEXT</title>
+<style>
+body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
+</style><main>
+<h1>TITLE_TEXT</h1><p class="muted">Fixed-pair thermo-5D validation study · offline report · no optimization or trajectory replay during rendering</p>
+<div id="warnings"></div><div class="card" id="summary"></div>
+<p>Efficiency uses indicated gas work divided by external-air heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-air aerodynamic losses and fan consumption are excluded from the balance, not physically zero.</p>
+<div class="plots"><div class="card"><h2>Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
+<h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
+<div class="card"><table id="candidates"></table></div>
+<h2>Compare selected candidates</h2><p>Values are absolute; the difference is B − A. Missing data stays unavailable.</p>
+<label>Candidate A <select id="left"></select></label><label>Candidate B <select id="right"></select></label>
+<div class="card"><table id="comparison"></table></div>
+<details class="card"><summary>Selected candidate details, constraints and convergence</summary><pre id="detail"></pre></details>
+<details class="card"><summary>Scientific definition and provenance</summary><pre id="provenance"></pre></details>
+<p class="muted">Closure screens are sampled numerical checks, not continuous feasibility proofs. This validation study does not establish a global optimum. Trajectories and animations are unavailable in this release.</p>
+</main><script id="data" type="application/json">EMBEDDED_DATA</script><script>
+'use strict';
+const d=JSON.parse(document.getElementById('data').textContent),byId=id=>document.getElementById(id);
+const fmt=v=>v===null||v===undefined?'unavailable':typeof v==='number'?Number(v.toPrecision(8)).toString():String(v);
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rows=[...new Map((d.selected||d.records).map(r=>[r.candidate_id,r])).values()];
+byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>').join('');
+byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Air inlets: '+fmt(d.scientific.fixed.cold_air_inlet_K)+' / '+fmt(d.scientific.fixed.hot_air_inlet_K)+' K</p>';
+byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
+for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
+for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
+byId('right').selectedIndex=Math.min(1,rows.length-1);
+function table(id,head,body){byId(id).innerHTML='<thead><tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+r.map(v=>'<td>'+esc(fmt(v))+'</td>').join('')+'</tr>').join('')+'</tbody>';}
+function scatter(id,points,xlabel,ylabel){
+ const w=500,h=280,l=68,b=48,t=15,r=20;
+ if(!points.length){byId(id).textContent='No available converged metrics.';return;}
+ let xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+ let dx=(xmax-xmin)||Math.max(1,Math.abs(xmax)*.05),dy=(ymax-ymin)||1;xmin-=dx*.07;xmax+=dx*.07;ymin-=dy*.07;ymax+=dy*.07;
+ const x=v=>l+(v-xmin)/(xmax-xmin)*(w-l-r),y=v=>h-b-(v-ymin)/(ymax-ymin)*(h-b-t);
+ const tick=(v,span)=>v.toFixed(Math.max(0,Math.min(9,1-Math.floor(Math.log10(span/4)))));
+ let s='<svg role="img" aria-label="'+esc(xlabel+' versus '+ylabel)+'" viewBox="0 0 '+w+' '+h+'"><path d="M'+l+' '+t+' V'+(h-b)+' H'+(w-r)+'" fill="none" stroke="#526575"/>';
+ for(let i=0;i<=4;i++){let xv=xmin+(xmax-xmin)*i/4,yv=ymin+(ymax-ymin)*i/4;s+='<text x="'+x(xv)+'" y="'+(h-b+18)+'" font-size="10" text-anchor="middle">'+tick(xv,xmax-xmin)+'</text><text x="'+(l-6)+'" y="'+y(yv)+'" font-size="10" text-anchor="end">'+tick(yv,ymax-ymin)+'</text>';}
+ for(const p of points)s+='<circle cx="'+x(p[0])+'" cy="'+y(p[1])+'" r="4" fill="'+(p[3]==='feasible'?'#087660':'#b34d39')+'"><title>'+esc(p[2])+'</title></circle>';
+ s+='<text x="280" y="273" text-anchor="middle" font-size="12">'+esc(xlabel)+'</text><text transform="translate(14 130) rotate(-90)" text-anchor="middle" font-size="12">'+esc(ylabel)+'</text></svg>';byId(id).innerHTML=s;
+}
+function show(){
+ const visible=rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied)));
+ table('candidates',['Candidate ID','Status','Indicated power [W]','Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,r.metrics.indicated_power_w,r.metrics.indicated_thermal_efficiency,r.periodic_cycle_count,r.duration_seconds]));
+ scatter('scatter',visible.filter(r=>Number.isFinite(r.metrics.indicated_power_w)&&Number.isFinite(r.metrics.indicated_thermal_efficiency)).map(r=>[r.metrics.indicated_power_w,100*r.metrics.indicated_thermal_efficiency,r.candidate_id,r.status]),'Indicated power [W]','Indicated efficiency [%]');
+ let elapsed=0,points=[];for(const r of d.records){elapsed+=r.duration_seconds||0;if(Number.isFinite(r.metrics.indicated_thermal_efficiency))points.push([elapsed,100*r.metrics.indicated_thermal_efficiency,r.candidate_id,r.status]);}scatter('progress',points,'Cumulative evaluation time [s]','Indicated efficiency [%]');
+}
+function compare(){
+ if(!rows.length){byId('comparison').textContent='No evaluated candidates yet.';return;}
+ const a=rows[Number(byId('left').value)],b=rows[Number(byId('right').value)],out=[];
+ const add=(label,x,y)=>out.push([label,x,y,typeof x==='number'&&typeof y==='number'?y-x:null]);
+ for(const p of d.scientific.parameters)add(p.name+' ['+p.unit+']',a.physical[p.name],b.physical[p.name]);
+ for(const [key,unit] of Object.entries({indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
+ for(const side of ['heat_in','heat_out'])add(side+' external / peak internal capacity rate [1]',a.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio,b.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio);
+ for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);
+ for(const c of a.constraints){const other=b.constraints.find(x=>x.name===c.name);const unit=d.scientific.constraints.find(x=>x.type===c.name)?.unit||'1';add(c.name+' margin ['+unit+']',c.available?c.margin:null,other?.available?other.margin:null);}
+ table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
+}
+byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
+</script></html>'''

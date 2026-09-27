@@ -3,6 +3,12 @@
 This project implements a conservative thermodynamic simulation and sizing
 solver for the DADA thermal machine.
 
+**Dada-Engine Research** provides a declarative CLI for the first fixed-pair
+six-bar validation study: configure five thermal/hardware parameters, evaluate
+exact configurations, run/resume a bounded search, and compare candidates in an
+offline HTML report. See the [getting-started guide](docs/DADA_ENGINE_RESEARCH.md).
+Physical evaluation parity is independent of reproducing historical search order.
+
 > [!WARNING]
 > The substantial initial implementation of this project was produced by an
 > artificial intelligence: **OpenAI Codex running on GPT-5.6 Sol
