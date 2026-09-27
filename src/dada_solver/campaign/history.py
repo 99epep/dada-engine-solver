@@ -9,10 +9,15 @@ from dada_solver.campaign.candidate import canonical_json, content_hash
 
 
 def atomic_json(path, value):
+    atomic_text(path, canonical_json(value)+'\n')
+
+
+def atomic_text(path, text):
+    """Durably publish a text snapshot using the journal's atomic-write contract."""
     path = Path(path)
     temporary = path.with_name(path.name+'.tmp')
     with temporary.open('w') as stream:
-        stream.write(canonical_json(value)+'\n'); stream.flush(); os.fsync(stream.fileno())
+        stream.write(text); stream.flush(); os.fsync(stream.fileno())
     os.replace(temporary, path)
     # Persist the rename as well as file contents on local POSIX filesystems.
     fd = os.open(path.parent, os.O_RDONLY)

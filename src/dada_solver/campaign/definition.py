@@ -9,7 +9,7 @@ import numpy as np
 import scipy
 import math
 from dada_solver.configuration import load_simulation_configuration
-from dada_solver.campaign.parameters import ParameterSpace, ContinuousParameter
+from dada_solver.campaign.parameters import ParameterSpace, parameter_from_mapping
 from dada_solver.campaign.candidate import content_hash
 from dada_solver.campaign.adapters import validate_ownership, FamilyDesignAdapter
 from dada_solver.sizing.configuration import _load_objective, _load_constraint
@@ -37,7 +37,7 @@ class CampaignDefinition:
             self.configuration = replace(self.configuration,
                 numerical=replace(self.configuration.numerical, **raw['numerical']))
         self.numerical_settings = asdict(self.configuration.numerical)
-        self.space = ParameterSpace(tuple(ContinuousParameter(**p) for p in raw['parameters']))
+        self.space = ParameterSpace(tuple(parameter_from_mapping(p) for p in raw['parameters']))
         self.families = raw['families']
         self.hardware_source = None
         self.hardware_data = self.hardware_bank = self.heat_in_inputs = self.heat_out_inputs = None
@@ -138,6 +138,13 @@ class CampaignDefinition:
     @classmethod
     def resume(cls, directory):
         directory = Path(directory)
+        recorded = json.loads((directory/'definition.json').read_text())
+        if recorded.get('definition_kind') == 'research_v1':
+            from dada_solver.research.schema import load_study, compile_study
+            definition = compile_study(load_study(directory/'study.toml', basis_path=directory/'basis.json'))
+            if recorded['definition_id'] != definition.definition_id:
+                raise ValueError('Study definition, source code or runtime changed; create a new study directory.')
+            return definition
         hardware = directory/'hardware.toml'
         definition = cls(directory/'campaign.toml', base_path=directory/'base.toml',
                          hardware_path=hardware if hardware.exists() else None)

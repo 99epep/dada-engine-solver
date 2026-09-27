@@ -1,0 +1,30 @@
+Optimization campaign phase
+Requested: 120.0 s; actual: 7.8 s
+Attempts: 1; cached: 0; preflight rejected: 0; integrated: 1; converged: 0; feasible: 0
+Objective improvement: 0.0 (minimization)
+Best at start: ea8ea3b339b27c1fc6b6a63062196a9caf80238ce70faaf1e8835d0c7761f666 objective=-0.1898589002032464
+Best at end: ea8ea3b339b27c1fc6b6a63062196a9caf80238ce70faaf1e8835d0c7761f666 objective=-0.1898589002032464
+Best physical metrics: {'conservation': {'absolute_energy_residual': 5.002025460498771e-10, 'absolute_mass_residual': -8.023096076392733e-18, 'relative_energy_residual': 6.1250292439378e-15, 'relative_mass_residual': -6.670711388010741e-15}, 'heat_input_w': 143.3133797617377, 'heat_out_w': -116.10635735369029, 'indicated_power_w': 27.20932066597371, 'indicated_thermal_efficiency': 0.1898589002032464, 'maximum_absolute_mass_flow_kg_s': 0.008662591002056763, 'maximum_pressure_pa': 494291.04708036006, 'maximum_temperature_k': 562.9893987354858, 'mechanical_losses': 'unknown', 'total_mass_kg': 0.0012027347024505628, 'useful_mechanical_power_w': None, 'validity': {'cold_isothermality_error': 0.013697889665168859, 'failed_criteria': [], 'hot_isothermality_error': 0.051465883887732315, 'mach_number_status': 'available', 'maximum_compressibility_deviation': 0.0, 'maximum_cp_variation': 0.0, 'maximum_mach_number': 0.050864736272945035, 'maximum_pressure_equalization_error': 0.043444652638710606, 'unavailable_criteria': [], 'verdict': 'valid'}}
+Best constraint margins:
+  minimum_motor_power: margin=2.20932066597371; available=True; satisfied=True
+  maximum_pressure: margin=705708.9529196399; available=True; satisfied=True
+  maximum_temperature: margin=287.0106012645142; available=True; satisfied=True
+  maximum_absolute_mass_flow: margin=0.07133740899794323; available=True; satisfied=True
+  valid_thermodynamic_model: margin=1.0; available=True; satisfied=True
+  microtube_model_domain: margin=1.0; available=True; satisfied=True
+Largest normalized parameter changes:
+  microtube.heat_in.tube_count: 2539 -> 2539; normalized delta +0.0000
+  microtube.heat_in.tube_length_m: 0.044163 -> 0.044163; normalized delta +0.0000
+  microtube.heat_out.tube_count: 2590 -> 2590; normalized delta +0.0000
+  microtube.heat_out.tube_length_m: 0.0309961 -> 0.0309961; normalized delta +0.0000
+  volume.swept_ratio: 1.15328 -> 1.15328; normalized delta +0.0000
+Top distinct feasible candidates:
+  ea8ea3b339b27c1fc6b6a63062196a9caf80238ce70faaf1e8835d0c7761f666 objective=-0.1898589002032464
+Bound pressure: []
+Failure reasons: {'MicrotubeDomainError: large_relative_pressure_drop': 1}
+Violated constraints: {}
+Unavailable constraints: {}
+Convergence histories: [{'candidate_id': 'd0fead58211bd4d1ed5e88b0bc47fcacb9ab3ae77305c637fda307fd71ac448e', 'status': 'invalid_exchanger', 'convergence': {'cycles_completed': 0, 'first_normalized_periodic_error': None, 'last_normalized_periodic_error': None, 'normalized_periodic_error_ratio': None, 'improving': False, 'history': []}}]
+Evaluation timing: {'count': 1, 'total_seconds': 7.704575957002817, 'median_seconds': 7.704575957002817, 'p90_seconds': 7.704575957002817, 'maximum_seconds': 7.704575957002817}
+Suggestions (no automatic changes):
+  No further deterministic suggestion is supported by this phase.

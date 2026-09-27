@@ -1,6 +1,11 @@
 # Dada-Engine Research — first implementation proposal
 
-Status: proposed API and schema for human review, not installed commands.
+Status: steps 1–5 authorized by the user and implemented for the reduced
+fixed-pair validation study. The [user guide](DADA_ENGINE_RESEARCH.md) describes
+the executable interface; the proposal below remains the design record.
+Physical parity is required, historical candidate-order parity is not.
+Expansion to other campaigns is gated on actual researcher use of configuration
+and candidate comparison, not merely automated acceptance tests.
 This plan follows the [local audit](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
 and preserves the guarantees of [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
 The application name is **Dada-Engine Research**, independent of temperature.
@@ -235,9 +240,11 @@ separately. No performance claim is inferred from one converged warm start.
 ## Review boundary
 
 The initiating audit's section 10 explicitly says: “Stop for human review before
-writing the new implementation or cleaning the repository.” This package makes
-that review concrete. Approval would authorize steps 1–5 above: a fixed-pair
-thermo-5D CLI using the existing campaign engine, with historical physical parity
-and offline reports. It would not authorize deleting examples, changing physical
-equations, reproducing a full local search campaign, or treating the historical
-25 W indicated floor as the demonstrator's useful-power requirement.
+writing the new implementation or cleaning the repository.” That review was
+completed: the user authorized steps 1–5 above, with physical evaluation parity
+and a real researcher usability review before expanding to other campaigns.
+The [validation record](DADA_ENGINE_RESEARCH_VALIDATION.md) records the delivered
+fixed-pair thermo-5D CLI and offline reports. This authorization does not cover
+deleting examples, changing physical equations, reproducing a full local search
+campaign, or treating the historical 25 W indicated floor as the demonstrator's
+useful-power requirement.

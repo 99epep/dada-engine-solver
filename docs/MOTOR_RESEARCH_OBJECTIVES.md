@@ -190,3 +190,15 @@ adapted results and failed/incomplete evaluations separate from feasible designs
 
 Julia migration is neither implemented nor an approved architecture decision
 for this study. Discuss it separately after the temperature experiment.
+
+## Research tooling validation gate
+
+The first Dada-Engine Research release uses one fixed independent six-bar pair
+and five thermal/hardware coordinates as a validation case. This is not a
+permanent restriction on future study families. Reproduce physical evaluations
+for identical configurations; reproducing the old optimizer's candidate order
+is not required. The long-term motion-law and independent-Lambda/volume-ratio
+objectives remain unchanged. Before extending the module to other campaigns,
+exercise the first study in real research use and review configuration effort,
+error clarity and candidate comparison with the user. See
+[DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md).
