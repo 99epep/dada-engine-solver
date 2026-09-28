@@ -134,7 +134,14 @@ class MachineEvaluator:
             deadline = control.clock() + candidate_budget
             control = replace(control, deadline=min(deadline, control.deadline) if control.deadline is not None else deadline)
         result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
-        if hasattr(self.definition, 'study'): result['timing_seconds'] = timings
+        if hasattr(self.definition, 'study'):
+            from dada_solver.research.margins import enrich_constraints
+            result['timing_seconds'] = timings
+            if not result['integrated'] and result.get('preflight_diagnostics'):
+                diagnostics=result['preflight_diagnostics']
+                if all(isinstance(d,dict) and 'name' in d and 'margin' in d for d in diagnostics):
+                    result['constraints']=list(diagnostics)+self._unavailable_constraints()
+            result['constraints']=enrich_constraints(result['constraints'],self.definition.study.data['constraints'])
         if control.statistics_callback is not None:
             control.statistics_callback(dict(phase='candidate_result', status=result['status'],
                 warm_start_source=result.get('warm_start_source'),
@@ -160,9 +167,16 @@ class MachineEvaluator:
             small_physical_stroke_m=model.kinematics.small_physical_stroke,
             large_physical_stroke_m=model.kinematics.large_physical_stroke)
         direction = 'motor' if design.configuration.motor_operation else 'receiver'
+        mechanical=getattr(design.kinematics,'mechanical_diagnostics',())
+        if mechanical:
+            derived['mechanical_constraints']=list(mechanical)
+            derived['kinematic_metrics']=list(getattr(design.kinematics,'mechanical_metrics',()))
         if isinstance(built, AirWallMotor):
-            return self._wall(candidate, design, built, derived, direction, control)
-        return self._reservoir(candidate, design, built, derived, direction, control)
+            result=self._wall(candidate, design, built, derived, direction, control)
+        else:
+            result=self._reservoir(candidate, design, built, derived, direction, control)
+        if mechanical: result['constraints']=list(mechanical)+result['constraints']
+        return result
 
     def _reservoir(self, candidate, design, model, derived, direction, control):
         source, distance = select_warm_start(control.previous_records, candidate.payload['normalized'],
@@ -389,6 +403,10 @@ class MachineEvaluator:
                 heat_out_w=p.heat_out_power, indicated_thermal_efficiency=p.thermal_efficiency,
                 useful_mechanical_power_w=None, mechanical_losses='unknown', conservation=asdict(p.conservation),
                 validity=json_values(asdict(evaluation.validity)))
+            if getattr(self.definition,'identity',{}).get('definition_kind')=='research_v2':
+                cooling=self.definition.objective.name=='maximize_cooling_cop'
+                metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,
+                               indicated_mechanical_input_power_w=p.mechanical_input_power if cooling else None)
         reasons = [c['name']+(': unavailable' if not c['available'] else ': violated') for c in constraints if not c['available'] or not c['satisfied']]
         if not objective_valid: reasons.append('objective unavailable or nonfinite')
         return dict(status=status, integrated=True, converged=evaluation.usable,

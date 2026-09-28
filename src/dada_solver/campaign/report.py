@@ -26,7 +26,7 @@ def time_statistics(records):
         maximum_seconds=max(durations) if durations else None)
 
 
-def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, elite_size=5):
+def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, elite_size=5, include_suggestions=True):
     start = elite_records(before, 1); all_records = before+phase
     end = elite_records(all_records, elite_size)
     start_best, end_best = (start[0] if start else None), (end[0] if end else None)
@@ -60,30 +60,31 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
     interrupted = [r for r in unique_phase if r['status'] == 'budget_exhausted']
     numerical = [r for r in unique_phase if r['status'] in ('periodic_non_convergence','integration_failure')]
     preflight = [r for r in unique_phase if not r['integrated']]
-    if interrupted:
-        suggestions.append(f'{len(interrupted)} evaluation(s) reached the campaign deadline; retry them with a larger phase budget or review evaluation cost.')
-    elif numerical:
-        improving = sum(bool(r.get('periodic_convergence',{}).get('improving')) for r in numerical)
-        suggestions.append(f'{len(numerical)} evaluation(s) did not converge or failed numerically; {improving} show a lower last than first periodic error. Review convergence histories before changing physical constraints.')
-    elif preflight:
-        suggestions.append('Preflight/model validity rejection dominates: inspect '+str(reasons.most_common(1))+'.')
-    elif violations:
-        suggestions.append('Converged evaluations violate physical constraints: inspect '+str(violations.most_common(1))+'.')
-    for item in bound_pressure:
-        if len(end) >= 3 and item['elite_count']/len(end) >= .6 and gain is not None and gain > 0:
-            suggestions.append(f"Objective improved and {item['elite_count']}/{len(end)} elites are near the {item['side']} bound of {item['parameter']}; consider reviewing that bound.")
-    if len(end) >= 3:
-        points = np.array([r['normalized'] for r in end])
-        diameter = float(np.max(np.abs(points[:,None,:]-points[None,:,:])))
-        if diameter < .15:
-            suggestions.append(f'Elite normalized diameter is {diameter:.3f}; consider a narrower region or a robustness test.')
-        values = [r['objective']['value'] for r in end]
-        if diameter > .4 and max(values)-min(values) <= .05*max(abs(min(values)), 1e-12):
-            suggestions.append('Distant feasible elites have objective values within 5%; preserve both regions rather than collapsing the search.')
-    if len(unique_phase) >= 5 and gain is not None and gain <= 1e-3*max(abs(start_best['objective']['value']),1e-12) and end_best:
-        margins = end_best['constraints']
-        if margins and all(c['available'] and c['margin'] is not None and c['margin']>0 for c in margins):
-            suggestions.append('At least five new evaluations gave less than 0.1% improvement and the best listed margins are positive; consider local refinement after reviewing their physical sizes.')
+    if include_suggestions:
+        if interrupted:
+            suggestions.append(f'{len(interrupted)} evaluation(s) reached the campaign deadline; retry them with a larger phase budget or review evaluation cost.')
+        elif numerical:
+            improving = sum(bool(r.get('periodic_convergence',{}).get('improving')) for r in numerical)
+            suggestions.append(f'{len(numerical)} evaluation(s) did not converge or failed numerically; {improving} show a lower last than first periodic error. Review convergence histories before changing physical constraints.')
+        elif preflight:
+            suggestions.append('Preflight/model validity rejection dominates: inspect '+str(reasons.most_common(1))+'.')
+        elif violations:
+            suggestions.append('Converged evaluations violate physical constraints: inspect '+str(violations.most_common(1))+'.')
+        for item in bound_pressure:
+            if len(end) >= 3 and item['elite_count']/len(end) >= .6 and gain is not None and gain > 0:
+                suggestions.append(f"Objective improved and {item['elite_count']}/{len(end)} elites are near the {item['side']} bound of {item['parameter']}; consider reviewing that bound.")
+        if len(end) >= 3:
+            points = np.array([r['normalized'] for r in end])
+            diameter = float(np.max(np.abs(points[:,None,:]-points[None,:,:])))
+            if diameter < .15:
+                suggestions.append(f'Elite normalized diameter is {diameter:.3f}; consider a narrower region or a robustness test.')
+            values = [r['objective']['value'] for r in end]
+            if diameter > .4 and max(values)-min(values) <= .05*max(abs(min(values)), 1e-12):
+                suggestions.append('Distant feasible elites have objective values within 5%; preserve both regions rather than collapsing the search.')
+        if len(unique_phase) >= 5 and gain is not None and gain <= 1e-3*max(abs(start_best['objective']['value']),1e-12) and end_best:
+            margins = end_best['constraints']
+            if margins and all(c['available'] and c['margin'] is not None and c['margin']>0 for c in margins):
+                suggestions.append('At least five new evaluations gave less than 0.1% improvement and the best listed margins are positive; consider local refinement after reviewing their physical sizes.')
     return dict(requested_duration_seconds=requested_seconds, actual_duration_seconds=elapsed_seconds,
         attempted=len(phase), cache_hits=sum(bool(r.get('cache_hit')) for r in phase),
         rejected_before_integration=sum(not r['integrated'] for r in unique_phase),
@@ -100,7 +101,7 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
         convergence_histories=[dict(candidate_id=r['candidate_id'], status=r['status'],
             convergence=r.get('periodic_convergence')) for r in unique_phase if r.get('integrated')],
         top_distinct_feasible=[summary(r) for r in end], evaluation_time=time_statistics(unique_phase),
-        suggestions=suggestions or ['No further deterministic suggestion is supported by this phase.'])
+        suggestions=(suggestions or ['No further deterministic suggestion is supported by this phase.']) if include_suggestions else [])
 
 
 def readable_report(report):
@@ -127,6 +128,7 @@ def readable_report(report):
         f"Violated constraints: {report['violated_constraints']}",
         f"Unavailable constraints: {report['unavailable_constraints']}",
         f"Convergence histories: {report['convergence_histories']}",
-        f"Evaluation timing: {report['evaluation_time']}",
-        'Suggestions (no automatic changes):', *['  '+x for x in report['suggestions']]])
+        f"Evaluation timing: {report['evaluation_time']}"])
+    if report['suggestions']:
+        lines.extend(['Suggestions (no automatic changes):', *['  '+x for x in report['suggestions']]])
     return '\n'.join(lines)+'\n'

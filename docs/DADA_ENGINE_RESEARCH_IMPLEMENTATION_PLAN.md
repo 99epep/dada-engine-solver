@@ -4,8 +4,11 @@ Status: steps 1–5 authorized by the user and implemented for the reduced
 fixed-pair validation study. The [user guide](DADA_ENGINE_RESEARCH.md) describes
 the executable interface; the proposal below remains the design record.
 Physical parity is required, historical candidate-order parity is not.
-Expansion to other campaigns is gated on actual researcher use of configuration
-and candidate comparison, not merely automated acceptance tests.
+The user subsequently validated initial hands-on trials and authorized the V2
+kinematics/mechanism mission. The original plan below remains historical; see
+[DADA_ENGINE_RESEARCH_KINEMATICS.md](DADA_ENGINE_RESEARCH_KINEMATICS.md) for the
+implemented extension. Further usability trials remain important before large
+research campaigns.
 This plan follows the [local audit](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
 and preserves the guarantees of [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
 The application name is **Dada-Engine Research**, independent of temperature.

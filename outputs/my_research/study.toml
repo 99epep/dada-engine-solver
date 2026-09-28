@@ -1,0 +1,147 @@
+# Dada-Engine Research: fixed six-bar validation study.
+# Edit parameter bounds or initials below; use evaluate for a single configuration.
+# Historical physical-parity preset; the current demonstrator hot inlet is 598.15 K.
+schema_version = 1
+
+[study]
+name = "Dada-Engine Research"
+protocol = "fixed_pair_thermo5d"
+purpose = "historical_physical_parity"
+parent_candidate_id = "7118cb83769dcda54b49128a122bc576bafb880748a20eebd893189492cb1b4e"
+
+[sources.reference]
+path = "study.basis.json"
+sha256 = "54ceb5e1bd136409ed8437d4a2fdb2dc72179aed5dcec30c0b1c783703d6c116"
+schema = "fixed_sixbar_basis_v1"
+
+[families]
+kinematics = "independent_six_bar"
+exchanger = "microtube_air_wall"
+
+[fixed]
+gas_inventory_kg = 0.0012027347024506055
+total_swept_volume_m3 = 0.0018217821782178217
+small_clearance_ratio = 0.009999999999999998
+large_clearance_ratio = 0.01
+frequency_hz = 2.0
+hot_air_inlet_K = 558.15
+cold_air_inlet_K = 298.15
+mechanisms = "source_pair_exact_geometry_and_branches"
+mechanism_length_unit = "crank_radius"
+mechanism_angle_unit = "rad"
+
+[policies]
+volume_partition = "fixed_total_swept_and_clearance_ratios_v1"
+charge = "fixed_inventory_v1"
+outlet_valve_cda = "source_cda_times_count_ratio_v1"
+valve_scaling_reference = "reference.geometry"
+external_air = "source_finite_mass_flow_and_film_v1"
+external_air_aerodynamic_losses = "excluded_from_balance"
+fan_consumption = "excluded_from_balance"
+mechanical_losses = "unknown"
+useful_power = "unavailable"
+isothermality = "diagnostic_only"
+local_reflux = "retain_signed_flows"
+
+[objective]
+type = "maximize_thermal_efficiency"
+unit = "1"
+heat_boundary = "external_air_input"
+work_boundary = "indicated_gas_work"
+
+[[constraints]]
+type = "minimum_motor_power"
+required_power = 25.0
+unit = "W"
+boundary = "indicated_gas_power"
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+unit = "Pa"
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+unit = "K"
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+unit = "kg/s"
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+unit = "1"
+
+[[parameters]]
+name = "volume.swept_ratio"
+kind = "continuous"
+unit = "1"
+lower = 0.50
+upper = 1.30
+initial = 0.7
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_in.tube_count"
+kind = "integer"
+unit = "1"
+lower = 2400
+upper = 5200
+initial = 3938
+encoding = "nearest_even_v1"
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+kind = "continuous"
+unit = "m"
+lower = 0.03175
+upper = 0.06350
+initial = 0.03920273588759638
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_out.tube_count"
+kind = "integer"
+unit = "1"
+lower = 2400
+upper = 5200
+initial = 4225
+encoding = "nearest_even_v1"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+kind = "continuous"
+unit = "m"
+lower = 0.016933333333333334
+upper = 0.035983333333333335
+initial = 0.026772470159823387
+transform = "linear"
+
+[search]
+type = "sobol"
+seed = 3965000
+scramble = true
+domain = "fixed_global_bounds"
+
+[numerical]
+wall_settings = "source_exact"
+maximum_cycles = 100
+backend = "numba"
+backend_fallback = "record_actual_backend"
+exact_kinematics_cache = true
+shared_replay = true
+candidate_budget_seconds = 180.0
+domain_error_retry = "once_safe_uniform_state_with_source_wall_temperatures"
+
+[warm_start]
+initial_source = "reference.initial_state"
+source_wall_capacities = "reference.selected_candidate.hardware"
+subsequent_policy = "campaign_compatible_nearest_state"
+
+[execution]
+default_budget = "2m"
+default_max_candidates = 2
+initial_evaluation_seconds = 30.0
+deadline_grace_seconds = 3.0

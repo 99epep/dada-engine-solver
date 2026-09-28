@@ -1,0 +1,384 @@
+# Dada-Engine Research: fixed values use value; active coordinates use initial/lower/upper.
+"schema_version" = 2
+"mechanical_constraints" = []
+
+[ "study" ]
+"name" = "Dada-Engine Research — four_bar / four_bar"
+"protocol" = "machine_design"
+"purpose" = "bounded_family_evaluation"
+
+[ "sources" ]
+
+[ "sources"."machine" ]
+"path" = "study.basis.json"
+"sha256" = "1198f8bd55819231c3c1867285a914a5378f8fe728ceeea186f97b8c4ca54da5"
+
+[ "kinematics" ]
+"coupling" = "independent"
+
+[ "kinematics"."small" ]
+"family" = "four_bar"
+"output" = "coupler"
+"envelope_frame_angle_rad" = 3.9134384370786783
+"artifact" = "study.small.mechanism.json"
+"sha256" = "d0253113ff2743e9d3dd163675d4e9e11e65c0f2f98a4460fd9ed7f2f999640f"
+
+[ "kinematics"."large" ]
+"family" = "four_bar"
+"output" = "coupler"
+"envelope_frame_angle_rad" = 5.337287708364095
+"artifact" = "study.large.mechanism.json"
+"sha256" = "354c7f73af868b8cb3d3550c8a604d5783bc910f6f4473c6a96b01354edb05ba"
+
+[[ "parameters" ]]
+"name" = "volume.swept_ratio"
+"value" = 0.877401424506769
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "volume.total_swept_m3"
+"value" = 0.0018217821782178217
+"unit" = "m^3"
+
+[[ "parameters" ]]
+"name" = "volume.small_clearance_ratio"
+"value" = 0.009999999999999998
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "volume.large_clearance_ratio"
+"value" = 0.01
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "operation.frequency_hz"
+"value" = 2.0
+"unit" = "Hz"
+
+[[ "parameters" ]]
+"name" = "charge.total_mass_kg"
+"value" = 0.0012027347024506055
+"unit" = "kg"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_count"
+"value" = 4029
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_length_m"
+"value" = 0.03833674002331392
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.inner_diameter_m"
+"value" = 0.00033
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.wall_thickness_m"
+"value" = 0.0001524
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.pitch_m"
+"value" = 0.00125
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.header_depth_m"
+"value" = 0.002
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.air_inlet_temperature_k"
+"value" = 558.15
+"unit" = "K"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.air_mass_flow_kg_s"
+"value" = 0.2194268805038944
+"unit" = "kg/s"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_conductivity_w_m_k"
+"value" = 15.0
+"unit" = "W/(m*K)"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_density_kg_m3"
+"value" = 8000.0
+"unit" = "kg/m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_cp_j_kg_k"
+"value" = 500.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_count"
+"value" = 4555
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_length_m"
+"value" = 0.023607543873307223
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.inner_diameter_m"
+"value" = 0.00033
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.wall_thickness_m"
+"value" = 0.0001524
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.pitch_m"
+"value" = 0.00125
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.header_depth_m"
+"value" = 0.002
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.air_inlet_temperature_k"
+"value" = 298.15
+"unit" = "K"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.air_mass_flow_kg_s"
+"value" = 0.2194268805038944
+"unit" = "kg/s"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_conductivity_w_m_k"
+"value" = 15.0
+"unit" = "W/(m*K)"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_density_kg_m3"
+"value" = 8000.0
+"unit" = "kg/m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_cp_j_kg_k"
+"value" = 500.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.coupler"
+"value" = 3.0488608283186487
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.rocker"
+"value" = 2.4605616373931243
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.ground_x"
+"value" = -1.7915613312012006
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.ground_y"
+"value" = 1.743647899245883
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.loop_branch"
+"value" = 1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.output_along"
+"value" = 2.249609160883668
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.output_normal"
+"value" = -3.747198089692335
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.rod_length"
+"value" = 12.259345612730627
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.slider_origin_x"
+"value" = -1.7537965213883786
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.slider_origin_y"
+"value" = -1.8019888257678107
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.axis_angle"
+"value" = -3.9134384370786783
+"unit" = "rad"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.slider_branch"
+"value" = 1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.phase_rad"
+"value" = 0.0
+"unit" = "rad"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.crank_direction"
+"value" = -1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.volume_increases_with_coordinate"
+"value" = true
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.coupler"
+"value" = 1.8808778483134414
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.rocker"
+"value" = 2.8277157914908484
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.ground_x"
+"value" = 1.4625378551661934
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.ground_y"
+"value" = 2.0275559233239093
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.loop_branch"
+"value" = -1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.output_along"
+"value" = 1.0747884630412186
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.output_normal"
+"value" = -0.7173280457581309
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.rod_length"
+"value" = 10.212368142239752
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.slider_origin_x"
+"value" = 1.8454736686653308
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.slider_origin_y"
+"value" = -1.3311963779083846
+"unit" = "crank_radius"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.axis_angle"
+"value" = -5.337287708364095
+"unit" = "rad"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.slider_branch"
+"value" = 1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.phase_rad"
+"value" = 0.0
+"unit" = "rad"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.crank_direction"
+"value" = -1
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.volume_increases_with_coordinate"
+"value" = true
+"unit" = "1"
+
+[ "policies" ]
+"volume_partition" = "total_swept_and_clearance_ratios"
+"charge" = "explicit_inventory"
+"outlet_valve_cda" = "source_cda_times_count_ratio_v1"
+"mechanical_losses" = "unknown"
+"useful_power" = "unavailable"
+"external_air_aerodynamic_losses" = "excluded_from_balance"
+"fan_consumption" = "excluded_from_balance"
+"local_reflux" = "retain_signed_flows"
+
+[ "objective" ]
+"type" = "maximize_thermal_efficiency"
+"unit" = "1"
+
+[[ "constraints" ]]
+"type" = "minimum_motor_power"
+"required_power" = 25.0
+"unit" = "W"
+
+[[ "constraints" ]]
+"type" = "maximum_pressure"
+"limit" = 1200000.0
+"unit" = "Pa"
+
+[[ "constraints" ]]
+"type" = "maximum_temperature"
+"limit" = 850.0
+"unit" = "K"
+
+[[ "constraints" ]]
+"type" = "maximum_absolute_mass_flow"
+"limit" = 0.08
+"unit" = "kg/s"
+
+[[ "constraints" ]]
+"type" = "valid_thermodynamic_model"
+"unit" = "1"
+
+[ "screening" ]
+"samples" = 1440
+"maximum_large_enclosed_volume_m3" = 0.066
+
+[ "search" ]
+"type" = "sobol"
+"seed" = 3965000
+"scramble" = true
+"domain" = "fixed_global_bounds"
+
+[ "numerical" ]
+"maximum_cycles" = 100
+"backend" = "numba"
+"candidate_budget_seconds" = 180.0
+"domain_error_retry" = "once_safe_uniform_state_with_source_wall_temperatures"
+
+[ "warm_start" ]
+"initial_source" = "uniform"
+
+[ "execution" ]
+"default_budget" = "2m"
+"default_max_candidates" = 2
+"initial_evaluation_seconds" = 30.0
+"deadline_grace_seconds" = 5.0

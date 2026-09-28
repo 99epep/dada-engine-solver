@@ -1,16 +1,48 @@
 # Dada-Engine Research — local migration audit
 
-Status: phase 0 review package, 27 September 2026. No Research implementation,
-legacy migration, deletion, or cleanup has been performed. The working source
-is the current checkout, not the GitHub tree named in the original proposal.
-The audited HEAD is `7c7c7c69b9b2ecf17dfffc10b3867cad09f1fa02`; content hashes,
-rather than HEAD alone, identify the files inspected.
+Status: V1 completed and user-tested; V2 kinematics/mechanism extension implemented.
+The local checkout, including local outputs and untracked inputs, is authoritative.
+The CSV/inventory have been regenerated from this working tree. Hashes identify
+actual inspected content; the source commit alone does not identify uncommitted work.
+The original phase-0 workflow decisions below remain historical design context.
+No historical example or output has been deleted.
+
+## Reviewed V2 mathematical families versus search protocols
+
+The explicit [reviewed status map](research_audit/kinematics_v2_migrations.json)
+is applied by the inventory generator. It distinguishes extracted representation,
+existing production reuse and retained search/plotting code. AST imports alone
+never mark a script as parity-verified. The [V2 reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
+documents the parameter schema and available execution boundary.
+
+| Historical lineage | Mathematical representation | V2 status / protocol distinction |
+| --- | --- | --- |
+| Harmonic production law | Cosine volume vs study angle | Reused; independent phases |
+| `compare_slider_crank_motion`, `evaluate_slider_crank_k2` | Centered/offset finite crank-slider, explicit inverted/conventional volume direction | K2 physics extracted to `slider_crank.py`; fitting/search remains historical |
+| `compact_coupler_geometry`, finite-coupler K2 evaluation | Four-bar finite-rod slider output in a reconstructed common crank frame | Production closure reused; portable normalized seed and retained local envelope frame; projection-only legacy variant remains outside this V2 family |
+| `six_bar`, documented rank 1/4/12/50 geometries | Primary four-bar + dyad + finite rod, 15 coordinates per piston | Declarative artifacts/ownership and mechanical screens; discovery, saturation and local fitting execution deferred |
+| Free local F1 and free-spline V1/V2/V3, spline refinement/from-linear | Same canonical periodic cubic spline plus phase | One `free_spline` family. V2/V3 scalar phase wrapper extracted; V1 slower wrapper retained. Radii, seeds, initial projection, safe starts and staged refinement are search protocols |
+| Fourier optimization and refinement 4H/6H/8H | Same smooth Fourier representation with variable harmonic count | One `fourier_c2` family. Class extracted; harmonic count is a representation setting, successive local bounds/radii are protocols |
+| Piecewise P1/P3 | Same `IdealPiecewiseLinearVolumeKinematics` | One `ideal_piecewise` family; P1/P3 bounds and feasibility policies are not new motion laws |
+| Four-stage K2, symmetry4D, thermo3D, HX9D, refinements | Four linear segments, shared historical timing/origin | Existing `four_stage_kinematics` exposed per cylinder; dimensional/hardware passes and symmetry constraints remain study choices |
+| Independent four-stage 11D | Independent side timing plus small cyclic origin | Distinct `independent_four_stage` representation already in production, now exposed |
+| Hybrid compact optimization | `HybridCompactKinematics`: rounded linear BP branches and quintic HP kinks (9 coordinates) | Genuinely distinct older representation; retained in examples, extraction deferred, not renamed 15p |
+| C2 11p fitting | `CompactC2FitKinematics`: extrema curvature with split quintic kink branches | Genuinely distinct 11-coordinate fitting representation; retained in examples, extraction deferred |
+| Source16 C2 15p fit and thermodynamic optimization | `StructuredMotion15` + scalar `StructuredKinematics15`: BP bowing and variable-width HP kink with global extrema curvature | Extracted to `structured_kinematics.py`; historical candidate 3952 reproduced; least-squares fitting and historical local search loops retained |
+
+Changing V1/V2/V3 search implementation, Sobol seed, bounds, local radius or seed
+source does not create a new mathematical family. Conversely, the two older
+compact hybrid laws above are not aliases for the extracted 15p representation.
+No production Research module imports `examples`. Remaining example-only logic
+includes those older compact laws, legacy fitting/search protocols, saturation
+statistics, plotting/layout and old basis-construction utilities. Their presence
+is recorded explicitly rather than claiming complete campaign migration.
 
 ## Inventory and evidence
 
 The [CSV matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv) has one row for every
-Python/TOML example: **240 files, 187 Python and 53 TOML**, including two locally
-untracked Python scripts. It supplies all nine requested migration columns,
+Python/TOML example: **241 files, 188 Python and 53 TOML**, including the locally
+untracked bounded V2 demonstration script. It supplies all nine requested migration columns,
 plus hashes, tracking state, and documentation references.
 
 The [detailed inventory](research_audit/example_inventory.json) records full-source
@@ -25,8 +57,8 @@ proposals; static analysis does not establish scientific equivalence, resolve
 arbitrary dynamic paths, or prove which branch a run used. `open()` is listed
 under both I/O categories when direction is not statically classified. Inherited
 CLI and feasibility logic must be followed through `transitive_example_imports`.
-Complete semantic review is concentrated on the first slice and its construction,
-evaluation, feasibility, persistence and presentation dependencies. No row is
+The original semantic review covered the first slice; the explicit V2 status
+map now adds the reviewed motion and mechanism lineages above. No row is
 marked migrated or parity verified merely because its filename looks relevant.
 
 Regenerate the static inventory from any directory:
@@ -37,7 +69,7 @@ python3 docs/research_audit/generate_inventory.py
 
 The script uses its own checkout location. Generated review documents are excluded
 from documentation-reference discovery, so the inventory does not cite itself.
-This is developer audit tooling; it is not the proposed Research application.
+This is developer audit tooling, separate from the executable Research application.
 
 ## Workflow decisions
 

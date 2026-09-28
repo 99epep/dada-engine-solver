@@ -29,7 +29,7 @@ def inspect(path):
         title = artifact['name']
     else:
         definition = json.loads((path/'definition.json').read_text())
-        if definition.get('definition_kind') != 'research_v1':
+        if definition.get('definition_kind') not in ('research_v1','research_v2'):
             raise ValueError('This report requires a Dada-Engine Research study directory.')
         study = json.loads((path/'study.json').read_text())
         if study['study_id'] != definition['study_id'] or study['definition_id'] != definition['definition_id']:
@@ -67,6 +67,12 @@ def inspect(path):
     compatible = definition['runtime'] == runtime_identity()
     if not compatible: warnings.append('Stored runtime/source differs from the current checkout. Inspection is available; execution resume is not compatible.')
     scientific = definition['scientific']
+    from .margins import enrich_constraints
+    for record in records:
+        record['constraints']=enrich_constraints(record.get('constraints',[]),scientific['constraints'])
+        record['resolved_parameters']=dict(scientific.get('fixed_parameters',{}),**record['physical'])
+        record['parameter_units']={p['name']:p['unit'] for p in scientific['parameters']}
+        record['kinematic_families']=record.get('families',{})
     return dict(schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
                 scientific=scientific, runtime_compatible=compatible, warnings=warnings,
                 status_counts=dict(Counter(r['status'] for r in records)), records=records,
@@ -114,7 +120,11 @@ def text_report(data):
              'Power is indicated gas power. Useful output is unavailable; mechanical losses are unknown.']
     for row in data.get('selected', data['best']):
         m = row.get('metrics',{})
-        lines.append(f"{row['candidate_id']} {row['status']}: power={m.get('indicated_power_w')} W; efficiency={m.get('indicated_thermal_efficiency')}")
+        if m.get('cooling_cop') is not None:
+            performance=f"cooling={m.get('cooling_power_w')} W; COP={m.get('cooling_cop')}; indicated input={m.get('indicated_mechanical_input_power_w')} W"
+        else:
+            performance=f"power={m.get('indicated_power_w')} W; efficiency={m.get('indicated_thermal_efficiency')}"
+        lines.append(f"{row['candidate_id']} {row['status']}: {performance}")
     lines.extend(data['warnings'])
     return '\n'.join(lines)+'\n'
 
@@ -133,17 +143,19 @@ HTML = '''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TITLE_TEXT</title>
 <style>
-body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
+body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
 </style><main>
-<h1>TITLE_TEXT</h1><p class="muted">Fixed-pair thermo-5D validation study · offline report · no optimization or trajectory replay during rendering</p>
+<h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or trajectory replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
-<p>Efficiency uses indicated gas work divided by external-air heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-air aerodynamic losses and fan consumption are excluded from the balance, not physically zero.</p>
-<div class="plots"><div class="card"><h2>Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
+<p id="boundary">Efficiency uses indicated gas work divided by external-air heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-air aerodynamic losses and fan consumption are excluded from the balance, not physically zero.</p>
+<div class="plots"><div class="card"><h2 id="performanceTitle">Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
 <h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
 <div class="card"><table id="candidates"></table></div>
 <h2>Compare selected candidates</h2><p>Values are absolute; the difference is B − A. Missing data stays unavailable.</p>
 <label>Candidate A <select id="left"></select></label><label>Candidate B <select id="right"></select></label>
 <div class="card"><table id="comparison"></table></div>
+<h2>Constraint values and margins</h2><p>Positive margins satisfy the limit. Amber marks a satisfied constraint within 5% of a nonzero limit; this is a visual cue, not a safety factor. Categorical constraints have no relative margin.</p>
+<div class="card"><h3>Candidate A</h3><table id="constraintsA"></table><h3>Candidate B</h3><table id="constraintsB"></table></div>
 <details class="card"><summary>Selected candidate details, constraints and convergence</summary><pre id="detail"></pre></details>
 <details class="card"><summary>Scientific definition and provenance</summary><pre id="provenance"></pre></details>
 <p class="muted">Closure screens are sampled numerical checks, not continuous feasibility proofs. This validation study does not establish a global optimum. Trajectories and animations are unavailable in this release.</p>
@@ -154,7 +166,10 @@ const fmt=v=>v===null||v===undefined?'unavailable':typeof v==='number'?Number(v.
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rows=[...new Map((d.selected||d.records).map(r=>[r.candidate_id,r])).values()];
 byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>').join('');
-byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Air inlets: '+fmt(d.scientific.fixed.cold_air_inlet_K)+' / '+fmt(d.scientific.fixed.hot_air_inlet_K)+' K</p>';
+const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=d.scientific.objective.type==='maximize_cooling_cop';
+const ykey=cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=cooling?'Cooling COP [1]':'Indicated efficiency [%]';
+byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Families: '+esc(d.scientific.kinematics?d.scientific.kinematics.small.family+' / '+d.scientific.kinematics.large.family:JSON.stringify(d.scientific.families))+'</p>';
+if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling COP uses the recorded thermal cooling power and indicated mechanical input. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
 for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
@@ -174,19 +189,25 @@ function scatter(id,points,xlabel,ylabel){
 }
 function show(){
  const visible=rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied)));
- table('candidates',['Candidate ID','Status','Indicated power [W]','Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,r.metrics.indicated_power_w,r.metrics.indicated_thermal_efficiency,r.periodic_cycle_count,r.duration_seconds]));
- scatter('scatter',visible.filter(r=>Number.isFinite(r.metrics.indicated_power_w)&&Number.isFinite(r.metrics.indicated_thermal_efficiency)).map(r=>[r.metrics.indicated_power_w,100*r.metrics.indicated_thermal_efficiency,r.candidate_id,r.status]),'Indicated power [W]','Indicated efficiency [%]');
- let elapsed=0,points=[];for(const r of d.records){elapsed+=r.duration_seconds||0;if(Number.isFinite(r.metrics.indicated_thermal_efficiency))points.push([elapsed,100*r.metrics.indicated_thermal_efficiency,r.candidate_id,r.status]);}scatter('progress',points,'Cumulative evaluation time [s]','Indicated efficiency [%]');
+ table('candidates',['Candidate ID','Status','Indicated gas power [W]',cooling?'Cooling COP [1]':'Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,r.metrics.indicated_power_w,r.metrics[ykey],r.periodic_cycle_count,r.duration_seconds]));
+ scatter('scatter',visible.filter(r=>Number.isFinite(r.metrics.indicated_power_w)&&Number.isFinite(r.metrics[ykey])).map(r=>[r.metrics.indicated_power_w,yscale*r.metrics[ykey],r.candidate_id,r.status]),'Indicated gas power [W]',ylabel);
+ let elapsed=0,points=[];for(const r of d.records){elapsed+=r.duration_seconds||0;if(Number.isFinite(r.metrics[ykey]))points.push([elapsed,yscale*r.metrics[ykey],r.candidate_id,r.status]);}scatter('progress',points,'Cumulative evaluation time [s]',ylabel);
 }
 function compare(){
  if(!rows.length){byId('comparison').textContent='No evaluated candidates yet.';return;}
  const a=rows[Number(byId('left').value)],b=rows[Number(byId('right').value)],out=[];
  const add=(label,x,y)=>out.push([label,x,y,typeof x==='number'&&typeof y==='number'?y-x:null]);
- for(const p of d.scientific.parameters)add(p.name+' ['+p.unit+']',a.physical[p.name],b.physical[p.name]);
- for(const [key,unit] of Object.entries({indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
+ for(const side of ['small','large'])add(side+' kinematic family',a.families?.[side]||a.families?.kinematics,b.families?.[side]||b.families?.kinematics);
+ const ap=a.resolved_parameters||a.physical,bp=b.resolved_parameters||b.physical;
+ for(const name of new Set([...Object.keys(ap),...Object.keys(bp)]))add(name+' ['+(a.parameter_units?.[name]||b.parameter_units?.[name]||'see definition')+']',ap[name],bp[name]);
+ for(const [key,unit] of Object.entries({indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',cooling_power_w:'W',cooling_cop:'1',indicated_mechanical_input_power_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
  for(const side of ['heat_in','heat_out'])add(side+' external / peak internal capacity rate [1]',a.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio,b.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio);
  for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);
- for(const c of a.constraints){const other=b.constraints.find(x=>x.name===c.name);const unit=d.scientific.constraints.find(x=>x.type===c.name)?.unit||'1';add(c.name+' margin ['+unit+']',c.available?c.margin:null,other?.available?other.margin:null);}
+ for(const c of a.constraints){const other=b.constraints.find(x=>x.name===c.name);const unit=c.unit||d.scientific.constraints.find(x=>x.type===c.name)?.unit||'1';add(c.name+' margin ['+unit+']',c.available?c.margin:null,other?.available?other.margin:null);}
+ for(const [id,candidate] of [['constraintsA',a],['constraintsB',b]]){
+  table(id,['Constraint','Current value','Relation','Limit','Unit','Absolute margin','Relative margin','State','Evidence'],candidate.constraints.map(c=>[c.name,c.value,c.relation,c.limit,c.unit,c.margin,c.relative_margin,c.state,c.method]));
+  [...byId(id).querySelectorAll('tbody tr')].forEach((tr,i)=>{const c=candidate.constraints[i];tr.className=!c.available?'muted':!c.satisfied?'bad':c.near_active?'near':'good';if(c.near_active)tr.setAttribute('aria-label',c.name+' near active limit');});
+ }
  table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
 }
 byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();

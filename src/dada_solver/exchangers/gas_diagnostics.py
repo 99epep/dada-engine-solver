@@ -1,6 +1,7 @@
 """Time- and heat-weighted instantaneous microtube domain reports."""
 import math
 import numpy as np
+from scipy.integrate import trapezoid
 from dada_solver.state import ThermodynamicState
 
 
@@ -48,7 +49,7 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory, *, replay=None):
                         frequency=context['frequency_hz'],length=film.bank.tube_length_m/2)
                     hydraulics[name].append(hydraulic)
     time=np.asarray(angles)/wrapper.model.angular_speed
-    integrate=lambda y: float(np.trapz(np.asarray(y,dtype=float),time))
+    integrate=lambda y: float(trapezoid(np.asarray(y,dtype=float),time))
     duration=time[-1]-time[0]; result={}; failures=set()
     fields=('reynolds','prandtl','mach','knudsen','mean_knudsen','graetz','pressure_ratio',
             'compressibility_parameter','womersley','strouhal','viscous_diffusion_time_s',

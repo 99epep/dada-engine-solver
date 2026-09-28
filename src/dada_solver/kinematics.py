@@ -173,6 +173,12 @@ class HarmonicVolumeKinematics:
         amplitude = 0.5 * self.large_limits.swept
         return -amplitude * math.sin(theta)
 
+    def small_cylinder_volume_second_derivative(self, theta: float) -> float:
+        return -0.5*self.small_limits.swept*math.cos(theta-self.small_phase_offset)
+
+    def large_cylinder_volume_second_derivative(self, theta: float) -> float:
+        return -0.5*self.large_limits.swept*math.cos(theta)
+
     def breakpoint_angles(self) -> tuple[float, ...]:
         return ()
 
