@@ -232,8 +232,9 @@ required motor operation. V3 removes that restriction through the separately
 validated external-stream model described below. The human-powered cell was not optimized. Automatic mechanism fitting,
 local polish, primary-family discovery and saturation remain deferred contracts;
 see the [architecture boundary](DADA_ENGINE_RESEARCH_KINEMATICS.md#established-synthesis-workflow-and-current-boundary).
-The two older compact hybrid laws remain explicitly classified as example-only
-representations, not mislabeled as 15p. Further human review should focus on
+At the V2 milestone, the two older compact hybrid laws remained example-only.
+The nine-coordinate `HybridCompactKinematics` has since been extracted as
+`hybrid_compact`; the distinct 11p fitting law remains example-only. Further human review should focus on
 configuration usability, artifact-derived defaults, candidate comparison and
 study-specific mechanical thresholds before a large research run.
 
@@ -279,3 +280,24 @@ The initial full-suite run exposed a diagnostic test double that has no volume
 provider. Ideal temperature diagnostics now keep their volume-independent fast
 path; general-fluid diagnostics require the actual volumes. The existing test
 was preserved. See the final V3 test result in the [V3 artifact README](../outputs/research_v3/README.md).
+
+
+## Compact hybrid extraction
+
+`hybrid_compact` is the eleventh Research family. Dense scalar and vector
+position/first-derivative references were frozen from the original example
+before replacing its implementation with production imports. Tests cover two
+parameter sets over 4097 angles spanning three cycles, phase/extrema/direction,
+original domain guards, all nine active coordinates, mixed families and V3
+schema construction. No analytic second derivative is invented.
+
+The packaged candidate 501 machine and original preceding warm state reproduce
+all recorded thermal metrics at 2e-11 relative / 1e-11 absolute tolerance:
+40.555304211350325 W indicated output, efficiency 0.22525540307940708,
+180.04142700654225 W external input, and 7 cycles. Dense trajectories are
+bitwise equal to the frozen original implementation on the validation runtime.
+The bounded [Research replay](../outputs/research_hybrid_compact/champion.json)
+contains the full evaluation; this is no new optimization.
+
+Post-extraction validation: **744 passed, 0 warnings in 293.79 s** using
+`PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q`.
