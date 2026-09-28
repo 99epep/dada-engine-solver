@@ -96,6 +96,7 @@ This is part of their definition, not an extra Research direction correction.
 | `structured_c2_15p` | Historical piecewise quintic C2 law, scalar PPoly fast path | Three timing/extremum parameters, four curvature magnitudes, two BP bowing coordinates, two three-coordinate HP kinks |
 | `ideal_piecewise` | Existing ideal chronology law, including pauses | `small_lambda_target`, `large_lambda_target`, `adiabatic_sector_fraction` [1] per selected law |
 | `four_stage` | Existing four-segment linear law with fixed global origin | `t1,t2,t3` and that side's `a_s,b_s` or `a_l,b_l` [1] |
+| `hybrid_compact` | Compact C2 rounded-linear / two-quintic law | Nine coordinates across both pistons; see below |
 | `independent_four_stage` | Existing independent four-segment law | Small: `t0_s,t1_s,t2_s,t3_s,a_s,b_s`; large: `t1_l,t2_l,t3_l,a_l,b_l` [1] |
 
 The four-stage presets reproduce the historical shared seven-coordinate law
@@ -121,6 +122,53 @@ control offset/amplitude, not the continuous phase of the spline knot grid.
 First/second derivative limits use the production spline extrema diagnostics,
 not a noisy finite difference. Sharp extrema of a spline are not linkage targets
 that must be copied mechanically.
+
+### Compact hybrid C2 (11th family)
+
+`hybrid_compact` reuses `HybridCompactKinematics` from
+`dada_solver.hybrid_compact_kinematics`. It is the historical nine-coordinate
+law, not the structured 15p law or the remaining example-only 11p fitting law.
+The BP branches (small up / large down) are rounded linear C2 ramps. The other
+branches use two quintics joined at a mobile normalized point, with the shared
+slope given by the historical harmonic-mean rule.
+
+Each coordinate can be fixed or active independently:
+
+| Side | Coordinates | Units / retained admissible domain |
+|---|---|---|
+| Small | `small_max_deg` | deg, periodic phase |
+| Small | `small_down_duration_deg` | deg, [35, 325] |
+| Small | `small_up_rounding` | 1, [0.008, 0.48] |
+| Small | `small_down_kink_u`, `small_down_kink_q` | 1, [0.04, 0.96] |
+| Large | `large_down_duration_deg` | deg, [35, 325] |
+| Large | `large_down_rounding` | 1, [0.008, 0.48] |
+| Large | `large_up_kink_u`, `large_up_kink_q` | 1, [0.04, 0.96] |
+
+Names have the usual `kinematics.small.` / `kinematics.large.` prefix. There are
+five small-side and four large-side coordinates, with no imposed mirror
+symmetry. The large maximum fixes motor angle zero. The backend maps study
+angle to motor angle as `phi = -theta`; the existing factory still applies
+operation direction once. Scalar and vector paths are preserved. No physical
+stroke is inferred. The original 129-point quintic monotonicity screen is
+retained, together with Research's sampled reversal screen; neither is a new
+continuous monotonicity proof. Analytic second derivatives were not exposed by
+the historical class and remain unavailable; Research does not advertise an
+acceleration constraint for this family.
+
+```sh
+research init kinematics --small hybrid_compact --large hybrid_compact --output outputs/compact/study.toml
+research evaluate outputs/compact/study.toml --output outputs/compact/champion.json --budget 2m
+```
+
+The paired preset packages the historical candidate 501 parameters, thermal
+machine and exact preceding warm state. It reproduces 40.55530421135 W indicated
+power, efficiency 0.2252554030794 and 7 periodic cycles. Mixed-family presets
+are also accepted, as are V3 external-stream studies; those combinations are
+new studies and do not inherit a claim of historical thermal parity.
+The historical optimizer imports the production class/helpers; its search and
+fitting protocols stay in `examples`. Frozen pre-extraction scalar/vector
+trajectories and the original champion record live in
+`tests/fixtures/hybrid_compact/`.
 
 ### Structured C2 15p
 

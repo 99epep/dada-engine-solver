@@ -4,7 +4,9 @@
     "tests/test_research_kinematics_v2.py",
     "tests/test_research_v2.py",
     "tests/test_research_v2_thermodynamics.py",
-    "tests/fixtures/research_v2/reference.json"
+    "tests/fixtures/research_v2/reference.json",
+    "tests/test_hybrid_compact_kinematics.py",
+    "tests/fixtures/hybrid_compact/reference.json"
   ],
   "examples": {
     "examples/evaluate_slider_crank_k2.py": {
@@ -168,14 +170,14 @@
       "migration_status": "Consumes extracted representation; historical plotting retained"
     },
     "examples/optimize_motor_hybrid_compact_260k.py": {
-      "mathematical_representation": "compact_hybrid (distinct, deferred)",
-      "canonical_successor": "examples HybridCompactKinematics (retained)",
-      "migration_status": "Distinct rounded-linear / quintic-kink representation; not an alias for 15p; production extraction deferred"
+      "mathematical_representation": "hybrid_compact",
+      "canonical_successor": "dada_solver.hybrid_compact_kinematics; Research hybrid_compact",
+      "migration_status": "Distinct nine-coordinate rounded-linear / quintic-kink law extracted; frozen dense and candidate-501 thermodynamic parity verified; historical search/plotting retained"
     },
     "examples/plot_motor_hybrid_compact_260k.py": {
-      "mathematical_representation": "compact_hybrid (distinct, deferred)",
-      "canonical_successor": "examples HybridCompactKinematics (retained)",
-      "migration_status": "Distinct rounded-linear / quintic-kink representation; not an alias for 15p; production extraction deferred"
+      "mathematical_representation": "hybrid_compact",
+      "canonical_successor": "dada_solver.hybrid_compact_kinematics; Research hybrid_compact",
+      "migration_status": "Distinct nine-coordinate rounded-linear / quintic-kink law extracted; frozen dense and candidate-501 thermodynamic parity verified; historical search/plotting retained"
     },
     "examples/fit_motor_hybrid_c2_11p_to_source16.py": {
       "mathematical_representation": "compact_c2_11p (distinct, deferred)",

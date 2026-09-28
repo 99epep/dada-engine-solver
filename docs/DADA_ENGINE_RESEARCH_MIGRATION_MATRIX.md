@@ -6,6 +6,8 @@ The CSV/inventory have been regenerated from this working tree. Hashes identify
 actual inspected content; the source commit alone does not identify uncommitted work.
 The original phase-0 workflow decisions below remain historical design context.
 No historical example or output has been deleted.
+The compact-hybrid follow-up refreshes the two affected inventory rows and adds
+the eleventh Research family; unrelated local work is outside that update.
 
 ## Reviewed V2 mathematical families versus search protocols
 
@@ -26,15 +28,16 @@ documents the parameter schema and available execution boundary.
 | Piecewise P1/P3 | Same `IdealPiecewiseLinearVolumeKinematics` | One `ideal_piecewise` family; P1/P3 bounds and feasibility policies are not new motion laws |
 | Four-stage K2, symmetry4D, thermo3D, HX9D, refinements | Four linear segments, shared historical timing/origin | Existing `four_stage_kinematics` exposed per cylinder; dimensional/hardware passes and symmetry constraints remain study choices |
 | Independent four-stage 11D | Independent side timing plus small cyclic origin | Distinct `independent_four_stage` representation already in production, now exposed |
-| Hybrid compact optimization | `HybridCompactKinematics`: rounded linear BP branches and quintic HP kinks (9 coordinates) | Genuinely distinct older representation; retained in examples, extraction deferred, not renamed 15p |
+| Hybrid compact optimization | `HybridCompactKinematics`: rounded linear BP branches and quintic HP kinks (9 coordinates) | Extracted to `hybrid_compact_kinematics.py` as the 11th Research family; frozen dense and candidate-501 thermal parity verified; historical search retained |
 | C2 11p fitting | `CompactC2FitKinematics`: extrema curvature with split quintic kink branches | Genuinely distinct 11-coordinate fitting representation; retained in examples, extraction deferred |
 | Source16 C2 15p fit and thermodynamic optimization | `StructuredMotion15` + scalar `StructuredKinematics15`: BP bowing and variable-width HP kink with global extrema curvature | Extracted to `structured_kinematics.py`; historical candidate 3952 reproduced; least-squares fitting and historical local search loops retained |
 
 Changing V1/V2/V3 search implementation, Sobol seed, bounds, local radius or seed
 source does not create a new mathematical family. Conversely, the two older
 compact hybrid laws above are not aliases for the extracted 15p representation.
-No production Research module imports `examples`. Remaining example-only logic
-includes those older compact laws, legacy fitting/search protocols, saturation
+The nine-coordinate compact hybrid law is now extracted; the distinct 11p
+fitting representation remains example-only. No production Research module imports `examples`. Remaining example-only logic
+includes the older 11p compact fitting law, legacy fitting/search protocols, saturation
 statistics, plotting/layout and old basis-construction utilities. Their presence
 is recorded explicitly rather than claiming complete campaign migration.
 

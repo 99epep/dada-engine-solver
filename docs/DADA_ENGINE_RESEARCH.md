@@ -58,7 +58,7 @@ Thermal, hardware and kinematic coordinates use the same declaration and vector.
 
 Available families are harmonic, centered/offset slider-crank, four-bar, six-bar,
 periodic free spline, Fourier C2, structured C2 15p, ideal piecewise, shared-origin
-four-stage and independent four-stage laws. `--small` and `--large` accept mixed
+four-stage, independent four-stage laws, and the nine-coordinate `hybrid_compact` law. `--small` and `--large` accept mixed
 families. `init structured-c2-3952` creates the original structured historical
 candidate with its own thermal basis and warm state.
 

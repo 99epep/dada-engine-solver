@@ -1,0 +1,407 @@
+# Dada-Engine Research — Human Cell Stage 0
+#
+# Goal:
+#   First coupled refrigeration search at fixed pedalling-derived frequency.
+#   Maximize cooling COP while observing indicated mechanical input and cooling power.
+#
+# Important:
+#   The current Research V3 "four_stage" ownership is independent by cylinder:
+#   small owns (t1,t2,t3,a_s,b_s), large owns (t1,t2,t3,a_l,b_l).
+#   This is therefore a 10-coordinate kinematic search, initialized with the
+#   historical shared 0.2/0.5/0.7 stage timing.  It is NOT the exact historical
+#   7D tied-timing law.  See STUDY_NOTES.md.
+#
+# Source basis:
+#   Reuse the validated V3 refrigeration basis.  This Stage 0 deliberately keeps
+#   the same mild 278.15 K / 298.15 K external-temperature scenario.
+
+schema_version = 3
+mechanical_constraints = []
+
+[study]
+name = "Human Cell Stage 0 — coupled COP search"
+protocol = "machine_design"
+purpose = "first_coupled_refrigeration_kinematics_thermo_hardware_search"
+
+[sources.machine]
+path = "../research_v3/refrigeration.basis.json"
+sha256 = "701388a430b2f77211729315d3a3037611a3ab7ff8961014961e77137af19beb"
+
+[kinematics]
+coupling = "independent"
+
+[kinematics.small]
+family = "four_stage"
+
+[kinematics.large]
+family = "four_stage"
+
+# ---------------------------------------------------------------------------
+# Machine scale: deliberately fixed for Stage 0.
+# We will rescale later toward ~150 W indicated input instead of forcing
+# the optimizer to hit a prescribed power now.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "volume.total_swept_m3"
+value = 0.0018217821782178217
+unit = "m^3"
+
+[[parameters]]
+name = "volume.small_clearance_ratio"
+value = 0.30
+unit = "1"
+
+[[parameters]]
+name = "volume.large_clearance_ratio"
+value = 0.30
+unit = "1"
+
+[[parameters]]
+name = "operation.frequency_hz"
+value = 2.8
+unit = "Hz"
+
+[[parameters]]
+name = "charge.total_mass_kg"
+value = 0.0012027347024506055
+unit = "kg"
+
+# ---------------------------------------------------------------------------
+# Thermodynamic partition — active.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "volume.swept_ratio"
+unit = "1"
+initial = 0.877401424506769
+lower = 0.50
+upper = 1.30
+kind = "continuous"
+transform = "linear"
+
+# ---------------------------------------------------------------------------
+# Four-stage kinematics — active.
+#
+# Bounds are deliberately ordered/non-overlapping so the global Sobol search
+# does not waste most candidates on t1 >= t2 >= t3 invalidity.
+# Both cylinders start with identical timing but are currently free to separate.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "kinematics.small.t1"
+unit = "1"
+initial = 0.20
+lower = 0.06
+upper = 0.32
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.small.t2"
+unit = "1"
+initial = 0.50
+lower = 0.35
+upper = 0.65
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.small.t3"
+unit = "1"
+initial = 0.70
+lower = 0.68
+upper = 0.94
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.small.a_s"
+unit = "1"
+initial = 0.20
+lower = 0.02
+upper = 0.98
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.small.b_s"
+unit = "1"
+initial = 0.80
+lower = 0.02
+upper = 0.98
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.large.t1"
+unit = "1"
+initial = 0.20
+lower = 0.06
+upper = 0.32
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.large.t2"
+unit = "1"
+initial = 0.50
+lower = 0.35
+upper = 0.65
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.large.t3"
+unit = "1"
+initial = 0.70
+lower = 0.68
+upper = 0.94
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.large.a_l"
+unit = "1"
+initial = 0.20
+lower = 0.02
+upper = 0.98
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "kinematics.large.b_l"
+unit = "1"
+initial = 0.80
+lower = 0.02
+upper = 0.98
+kind = "continuous"
+transform = "linear"
+
+# ---------------------------------------------------------------------------
+# H_i microtube exchanger — geometry active, construction details fixed.
+# Historical production bounds are used as a conservative first search box.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "microtube.heat_in.tube_count"
+unit = "1"
+initial = 4029
+lower = 2400
+upper = 8000
+kind = "integer"
+encoding = "nearest_even_v1"
+
+[[parameters]]
+name = "microtube.heat_in.tube_length_m"
+unit = "m"
+initial = 0.03833674002331392
+lower = 0.03175
+upper = 0.06350
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_in.inner_diameter_m"
+value = 0.00033
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_in.wall_thickness_m"
+value = 0.0001524
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_in.pitch_m"
+value = 0.00125
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_in.header_depth_m"
+value = 0.002
+unit = "m"
+
+# ---------------------------------------------------------------------------
+# H_o microtube exchanger.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "microtube.heat_out.tube_count"
+unit = "1"
+initial = 4555
+lower = 2400
+upper = 8000
+kind = "integer"
+encoding = "nearest_even_v1"
+
+[[parameters]]
+name = "microtube.heat_out.tube_length_m"
+unit = "m"
+initial = 0.023607543873307223
+lower = 0.016933333333333334
+upper = 0.0500
+kind = "continuous"
+transform = "linear"
+
+[[parameters]]
+name = "microtube.heat_out.inner_diameter_m"
+value = 0.00033
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_out.wall_thickness_m"
+value = 0.0001524
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_out.pitch_m"
+value = 0.00125
+unit = "m"
+
+[[parameters]]
+name = "microtube.heat_out.header_depth_m"
+value = 0.002
+unit = "m"
+
+# ---------------------------------------------------------------------------
+# Wall material — fixed initially.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "thermal.heat_in.metal_conductivity_w_m_k"
+value = 15.0
+unit = "W/(m*K)"
+
+[[parameters]]
+name = "thermal.heat_in.metal_density_kg_m3"
+value = 8000.0
+unit = "kg/m^3"
+
+[[parameters]]
+name = "thermal.heat_in.metal_cp_j_kg_k"
+value = 500.0
+unit = "J/(kg*K)"
+
+[[parameters]]
+name = "thermal.heat_out.metal_conductivity_w_m_k"
+value = 15.0
+unit = "W/(m*K)"
+
+[[parameters]]
+name = "thermal.heat_out.metal_density_kg_m3"
+value = 8000.0
+unit = "kg/m^3"
+
+[[parameters]]
+name = "thermal.heat_out.metal_cp_j_kg_k"
+value = 500.0
+unit = "J/(kg*K)"
+
+# ---------------------------------------------------------------------------
+# External liquid-like streams — fixed for Stage 0.
+#
+# These retain the validated V3 mild refrigeration scenario.  They are NOT
+# yet the final water-freezing boundary condition and external-loop pump losses
+# remain excluded.
+# ---------------------------------------------------------------------------
+
+[[parameters]]
+name = "external_stream.heat_in.inlet_temperature_k"
+value = 278.15
+unit = "K"
+
+[[parameters]]
+name = "external_stream.heat_in.mass_flow_kg_s"
+value = 0.05
+unit = "kg/s"
+
+[[parameters]]
+name = "external_stream.heat_in.cp_j_kg_k"
+value = 4180.0
+unit = "J/(kg*K)"
+
+[[parameters]]
+name = "external_stream.heat_in.wall_conductance_w_k"
+value = 150.0
+unit = "W/K"
+
+[[parameters]]
+name = "external_stream.heat_out.inlet_temperature_k"
+value = 298.15
+unit = "K"
+
+[[parameters]]
+name = "external_stream.heat_out.mass_flow_kg_s"
+value = 0.05
+unit = "kg/s"
+
+[[parameters]]
+name = "external_stream.heat_out.cp_j_kg_k"
+value = 4180.0
+unit = "J/(kg*K)"
+
+[[parameters]]
+name = "external_stream.heat_out.wall_conductance_w_k"
+value = 150.0
+unit = "W/K"
+
+[policies]
+volume_partition = "total_swept_and_clearance_ratios"
+charge = "explicit_inventory"
+outlet_valve_cda = "fixed_source_cda"
+mechanical_losses = "unknown"
+useful_power = "unavailable"
+local_reflux = "retain_signed_flows"
+external_loop_hydraulics = "unmodelled"
+external_pump_fan_consumption = "excluded_from_balance"
+
+[objective]
+type = "maximize_cooling_cop"
+unit = "1"
+
+# Power is intentionally NOT constrained at this stage.
+# We will inspect indicated input power and rescale the machine in later studies.
+
+[[constraints]]
+type = "maximum_pressure"
+limit = 1200000.0
+unit = "Pa"
+
+[[constraints]]
+type = "maximum_temperature"
+limit = 850.0
+unit = "K"
+
+[[constraints]]
+type = "maximum_absolute_mass_flow"
+limit = 0.08
+unit = "kg/s"
+
+[[constraints]]
+type = "valid_thermodynamic_model"
+unit = "1"
+
+[screening]
+samples = 1440
+maximum_large_enclosed_volume_m3 = 0.066
+
+[search]
+type = "sobol"
+seed = 28092026
+scramble = true
+domain = "fixed_global_bounds"
+
+[numerical]
+maximum_cycles = 100
+backend = "numba"
+candidate_budget_seconds = 180.0
+domain_error_retry = "once_safe_uniform_state_with_source_wall_temperatures"
+
+[warm_start]
+initial_source = "uniform"
+
+[execution]
+default_budget = "15m"
+default_max_candidates = 8
+initial_evaluation_seconds = 30.0
+deadline_grace_seconds = 5.0

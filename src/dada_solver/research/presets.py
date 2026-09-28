@@ -20,7 +20,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     artifact_paths={side:output.with_name(output.stem+'.'+side+'.mechanism.json') for side in ('small','large')}
     if any(p.exists() for p in (output,basis_file,*artifact_paths.values())): raise ValueError('Study or associated input already exists; choose a new output name.')
     if champion: small=large='structured_c2_15p'
-    basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'machine_basis_v2.json').read_text()
+    basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis_v2.json').read_text()
     digest=hashlib.sha256(basis_text.encode()).hexdigest()
     # Build and validate all content before publishing a complete template.
     import tempfile
@@ -49,7 +49,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
             artifacts[side]=artifact
             settings=dict(settings,artifact=artifact_paths[side].name,sha256=artifact.content_hash)
         else:
-            if family in ('free_spline','fourier_c2','structured_c2_15p'):
+            if family in ('free_spline','fourier_c2','structured_c2_15p','hybrid_compact'):
                 mechanical.append(dict(side=side,metric='zero_crossing_count',relation='equal',limit=2,unit='1'))
         kinematics[side]=settings
         for name,value in parameters.items():
@@ -68,7 +68,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
         mechanical_constraints=mechanical,screening=dict(samples=1440,maximum_large_enclosed_volume_m3=.066),
         search=dict(type='sobol',seed=3965000,scramble=True,domain='fixed_global_bounds'),
         numerical=dict(maximum_cycles=100,backend='numba',candidate_budget_seconds=180.,domain_error_retry='once_safe_uniform_state_with_source_wall_temperatures'),
-        warm_start=dict(initial_source='source_exact' if champion or (small==large=='six_bar') else 'uniform'),
+        warm_start=dict(initial_source='source_exact' if champion or (small==large and small in ('six_bar','hybrid_compact')) else 'uniform'),
         execution=dict(default_budget='2m',default_max_candidates=2,initial_evaluation_seconds=30.,deadline_grace_seconds=5.))
     source=dumps(raw)
     # Validate in isolation so bad family combinations cannot leave partial inputs.

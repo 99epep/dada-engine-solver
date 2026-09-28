@@ -12,13 +12,14 @@ from dada_solver.free_kinematics import FreeMotionDefinition, FreeKinematicsConf
 from dada_solver.phased_free_kinematics import PhaseShiftedFreeKinematics
 from dada_solver.fourier_kinematics import FourierVolumeKinematics
 from dada_solver.structured_kinematics import StructuredKinematics15
+from dada_solver.hybrid_compact_kinematics import HybridCompactKinematics
 from dada_solver.kinematics import HarmonicVolumeKinematics, IdealPiecewiseLinearVolumeKinematics
 from dada_solver.four_stage_kinematics import FourStageVolumeKinematics
 from dada_solver.independent_four_stage_kinematics import IndependentFourStageVolumeKinematics
 from dada_solver.mechanism_diagnostics import six_bar_metrics, four_bar_metrics, zero_crossings
 
 FAMILIES=('harmonic','slider_crank','four_bar','six_bar','free_spline','fourier_c2',
-          'structured_c2_15p','ideal_piecewise','four_stage','independent_four_stage')
+          'structured_c2_15p','ideal_piecewise','four_stage','independent_four_stage','hybrid_compact')
 PHYSICAL_FAMILIES=('slider_crank','four_bar','six_bar')
 SIXBAR_CONTINUOUS=tuple(f.name for f in fields(SixBarCylinderMechanism) if f.init and 'branch' not in f.name)
 PRIMARY_COORDINATES=SIXBAR_CONTINUOUS[:6]
@@ -27,6 +28,7 @@ STRUCTURED_DEFAULTS=dict(small_max_deg=180.,small_down_duration_deg=180.,large_d
     small_max_curvature=16.,small_min_curvature=16.,large_max_curvature=16.,large_min_curvature=16.,
     small_up_bp_mid_q=.5,large_down_bp_mid_q=.5,small_down_kink_u=.5,small_down_kink_q=.5,
     small_down_kink_width_rel=.5,large_up_kink_u=.5,large_up_kink_q=.5,large_up_kink_width_rel=.5)
+HYBRID_COMPACT_DEFAULTS = {'small_max_deg': 159.9896807151838, 'small_down_duration_deg': 154.34898715570617, 'large_down_duration_deg': 204.75091539779868, 'large_down_rounding': 0.09031610971409856, 'small_up_rounding': 0.1257187427943574, 'small_down_kink_u': 0.5641084556417698, 'small_down_kink_q': 0.7123342432191856, 'large_up_kink_u': 0.6898642219110528, 'large_up_kink_q': 0.445918856800329}
 
 
 @dataclass(frozen=True)
@@ -85,6 +87,8 @@ def parameter_specs(settings, side):
         return spec([f'coefficient_{i}' for i in range(2*h)])
     if family=='structured_c2_15p':
         return {k:ParameterSpec('deg' if k.endswith('_deg') else '1') for k in STRUCTURED_DEFAULTS if k.startswith(side+'_')}
+    if family=='hybrid_compact':
+        return {k:ParameterSpec('deg' if k.endswith('_deg') else '1') for k in HYBRID_COMPACT_DEFAULTS if k.startswith(side+'_')}
     if family=='ideal_piecewise': return spec(['small_lambda_target','large_lambda_target','adiabatic_sector_fraction'])
     if family=='four_stage': return spec(['t1','t2','t3',*(['a_s','b_s'] if side=='small' else ['a_l','b_l'])])
     return spec(['t0_s','t1_s','t2_s','t3_s','a_s','b_s'] if side=='small' else ['t1_l','t2_l','t3_l','a_l','b_l'])
@@ -135,6 +139,8 @@ def build_side(settings, parameters, side, limits):
     elif family=='structured_c2_15p':
         model=StructuredKinematics15(SimpleNamespace(small_cylinder=limits,large_cylinder=limits),dict(STRUCTURED_DEFAULTS,**p))
         # Only the selected piston contributes; the other helper branch is unused.
+    elif family=='hybrid_compact':
+        model=HybridCompactKinematics(limits,limits,**dict(HYBRID_COMPACT_DEFAULTS,**p))
     elif family=='ideal_piecewise': model=IdealPiecewiseLinearVolumeKinematics(limits,limits,**p)
     elif family=='four_stage':
         model=FourStageVolumeKinematics(limits,limits,**dict(dict(t1=.25,t2=.5,t3=.75,a_l=.5,b_l=.5,a_s=.5,b_s=.5),**p))
@@ -186,7 +192,7 @@ MECHANICAL_METRICS={
 
 def available_metrics(family):
     common={'maximum_absolute_first_derivative','zero_crossing_count'}
-    if family not in ('four_bar','six_bar','ideal_piecewise','four_stage','independent_four_stage'): common.add('maximum_absolute_second_derivative')
+    if family not in ('four_bar','six_bar','ideal_piecewise','four_stage','independent_four_stage','hybrid_compact'): common.add('maximum_absolute_second_derivative')
     if family in PHYSICAL_FAMILIES: common.update(('stroke_over_crank','minimum_rod_axis_cosine'))
     if family in ('four_bar','six_bar'): common.add('minimum_primary_transmission_sine')
     if family=='four_bar': common.add('stroke_over_envelope')
