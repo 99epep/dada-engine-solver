@@ -293,6 +293,9 @@ class WallDiagnosticCycle:
         self.topologies = tuple(topology for _ in angles)
         self.final_topology = topology
         self.events = ()
+        # The wall integrator does not locate diode pressure-crossing roots.
+        # Empty events are not evidence of a non-nominal valve chronology.
+        self.valve_events_unavailable_reason = 'wall_integrator_does_not_record_valve_events'
         self.completed = True
 
     @property

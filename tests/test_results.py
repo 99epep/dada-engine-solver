@@ -6,7 +6,7 @@ from dada_solver.topology import CycleTopologyClassification
 from tests.test_periodic import create_static_cycle
 
 
-def test_static_cycle_diagnostics_report_uniform_state_and_non_nominal_topology(
+def test_static_cycle_diagnostics_report_uniform_state_and_unavailable_topology(
     ideal_gas: CaloricallyPerfectGas,
 ) -> None:
     model, _, cycle = create_static_cycle(ideal_gas)
@@ -19,6 +19,6 @@ def test_static_cycle_diagnostics_report_uniform_state_and_non_nominal_topology(
     assert diagnostics.valve_events == ()
     assert (
         diagnostics.topology.classification
-        is CycleTopologyClassification.NON_NOMINAL
+        is CycleTopologyClassification.UNAVAILABLE
     )
-
+    assert diagnostics.topology.reasons == ('no_usable_valve_event_sequence',)

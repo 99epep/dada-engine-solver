@@ -1,4 +1,4 @@
-"""Read-only inspection and offline candidate comparisons; never replay physics."""
+"""Read-only comparisons with optional kinematic sampling; no thermodynamic replay."""
 from collections import Counter
 import html
 import json
@@ -73,6 +73,14 @@ def inspect(path):
         record['resolved_parameters']=dict(scientific.get('fixed_parameters',{}),**record['physical'])
         record['parameter_units']={p['name']:p['unit'] for p in scientific['parameters']}
         record['kinematic_families']=record.get('families',{})
+        diagnostic = record.get('diagnostics') or {}
+        topology = diagnostic.get('topology')
+        record['topology_display'] = topology
+        if topology and not diagnostic.get('valve_events') and topology.get('classification') != 'unavailable':
+            # Presentation correction only: retain the original stored diagnostic.
+            record['topology_display'] = dict(classification='unavailable',
+                reasons=['legacy_record_has_no_usable_valve_event_sequence'],
+                stored_classification=topology.get('classification'))
     return dict(schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
                 scientific=scientific, runtime_compatible=compatible, warnings=warnings,
                 status_counts=dict(Counter(r['status'] for r in records)), records=records,
@@ -96,10 +104,23 @@ def select_records(data, selectors=()):
     return selected
 
 
-def compare(paths, selectors=()):
+def compare(paths, selectors=(), *, plots=None):
     studies = [inspect(path) for path in paths]
     records = []
-    for study in studies: records.extend(select_records(study, selectors))
+    if plots not in (None, 'volumes'): raise ValueError('Only volume plots are available; thermodynamic replay is not implemented.')
+    for study in studies:
+        selected = select_records(study, selectors)
+        if plots:
+            from .snapshots import stored_study
+            from .visualization import sample_report_volumes
+            with stored_study(study) as snapshot:
+                cache = {}
+                for row in selected:
+                    key = row['candidate_id']
+                    if key not in cache:
+                        cache[key] = sample_report_volumes(snapshot, row['physical'])
+                    row['plots'] = {'volumes': cache[key]}
+        records.extend(selected)
     if len(studies) == 1:
         result = studies[0]
         result['selected'] = records
@@ -132,6 +153,12 @@ def text_report(data):
 def render_html(data, destination):
     destination = Path(destination)
     if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
+    if destination.exists(): raise ValueError('HTML report already exists; choose a new filename.')
+    if 'selected' in data:
+        # Retain lightweight progress for every attempt, and detailed evidence
+        # only for the requested candidates. No stored artifact is modified.
+        data = dict(data, records=[{k:r.get(k) for k in
+            ('candidate_id','status','duration_seconds','metrics')} for r in data['records']])
     escaped_data = json.dumps(data, allow_nan=False).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
     page = HTML.replace('TITLE_TEXT', html.escape(data['name'])).replace('EMBEDDED_DATA', escaped_data)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -143,14 +170,17 @@ HTML = '''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TITLE_TEXT</title>
 <style>
-body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
+body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}th button{font:inherit;font-weight:600;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
 </style><main>
-<h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or trajectory replay during rendering</p>
+<h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or thermodynamic replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
 <p id="boundary">Efficiency uses indicated gas work divided by external-stream heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-loop hydraulic losses and pump/fan consumption are excluded from the balance, not physically zero.</p>
 <div class="plots"><div class="card"><h2 id="performanceTitle">Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
 <h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
+<label>Sort by <select id="sortBy"></select></label><label>Direction <select id="sortDirection"><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
+<p class="muted">Click a column heading to sort. Missing values stay last. Additional metrics, active parameters and constraint margins are available in Sort by.</p>
 <div class="card"><table id="candidates"></table></div>
+<section id="volumeSection" hidden><h2>Cylinder volumes</h2><p>One cycle in solver angle, with the operation convention applied once. Solid: small cylinder; dashed: large cylinder. No thermodynamic integration.</p><div class="card" id="volumes"></div></section>
 <h2>Compare selected candidates</h2><p>Values are absolute; the difference is B − A. Missing data stays unavailable.</p>
 <label>Candidate A <select id="left"></select></label><label>Candidate B <select id="right"></select></label>
 <div class="card"><table id="comparison"></table></div>
@@ -158,7 +188,7 @@ body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:
 <div class="card"><h3>Candidate A</h3><table id="constraintsA"></table><h3>Candidate B</h3><table id="constraintsB"></table></div>
 <details class="card"><summary>Selected candidate details, constraints and convergence</summary><pre id="detail"></pre></details>
 <details class="card"><summary>Scientific definition and provenance</summary><pre id="provenance"></pre></details>
-<p class="muted">Closure screens are sampled numerical checks, not continuous feasibility proofs. This validation study does not establish a global optimum. Trajectories and animations are unavailable in this release.</p>
+<p class="muted">Closure screens are sampled numerical checks, not continuous feasibility proofs. This validation study does not establish a global optimum. Volume curves are available on request. Thermodynamic trajectories and animations are not generated by this report.</p>
 </main><script id="data" type="application/json">EMBEDDED_DATA</script><script>
 'use strict';
 const d=JSON.parse(document.getElementById('data').textContent),byId=id=>document.getElementById(id);
@@ -187,11 +217,62 @@ function scatter(id,points,xlabel,ylabel){
  for(const p of points)s+='<circle cx="'+x(p[0])+'" cy="'+y(p[1])+'" r="4" fill="'+(p[3]==='feasible'?'#087660':'#b34d39')+'"><title>'+esc(p[2])+'</title></circle>';
  s+='<text x="280" y="273" text-anchor="middle" font-size="12">'+esc(xlabel)+'</text><text transform="translate(14 130) rotate(-90)" text-anchor="middle" font-size="12">'+esc(ylabel)+'</text></svg>';byId(id).innerHTML=s;
 }
+const refluxMin=r=>{const v=Object.values(r.derived?.local_reflux?.minimum_signed_flows_kg_s||{}).filter(Number.isFinite);return v.length?Math.min(...v):null;};
+const columns=[
+ ['id','Candidate ID',r=>r.candidate_id],['status','Status',r=>r.status],
+ ['input','Indicated input [W]',r=>r.metrics.indicated_mechanical_input_power_w],
+ ['power','Indicated gas power [W]',r=>r.metrics.indicated_power_w],
+ ['cooling','Cooling power [W]',r=>r.metrics.cooling_power_w],
+ ['cop','Cooling COP [1]',r=>r.metrics.cooling_cop],
+ ['efficiency','Efficiency [1]',r=>r.metrics.indicated_thermal_efficiency],
+ ['topology','Topology',r=>r.topology_display?.classification],
+ ['reflux','Reflux detected',r=>r.derived?.local_reflux?.detected],
+ ['minimumFlow','Worst signed flow [kg/s]',refluxMin],
+ ['cycles','Cycles',r=>r.periodic_cycle_count],['duration','Duration [s]',r=>r.duration_seconds]];
+const sortColumns=[...columns,
+ ['pressure','Pressure max [Pa]',r=>r.metrics.maximum_pressure_pa],
+ ['temperature','Temperature max [K]',r=>r.metrics.maximum_temperature_k],
+ ['flow','Mass flow max [kg/s]',r=>r.metrics.maximum_absolute_mass_flow_kg_s]];
+for(const key of new Set(rows.flatMap(r=>Object.keys(r.physical||{}))))sortColumns.push(['parameter:'+key,'Parameter: '+key,r=>r.physical?.[key]]);
+for(const key of new Set(rows.flatMap(r=>(r.constraints||[]).map(c=>c.name)))){
+ for(const field of ['margin','relative_margin'])sortColumns.push(['constraint:'+key+':'+field,key+' '+field,r=>{const c=r.constraints?.find(c=>c.name===key);return c?.available?c[field]:null;}]);
+}
+for(const [key,label] of sortColumns)byId('sortBy').add(new Option(label,key));
+byId('sortBy').value=cooling?'cop':'efficiency';byId('sortDirection').value='desc';
+function sortedRows(visible){
+ const get=sortColumns.find(c=>c[0]===byId('sortBy').value)[2],sign=byId('sortDirection').value==='asc'?1:-1;
+ const missing=v=>v===null||v===undefined||(typeof v==='number'&&!Number.isFinite(v));
+ return [...visible].sort((a,b)=>{const x=get(a),y=get(b);if(missing(x)||missing(y))return missing(x)===missing(y)?a.candidate_id.localeCompare(b.candidate_id):missing(x)?1:-1;
+ const order=typeof x==='number'||typeof x==='boolean'?Number(x)-Number(y):String(x).localeCompare(String(y));return sign*order||a.candidate_id.localeCompare(b.candidate_id);});
+}
 function show(){
- const visible=rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied)));
- table('candidates',['Candidate ID','Status',cooling?'Indicated input [W]':'Indicated gas power [W]',cooling?'Cooling power [W]':'Heat input [W]',cooling?'Cooling COP [1]':'Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,(cooling?r.metrics.indicated_mechanical_input_power_w:r.metrics.indicated_power_w),(cooling?r.metrics.cooling_power_w:r.metrics.heat_input_w),r.metrics[ykey],r.periodic_cycle_count,r.duration_seconds]));
+ const visible=sortedRows(rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied))));
+ const shown=columns.filter(c=>cooling?c[0]!=='efficiency':!['input','cooling','cop'].includes(c[0]));
+ table('candidates',shown.map(c=>c[1]),visible.map(r=>shown.map(c=>c[2](r))));
+ [...byId('candidates').querySelectorAll('tbody tr')].forEach((tr,i)=>{tr.cells[0].title=visible[i].candidate_id;tr.cells[0].textContent=visible[i].candidate_id.slice(0,12);});
+ [...byId('candidates').querySelectorAll('th')].forEach((th,i)=>{const key=shown[i][0],selected=byId('sortBy').value===key;
+ th.setAttribute('aria-sort',selected?(byId('sortDirection').value==='asc'?'ascending':'descending'):'none');
+ const button=document.createElement('button');button.textContent=shown[i][1]+(selected?(byId('sortDirection').value==='asc'?' ↑':' ↓'):'');
+ button.onclick=()=>{byId('sortDirection').value=selected&&byId('sortDirection').value==='asc'?'desc':'asc';byId('sortBy').value=key;show();};th.replaceChildren(button);
+ });
  scatter('scatter',visible.filter(r=>Number.isFinite(r.metrics.indicated_power_w)&&Number.isFinite(r.metrics[ykey])).map(r=>[r.metrics.indicated_power_w,yscale*r.metrics[ykey],r.candidate_id,r.status]),'Indicated gas power [W]',ylabel);
  let elapsed=0,points=[];for(const r of d.records){elapsed+=r.duration_seconds||0;if(Number.isFinite(r.metrics[ykey]))points.push([elapsed,yscale*r.metrics[ykey],r.candidate_id,r.status]);}scatter('progress',points,'Cumulative evaluation time [s]',ylabel);
+}
+function volumePlots(){
+ const plotted=rows.filter(r=>r.plots?.volumes);if(!plotted.length)return;
+ byId('volumeSection').hidden=false;
+ const w=1000,h=400,l=80,b=55,t=20,right=20,colors=['#17658b','#b74424','#087660','#773baa','#986700'];
+ const ymax=Math.max(...plotted.flatMap(r=>[...r.plots.volumes.small,...r.plots.volumes.large]))*1.06;
+ const x=v=>l+v/360*(w-l-right),y=v=>h-b-v/ymax*(h-b-t);
+ let svg='<svg role="img" aria-label="Small and large cylinder volumes over one cycle" viewBox="0 0 '+w+' '+h+'"><path d="M'+l+' '+t+' V'+(h-b)+' H'+(w-right)+'" fill="none" stroke="#526575"/>';
+ for(let i=0;i<=6;i++)svg+='<text x="'+x(i*60)+'" y="'+(h-b+22)+'" text-anchor="middle" font-size="13">'+i*60+'</text>';
+ for(let i=0;i<=4;i++){const v=ymax*i/4;svg+='<text x="'+(l-8)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="13">'+(v*1000).toPrecision(4)+'</text>';}
+ for(const [i,row] of plotted.entries())for(const side of ['small','large']){
+  const p=row.plots.volumes,color=colors[i%colors.length],points=p.angle.map((a,j)=>x(a)+','+y(p[side][j])).join(' ');
+  svg+='<polyline data-candidate="'+esc(row.candidate_id)+'" data-side="'+side+'" points="'+points+'" fill="none" stroke="'+color+'" stroke-width="2"'+(side==='large'?' stroke-dasharray="7 4"':'')+'><title>'+esc(row.candidate_id+' · '+side)+'</title></polyline>';
+ }
+ svg+='<text x="530" y="395" text-anchor="middle">Solver cycle angle [deg]</text><text transform="translate(20 190) rotate(-90)" text-anchor="middle">Cylinder volume [L]</text></svg>';
+ byId('volumes').innerHTML=svg+'<ul>'+plotted.map((r,i)=>'<li style="color:'+colors[i%colors.length]+'"><code>'+esc(r.candidate_id)+'</code> · solid small / dashed large</li>').join('')+'</ul>';
 }
 function compare(){
  if(!rows.length){byId('comparison').textContent='No evaluated candidates yet.';return;}
@@ -211,5 +292,5 @@ function compare(){
  }
  table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
 }
-byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
+byId('sortBy').onchange=show;byId('sortDirection').onchange=show;volumePlots();byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
 </script></html>'''

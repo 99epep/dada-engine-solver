@@ -54,3 +54,21 @@ def sample_motion(study, active_values=None, *, samples=361):
         out['crank_radius_m']=study.settings[side].get('crank_radius_m') if hasattr(study,'settings') else None
         result['sides'][side]=out
     return result
+
+
+def sample_report_volumes(study, active_values, *, samples=721):
+    """Sample physical volumes in solver cycle angle, with operation applied once."""
+    if type(samples) is not int or samples < 3:
+        raise ValueError('At least three angle samples are required.')
+    definition = compile_study(study)
+    study.space.encode(active_values)
+    design = definition.adapter.build(dict(definition.fixed_parameters, **active_values))
+    built = design.build()
+    model = getattr(built, 'model', built)
+    angles = np.linspace(0., 2*math.pi, samples)
+    volumes = [model.volumes(float(angle)) for angle in angles]
+    return dict(schema_version=1, kind='volumes', angle_domain='solver_cycle_angle',
+        operation_transform='applied once by production factory', angle_unit='deg',
+        volume_unit='m^3', angle=np.degrees(angles).tolist(),
+        small=[v.small_cylinder for v in volumes], large=[v.large_cylinder for v in volumes],
+        thermodynamic_replay=False, method='current production kinematics; no ODE integration')
