@@ -1,36 +1,18 @@
-# Human Cell Stage 0
+# Dada-Engine Human Cell — Stage 0
 
-Initial Dada-Engine Research files for the first coupled human-powered
-refrigeration study.
+Initial Research files for the human-powered cooling-cell study.
 
-Files:
+- `study.toml`: 14D coupled optimization.
+- `STUDY_NOTES.md`: rationale and run sequence.
 
-- `study.toml` — Research V3 study definition.
-- `STUDY_NOTES.md` — rationale, known limitation of `four_stage` ownership,
-  and proposed progression.
+Nominal conditions:
 
-Expected location in the source checkout:
+- `hybrid_compact` 9-coordinate motion;
+- 2.8 Hz;
+- cold side 273.15 K;
+- hot side 298.15 K;
+- maximize refrigeration COP;
+- no mechanical-input power target at this stage.
 
-```text
-outputs/human_cell_stage0/
-```
-
-`study.toml` intentionally reuses:
-
-```text
-outputs/research_v3/refrigeration.basis.json
-```
-
-and its recorded SHA-256.  If that validated V3 basis is absent or differs in
-the local checkout, regenerate the V3 refrigeration preset/basis first instead
-of changing the hash by hand.
-
-Before running a campaign:
-
-```sh
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src \
-  python3 -m dada_solver.research validate outputs/human_cell_stage0/study.toml
-```
-
-The study maximizes cooling COP.  There is deliberately no mechanical-input
-power target or minimum cooling-power constraint in Stage 0.
+The study reuses the validated V3 refrigeration basis at
+`outputs/research_v3/refrigeration.basis.json`.
