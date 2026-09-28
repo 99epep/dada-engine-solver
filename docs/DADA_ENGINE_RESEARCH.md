@@ -1,10 +1,47 @@
 # Dada-Engine Research
 
-The first working release lets a researcher configure, evaluate, search and
-compare a fixed independent six-bar pair with five thermal/hardware coordinates.
-This is the first validation study, not a permanent restriction on the future
-research module. The existing campaign engine owns persistence, exact identities,
-Sobol continuation, deadlines and recovery. Production physics is unchanged.
+Research V2 selects kinematic families independently for the small and large
+cylinders, with fixed or active coordinates in the existing campaign engine.
+The V1 fixed six-bar / five-parameter study remains available as a regression
+preset. Exact identities, Sobol continuation, deadlines and recovery are retained;
+production thermodynamic physics is unchanged.
+
+## Select a motion family (V2)
+
+```sh
+PYTHONPATH=src python3 -m dada_solver.research init kinematics --small slider_crank --large harmonic --output outputs/my_motion/study.toml
+PYTHONPATH=src python3 -m dada_solver.research validate outputs/my_motion/study.toml
+PYTHONPATH=src python3 -m dada_solver.research evaluate outputs/my_motion/study.toml --output outputs/my_motion/reference.json --budget 3m
+PYTHONPATH=src python3 -m dada_solver.research report outputs/my_motion/reference.json --html outputs/my_motion/reference.html
+```
+
+Templates start with fixed values. Replace a parameter's `value` with
+`initial`, `lower`, `upper`, `kind = "continuous"`, and `transform = "linear"`
+to activate it, retaining its name and unit. A study with no active coordinates
+uses `evaluate`; a study with active coordinates can also `run` and `resume`.
+Thermal, hardware and kinematic coordinates use the same declaration and vector.
+
+Available families are harmonic, centered/offset slider-crank, four-bar, six-bar,
+periodic free spline, Fourier C2, structured C2 15p, ideal piecewise, shared-origin
+four-stage and independent four-stage laws. `--small` and `--large` accept mixed
+families. `init structured-c2-3952` creates the original structured historical
+candidate with its own thermal basis and warm state.
+
+The [kinematics and mechanism reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
+contains executable examples, exact names/units, artifact conventions, screening
+constraints, and the boundary between available thermo-mechanical search and
+future hierarchical synthesis. The [bounded demonstration](../outputs/research_kinematics_v2/comparison.html)
+compares recorded family evaluations; it is not a fair optimization ranking.
+
+Every reported constraint now exposes current value, limit, absolute margin,
+relative margin where meaningful, and satisfied/violated/unavailable state.
+Amber highlights satisfied limits within 5%; it is not a safety factor.
+Research provides evidence without automatic scientific recommendations.
+
+## V1 fixed-pair validation study
+
+The following walkthrough remains valid for `sixbar-thermo5d` (schema 1).
+Use the linked V2 reference to configure other families or different ownership.
 
 ## Start from the checkout
 

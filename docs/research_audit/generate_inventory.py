@@ -148,6 +148,12 @@ def main():
                          migration_status="retained; static inventory verified; semantic parity pending",
                          evidence=evidence))
     graph = {r["file"]: r["evidence"]["local_imports"] for r in rows}
+    # Reviewed semantic status is explicit, never inferred from an AST import.
+    reviewed=json.loads((DEST/'kinematics_v2_migrations.json').read_text())
+    for row in rows:
+        if row['file'] in reviewed['examples']:
+            row.update(reviewed['examples'][row['file']])
+            row['migration_evidence']=reviewed['evidence']
     for row in rows:
         seen = set()
         todo = list(graph[row["file"]])
@@ -168,7 +174,7 @@ def main():
     columns = ["file", "category", "canonical_successor", "shared_logic", "study_specific_logic",
                "inputs", "outputs", "tests", "migration_status", "sha256", "tracked", "documentation"]
     with (DEST.parent / "DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=columns, extrasaction="ignore")
+        writer = csv.DictWriter(stream, fieldnames=columns, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({k: json.dumps(row[k], ensure_ascii=False) if isinstance(row[k], list) else row[k] for k in columns})

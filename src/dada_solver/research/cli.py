@@ -35,16 +35,19 @@ def evaluate(study_path, output, *, assignments=(), reference=False, budget=None
     definition = compile_study(study)
     values = {p.name:p.initial for p in study.space.parameters}
     if reference:
+        if study.data['schema_version']!=1: raise ValueError('V2 uses configured fixed/initial values; --reference is a V1 regression selector.')
         values = {name:study.basis.data['reference_parameters'][spec[2]] for name,spec in PARAMETERS.items()}
     aliases = {spec[2]:name for name,spec in PARAMETERS.items()}
+    owned={p.name:p for p in study.space.parameters}
     assigned = set()
     for assignment in assignments:
         name, sep, value = assignment.partition('=')
         name = aliases.get(name,name)
-        if not sep or name not in PARAMETERS or name in assigned:
+        if not sep or name not in owned or name in assigned:
             raise ValueError(f'Expected a unique known parameter=value, got {assignment!r}.')
         assigned.add(name)
-        values[name] = int(value) if PARAMETERS[name][0]=='integer' else float(value)
+        from dada_solver.campaign.parameters import IntegerParameter
+        values[name] = int(value) if isinstance(owned[name],IntegerParameter) else float(value)
     candidate = candidate_for_values(definition, values)
     started = time.monotonic()
     seconds = parse_budget(budget) if budget is not None else definition.candidate_budget_seconds
@@ -65,7 +68,11 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     init = commands.add_parser('init', help='Create an editable study and its portable basis')
-    init.add_argument('preset', choices=['sixbar-thermo5d'])
+    init.add_argument('preset', choices=['sixbar-thermo5d','kinematics','structured-c2-3952'])
+    from .families import FAMILIES
+    init.add_argument('--small',choices=FAMILIES,default='harmonic')
+    init.add_argument('--large',choices=FAMILIES,default='harmonic')
+    init.add_argument('--coupling',choices=['independent','shared_crank'],default='independent')
     init.add_argument('--output', type=Path, required=True)
     validate = commands.add_parser('validate', help='Validate configuration and geometry without integration')
     validate.add_argument('study', type=Path)
@@ -94,21 +101,31 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'init':
-            path = initialize(args.output)
+            if args.preset=='sixbar-thermo5d':
+                if (args.small,args.large,args.coupling)!=('harmonic','harmonic','independent'):
+                    raise ValueError('Use the kinematics preset to choose cylinder families.')
+                path = initialize(args.output)
+            else:
+                from .presets import initialize_v2
+                path=initialize_v2(args.output,args.small,args.large,coupling=args.coupling,champion=args.preset=='structured-c2-3952')
             print(f'Created {path} and {path.with_suffix(".basis.json")}. Next: dada-research validate {path}')
         elif args.command == 'validate':
             study = load_study(args.study)
             definition = compile_study(study)
             validation = dict(valid=True, study_id=study.study_id, protocol=study.data['study']['protocol'],
-                fixed=study.data['fixed'], parameters=study.data['parameters'], backend=definition.numerical_settings['wall_backend'],
+                fixed=getattr(study,'fixed_parameters',study.data.get('fixed',{})), parameters=study.data['parameters'], backend=definition.numerical_settings['wall_backend'],
                 integration_started=False)
             if args.json:
                 print(json.dumps(validation, indent=2))
             else:
                 print(f"Valid study: {study.data['study']['name']}\nStudy: {study.study_id}")
-                print(f"Fixed six-bar pair; air inlets {study.data['fixed']['cold_air_inlet_K']} / {study.data['fixed']['hot_air_inlet_K']} K; no integration started.")
+                if study.data['schema_version']==1:
+                    print(f"Fixed six-bar pair; air inlets {study.data['fixed']['cold_air_inlet_K']} / {study.data['fixed']['hot_air_inlet_K']} K; no integration started.")
+                else:
+                    print(f"Families: {study.settings['small']['family']} / {study.settings['large']['family']}; {len(study.space.parameters)} active coordinates; no integration started.")
                 for p in study.data['parameters']:
-                    print(f"  {p['name']} [{p['unit']}]: {p['lower']} .. {p['upper']}; initial {p['initial']}")
+                    description=f"fixed {p['value']}" if 'value' in p else f"{p['lower']} .. {p['upper']}; initial {p['initial']}"
+                    print(f"  {p['name']} [{p['unit']}]: {description}")
                 if definition.wall_backend.name=='numba' and not validation['backend'].get('numba_available'):
                     print('Numba is unavailable; the existing Python fallback will be recorded in each result.')
         elif args.command in ('run','resume'):
@@ -117,6 +134,7 @@ def main(argv=None):
             if args.command == 'run':
                 if args.directory.exists() and any(args.directory.iterdir()): raise ValueError('Study directory is not empty; use resume or choose a new directory.')
                 definition = compile_study(load_study(args.study))
+                if not definition.space.parameters: raise ValueError('No active parameters. Use evaluate, or replace a fixed value by initial/lower/upper before starting a search.')
                 campaign = OptimizationCampaign(definition,args.directory)
             else:
                 definition = CampaignDefinition.resume(args.directory)

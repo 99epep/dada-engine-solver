@@ -80,11 +80,12 @@ def parameter_from_mapping(data):
 @dataclass(frozen=True, slots=True)
 class ParameterSpace:
     parameters: tuple[ContinuousParameter | IntegerParameter, ...]
+    allow_empty: bool = False
 
     def __post_init__(self):
         object.__setattr__(self, 'parameters', tuple(self.parameters))
         names = [p.name for p in self.parameters]
-        if not names or len(names) != len(set(names)):
+        if (not names and not self.allow_empty) or len(names) != len(set(names)):
             raise ValueError('A nonempty space requires unique parameter names.')
 
     @property

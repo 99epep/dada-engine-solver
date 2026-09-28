@@ -51,10 +51,13 @@ class StudyDefinition:
         return tomllib.loads(self.source)
 
 
-def load_study(path, *, basis_path=None):
+def load_study(path, *, basis_path=None, artifact_directory=None):
     path = Path(path)
     source = path.read_text()
     raw = tomllib.loads(source)
+    if type(raw.get('schema_version')) is int and raw['schema_version']==2:
+        from .schema_v2 import load_study_v2
+        return load_study_v2(path,basis_path=basis_path,artifact_directory=artifact_directory)
     canonical_json(raw)
     keys(raw, ('schema_version','study','sources','families','fixed','policies','objective',
                'constraints','parameters','search','numerical','warm_start','execution'), 'study file')
@@ -192,6 +195,9 @@ class ResearchCampaignDefinition(CampaignDefinition):
 
 
 def compile_study(study):
+    if study.data['schema_version']==2:
+        from .schema_v2 import ResearchDefinitionV2
+        return ResearchDefinitionV2(study)
     return ResearchCampaignDefinition(study)
 
 

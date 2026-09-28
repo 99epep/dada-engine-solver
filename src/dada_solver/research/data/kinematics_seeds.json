@@ -1,0 +1,413 @@
+{
+  "seeds": {
+    "small": {
+      "harmonic": {
+        "settings": {
+          "family": "harmonic"
+        },
+        "parameters": {
+          "phase_rad": 4.34586983746588
+        }
+      },
+      "slider_crank": {
+        "settings": {
+          "family": "slider_crank"
+        },
+        "parameters": {
+          "rod_over_crank": 2.148212880329101,
+          "offset_over_crank": 0.2724441348011839,
+          "phase_rad": 2.120385300644478,
+          "volume_increases_with_coordinate": true
+        }
+      },
+      "four_bar": {
+        "settings": {
+          "family": "four_bar",
+          "output": "coupler",
+          "envelope_frame_angle_rad": 3.9134384370786783
+        },
+        "parameters": {
+          "coupler": 3.0488608283186487,
+          "rocker": 2.4605616373931243,
+          "ground_x": -1.7915613312012006,
+          "ground_y": 1.743647899245883,
+          "loop_branch": 1,
+          "output_along": 2.249609160883668,
+          "output_normal": -3.747198089692335,
+          "rod_length": 12.259345612730627,
+          "slider_origin_x": -1.7537965213883786,
+          "slider_origin_y": -1.8019888257678107,
+          "axis_angle": -3.9134384370786783,
+          "slider_branch": 1,
+          "phase_rad": 0.0,
+          "crank_direction": -1,
+          "volume_increases_with_coordinate": true
+        },
+        "constraints": [
+          {
+            "metric": "stroke_over_envelope",
+            "relation": "minimum",
+            "limit": 0.12383384611643017,
+            "unit": "1"
+          },
+          {
+            "metric": "minimum_primary_transmission_sine",
+            "relation": "minimum",
+            "limit": 0.48732261923497106,
+            "unit": "1"
+          },
+          {
+            "metric": "minimum_rod_axis_cosine",
+            "relation": "minimum",
+            "limit": 0.9492633906695808,
+            "unit": "1"
+          }
+        ]
+      },
+      "six_bar": {
+        "settings": {
+          "family": "six_bar"
+        },
+        "parameters": {
+          "primary_ground": 1.6171985844849184,
+          "primary_coupler": 1.6765405732452336,
+          "primary_rocker": 1.4940534144524262,
+          "primary_e_along": 1.7620505705681857,
+          "primary_e_normal": -0.23467031715929387,
+          "primary_phase": -2.999365297436869,
+          "second_pivot_x": 3.6458014551883484,
+          "second_pivot_y": 5.1664246985975595,
+          "link_ef": 1.224201629607174,
+          "link_gf": 4.3871796968248935,
+          "h_along_over_ef": 1.9652666253936457,
+          "h_normal_over_ef": -0.31584172009160305,
+          "piston_rod": 12.222402682411229,
+          "slider_axis_offset": 0.4593862231964493,
+          "slider_axis_angle": 2.638295047337218,
+          "primary_branch": 1,
+          "second_branch": -1
+        }
+      },
+      "free_spline": {
+        "settings": {
+          "family": "free_spline",
+          "count": 16,
+          "representation": "controls"
+        },
+        "parameters": {
+          "control_0": -0.27922330910176246,
+          "control_1": -0.3396029968149086,
+          "control_2": -0.32813080088961705,
+          "control_3": -0.24375797712958203,
+          "control_4": -0.16656671486744848,
+          "control_5": -0.10534316561680769,
+          "control_6": -0.0024113894283149307,
+          "control_7": 0.22492630881293885,
+          "control_8": 0.46208493609934864,
+          "control_9": 0.3934519174974684,
+          "control_10": 0.29893004946230034,
+          "control_11": 0.19252637307256043,
+          "control_12": 0.13261604147188516,
+          "control_13": 0.015403431415278496,
+          "control_14": -0.07689144046926769,
+          "control_15": -0.17801126351407148,
+          "phase_rad": 0.2817687710245401
+        }
+      },
+      "fourier_c2": {
+        "settings": {
+          "family": "fourier_c2",
+          "harmonics": 8
+        },
+        "parameters": {
+          "coefficient_0": -0.8363460642012686,
+          "coefficient_1": 0.5078566238408503,
+          "coefficient_2": 0.1750914541675821,
+          "coefficient_3": -0.024753897410835737,
+          "coefficient_4": -0.09385884698657328,
+          "coefficient_5": 0.004815106757490955,
+          "coefficient_6": 0.03842665561620935,
+          "coefficient_7": -0.02898371694523216,
+          "coefficient_8": -0.009061383470798604,
+          "coefficient_9": -0.007948815295795377,
+          "coefficient_10": 0.005512122374699587,
+          "coefficient_11": 0.0030739188978327896,
+          "coefficient_12": 0.0009056076787543889,
+          "coefficient_13": 0.00011942485509623828,
+          "coefficient_14": -0.00047298339665023345,
+          "coefficient_15": 0.001273864042921701
+        }
+      },
+      "structured_c2_15p": {
+        "settings": {
+          "family": "structured_c2_15p"
+        },
+        "parameters": {
+          "small_max_deg": 158.71910893605317,
+          "small_down_duration_deg": 158.78249701173945,
+          "small_max_curvature": 65.95768490231517,
+          "small_min_curvature": 32.87889972692771,
+          "small_up_bp_mid_q": 0.48002789720100897,
+          "small_down_kink_u": 0.36537467604430196,
+          "small_down_kink_q": 0.6305794446662237,
+          "small_down_kink_width_rel": 0.2084939722623921
+        }
+      },
+      "ideal_piecewise": {
+        "settings": {
+          "family": "ideal_piecewise"
+        },
+        "parameters": {
+          "small_lambda_target": 0.12,
+          "large_lambda_target": 0.14,
+          "adiabatic_sector_fraction": 0.21
+        }
+      },
+      "four_stage": {
+        "settings": {
+          "family": "four_stage"
+        },
+        "parameters": {
+          "t1": 0.2,
+          "t2": 0.5,
+          "t3": 0.7,
+          "a_l": 0.2,
+          "b_l": 0.8,
+          "a_s": 0.2,
+          "b_s": 0.8
+        }
+      },
+      "independent_four_stage": {
+        "settings": {
+          "family": "independent_four_stage"
+        },
+        "parameters": {
+          "t0_s": 0.0,
+          "t1_s": 0.2,
+          "t2_s": 0.5,
+          "t3_s": 0.7,
+          "t1_l": 0.2,
+          "t2_l": 0.5,
+          "t3_l": 0.7,
+          "a_l": 0.2,
+          "b_l": 0.8,
+          "a_s": 0.2,
+          "b_s": 0.8
+        }
+      }
+    },
+    "large": {
+      "harmonic": {
+        "settings": {
+          "family": "harmonic"
+        },
+        "parameters": {
+          "phase_rad": 0.0
+        }
+      },
+      "slider_crank": {
+        "settings": {
+          "family": "slider_crank"
+        },
+        "parameters": {
+          "rod_over_crank": 2.146029250356379,
+          "offset_over_crank": -0.1346155721615839,
+          "phase_rad": -0.07032759794864023,
+          "volume_increases_with_coordinate": true
+        }
+      },
+      "four_bar": {
+        "settings": {
+          "family": "four_bar",
+          "output": "coupler",
+          "envelope_frame_angle_rad": 5.337287708364095
+        },
+        "parameters": {
+          "coupler": 1.8808778483134414,
+          "rocker": 2.8277157914908484,
+          "ground_x": 1.4625378551661934,
+          "ground_y": 2.0275559233239093,
+          "loop_branch": -1,
+          "output_along": 1.0747884630412186,
+          "output_normal": -0.7173280457581309,
+          "rod_length": 10.212368142239752,
+          "slider_origin_x": 1.8454736686653308,
+          "slider_origin_y": -1.3311963779083846,
+          "axis_angle": -5.337287708364095,
+          "slider_branch": 1,
+          "phase_rad": 0.0,
+          "crank_direction": -1,
+          "volume_increases_with_coordinate": true
+        },
+        "constraints": [
+          {
+            "metric": "stroke_over_envelope",
+            "relation": "minimum",
+            "limit": 0.12383007409016901,
+            "unit": "1"
+          },
+          {
+            "metric": "minimum_primary_transmission_sine",
+            "relation": "minimum",
+            "limit": 0.48732261923497117,
+            "unit": "1"
+          },
+          {
+            "metric": "minimum_rod_axis_cosine",
+            "relation": "minimum",
+            "limit": 0.9492634022337838,
+            "unit": "1"
+          }
+        ]
+      },
+      "six_bar": {
+        "settings": {
+          "family": "six_bar"
+        },
+        "parameters": {
+          "primary_ground": 1.5454944961507613,
+          "primary_coupler": 1.6587597730797896,
+          "primary_rocker": 1.473334388543617,
+          "primary_e_along": 1.7750866747352638,
+          "primary_e_normal": 0.3242491737057719,
+          "primary_phase": -0.43294421947456385,
+          "second_pivot_x": 4.252421025926528,
+          "second_pivot_y": -4.31808204541679,
+          "link_ef": 1.1899405401590448,
+          "link_gf": 4.128862385872142,
+          "h_along_over_ef": 2.045669719009629,
+          "h_normal_over_ef": 0.12716722449829665,
+          "piston_rod": 11.838247226318321,
+          "slider_axis_offset": -0.35430346777924043,
+          "slider_axis_angle": -2.5597254981575346,
+          "primary_branch": -1,
+          "second_branch": 1
+        }
+      },
+      "free_spline": {
+        "settings": {
+          "family": "free_spline",
+          "count": 16,
+          "representation": "controls"
+        },
+        "parameters": {
+          "control_0": 0.48232875526518015,
+          "control_1": 0.13002187064137258,
+          "control_2": -0.03434502229925465,
+          "control_3": -0.1237682682058642,
+          "control_4": -0.2098079495242377,
+          "control_5": -0.26939593089021846,
+          "control_6": -0.315263886331596,
+          "control_7": -0.3136443123753054,
+          "control_8": -0.25343970213232175,
+          "control_9": -0.1547030447729541,
+          "control_10": -0.05211124719404037,
+          "control_11": 0.04920103432719592,
+          "control_12": 0.1277825258807239,
+          "control_13": 0.2182194680737438,
+          "control_14": 0.31518380990574557,
+          "control_15": 0.40374189963183077,
+          "phase_rad": 0.16119826019406885
+        }
+      },
+      "fourier_c2": {
+        "settings": {
+          "family": "fourier_c2",
+          "harmonics": 8
+        },
+        "parameters": {
+          "coefficient_0": 0.8055134558964201,
+          "coefficient_1": 0.5548689243606558,
+          "coefficient_2": 0.09878452604323568,
+          "coefficient_3": 0.08205090721318525,
+          "coefficient_4": 0.058858018880403935,
+          "coefficient_5": 0.12954301016777278,
+          "coefficient_6": 0.04355523084635034,
+          "coefficient_7": 0.06692497018705103,
+          "coefficient_8": 0.010027567610502554,
+          "coefficient_9": 0.004185992309795655,
+          "coefficient_10": 0.0030440833736940847,
+          "coefficient_11": 0.005093216193255807,
+          "coefficient_12": -0.0007472171604446765,
+          "coefficient_13": 0.0011277913845061118,
+          "coefficient_14": 1.1286972798142279e-05,
+          "coefficient_15": -0.0010174660806794838
+        }
+      },
+      "structured_c2_15p": {
+        "settings": {
+          "family": "structured_c2_15p"
+        },
+        "parameters": {
+          "large_down_duration_deg": 205.71777683089383,
+          "large_max_curvature": 64.82654861769545,
+          "large_min_curvature": 12.448186723922927,
+          "large_down_bp_mid_q": 0.5142074572234993,
+          "large_up_kink_u": 0.7465930962452125,
+          "large_up_kink_q": 0.3884010862149271,
+          "large_up_kink_width_rel": 0.25417200122229316
+        }
+      },
+      "ideal_piecewise": {
+        "settings": {
+          "family": "ideal_piecewise"
+        },
+        "parameters": {
+          "small_lambda_target": 0.12,
+          "large_lambda_target": 0.14,
+          "adiabatic_sector_fraction": 0.21
+        }
+      },
+      "four_stage": {
+        "settings": {
+          "family": "four_stage"
+        },
+        "parameters": {
+          "t1": 0.2,
+          "t2": 0.5,
+          "t3": 0.7,
+          "a_l": 0.2,
+          "b_l": 0.8,
+          "a_s": 0.2,
+          "b_s": 0.8
+        }
+      },
+      "independent_four_stage": {
+        "settings": {
+          "family": "independent_four_stage"
+        },
+        "parameters": {
+          "t0_s": 0.0,
+          "t1_s": 0.2,
+          "t2_s": 0.5,
+          "t3_s": 0.7,
+          "t1_l": 0.2,
+          "t2_l": 0.5,
+          "t3_l": 0.7,
+          "a_l": 0.2,
+          "b_l": 0.8,
+          "a_s": 0.2,
+          "b_s": 0.8
+        }
+      }
+    }
+  },
+  "provenance": {
+    "outputs/slider_crank_target_comparison.json": "05e2b3ea3a33d36bb65210667a176def667eabab71d476b744edb8310770b3f9",
+    "outputs/compact_motor_coupler_search.json": "0732b6db9ecf47d43dad49970a0b435200fcafb108f2877c33e191d6daae4347",
+    "outputs/motor_fourier_c2_8h_refine/report.json": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+    "outputs/motor_hybrid_c2_15p_260k/candidate_3952_motion_target.json": "b54c1432fa11f09bc003b35c83054777d8dc900817d408dc79ace4df6e85fd1d",
+    "outputs/motor_spline_from_linear_260k/report.json": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+    "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/best_pair.json": "c0033872e012270a2d39f0cd477beb6bb251bd59afe89b3305d8489fb494d450",
+    "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_04/best_pair.json": "43987530984ac5fa4154193580d0353d3ba1202b662e63a14f01a4df0cc86014",
+    "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_12/best_pair.json": "facf3ec5d0e3d5aca31e1a333efdf418c89104a8f172b42bc71dfb305f10b92c",
+    "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_50/best_pair.json": "b1fc5e1dcbc773ec41c617872fbed0d6fc890bb018076f10d75d67cea0d9b965",
+    "examples/evaluate_slider_crank_k2.py": "20d34b245b547c1d52334ce33179b19b379fa4361c73c345381e9361c21f66e1",
+    "examples/compare_slider_crank_motion.py": "be5baf96d5c33fef794fdf4c4deaf99a02d22f4e6d6df40ba7b8a9338936a617",
+    "examples/compact_coupler_geometry.py": "5eade5406eeee181ef81746a6293102a5f79e19eccfdf32c31c694ee0de8770d",
+    "examples/optimize_motor_fourier_c2_260k.py": "14b2ff98a45c4be17c1bb502de47060532db3b31a4f2449e349e57090ae800ef",
+    "examples/fit_motor_hybrid_c2_15p_to_source16.py": "0bc7ad4191e67ee74fc472fffedad0376ca337c399828f6af9e7a46ced62d17c",
+    "examples/optimize_motor_hybrid_c2_15p_260k.py": "687e6569f92643c088500265a33a248e6d6a802b25201747511fc123341d6aae",
+    "examples/optimize_motor_free_spline_260k_v3.py": "f34267fd3d0c8692c502e205e6f609d80c24c55ee602aca0e30198babd5e460f"
+  }
+}

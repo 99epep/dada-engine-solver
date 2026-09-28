@@ -1,5 +1,7 @@
 # Dada-Engine Research validation
 
+V2 validation is recorded below under [V2 kinematics and mechanism validation](#v2-kinematics-and-mechanism-validation). The first sections preserve the V1 review record.
+
 Validation date: 27 September 2026. Steps 1–5 of the
 [implementation plan](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md) are implemented
 for the fixed independent six-bar pair and five thermal/hardware parameters.
@@ -70,15 +72,167 @@ contains a real one-candidate run followed by a one-candidate resume:
 The second outcome is a recorded model-domain rejection, with no objective or
 synthetic physical metrics. The journal contains sequence indices 0 and 1,
 and no pending candidate remains. All saved evaluations and the campaign
-passed identity verification and match the final implementation runtime.
+passed identity verification and matched the implementation runtime when generated.
 This short Sobol search verifies operation and continuation; it makes no claim
 about historical candidate order or search quality.
 
-## Researcher review still required
+## Initial researcher feedback and further trials
+
+The user validated the first hands-on trials. The interface is not yet intuitive,
+but the documentation makes it usable. The user then authorized the V2 kinematics/mechanism extension described below.
+Further hands-on trials remain the usability gate before large research campaigns.
 
 Use the [guide](DADA_ENGINE_RESEARCH.md) to modify bounds, validate inputs,
 evaluate an exact configuration and compare candidates. Before other campaign
 families are added, record the user's experience of locating parameters,
 understanding validation errors, distinguishing evaluation from optimization,
-and interpreting efficiency, power, constraints and failures. Agent-operated
+and interpreting efficiency, power, constraints and failures. Include the
+specific steps that still require consulting the guide. Agent-operated
 checks above do not substitute for that real first-study review.
+
+## Diagnostic integration maintenance
+
+The deprecated NumPy `trapz` call in microtube diagnostics was replaced with
+`scipy.integrate.trapezoid`. SciPy is already required, and this keeps support
+for the declared NumPy 1.24 minimum. The physical-time trapezoidal rule and
+weighting are unchanged. Direct comparisons on four nonuniform-grid inputs
+(smooth, indicator, zero and signed values) produced exactly equal results.
+The full suite then passed with deprecations promoted to errors: **595 passed,
+no warnings**, 103.18 s, using
+`PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q -W error::DeprecationWarning`.
+
+As with any source edit, this changes the campaign runtime fingerprint.
+Previously saved results remain readable; execution resume requires the
+original matching source version. No saved campaign or identity was rewritten.
+
+## V2 kinematics and mechanism validation
+
+The user authorized this extension after validating the first hands-on V1 tests.
+The [V2 reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) describes the implemented
+schema, fixed/active ownership, families, artifacts, screening and deferred work.
+No large optimization, primary-family saturation or mechanism-fitting campaign
+was run. Thermodynamic physics and the existing campaign engine are retained.
+
+### Historical parity evidence
+
+`docs/research_audit/capture_kinematics_v2.py` captured dense historical
+trajectories **before extraction**, with source file digests in
+`tests/fixtures/research_v2/reference.json` and arrays in `trajectories.npz`.
+There are 4321 angles from -2*pi to 4*pi for 11 motion configurations: harmonic,
+slider, finite-rod four-bar, four six-bar pairs (ranks 1/4/12/50), spline, Fourier,
+structured 3952 and ideal piecewise. Volume and first-derivative comparisons use
+`rtol=2e-11, atol=1e-13`; available spline/structured second derivatives use
+`rtol=2e-11, atol=1e-11`. Harmonic/slider/Fourier analytic acceleration also has
+finite-difference checks. Phase, orientation and extrema remain those of the
+original implementations. These tolerances test mathematical implementation
+parity, not experimental physical accuracy.
+
+The 15p helper and scalar path, Fourier class, slider classes and spline phase
+wrapper were moved into production. Historical consumers import those classes;
+search loops were not migrated. Production Research has no import of examples.
+Four-bar and six-bar closure is reused directly. Six-bar joint export was
+factored from the existing closure calculation, not reconstructed in a renderer.
+
+`capture_kinematics_v2_thermo.py` separately froze machine inputs, original warm
+starts and already recorded metrics into a compact portable thermal fixture,
+without running any new integration. Its runtime regression tests do not import
+historical examples or read large campaign histories.
+
+| Historical thermal case | Result / comparison |
+| --- | --- |
+| Inverted-offset slider-crank, Stage K2 | Same 24 convergence cycles; maximum relative difference across six recorded metrics 2.45e-6. Power remains approximately 22.4627 W, below the explicit 25 W constraint: correctly `converged_infeasible` |
+| Compact finite-rod coupler four-bar, Stage K2 | Same 23 cycles; maximum relative metric difference 5.01e-6; approximately 43.11695 W and efficiency 0.18497750 |
+| Fourier 8H retained candidate | Original machine, resolved inventory and predecessor warm state; six recorded metrics pass 5e-8 relative / 1e-10 absolute; same 10 cycles |
+| Retained source16 spline | Original fixed machine and predecessor warm state; same metric tolerance; same 3 cycles |
+| V1 rank-01 six-bar through V2 declarations | Six metrics pass 2e-11 relative / 1e-11 absolute; same 13 cycles |
+| Structured C2 candidate 3952 | Same stored values on this backend, including 40.719090181447584 W, efficiency 0.23508063005202154 and 3 cycles; regression tolerance 2e-11 relative / 1e-11 absolute |
+
+The K2 integrated regressions use a measured 1e-5 relative tolerance. Roundoff in
+volume repartition and common-frame normalization perturbs adaptive LSODA steps
+and sampled extrema. The existing 2e-11 RHS equivalence tolerance is not a bound
+on accumulated integration or extrema differences. No production numerical
+setting or physical acceptance constraint was relaxed. Historical Python and
+Numba backends are selected explicitly per fixture; Numba-specific stored tests
+skip only when that optional backend is unavailable.
+
+Known six-bar families round-trip through serialized artifacts, reproduce the
+dense trajectories and preserve mechanical diagnostics. Historical stroke was
+sampled whereas production refines its extrema; diagnostic tolerance is 2e-5
+relative/absolute. The four-bar compact screen is checked on its original 2880
+angle grid and original envelope frame; the numerical results are stored in
+[four-bar screen parity](../outputs/research_kinematics_v2/four_bar_screen_parity.json).
+These are sampled screens, not continuous mechanical guarantees.
+
+### Bounded acceptance artifacts
+
+Run the complete demonstration in a new directory with:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 examples/research_kinematics_demo.py --output outputs/research_kinematics_v2_new
+```
+
+The recorded working artifacts under
+[`outputs/research_kinematics_v2/`](../outputs/research_kinematics_v2/summary.json)
+include editable studies, portable bases/mechanisms, exact evaluation records,
+per-study HTML and a [cross-family comparison](../outputs/research_kinematics_v2/comparison.html).
+They use the historical 298.15/558.15 K air inputs, not the current 598.15 K hot
+inlet demonstrator target. The first seven evaluations share a thermal basis;
+3952 has its own original thermal hardware. Reference motions were not optimized
+under common bounds, so these results do not establish a fair family ranking.
+
+| Family | Indicated power [W] | Indicated efficiency | Outcome |
+| --- | ---: | ---: | --- |
+| Harmonic | 40.262075 | 0.19750494 | Feasible |
+| Slider-crank | 28.628784 | 0.17604739 | Feasible |
+| Four-bar | 39.017753 | 0.20993799 | Feasible |
+| Six-bar | 41.433705 | 0.23255335 | Feasible |
+| Free spline | 40.945586 | 0.23536605 | Feasible |
+| Fourier C2 | 38.942669 | 0.23243461 | Feasible |
+| Ideal piecewise | 0.776594 | 0.00244381 | Converged, below minimum indicated power |
+| Structured C2 3952 | 40.719090 | 0.23508063 | Feasible |
+
+The [active-phase campaign](../outputs/research_kinematics_v2/active_phase/report.html)
+has one active harmonic phase, two distinct Sobol points and a real disk-based
+resume between them. Sequence indices are 0/1, phase attempts are 1/1, both
+converge (22/13 cycles), and no pending state remains. Indicated powers are
+40.03216852 W and 40.39353090 W. This verifies persistence, not search-order
+parity with a historical optimizer. Warm starts remain initial guesses followed
+by full periodic validation; exact caching has not been approximated.
+
+Motion exports for the six-bar and 3952 studies contain normalized position,
+angle derivatives, volume and available geometry, without thermodynamic replay.
+The separate [retained mechanism library](../outputs/research_kinematics_v2/mechanism_families.json)
+contains all four historical pairs, preserving diversity rather than overwriting
+it with one winner. Its entries were exported from the frozen parity inputs;
+no new mechanism search was performed.
+
+Browser verification used headless Chromium against the actual offline report.
+It checked candidate A/B selection, the status filter, cross-study warning,
+constraint values/limits/margins/states and near-active amber rows. The rendered
+constraint table was inspected visually. All stored evaluations and the resumed
+campaign pass exact identity and current runtime checks. Older V1 reports remain
+inspectable even when their strict execution runtime fingerprint differs.
+
+### Complete test result
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q -W error::DeprecationWarning
+```
+
+**679 passed, no warnings, 258.02 s.** This includes the unchanged V1 regression
+coverage and new schema/ownership, mixed-family, fixed/active, integer/branch,
+artifact, exact evaluation, Sobol/resume, offline report/margin, historical
+kinematic/thermal parity and synthesis-contract tests. The hierarchical data
+model covers 6/9/15/30 active coordinates, independent sides, fixed branches and
+multiple retained families. No existing test was weakened or removed.
+
+The cooling objective and indicated-input constraint compile through the same
+engine with the reservoir model. The existing air-wall microtube wrapper still
+requires motor operation; adapting it to refrigeration is separate physical-model
+work and its guard was not relaxed. The human-powered cell was not optimized. Automatic mechanism fitting,
+local polish, primary-family discovery and saturation remain deferred contracts;
+see the [architecture boundary](DADA_ENGINE_RESEARCH_KINEMATICS.md#established-synthesis-workflow-and-current-boundary).
+The two older compact hybrid laws remain explicitly classified as example-only
+representations, not mislabeled as 15p. Further human review should focus on
+configuration usability, artifact-derived defaults, candidate comparison and
+study-specific mechanical thresholds before a large research run.

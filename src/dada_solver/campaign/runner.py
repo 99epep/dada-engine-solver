@@ -142,7 +142,8 @@ class OptimizationCampaign:
             if record['status'] == 'budget_exhausted':
                 break
         report = make_report(self.definition.space, before, phase, requested_seconds=budget,
-            elapsed_seconds=self.clock()-started, elite_size=self.definition.elite_size)
+            elapsed_seconds=self.clock()-started, elite_size=self.definition.elite_size,
+            include_suggestions=not hasattr(self.definition, 'study'))
         report.update(phase_id=phase_id, next_sequence_index=strategy.index,
             stopping_reason='candidate_limit' if limit is not None and len(phase)>=limit else 'wall_clock_budget',
             estimated_next_evaluation_seconds=estimated_next_seconds(records,self.definition.initial_evaluation_seconds))

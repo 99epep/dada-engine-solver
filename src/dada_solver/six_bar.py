@@ -122,6 +122,17 @@ class SixBarCylinderMechanism:
         return self.slider_max-self.slider_min
 
     def slider_position_and_derivative(self, theta: float) -> tuple[float, float]:
+        return self._evaluate(theta)
+
+    def joint_state(self, theta: float):
+        """Return joints and mechanical indicators from the same closure as the RHS.
+
+        Coordinates are in crank-radius units in the stored local frame.
+        These instantaneous indicators do not certify full-cycle feasibility.
+        """
+        return self._evaluate(theta, frames=True)
+
+    def _evaluate(self, theta, *, frames=False):
         if not math.isfinite(theta):
             raise ValueError('Study angle must be finite.')
         angle = theta % (2*math.pi) + self.primary_phase
@@ -143,7 +154,22 @@ class SixBarCylinderMechanism:
         if margin2 <= 1e-10:
             raise ValueError('Six-bar piston rod cannot close or is at toggle.')
         margin = math.sqrt(margin2)
-        return longitudinal+margin, longitudinal_d-transverse*transverse_d/margin
+        position = longitudinal+margin
+        derivative = longitudinal_d-transverse*transverse_d/margin
+        if not frames:
+            return position, derivative
+        def sine(u, v, length_product):
+            return abs(u[0]*v[1]-u[1]*v[0])/length_product
+        p = (position*ax-self.slider_axis_offset*ay,
+             position*ay+self.slider_axis_offset*ax)
+        return dict(joints=dict(A=(0.,0.), B=b, C=c, D=(self.primary_ground,0.),
+                               E=e, F=f, G=(self.second_pivot_x,self.second_pivot_y), H=h, P=p),
+                    position=position, derivative=derivative, transverse=transverse,
+                    primary_transmission_sine=sine((c[0]-b[0],c[1]-b[1]),
+                        (c[0]-self.primary_ground,c[1]),self.primary_coupler*self.primary_rocker),
+                    secondary_transmission_sine=sine((f[0]-e[0],f[1]-e[1]),
+                        (f[0]-self.second_pivot_x,f[1]-self.second_pivot_y),self.link_ef*self.link_gf),
+                    rod_axis_cosine=margin/self.piston_rod)
 
     def normalized_motion(self, theta: float) -> tuple[float, float]:
         slider, derivative = self.slider_position_and_derivative(theta)
