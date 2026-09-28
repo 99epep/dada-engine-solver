@@ -1,10 +1,45 @@
 # Dada-Engine Research
 
+Research V3 adds declared external thermal streams, motor/refrigerator wall
+cycles and an ideal-generated compiled fluid-table validation path. It reuses
+the V2 campaign and mechanism layer.
+
 Research V2 selects kinematic families independently for the small and large
 cylinders, with fixed or active coordinates in the existing campaign engine.
 The V1 fixed six-bar / five-parameter study remains available as a regression
 preset. Exact identities, Sobol continuation, deadlines and recovery are retained;
 production thermodynamic physics is unchanged.
+
+## External streams and refrigeration (V3)
+
+```sh
+PYTHONPATH=src python3 -m dada_solver.research init external-stream-refrigeration --output outputs/my_cooling/study.toml
+PYTHONPATH=src python3 -m dada_solver.research validate outputs/my_cooling/study.toml
+PYTHONPATH=src python3 -m dada_solver.research evaluate outputs/my_cooling/study.toml --output outputs/my_cooling/reference.json --budget 2m
+PYTHONPATH=src python3 -m dada_solver.research report outputs/my_cooling/reference.json --html outputs/my_cooling/reference.html
+```
+
+The preset is a bounded validation fixture, not an optimized cooling cell.
+`external-stream-motor` selects the motor direction. Add
+`--small structured_c2_15p --large structured_c2_15p` to configure the existing
+structured family; changing family is a new study and does not guarantee a
+valid refrigeration cycle. Individual stream, inventory, frequency, exchanger
+and motion parameters use the same fixed/active declaration as V2. Nothing is
+active by default. Choose `maximize_cooling_cop` [1] or
+`maximize_cooling_power` [W], with an optional indicated-input bound.
+
+See [external stream equations, units and configuration](EXTERNAL_STREAM_THERMAL_MODEL.md)
+and [working-fluid interfaces, compiled tables and limitations](WORKING_FLUID_MODELS.md).
+The external fluid label implies no liquid hydraulic correlation or pump power.
+The fluid table proves compiled reconstruction using analytic ideal-gas data;
+it is not a cryogenic helium model. Old V1/V2 inputs and offline inspection are
+retained; source/runtime changes still require a fresh execution directory.
+
+The [bounded candidate report](../outputs/research_v3/validated/candidate_comparison.html)
+contains two Sobol candidates and a persisted resume. The
+[cross-boundary report](../outputs/research_v3/validated/cross_boundary_report.html)
+shows the refrigerator, its table replay and an air motor side by side, with
+explicit differing-study warnings. It is not a fair optimization ranking.
 
 ## Select a motion family (V2)
 
@@ -176,7 +211,7 @@ reflux flag uses a declared 1e-8 kg/s threshold; raw extrema are retained.
 
 Candidate detail exposes cycle count, normalized periodic error history, warm
 source, retry, backend and phase timings. The physical boundary is always
-external-air heat input. Missing metrics display as unavailable. A failed
+external-stream heat input. Missing metrics display as unavailable. A failed
 solver or unavailable constraint cannot enter the feasible ranking. Saved
 configuration and source digests remain inspectable in the provenance section.
 

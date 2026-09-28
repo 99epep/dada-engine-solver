@@ -260,3 +260,24 @@ maldistribution, axial conjugate heat transfer or the external-air film.
 - Implementation: `MicrotubeGasModel.diagnose`. Outlet/minimum pressure gives
   the conservative local maximum Ma and Kn; mean pressure gives Kn_m for slip.
   No local axial temperature profile is inferred.
+
+
+## Research V3 external-stream and fluid boundaries
+
+The internal gas film, tube hydraulics and gas-transport domains remain the same.
+`ExternalStreamMicrotubeExchanger` connects these components to a declared
+finite-capacity stream through explicit wall conductance. Air is one scenario;
+liquid labels do not select unvalidated correlations. Wall storage and pause
+heat transfer remain active in motor and refrigeration operation. The legacy
+`AirWallExchanger` inputs/results remain supported. See
+[external-stream equations and sign conventions](EXTERNAL_STREAM_THERMAL_MODEL.md).
+
+Thermodynamic EOS/caloric reconstruction now has a separate conservative-state
+interface and a compiled rho/u table validation path; this does not change the
+role of transport Cp. The validation table is analytically ideal and may use
+the existing ideal-density/constant-gamma hydraulic laws. Those laws explicitly
+reject an incompatible real-fluid model. Microtube density, sonic caps,
+Poiseuille reconstruction, Mach and rarefaction diagnostics still need scientific
+revalidation for real helium. `DiluteGasTransport` remains limited to 200–1000 K;
+there is no cryogenic extrapolation or two-phase extension. See
+[working-fluid models and compiled backends](WORKING_FLUID_MODELS.md).

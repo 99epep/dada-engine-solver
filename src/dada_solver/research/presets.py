@@ -83,3 +83,67 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     for side,artifact in artifacts.items(): artifact.save(artifact_paths[side])
     output.write_text(source)
     return output
+
+
+def initialize_v3(output, small='harmonic', large='harmonic', *, mode='refrigeration'):
+    """Bounded thermal-boundary fixture, not a human-cell optimized design.
+
+    Liquid Cp and conductance are explicit scenario inputs, not correlations.
+    The selected V2 motion coordinates remain separately editable.
+    """
+    import tempfile
+    import tomllib
+    from .schema_v2 import POLICIES_V3
+    from .sixbar import exchanger_from_data
+    from .schema import load_study
+    output=Path(output)
+    basis_file=output.with_suffix('.basis.json')
+    if output.suffix!='.toml' or output.exists() or basis_file.exists():
+        raise ValueError('Choose an unused study.toml and associated basis filename.')
+    if mode not in ('motor','refrigeration'): raise ValueError('Unknown operating mode.')
+    with tempfile.TemporaryDirectory() as temporary:
+        directory=Path(temporary); path=directory/output.name
+        initialize_v2(path,small,large)
+        raw=tomllib.loads(path.read_text()); basis=json.loads(path.with_suffix('.basis.json').read_text())
+        raw['schema_version']=basis['schema_version']=3
+        raw['study'].update(name='External-stream '+mode+' validation',purpose='bounded_thermal_boundary_validation')
+        raw['policies']=POLICIES_V3.copy();raw['policies']['outlet_valve_cda']='fixed_source_cda'
+        raw['warm_start']['initial_source']='uniform';basis['warm_start']=None
+        c=basis['configuration']
+        if mode=='refrigeration':
+            c['angular_speed']=2*3.141592653589793*.2
+            # A benign validation compression ratio keeps startup inside 200–1000 K.
+            for side in ('small_cylinder','large_cylinder'):
+                limits=c['machine_volumes'][side];swept=limits['maximum']-limits['minimum']
+                limits.update(minimum=.3*swept,maximum=1.3*swept)
+            c['cold_reservoir_temperature']=278.15;c['hot_reservoir_temperature']=298.15
+            c['heat_in_valve_placement']=c['heat_out_valve_placement']='downstream'
+            c['charge']['temperature']=288.15
+            raw['objective']=dict(type='maximize_cooling_cop',unit='1')
+            raw['constraints']=[row for row in raw['constraints'] if row['type']!='minimum_motor_power']
+            raw['constraints'].append(dict(type='maximum_mechanical_input_power',limit=100.,unit='W'))
+        for side in ('heat_in','heat_out'):
+            old=basis[side];thermal=exchanger_from_data(old).build().wall_thermal
+            inputs={k:v for k,v in old['inputs'].items() if not k.startswith('air_') and k!='fan_total_efficiency'}
+            inputs['external_stream']=dict(fluid='declared water-like liquid scenario',
+                inlet_temperature_k=(278.15 if side=='heat_in' else 298.15) if mode=='refrigeration' else thermal.air_inlet_temperature_k,
+                mass_flow_kg_s=.05,cp_j_kg_k=4180.,wall_conductance_w_k=150.)
+            old['family']='external_stream_wall';old['inputs']=inputs
+        # Rebuild owned defaults, retaining all selected V2 motion coordinates.
+        text=json.dumps(basis,indent=2)+'\n';digest=hashlib.sha256(text.encode()).hexdigest()
+        path.with_suffix('.basis.json').write_text(text)
+        specs,defaults=machine_parameters(load_machine_basis(path.with_suffix('.basis.json'),digest))
+        raw['parameters']=[dict(name=k,value=v,unit=specs[k].unit) for k,v in defaults.items()]+[
+            row for row in raw['parameters'] if row['name'].startswith('kinematics.')]
+        if mode=='refrigeration' and small==large=='harmonic':
+            for row in raw['parameters']:
+                if row['name']=='kinematics.small.phase_rad': row['value']=-3.141592653589793/2
+        raw['sources']['machine']['sha256']=digest
+        path.write_text(dumps(raw));load_study(path)
+        output.parent.mkdir(parents=True,exist_ok=True)
+        # Mechanism artifacts, when selected, are portable siblings of the study.
+        for child in directory.iterdir():
+            target=output.parent/child.name
+            if target.exists(): raise ValueError('Associated input already exists: '+str(target))
+        for child in directory.iterdir(): (output.parent/child.name).write_bytes(child.read_bytes())
+    return output

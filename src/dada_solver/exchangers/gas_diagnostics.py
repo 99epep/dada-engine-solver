@@ -31,7 +31,9 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory, *, replay=None):
     else:
         for angle,values in zip(angles,trajectory.T):
             contexts=wrapper.flow_contexts(float(angle),values)
-            temperatures=ThermodynamicState.from_array(values[:8]).temperatures(wrapper.model.gas)
+            from dada_solver.fluids import CaloricallyPerfectGas
+            volumes=None if type(wrapper.model.gas) is CaloricallyPerfectGas else wrapper.model.volumes(float(angle))
+            temperatures=ThermodynamicState.from_array(values[:8]).temperatures(wrapper.model.gas, volumes)
             thermal=wrapper.thermal_rates(float(angle),values)
             for side,index,wall,context,rates,ports in zip(('Hi','Ho'),(2,3),(wrapper.heat_in,wrapper.heat_out),
                     contexts,thermal,(((0,2),(2,1)),((1,3),(3,0)))):

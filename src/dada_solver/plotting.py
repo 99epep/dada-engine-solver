@@ -53,7 +53,7 @@ def plot_cycle_diagnostics(
             instantaneous_volumes.large_cylinder,
         )
         pressures[:, index] = state.pressures(model.gas, instantaneous_volumes)
-        temperatures[:, index] = state.temperatures(model.gas)
+        temperatures[:, index] = state.temperatures(model.gas, model.volumes(float(angle)))
         rates = model.evaluate(float(angle), state, topology)
         flows[:, index] = (
             rates.flows.large_to_hot,

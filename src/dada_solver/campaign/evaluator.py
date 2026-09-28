@@ -222,15 +222,24 @@ class MachineEvaluator:
 
     def _wall_initial(self, config, wrapper):
         base_initial = build_initial_state(config, wrapper.model); volumes = wrapper.model.volumes(0)
-        pressure = base_initial.total_mass*config.gas.gas_constant*config.charge.temperature/volumes.total
+        from dada_solver.fluids import CaloricallyPerfectGas
+        pressure = (base_initial.total_mass*config.gas.gas_constant*config.charge.temperature/volumes.total
+            if type(config.gas) is CaloricallyPerfectGas else
+            config.gas.state_from_rho_t(base_initial.total_mass/volumes.total,config.charge.temperature).pressure)
         gas = UniformCharge(pressure, config.charge.temperature).create_state(config.gas, volumes).as_array()
-        return np.r_[gas, wrapper.heat_in.wall_capacity_j_k*wrapper.heat_in.air_inlet_temperature_k,
-            wrapper.heat_out.wall_capacity_j_k*wrapper.heat_out.air_inlet_temperature_k]
+        return np.r_[gas, wrapper.heat_in.wall_capacity_j_k*wrapper.heat_in.external_inlet_temperature_k,
+            wrapper.heat_out.wall_capacity_j_k*wrapper.heat_out.external_inlet_temperature_k]
 
     def _wall(self, candidate, design, wrapper, derived, direction, control):
         layout, family = 'four_gas_volumes_m_U_plus_H_i_H_o_wall_energy', 'microtube_wall_10_state'
         source, distance = select_warm_start(control.previous_records, candidate.payload['normalized'], layout, family, direction)
-        target = self._wall_initial(design.configuration, wrapper); state = target.copy()
+        from dada_solver.tabulated_fluid import FluidDomainError
+        try: target = self._wall_initial(design.configuration, wrapper)
+        except FluidDomainError as error:
+            result=rejected('invalid_fluid_domain',str(error))
+            result.update(derived=derived,constraints=self._unavailable_constraints())
+            return result
+        state = target.copy()
         external = getattr(self.definition, 'initial_wall_state', None) if source is None else None
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         if source:
@@ -272,7 +281,8 @@ class MachineEvaluator:
             return result
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
-            status = 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure'
+            status = ('invalid_fluid_domain' if isinstance(error,FluidDomainError) else
+                'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure')
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
             if backend_last: result['rhs_backend'] = backend_last
             if hasattr(self.definition, 'safe_domain_retry'):
@@ -340,18 +350,34 @@ class MachineEvaluator:
                 total_mass_kg=float(periodic.trajectory[:8:2,-1].sum()))
             result['diagnostics'] = json_values(asdict(diagnostics))
             result['derived']['hardware'] = dict(heat_in=dict(design.heat_in.build().metadata), heat_out=dict(design.heat_out.build().metadata))
-            result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.air_inlet_temperature_k, heat_out=wrapper.heat_out.air_inlet_temperature_k)
-            air = {}
-            for i, (side, exchanger, ports) in enumerate((
-                    ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
-                    ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
-                peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
-                capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
-                air[side] = dict(peak_internal_mass_flow_kg_s=peak,
-                    external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
-                    maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
-                    scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
-            result['derived']['external_air_capacity_diagnostics'] = air
+            if self.definition.study.data['schema_version']==3:
+                streams={}
+                for i,(side,exchanger) in enumerate((('heat_in',wrapper.heat_in),('heat_out',wrapper.heat_out))):
+                    stream=exchanger.external_stream
+                    outlets=[s.walls[i].external_outlet_temperature_k for s in replay.samples]
+                    streams[side]=dict(asdict(stream),capacity_rate_w_k=stream.capacity_rate_w_k,
+                        outlet_minimum_k=min(outlets) if all(v is not None for v in outlets) else None,
+                        outlet_maximum_k=max(outlets) if all(v is not None for v in outlets) else None,
+                        heat_into_machine_per_cycle_j=performance.heat_in_per_cycle if i==0 else performance.heat_out_per_cycle,
+                        mean_heat_into_machine_w=performance.heat_in_power if i==0 else performance.heat_out_power,
+                        external_loop_losses='excluded; hydraulics and pump/fan consumption unmodelled')
+                result['derived']['external_streams']=streams
+                result['metrics'].update(operating_mode=performance.operating_mode.value,
+                    heating_power_w=performance.heating_power,heating_cop=performance.heating_cop)
+                result['rhs_backend']=periodic.backend_statistics
+            else:
+                result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.external_inlet_temperature_k, heat_out=wrapper.heat_out.external_inlet_temperature_k)
+                air = {}
+                for i, (side, exchanger, ports) in enumerate((
+                        ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
+                        ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
+                    peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
+                    capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
+                    air[side] = dict(peak_internal_mass_flow_kg_s=peak,
+                        external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
+                        maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
+                        scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
+                result['derived']['external_air_capacity_diagnostics'] = air
             result['derived']['local_reflux'] = dict(
                 threshold_kg_s=1e-8,
                 detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
@@ -370,7 +396,7 @@ class MachineEvaluator:
         max_re = max_mach = 0.; gas = wrapper.model.gas
         for index,(angle, values) in enumerate(zip(angles, trajectory.T)):
             if replay is None:
-                state = ThermodynamicState.from_array(values[:8]); temps = state.temperatures(gas)
+                state = ThermodynamicState.from_array(values[:8]); temps = state.temperatures(gas, wrapper.model.volumes(float(angle)))
                 pressures = state.pressures(gas, wrapper.model.volumes(float(angle)))
                 flows = wrapper.model.evaluate(float(angle), state, initial_valve_topology()).flows
             else:
@@ -403,8 +429,8 @@ class MachineEvaluator:
                 heat_out_w=p.heat_out_power, indicated_thermal_efficiency=p.thermal_efficiency,
                 useful_mechanical_power_w=None, mechanical_losses='unknown', conservation=asdict(p.conservation),
                 validity=json_values(asdict(evaluation.validity)))
-            if getattr(self.definition,'identity',{}).get('definition_kind')=='research_v2':
-                cooling=self.definition.objective.name=='maximize_cooling_cop'
+            if getattr(self.definition,'identity',{}).get('definition_kind') in ('research_v2','research_v3'):
+                cooling=self.definition.objective.name in ('maximize_cooling_cop','maximize_cooling_power')
                 metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,
                                indicated_mechanical_input_power_w=p.mechanical_input_power if cooling else None)
         reasons = [c['name']+(': unavailable' if not c['available'] else ': violated') for c in constraints if not c['available'] or not c['satisfied']]

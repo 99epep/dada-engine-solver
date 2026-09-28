@@ -52,7 +52,7 @@ def assess_cycle_validity(
         temperatures: list[np.ndarray] = []
         for angle, values in zip(cycle.angles, cycle.states.T, strict=True):
             state = ThermodynamicState.from_array(values)
-            temperatures.append(state.temperatures(model.gas))
+            temperatures.append(state.temperatures(model.gas, model.volumes(float(angle))))
             pressures.append(state.pressures(model.gas, model.volumes(float(angle))))
         pressure_history = np.asarray(pressures).T
         temperature_history = np.asarray(temperatures).T
@@ -76,6 +76,15 @@ def assess_cycle_validity(
     compressibility_deviation = 0.0
     cp_variation = 0.0
 
+    from dada_solver.fluids import CaloricallyPerfectGas
+    if type(model.gas) is not CaloricallyPerfectGas:
+        states=[p for angle,values in zip(cycle.angles,cycle.states.T,strict=True)
+                for p in ThermodynamicState.from_array(values).fluid_states(model.gas,model.volumes(float(angle)))]
+        if any(p.compressibility_factor is None or p.cp is None for p in states):
+            raise ValueError('This validity policy requires compressibility and Cp diagnostics.')
+        compressibility_deviation=max(abs(p.compressibility_factor-1) for p in states)
+        capacities=[p.cp for p in states]
+        cp_variation=(max(capacities)-min(capacities))/min(capacities)
     failed: list[str] = []
     if pressure_error > thresholds.maximum_pressure_equalization_error:
         failed.append("pressure_equalization")

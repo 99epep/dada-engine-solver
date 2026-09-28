@@ -55,7 +55,7 @@ def load_study(path, *, basis_path=None, artifact_directory=None):
     path = Path(path)
     source = path.read_text()
     raw = tomllib.loads(source)
-    if type(raw.get('schema_version')) is int and raw['schema_version']==2:
+    if type(raw.get('schema_version')) is int and raw['schema_version'] in (2,3):
         from .schema_v2 import load_study_v2
         return load_study_v2(path,basis_path=basis_path,artifact_directory=artifact_directory)
     canonical_json(raw)
@@ -195,7 +195,7 @@ class ResearchCampaignDefinition(CampaignDefinition):
 
 
 def compile_study(study):
-    if study.data['schema_version']==2:
+    if study.data['schema_version'] in (2,3):
         from .schema_v2 import ResearchDefinitionV2
         return ResearchDefinitionV2(study)
     return ResearchCampaignDefinition(study)

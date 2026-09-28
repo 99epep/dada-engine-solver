@@ -88,3 +88,14 @@ class MinimizeTotalUa:
             + evaluation.configuration.hot_thermal_conductance
         )
         return ObjectiveValue(self.name, value, True)
+
+
+@dataclass(frozen=True, slots=True)
+class MaximizeCoolingPower:
+    name: str = 'maximize_cooling_power'
+
+    def evaluate(self, evaluation: DesignEvaluation) -> ObjectiveValue:
+        from dada_solver.performance import OperatingMode
+        p = evaluation.performance
+        available = p is not None and p.operating_mode is OperatingMode.REFRIGERATION
+        return ObjectiveValue(self.name, -p.cooling_power if available else None, available)

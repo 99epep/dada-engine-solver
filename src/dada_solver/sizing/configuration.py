@@ -33,6 +33,7 @@ from dada_solver.sizing.design import DesignParameter, DesignVariable
 from dada_solver.sizing.evaluator import ThermodynamicSizingEvaluator
 from dada_solver.sizing.objectives import (
     MaximizeCoolingCop,
+    MaximizeCoolingPower,
     MaximizeThermalEfficiency,
     MaximizeMotorPower,
     MinimizeChargingPressure,
@@ -114,6 +115,7 @@ def _load_objective(data: dict[str, object]) -> SizingObjective:
     objective_type = str(data["type"])
     objectives: dict[str, SizingObjective] = {
         "maximize_cooling_cop": MaximizeCoolingCop(),
+        "maximize_cooling_power": MaximizeCoolingPower(),
         "maximize_thermal_efficiency": MaximizeThermalEfficiency(),
         "maximize_motor_power": MaximizeMotorPower(),
         "minimize_total_swept_volume": MinimizeTotalSweptVolume(),

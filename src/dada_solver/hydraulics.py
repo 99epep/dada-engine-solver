@@ -41,6 +41,16 @@ class HydraulicFlowModel(Protocol):
         """Return signed flow, positive from the first node to the second."""
 
 
+class StateHydraulicFlowModel(Protocol):
+    """Future single-phase closure boundary; no ideal choking law is implied.
+
+    Return signed first-to-second flow, or nonnegative flow when one_way=True.
+    States include density, temperature, pressure, enthalpy and available sound
+    speed. A closure must declare and validate its own physical domain.
+    """
+    def flow_from_states(self, first, second, fluid, *, one_way: bool) -> FlowResult: ...
+
+
 @dataclass(frozen=True, slots=True)
 class HydraulicNetworkModels:
     """Replaceable flow closures for all four thermodynamic network links."""
@@ -66,6 +76,8 @@ class BlendedHydraulicFlow:
     def directed_flow(
         self, upstream_pressure, downstream_pressure, upstream_temperature, gas
     ) -> FlowResult:
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         initial = self.initial.directed_flow(
             upstream_pressure, downstream_pressure, upstream_temperature, gas
         )
@@ -146,6 +158,8 @@ class QuasiSteadyCompressibleDuct:
         upstream_temperature: float,
         gas: CaloricallyPerfectGas,
     ) -> FlowResult:
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         for name, value in (
             ("upstream pressure", upstream_pressure),
             ("downstream pressure", downstream_pressure),
@@ -260,6 +274,8 @@ class SeriesDuctOrifice:
         upstream_temperature: float,
         gas: CaloricallyPerfectGas,
     ) -> FlowResult:
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         if self.orifice is None:
             return self.duct.directed_flow(
                 upstream_pressure, downstream_pressure, upstream_temperature, gas
@@ -352,6 +368,8 @@ class CompressibleOrifice:
             raise ValueError("Pressure regularization must be finite and non-negative.")
 
     def critical_pressure_ratio(self, gas: CaloricallyPerfectGas) -> float:
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         gamma = gas.heat_capacity_ratio
         return (2.0 / (gamma + 1.0)) ** (gamma / (gamma - 1.0))
 
@@ -362,6 +380,8 @@ class CompressibleOrifice:
         upstream_temperature: float,
         gas: CaloricallyPerfectGas,
     ) -> FlowResult:
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         """Return flow from a prescribed upstream state, with reverse flow excluded."""
 
         for name, value in (

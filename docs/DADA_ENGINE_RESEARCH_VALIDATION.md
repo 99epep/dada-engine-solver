@@ -227,12 +227,55 @@ model covers 6/9/15/30 active coordinates, independent sides, fixed branches and
 multiple retained families. No existing test was weakened or removed.
 
 The cooling objective and indicated-input constraint compile through the same
-engine with the reservoir model. The existing air-wall microtube wrapper still
-requires motor operation; adapting it to refrigeration is separate physical-model
-work and its guard was not relaxed. The human-powered cell was not optimized. Automatic mechanism fitting,
+engine with the reservoir model. At the V2 milestone, the air-wall microtube wrapper still
+required motor operation. V3 removes that restriction through the separately
+validated external-stream model described below. The human-powered cell was not optimized. Automatic mechanism fitting,
 local polish, primary-family discovery and saturation remain deferred contracts;
 see the [architecture boundary](DADA_ENGINE_RESEARCH_KINEMATICS.md#established-synthesis-workflow-and-current-boundary).
 The two older compact hybrid laws remain explicitly classified as example-only
 representations, not mislabeled as 15p. Further human review should focus on
 configuration usability, artifact-derived defaults, candidate comparison and
 study-specific mechanical thresholds before a large research run.
+
+
+## Research V3 — external boundaries and compiled property tables
+
+Baseline: 679 passing tests, no warnings. V1/V2 tests remain in place. The new
+suites are `test_external_stream_v3.py`, `test_tabulated_fluid_v3.py` and
+`test_research_v3.py`. They cover neutral/legacy rate and outlet parity, a frozen
+pre-V3 one-cycle trajectory, signed refrigeration, fixed/active stream ownership,
+table identity and immutable storage, domain/cell-mask rejection, prohibited
+ideal hydraulics, state-enthalpy transport, compiled lookup without Python
+properties, periodic table replay, candidate construction, resume and reports.
+
+`tests/data/pre_v3_air_wall.json` was generated from the local pre-V3 committed
+source exported to an isolated temporary directory. It captures the rank01
+source warm state, derivatives, 65-point interpolated trajectory, endpoint and
+heat/work quantities. The original stored-reference Research test independently
+retains its 2e-11 relative / 1e-11 absolute metric and periodic-count checks.
+No physical constraint or transport-domain threshold was relaxed.
+
+The bounded [acceptance summary](../outputs/research_v3/validated/summary.json)
+records all cases as feasible. The refrigerator converges in 11 cycles at about
+5.36590 W cooling, 7.21388 W heating, 1.84798 W indicated input, cooling COP
+2.90366 and heating COP 3.90365. Its stored-energy-aware absolute cycle energy
+residual is approximately 6.1e-13 J. The neutral-field air motor converges in 13
+cycles. These are numerical fixtures, not physical hardware validation.
+
+The compiled ideal-generated table refrigerator also converges in 11 cycles.
+Relative differences versus the exact ideal path are approximately 3.50e-8 for
+cooling power, 1.11e-7 for indicated input and 1.46e-7 for COP. The regression
+uses 2e-6 relative / 1e-7 absolute for integrated metrics, allowing adaptive
+trajectory sensitivity; instantaneous RHS checks remain at 2e-10 or tighter.
+The table benchmark's same-state maximum absolute RHS error is about 9.12e-13.
+These are numerical parity tolerances, not real-fluid accuracy estimates.
+
+Two tiny Sobol candidates (one before and one after true persisted resume) are
+feasible. Reports preserve stream definitions and constraint margins; the
+structured-C2 refrigerator input is validated for configuration and mechanical
+preflight only, without claiming a successful cell design.
+
+The initial full-suite run exposed a diagnostic test double that has no volume
+provider. Ideal temperature diagnostics now keep their volume-independent fast
+path; general-fluid diagnostics require the actual volumes. The existing test
+was preserved. See the final V3 test result in the [V3 artifact README](../outputs/research_v3/README.md).

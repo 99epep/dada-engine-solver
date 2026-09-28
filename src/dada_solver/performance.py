@@ -97,16 +97,17 @@ def calculate_cycle_performance(
     gas_work = float(cycle.gas_work[-1] - cycle.gas_work[0])
     mechanical_input = -gas_work
     frequency = abs(angular_speed) / (2.0 * math.pi)
-    refrigeration = angular_speed > 0.0 and cold_heat > 0.0 and hot_heat < 0.0 and gas_work < 0.0
-    motor = angular_speed < 0.0 and cold_heat > 0.0 and hot_heat < 0.0 and gas_work > 0.0
+    mode = classify_cycle(angular_speed, cold_heat, hot_heat, gas_work)
+    refrigeration = mode is OperatingMode.REFRIGERATION
+    motor = mode is OperatingMode.MOTOR
     cooling_cop = (
         cold_heat / mechanical_input
-        if angular_speed > 0.0 and mechanical_input > 0.0 and cold_heat > 0.0
+        if refrigeration
         else None
     )
     heating_cop = (
         -hot_heat / mechanical_input
-        if angular_speed > 0.0 and mechanical_input > 0.0 and hot_heat < 0.0
+        if refrigeration
         else None
     )
 
@@ -144,3 +145,11 @@ def calculate_cycle_performance(
             relative_energy_residual=energy_residual / energy_scale,
         ),
     )
+
+
+def classify_cycle(angular_speed, heat_in, heat_out, gas_work):
+    """Require all heat/work signs; consuming work alone is insufficient."""
+    if heat_in > 0 and heat_out < 0:
+        if angular_speed > 0 and gas_work < 0: return OperatingMode.REFRIGERATION
+        if angular_speed < 0 and gas_work > 0: return OperatingMode.MOTOR
+    return OperatingMode.NON_REFRIGERATION

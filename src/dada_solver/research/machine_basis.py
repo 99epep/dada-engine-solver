@@ -31,8 +31,10 @@ def load_machine_basis(path, expected_sha256):
     if digest!=expected_sha256: raise ValueError('Machine basis SHA-256 mismatch.')
     data=json.loads(source); canonical_json(data)
     required={'schema_version','configuration','heat_in','heat_out','geometry','wall_settings','warm_start','provenance'}
-    if set(data)!=required or type(data['schema_version']) is not int or data['schema_version']!=2:
+    if set(data)!=required or type(data['schema_version']) is not int or data['schema_version'] not in (2,3):
         raise ValueError('Unsupported machine basis schema.')
+    if data['schema_version']==2 and (data['configuration']['gas'].get('model') or any((data[side] or {}).get('family')=='external_stream_wall' for side in ('heat_in','heat_out'))):
+        raise ValueError('New fluid/exchanger definitions require machine schema 3.')
     configuration=configuration_from_data(data['configuration'])
     if (data['heat_in'] is None)!=(data['heat_out'] is None): raise ValueError('Provide both exchangers or neither.')
     hi=exchanger_from_data(data['heat_in']) if data['heat_in'] is not None else None
@@ -77,8 +79,13 @@ def machine_parameters(basis):
         if exchanger is None: continue
         for name,spec in BANK_SPECS.items():
             key=f'microtube.{side}.{name}'; specs[key]=spec; defaults[key]=getattr(exchanger.bank,name)
-        for name,spec in INPUT_SPECS.items():
+        input_specs={k:v for k,v in INPUT_SPECS.items() if not k.startswith('air_')} if hasattr(exchanger.inputs,'external_stream') else INPUT_SPECS
+        for name,spec in input_specs.items():
             key=f'thermal.{side}.{name}'; specs[key]=spec; defaults[key]=getattr(exchanger.inputs,name)
+        if hasattr(exchanger.inputs,'external_stream'):
+            for name,spec in STREAM_SPECS.items():
+                key=f'external_stream.{side}.{name}'; specs[key]=spec
+                defaults[key]=getattr(exchanger.inputs.external_stream,name)
     return specs,defaults
 
 
@@ -96,7 +103,10 @@ def build_machine(basis, configuration, physical, policies):
         source=getattr(basis,side)
         if source is None: exchangers.append(None); continue
         bank={k:p[f'microtube.{side}.{k}'] for k in BANK_SPECS}
-        inputs={k:p[f'thermal.{side}.{k}'] for k in INPUT_SPECS}
+        inputs={k:p[f'thermal.{side}.{k}'] for k in INPUT_SPECS if f'thermal.{side}.{k}' in p}
+        if hasattr(source.inputs,'external_stream'):
+            inputs['external_stream']=replace(source.inputs.external_stream,
+                **{k:p[f'external_stream.{side}.{k}'] for k in STREAM_SPECS})
         g=basis.data['geometry']; tag='hi' if side=='heat_in' else 'ho'; count='ni' if side=='heat_in' else 'no'
         cda=source.outlet_valve_cda_m2
         if policies['outlet_valve_cda']=='source_cda_times_count_ratio_v1':
@@ -105,4 +115,19 @@ def build_machine(basis, configuration, physical, policies):
             exchanger=replace(source,bank=replace(source.bank,**bank),inputs=replace(source.inputs,**inputs),outlet_valve_cda_m2=cda)
             exchanger.build(); exchangers.append(exchanger)
         except (ValueError,ArithmeticError) as error: raise PreflightRejection('invalid_exchanger',str(error)) from error
+    if basis.data['schema_version']==3 and all(x is not None and hasattr(x.inputs,'external_stream') for x in exchangers):
+        inlet,outlet=(x.inputs.external_stream.inlet_temperature_k for x in exchangers)
+        # The reservoir closures remain diagnostic references when walls supply heat.
+        # Keep those references consistent with the actually declared boundaries.
+        try:
+            config=replace(config,cold_reservoir_temperature=outlet if config.motor_operation else inlet,
+                hot_reservoir_temperature=inlet if config.motor_operation else outlet)
+        except ValueError as error: raise PreflightRejection('invalid_exchanger',str(error)) from error
     return MachineDesign(config,heat_in=exchangers[0],heat_out=exchangers[1])
+
+
+STREAM_SPECS={
+    'inlet_temperature_k':ParameterSpec('K',positive=True),
+    'mass_flow_kg_s':ParameterSpec('kg/s',positive=True),
+    'cp_j_kg_k':ParameterSpec('J/(kg*K)',positive=True),
+    'wall_conductance_w_k':ParameterSpec('W/K',positive=True)}

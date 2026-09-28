@@ -128,6 +128,14 @@ class WallRHS:
         self.settings=settings
         start=time.perf_counter()
         self.identity=backend_identity(settings)
+        from .tabulated_fluid import TabulatedFluid
+        self.tabulated = type(wrapper.model.gas) is TabulatedFluid
+        if self.tabulated:
+            self.identity['fluid'] = wrapper.model.gas.identity
+            self.identity['compiled_kernel'] = 'tabulated_rho_u_wall_v1'
+            self.identity['table_backend_source_sha256'] = hashlib.sha256(
+                Path(__file__).with_name('tabulated_backend.py').read_bytes()+
+                Path(__file__).with_name('tabulated_fluid.py').read_bytes()).hexdigest()
         self.cache_path=None;self.cache_error=None;self.cache_key=None
         if settings.name=='python':
             self.implementation=PythonWallRHS(wrapper,profile=settings.profile)
@@ -146,6 +154,10 @@ class WallRHS:
                     # A read-only/full cache must not disable the numerical path.
                     self.cache_error=str(error);self.cache_path=None
                     dispatcher=compiled_dispatcher()
+                if self.tabulated:
+                    from .tabulated_backend import compiled_tabulated_dispatcher
+                    dispatcher=compiled_tabulated_dispatcher()
+                    self.cache_path=None; self.cache_key=None
                 self.implementation=CompiledWallRHS(wrapper,dispatcher,settings.profile)
             except TypeError as error:
                 self.implementation=PythonWallRHS(wrapper,'unsupported_model: '+str(error),settings.profile)
@@ -158,7 +170,7 @@ class WallRHS:
         obj=self.implementation
         if isinstance(obj,PythonWallRHS): result=obj.snapshot()
         else:
-            result=dict(actual_backend='numba',calls=obj.calls,fallback_calls=obj.fallbacks,
+            result=dict(actual_backend='numba_tabulated' if self.tabulated else 'numba',calls=obj.calls,fallback_calls=obj.fallbacks,
                 fallback_reason='unsupported_state' if obj.fallbacks else None,
                 first_call_seconds=obj.first_call_seconds,profile=obj.profile,
                 dispatcher_cache_path=str(obj.dispatcher.stats.cache_path),
@@ -178,6 +190,7 @@ class CompiledWallRHS:
         from dada_solver.dynamics import ThermodynamicModel
         from dada_solver.fluids import CaloricallyPerfectGas
         from dada_solver.exchangers.air_wall import AirWallMotor,AirWallExchanger
+        from dada_solver.exchangers.external_stream import ExternalStreamWallExchanger
         from dada_solver.exchangers.hardware import TubeHalfLink
         from dada_solver.exchangers.gas_transport import DiluteGasTransport
         from dada_solver.exchangers.gas_correlations import MicrotubeGasModel
@@ -186,8 +199,14 @@ class CompiledWallRHS:
         from dada_solver.valves import PassiveCheckValve
         from dada_solver.hydraulics import CompressibleOrifice
         model=wrapper.model
+        from .tabulated_fluid import TabulatedFluid
+        from .fluids import require_ideal_hydraulics
+        self.table = model.gas if type(model.gas) is TabulatedFluid else None
+        if self.table is not None and self.table.ideal_reference is None:
+            raise TypeError('No compiled hydraulic kernel is validated for this non-ideal table.')
+        hydraulic_gas = require_ideal_hydraulics(model.gas)
         if (type(wrapper) is not AirWallMotor or type(model) is not ThermodynamicModel or
-                type(model.gas) is not CaloricallyPerfectGas or not model.continuous_ideal_diodes):
+                type(hydraulic_gas) is not CaloricallyPerfectGas or not model.continuous_ideal_diodes):
             raise TypeError('Compiled backend requires the built-in ideal-diode air-wall model.')
         def checked(gas_model):
             if (type(gas_model) is not MicrotubeGasModel or type(gas_model.transport) is not DiluteGasTransport
@@ -210,11 +229,11 @@ class CompiledWallRHS:
                 g.maximum_mach,g.maximum_relative_pressure_drop,float(g.thermal_entry),tr.minimum_temperature,tr.maximum_temperature,numeric.SPECIES.index(tr.species)))
         walls=[]
         for wall in (wrapper.heat_in,wrapper.heat_out):
-            if type(wall) is not AirWallExchanger or type(wall.gas_film) is not MicrotubeGasFilm:
+            if type(wall) not in (AirWallExchanger, ExternalStreamWallExchanger) or type(wall.gas_film) is not MicrotubeGasFilm:
                 raise TypeError('Compiled backend requires built-in variable gas films.')
             film=wall.gas_film;g=film.model;tr=checked(g);b=film.bank
             if type(b) is not MicrotubeBank: raise TypeError('Unsupported bank class.')
-            walls.append((wall.wall_capacity_j_k,wall.air_inlet_temperature_k,wall._effective_air_conductance,
+            walls.append((wall.wall_capacity_j_k,wall.external_inlet_temperature_k,wall.effective_external_conductance_w_k,
                 film.half_wall_resistance_k_w,b.tube_internal_area_m2,b.inner_diameter_m,b.tube_length_m,
                 b.tube_flow_area_m2,g.maximum_mach,g.maximum_relative_pressure_drop,float(g.thermal_entry),
                 tr.minimum_temperature,tr.maximum_temperature,numeric.SPECIES.index(tr.species)))
@@ -229,7 +248,7 @@ class CompiledWallRHS:
             model.heat_in_valve_placement=='downstream'))
         self.ports=np.array(((1,3),(0,2)),dtype=np.int64)
         self.links=np.array(links);self.walls=np.array(walls)
-        g=model.gas
+        g=hydraulic_gas
         self.gas=np.array((g.gas_constant,g.heat_capacity_cv,g.heat_capacity_cp,g.heat_capacity_ratio,model.angular_speed))
         self.calls=0;self.fallbacks=0
         self.first_call_seconds=None
@@ -255,7 +274,11 @@ class CompiledWallRHS:
         volumes=np.array((vs,vl,model.machine_volumes.cold_heat_exchanger,model.machine_volumes.hot_heat_exchanger))
         rates=np.array((model.angular_speed*ds,model.angular_speed*dl))
         dispatch_start=time.perf_counter() if self.profile else 0.
-        ok,result=self.dispatcher(np.asarray(values,dtype=float),volumes,rates,self.gas,self.links,self.walls,self.sources,self.destinations,self.one_way,self.ports)
+        arguments=(np.asarray(values,dtype=float),volumes,rates,self.gas,self.links,self.walls,self.sources,self.destinations,self.one_way,self.ports)
+        if self.table is not None:
+            table=self.table
+            arguments += (table.rho_axis,table.u_axis,table.properties,table.valid_cells,table.limits)
+        ok,result=self.dispatcher(*arguments)
         if self.profile: self.dispatch_seconds+=time.perf_counter()-dispatch_start
         if started is not None: self.first_call_seconds=time.perf_counter()-started
         if not ok:

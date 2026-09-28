@@ -1,0 +1,215 @@
+{
+  "scope": "Same rank01 warm state and angle, one local machine; JIT and steady time separated. No helium accuracy claim.",
+  "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+  "processor": "",
+  "fluid": {
+    "model": "tabulated_single_phase_rho_u",
+    "version": 1,
+    "table_sha256": "d8a6efcd745434f3c85bcc325aaf66cf522ba023e040a5ea8107a1e67b7e0142",
+    "interpolation": "bilinear_rho_u_v1",
+    "rho_domain": [
+      0.01,
+      50.0
+    ],
+    "u_domain": [
+      143500.0,
+      717500.0
+    ],
+    "temperature_pressure_limits": [
+      200.0,
+      1000.0,
+      574.0,
+      14350000.0
+    ],
+    "validity": "explicit_single_phase_cell_mask; no extrapolation"
+  },
+  "measurements": {
+    "ideal_compiled": {
+      "first_call_seconds": 6.023319750034716,
+      "calls_per_repeat": 10000,
+      "repeats": 3,
+      "steady_seconds_per_call": 3.768471929943189e-05,
+      "calls_per_second": 26535.954588232144,
+      "backend": {
+        "actual_backend": "numba",
+        "calls": 30001,
+        "fallback_calls": 0,
+        "fallback_reason": null,
+        "first_call_seconds": 6.023306638991926,
+        "profile": false,
+        "dispatcher_cache_path": "None",
+        "dispatcher_cache_hits": 0,
+        "dispatcher_cache_misses": 1,
+        "kinematics_seconds": null,
+        "dispatch_seconds": null,
+        "total_rhs_seconds": null,
+        "requested_backend": "numba",
+        "identity": {
+          "settings": {
+            "name": "numba",
+            "profile": false,
+            "disk_cache": false,
+            "cache_directory": null
+          },
+          "python": "3.13.5",
+          "numpy": "2.2.4",
+          "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+          "libc": [
+            "glibc",
+            "2.41"
+          ],
+          "source_sha256": "b0c2b74d253c9a6f09c694905caa8d892cad26e998dc53a0a585e125b4bca593",
+          "fastmath": false,
+          "parallel": false,
+          "float_type": "float64",
+          "numba_available": true,
+          "numba": "0.61.2",
+          "llvmlite": "0.44.0",
+          "llvm": [
+            19,
+            1,
+            7
+          ],
+          "cpu": "sandybridge",
+          "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+          "disable_jit": false,
+          "compiler_cpu_name": null,
+          "compiler_cpu_features": null,
+          "compiler_opt": "_OptLevel(3)",
+          "boundscheck": null,
+          "numba_cache_dir": ""
+        },
+        "preparation_seconds": 0.005921056028455496,
+        "cache_directory": null,
+        "cache_namespace": null,
+        "cache_error": null
+      }
+    },
+    "tabulated_compiled": {
+      "first_call_seconds": 2.2040316950296983,
+      "calls_per_repeat": 10000,
+      "repeats": 3,
+      "steady_seconds_per_call": 4.2397980397799986e-05,
+      "calls_per_second": 23586.029113119963,
+      "backend": {
+        "actual_backend": "numba_tabulated",
+        "calls": 30001,
+        "fallback_calls": 0,
+        "fallback_reason": null,
+        "first_call_seconds": 2.204021834942978,
+        "profile": false,
+        "dispatcher_cache_path": "None",
+        "dispatcher_cache_hits": 0,
+        "dispatcher_cache_misses": 1,
+        "kinematics_seconds": null,
+        "dispatch_seconds": null,
+        "total_rhs_seconds": null,
+        "requested_backend": "numba",
+        "identity": {
+          "settings": {
+            "name": "numba",
+            "profile": false,
+            "disk_cache": false,
+            "cache_directory": null
+          },
+          "python": "3.13.5",
+          "numpy": "2.2.4",
+          "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+          "libc": [
+            "glibc",
+            "2.41"
+          ],
+          "source_sha256": "b0c2b74d253c9a6f09c694905caa8d892cad26e998dc53a0a585e125b4bca593",
+          "fastmath": false,
+          "parallel": false,
+          "float_type": "float64",
+          "numba_available": true,
+          "numba": "0.61.2",
+          "llvmlite": "0.44.0",
+          "llvm": [
+            19,
+            1,
+            7
+          ],
+          "cpu": "sandybridge",
+          "cpu_features": "+64bit,-adx,+aes,-amx-bf16,-amx-complex,-amx-fp16,-amx-int8,-amx-tile,+avx,-avx10.1-256,-avx10.1-512,-avx2,-avx512bf16,-avx512bitalg,-avx512bw,-avx512cd,-avx512dq,-avx512f,-avx512fp16,-avx512ifma,-avx512vbmi,-avx512vbmi2,-avx512vl,-avx512vnni,-avx512vp2intersect,-avx512vpopcntdq,-avxifma,-avxneconvert,-avxvnni,-avxvnniint16,-avxvnniint8,-bmi,-bmi2,-ccmp,-cf,-cldemote,-clflushopt,-clwb,-clzero,+cmov,-cmpccxadd,+crc32,+cx16,+cx8,-egpr,-enqcmd,-f16c,-fma,-fma4,-fsgsbase,+fxsr,-gfni,-hreset,-invpcid,-kl,-lwp,-lzcnt,+mmx,-movbe,-movdir64b,-movdiri,-mwaitx,-ndd,+pclmul,-pconfig,-pku,+popcnt,-ppx,-prefetchi,-prfchw,-ptwrite,-push2pop2,-raoint,-rdpid,-rdpru,-rdrnd,-rdseed,-rtm,+sahf,-serialize,-sgx,-sha,-sha512,-shstk,-sm3,-sm4,+sse,+sse2,+sse3,+sse4.1,+sse4.2,-sse4a,+ssse3,-tbm,-tsxldtrk,-uintr,-usermsr,-vaes,-vpclmulqdq,-waitpkg,-wbnoinvd,-widekl,-xop,+xsave,-xsavec,+xsaveopt,-xsaves",
+          "disable_jit": false,
+          "compiler_cpu_name": null,
+          "compiler_cpu_features": null,
+          "compiler_opt": "_OptLevel(3)",
+          "boundscheck": null,
+          "numba_cache_dir": "",
+          "fluid": {
+            "model": "tabulated_single_phase_rho_u",
+            "version": 1,
+            "table_sha256": "d8a6efcd745434f3c85bcc325aaf66cf522ba023e040a5ea8107a1e67b7e0142",
+            "interpolation": "bilinear_rho_u_v1",
+            "rho_domain": [
+              0.01,
+              50.0
+            ],
+            "u_domain": [
+              143500.0,
+              717500.0
+            ],
+            "temperature_pressure_limits": [
+              200.0,
+              1000.0,
+              574.0,
+              14350000.0
+            ],
+            "validity": "explicit_single_phase_cell_mask; no extrapolation"
+          },
+          "compiled_kernel": "tabulated_rho_u_wall_v1",
+          "table_backend_source_sha256": "87d871d2129b8fffa36b4407e937b155628b9034120b56ddcaf8a9afd09ced8e"
+        },
+        "preparation_seconds": 0.003248549997806549,
+        "cache_directory": null,
+        "cache_namespace": null,
+        "cache_error": null
+      }
+    },
+    "python": {
+      "first_call_seconds": 0.0007863270002417266,
+      "calls_per_repeat": 1000,
+      "repeats": 3,
+      "steady_seconds_per_call": 0.00047199938696576284,
+      "calls_per_second": 2118.6468194979593,
+      "backend": {
+        "actual_backend": "python",
+        "reason": null,
+        "calls": 3001,
+        "fallback_calls": 0,
+        "profile": false,
+        "total_rhs_seconds": null,
+        "requested_backend": "python",
+        "identity": {
+          "settings": {
+            "name": "python",
+            "profile": false,
+            "disk_cache": false,
+            "cache_directory": null
+          },
+          "python": "3.13.5",
+          "numpy": "2.2.4",
+          "platform": "Linux-6.12.107+deb13-amd64-x86_64-with-glibc2.41",
+          "libc": [
+            "glibc",
+            "2.41"
+          ],
+          "source_sha256": "b0c2b74d253c9a6f09c694905caa8d892cad26e998dc53a0a585e125b4bca593",
+          "fastmath": false,
+          "parallel": false,
+          "float_type": "float64"
+        },
+        "preparation_seconds": 0.0003378699766471982,
+        "cache_directory": null,
+        "cache_namespace": null,
+        "cache_error": null
+      }
+    }
+  },
+  "tabulated_to_ideal_ratio": 1.125070882468777,
+  "rhs_maximum_absolute_error": 9.117151478221786e-13,
+  "rhs_maximum_scaled_error": 2.592678144123715e-13
+}

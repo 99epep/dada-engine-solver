@@ -1594,3 +1594,19 @@ already algebraically equivalent to the pressure-squared isothermal expression.
 See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) and
 [EXCHANGER_VALIDATION.md](EXCHANGER_VALIDATION.md) for per-equation provenance,
 limits and the same-champion comparison.
+
+## 2026-09-28 — Research V3 external streams and fluid reconstruction
+
+Source: explicit Research V3 user mission. Generalize the existing finite-capacity
+external stream and lumped wall to declared fluids and either operating direction.
+The historical air equations, gas films, valves, wall storage and convergence
+criteria remain unchanged. External conductance is an input, not a universal
+liquid correlation; external pump/fan losses remain excluded, not zero.
+Refrigeration performance uses external boundary heats and indicated work, with
+all signed refrigeration conditions required. No shaft efficiency is assumed.
+
+Introduce conservative-state fluid reconstruction and an ideal-generated,
+single-phase validation table executed inside a separate compiled RHS. This is
+an architectural validation, not real-helium validation. Existing ideal hydraulic
+closures require a compatible calorically perfect fluid; cryogenic transport,
+real-fluid hydraulics and physical helium property data remain separate work.

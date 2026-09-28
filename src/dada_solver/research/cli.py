@@ -68,7 +68,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     init = commands.add_parser('init', help='Create an editable study and its portable basis')
-    init.add_argument('preset', choices=['sixbar-thermo5d','kinematics','structured-c2-3952'])
+    init.add_argument('preset', choices=['sixbar-thermo5d','kinematics','structured-c2-3952','external-stream-refrigeration','external-stream-motor'])
     from .families import FAMILIES
     init.add_argument('--small',choices=FAMILIES,default='harmonic')
     init.add_argument('--large',choices=FAMILIES,default='harmonic')
@@ -105,6 +105,9 @@ def main(argv=None):
                 if (args.small,args.large,args.coupling)!=('harmonic','harmonic','independent'):
                     raise ValueError('Use the kinematics preset to choose cylinder families.')
                 path = initialize(args.output)
+            elif args.preset.startswith('external-stream-'):
+                from .presets import initialize_v3
+                path=initialize_v3(args.output,args.small,args.large,mode=args.preset.removeprefix('external-stream-'))
             else:
                 from .presets import initialize_v2
                 path=initialize_v2(args.output,args.small,args.large,coupling=args.coupling,champion=args.preset=='structured-c2-3952')

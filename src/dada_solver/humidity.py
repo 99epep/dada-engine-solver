@@ -146,7 +146,7 @@ def assess_moisture_phase_change_risk(
     unavailable_samples: list[str] = []
     for index, angle in enumerate(cycle.angles):
         state = ThermodynamicState.from_array(cycle.states[:, index])
-        temperatures[:, index] = state.temperatures(model.gas)
+        temperatures[:, index] = state.temperatures(model.gas, model.volumes(float(angle)))
         pressures[:, index] = state.pressures(model.gas, model.volumes(float(angle)))
         for volume_index in range(4):
             temperature = float(temperatures[volume_index, index])
@@ -239,7 +239,7 @@ def moisture_saturation_ratio_history(
     ratios = np.full((4, cycle.angles.size), np.nan, dtype=float)
     for sample_index, angle in enumerate(cycle.angles):
         state = ThermodynamicState.from_array(cycle.states[:, sample_index])
-        temperatures = state.temperatures(model.gas)
+        temperatures = state.temperatures(model.gas, model.volumes(float(angle)))
         pressures = state.pressures(model.gas, model.volumes(float(angle)))
         for volume_index, (temperature, pressure) in enumerate(
             zip(temperatures, pressures, strict=True)
