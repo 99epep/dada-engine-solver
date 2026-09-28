@@ -92,12 +92,20 @@ def main(argv=None):
     single.add_argument('--reference', action='store_true', help='Start from the stored regression candidate instead of TOML initials')
     single.add_argument('--set', action='append', default=[], metavar='PARAMETER=VALUE')
     single.add_argument('--budget')
+    resize = commands.add_parser('rescale', help='Create a new capacity-scaled candidate study and portable basis; never integrate')
+    resize.add_argument('source', type=Path)
+    resize.add_argument('--candidate', required=True, help='Exact ID or unambiguous prefix')
+    resize.add_argument('--factor', required=True, type=float)
+    resize.add_argument('--mode', choices=['capacity'], default='capacity')
+    resize.add_argument('--output', required=True, type=Path)
     for name in ('status','report','compare'):
         p = commands.add_parser(name, help='Read stored results; never run integration')
         p.add_argument('paths', nargs='+' if name=='compare' else 1, type=Path)
         p.add_argument('--candidate', action='append', default=[], help='Exact ID, unambiguous prefix or best; repeat to compare')
         p.add_argument('--json', action='store_true', help='Print the inspection dataset')
-        if name != 'status': p.add_argument('--html', type=Path, help='Write a standalone offline HTML report')
+        if name != 'status':
+            p.add_argument('--html', type=Path, help='Write a new standalone offline HTML report')
+            p.add_argument('--plots', choices=['volumes'], help='Sample selected candidate volumes without thermodynamic integration')
     args = parser.parse_args(argv)
     try:
         if args.command == 'init':
@@ -148,12 +156,16 @@ def main(argv=None):
                                    retry_incomplete=getattr(args,'retry_incomplete',False))
             print(f"Phase {summary['phase_id']}: {summary['attempted']} attempts; {summary['feasible']} feasible; {summary['stopping_reason']}.")
             print(report.text_report(report.inspect(args.directory)), end='')
+        elif args.command == 'rescale':
+            from .rescale import rescale
+            path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)
+            print(f'Created {path} and {path.with_suffix(".basis.json")}. Constraints remain unchanged; evaluate to verify scaling.')
         elif args.command == 'evaluate':
             record = evaluate(args.study, args.output, assignments=args.set, reference=args.reference, budget=args.budget)
             print(f"{record['candidate_id']} {record['status']}; saved {args.output}")
             print(json.dumps(record['metrics'],indent=2))
         else:
-            data = report.compare(args.paths,args.candidate)
+            data = report.compare(args.paths,args.candidate, plots=getattr(args,'plots',None))
             print(json.dumps(data,indent=2) if args.json else report.text_report(data),end='\n' if args.json else '')
             if getattr(args,'html',None): print(f'Saved {report.render_html(data,args.html)}')
     except KeyboardInterrupt:

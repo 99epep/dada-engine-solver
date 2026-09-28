@@ -301,3 +301,31 @@ contains the full evaluation; this is no new optimization.
 
 Post-extraction validation: **744 passed, 0 warnings in 293.79 s** using
 `PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q`.
+
+## Capacity scaling, chronology availability and offline plots
+
+The [capacity-scaling demonstration](../outputs/human_cell_stage0/README.md)
+records local Human Cell candidates A and B, factor-one reconstruction and
+bounded factor-five evaluations. With identical uniform initialization, the
+original A and A×1 complete metric dictionaries are exactly equal. A×5 / B×5
+produce 231.885 / 268.295 W cooling with 130.274 / 156.899 W indicated input
+and COP 1.77998 / 1.70998. Both converge in 15 cycles and are model-valid and
+study-feasible without constraint relaxation.
+
+Tests cover basis-owned CdA, count-ratio policy without double scaling, inventory,
+extra dead volume/capacity, external streams, active bounds, integer rejection,
+portable mechanism artifacts, reversal, non-mutation and exact factor-one input
+parity. Reporting tests cover offline production volume reconstruction, single
+motor-direction application, standalone evaluation reconstruction and legacy
+empty-event presentation without rewriting stored diagnostics. V3 evaluation
+checks explicitly distinguish unavailable wall events from reflux.
+
+Twelve browser checks additionally exercise real HTML sorting and the two
+historical candidates; table and four volume curves were visually inspected.
+See [the exact scaling and diagnostic rules](DADA_ENGINE_RESEARCH_CAPACITY.md).
+
+Final full-suite result: **760 passed, 0 warnings in 258.43 s** using
+`PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q`.
+The old static-cycle assertion was updated to require unavailable chronology
+for an empty event sequence, as requested; pressure checks and nonempty-event
+classification tests remain intact.

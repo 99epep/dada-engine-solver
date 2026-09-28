@@ -1,0 +1,567 @@
+{
+  "configuration": {
+    "gas": {
+      "gas_constant": 287.0,
+      "heat_capacity_cp": 1004.5,
+      "heat_capacity_cv": 717.5,
+      "consistency_tolerance": 1e-10
+    },
+    "machine_volumes": {
+      "small_cylinder": {
+        "minimum": 0.0013784352824910732,
+        "maximum": 0.005973219557461317
+      },
+      "large_cylinder": {
+        "minimum": 0.0013542379848356593,
+        "maximum": 0.005868364600954524
+      },
+      "cold_heat_exchanger": 9.900990099009902e-05,
+      "hot_heat_exchanger": 9.900990099009902e-05
+    },
+    "cold_reservoir_temperature": 273.15,
+    "hot_reservoir_temperature": 298.15,
+    "cold_thermal_conductance": 247.52137713771384,
+    "hot_thermal_conductance": 247.52137713771384,
+    "angular_speed": 17.59291886010284,
+    "charge": {
+      "temperature": 288.15,
+      "pressure": null,
+      "total_mass": 0.006013673512253027
+    },
+    "hydraulics": {
+      "large_to_hot_cda": 0.0008316718271827186,
+      "small_to_cold_cda": 0.001485128262826283,
+      "hot_to_small_valve_cda": 0.0008316718271827186,
+      "cold_to_large_valve_cda": 0.002970256525652566,
+      "orifice_pressure_regularization": 0.0
+    },
+    "hot_to_small_valve": {
+      "opening_pressure_difference": 0.0,
+      "closing_pressure_difference": 0.0
+    },
+    "cold_to_large_valve": {
+      "opening_pressure_difference": 0.0,
+      "closing_pressure_difference": 0.0
+    },
+    "validity": {
+      "maximum_pressure_equalization_error": 0.05,
+      "maximum_mach_number": 0.2,
+      "maximum_isothermality_error": 0.05,
+      "maximum_compressibility_deviation": 0.01,
+      "maximum_cp_variation": 0.01
+    },
+    "numerical": {
+      "integration_method": "LSODA",
+      "integration_relative_tolerance": 1e-07,
+      "integration_absolute_tolerance": 1e-09,
+      "maximum_step_angle_degrees": 0.5,
+      "maximum_valve_events_per_cycle": 100,
+      "maximum_cycles": 100,
+      "periodic_relative_tolerance": 1e-06,
+      "periodic_mass_absolute_tolerance": 1e-12,
+      "periodic_energy_absolute_tolerance": 1e-06
+    },
+    "kinematics_type": "shared_crank_rocker",
+    "small_phase_offset_degrees": 0.0,
+    "small_lambda_target": 0.7,
+    "large_lambda_target": 0.7,
+    "adiabatic_sector_fraction": 0.25,
+    "example_data": true,
+    "valve_model": "continuous_ideal_diode",
+    "heat_in_valve_placement": "downstream",
+    "heat_out_valve_placement": "downstream",
+    "four_bar_ground_distance": 0.11937584698725914,
+    "four_bar_connecting_rod_ratio": null,
+    "four_bar_crank_angle_offset_degrees": 304.375,
+    "four_bar_crank_direction": -1,
+    "hydraulic_flow_models": null,
+    "humidity_screening": null,
+    "shared_four_bar_design": {
+      "crank_ratio": 0.37769683420658107,
+      "small_coupler_ratio": 1.0535716178640724,
+      "small_rocker_ratio": 1.083007834497839,
+      "small_output_along_ratio": 0.6936068420112134,
+      "small_output_normal_ratio": -0.8709663633070887,
+      "large_coupler_ratio": 1.0105247422773391,
+      "large_rocker_ratio": 1.0263298945873975,
+      "large_output_along_ratio": 0.7577473468333483,
+      "large_output_normal_ratio": 0.8755956188030541,
+      "small_pivot_x_ratio": 1.0,
+      "small_pivot_y_ratio": 0.0,
+      "large_pivot_x_ratio": 1.0,
+      "large_pivot_y_ratio": 0.0,
+      "small_four_bar_branch": 1,
+      "large_four_bar_branch": -1,
+      "small_slider_rod_ratio": 5.0,
+      "large_slider_rod_ratio": 5.0
+    },
+    "free_kinematics": null,
+    "shared_coupler_projection_design": null
+  },
+  "heat_in": {
+    "bank": {
+      "tube_count": 21395,
+      "tube_length_m": 0.03320349002256989,
+      "inner_diameter_m": 0.00033,
+      "wall_thickness_m": 0.0001524,
+      "pitch_m": 0.00125,
+      "header_depth_m": 0.002,
+      "additional_internal_volume_m3": 9.999999999999999e-06
+    },
+    "inputs": {
+      "metal_conductivity_w_m_k": 15.0,
+      "metal_density_kg_m3": 8000.0,
+      "metal_cp_j_kg_k": 500.0,
+      "extra_wall_capacity_j_k": 10.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_viscosity_pa_s": 2e-05,
+      "gas_nusselt": 3.66,
+      "core_loss_multiplier": 1.0,
+      "header_loss_coefficient": 2.0,
+      "external_stream": {
+        "inlet_temperature_k": 273.15,
+        "mass_flow_kg_s": 0.25,
+        "cp_j_kg_k": 4180.0,
+        "wall_conductance_w_k": 750.0,
+        "fluid": "declared water-like liquid scenario"
+      },
+      "gas_model": {
+        "transport": {
+          "species": "air",
+          "minimum_temperature": 200.0,
+          "maximum_temperature": 1000.0,
+          "provenance": "COMSOL Sutherland tables 5-2/5-3; NIST Shomate; NIST helium table"
+        },
+        "accommodation": {
+          "momentum_accommodation": null,
+          "thermal_accommodation": null,
+          "provenance": "Unknown gas/metal accommodation; no silica value inferred"
+        },
+        "slip": null,
+        "domain_policy": "reject",
+        "thermal_entry": true,
+        "maximum_mach": 0.3,
+        "maximum_relative_pressure_drop": 0.2,
+        "boundary_condition": "constant_wall_temperature"
+      }
+    },
+    "outlet_valve_cda_m2": 0.003227390383455822,
+    "valve_placement": "downstream",
+    "family": "external_stream_wall"
+  },
+  "heat_out": {
+    "bank": {
+      "tube_count": 22770,
+      "tube_length_m": 0.0322288311970265,
+      "inner_diameter_m": 0.00033,
+      "wall_thickness_m": 0.0001524,
+      "pitch_m": 0.00125,
+      "header_depth_m": 0.002,
+      "additional_internal_volume_m3": 9.999999999999999e-06
+    },
+    "inputs": {
+      "metal_conductivity_w_m_k": 15.0,
+      "metal_density_kg_m3": 8000.0,
+      "metal_cp_j_kg_k": 500.0,
+      "extra_wall_capacity_j_k": 10.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_viscosity_pa_s": 2e-05,
+      "gas_nusselt": 3.66,
+      "core_loss_multiplier": 1.0,
+      "header_loss_coefficient": 2.0,
+      "external_stream": {
+        "inlet_temperature_k": 298.15,
+        "mass_flow_kg_s": 0.25,
+        "cp_j_kg_k": 4180.0,
+        "wall_conductance_w_k": 750.0,
+        "fluid": "declared water-like liquid scenario"
+      },
+      "gas_model": {
+        "transport": {
+          "species": "air",
+          "minimum_temperature": 200.0,
+          "maximum_temperature": 1000.0,
+          "provenance": "COMSOL Sutherland tables 5-2/5-3; NIST Shomate; NIST helium table"
+        },
+        "accommodation": {
+          "momentum_accommodation": null,
+          "thermal_accommodation": null,
+          "provenance": "Unknown gas/metal accommodation; no silica value inferred"
+        },
+        "slip": null,
+        "domain_policy": "reject",
+        "thermal_entry": true,
+        "maximum_mach": 0.3,
+        "maximum_relative_pressure_drop": 0.2,
+        "boundary_condition": "constant_wall_temperature"
+      }
+    },
+    "outlet_valve_cda_m2": 0.0010216464867360527,
+    "valve_placement": "downstream",
+    "family": "external_stream_wall"
+  },
+  "geometry": {
+    "total_swept_m3": 0.009108910891089108,
+    "small_clearance_ratio": 0.3,
+    "large_clearance_ratio": 0.3,
+    "seed_ni": 3938,
+    "seed_no": 4225,
+    "seed_li": 0.03920273588759638,
+    "seed_lo": 0.026772470159823387,
+    "seed_hi_cda": 0.0006308991476817586,
+    "seed_ho_cda": 0.0001895260771222754
+  },
+  "wall_settings": {
+    "integration_method": "LSODA",
+    "integration_relative_tolerance": 1e-08,
+    "integration_absolute_tolerances": [
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-07,
+      1e-07,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08
+    ],
+    "maximum_step_angle_radians": 0.008726646259971648,
+    "periodic_relative_tolerance": 1e-06,
+    "periodic_absolute_tolerance": 1e-12,
+    "progress_interval_seconds": 1.0,
+    "accelerate_walls": true
+  },
+  "warm_start": null,
+  "provenance": {
+    "inputs": [
+      {
+        "path": "examples/motor_demonstrator_stage3_champion_325c.toml",
+        "sha256": "27385518cd36b24e55c11e12fdaba9c86df3f6eaff3312092ff9fb9f891c33e9",
+        "bytes": 2900,
+        "tracked": true
+      },
+      {
+        "path": "examples/motor_hardware_parallel_325c.toml",
+        "sha256": "929c1b6cd930b3b8f04d563ef6400451c4684977f0d801db2b9e988cdfccbb1e",
+        "bytes": 1751,
+        "tracked": true
+      },
+      {
+        "path": "examples/motor_mechanics_stage7A5_edge.toml",
+        "sha256": "99976cfdeaa3b7606f027faf1a57616fe44e84bc68d45eeb0e3f49fdfd8bbd49",
+        "bytes": 2697,
+        "tracked": true
+      },
+      {
+        "path": "outputs/motor_four_stage_thermo3d/report.json",
+        "sha256": "166534288426166b6578bfea0b4db8bc65f61cf580d185c2f04187c0b82fe3b8",
+        "bytes": 19595,
+        "tracked": true
+      },
+      {
+        "path": "outputs/motor_fourier_c2_8h_refine/report.json",
+        "sha256": "6c6e9d4bb8778ab34ed7b303fa83aea64fb54f3e75341343de59b854f184cda6",
+        "bytes": 28257,
+        "tracked": true
+      },
+      {
+        "path": "outputs/motor_mechanics_stage7A5_edge/candidates/1f8c5f8c71690cf0bbf16527cddf1c2daada4c0e9ddb9024165f58e57ba5f417.json",
+        "sha256": "ccad03debef8a7cc7bc050d624700ab1823bba523f8169953e398aaeea4a7ebf",
+        "bytes": 6276,
+        "tracked": true
+      },
+      {
+        "path": "outputs/motor_mechanics_stage7A5_edge/report.json",
+        "sha256": "35c00ddad5048381e2a561cbb37b691dd7e0c15508c73afb077b360d307c75db",
+        "bytes": 117845,
+        "tracked": true
+      },
+      {
+        "path": "outputs/motor_spline_from_linear_260k/report.json",
+        "sha256": "9e4fa7fa7ead459ad81d20dac5e166e7b9d387ae41d1442c956c41d9aaf0349b",
+        "bytes": 32762,
+        "tracked": true
+      },
+      {
+        "path": "outputs/sixbar_thermo5d_3952/rank_01/history.jsonl",
+        "sha256": "f9378e2681d3081b247db9334ef2c64f1bb1288dca70ae571e2a24663a9919cb",
+        "bytes": 551604,
+        "tracked": true
+      },
+      {
+        "path": "outputs/sixbar_thermo5d_3952/rank_01/report.json",
+        "sha256": "c8ae9ade4a4ae8354a3fe3527b6c99163e9f5d244fc9cca68b9f314007df0656",
+        "bytes": 6276,
+        "tracked": true
+      },
+      {
+        "path": "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/best_pair.json",
+        "sha256": "c0033872e012270a2d39f0cd477beb6bb251bd59afe89b3305d8489fb494d450",
+        "bytes": 6167,
+        "tracked": true
+      },
+      {
+        "path": "outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/report.json",
+        "sha256": "e3401288a9ff114b3b89406f336db9c6cc52470fd3119b7442c7181caefd5fed",
+        "bytes": 10847,
+        "tracked": true
+      }
+    ],
+    "example_sources": [
+      {
+        "path": "examples/optimize_sixbar_pairs_thermo5d_3952_hlat25.py",
+        "sha256": "21bcb0cafb862aa062b032470a5f04b029d053c24062646afa1c047894675e5f"
+      },
+      {
+        "path": "examples/compare_motor_motion_laws_stage7A5.py",
+        "sha256": "f17bfa7f2c0eb5261d0430e04878b014233ee9137e10e3a6044e1f5c43b67fa0"
+      },
+      {
+        "path": "examples/fit_motor_hybrid_c2_15p_to_source16.py",
+        "sha256": "0bc7ad4191e67ee74fc472fffedad0376ca337c399828f6af9e7a46ced62d17c"
+      },
+      {
+        "path": "examples/optimize_motor_exchanger_asymmetry_stageK1.py",
+        "sha256": "6e9eea6abdd55a84078cf746618ff4b2258d92d5e793c48697ba07d2eac54c8c"
+      },
+      {
+        "path": "examples/optimize_motor_four_stage_k2.py",
+        "sha256": "05edd68313d0f7f4ad29f1ee54b55b157e6b5c507c3b1c7497d5563aef81dead"
+      },
+      {
+        "path": "examples/optimize_motor_four_stage_thermo3d.py",
+        "sha256": "f61e1016bdb00328d47cc78d9f0df484b0546c6ac232820916fab2cc382c0aae"
+      },
+      {
+        "path": "examples/optimize_motor_fourier_c2_260k.py",
+        "sha256": "14b2ff98a45c4be17c1bb502de47060532db3b31a4f2449e349e57090ae800ef"
+      },
+      {
+        "path": "examples/optimize_motor_free_spline_260k_v3.py",
+        "sha256": "f34267fd3d0c8692c502e205e6f609d80c24c55ee602aca0e30198babd5e460f"
+      },
+      {
+        "path": "examples/optimize_motor_hybrid_c2_15p_260k.py",
+        "sha256": "687e6569f92643c088500265a33a248e6d6a802b25201747511fc123341d6aae"
+      },
+      {
+        "path": "examples/optimize_motor_piecewise_stageP3.py",
+        "sha256": "7c5ffdcf484d661a6b831d67ffd334d94e87f9c66d8c4ada238a4bd22c430792"
+      },
+      {
+        "path": "examples/optimize_motor_temperature_point.py",
+        "sha256": "f71c6ecfab790807214d056b5af78a02d547cc992afb26eb4339891d9f4deb98"
+      },
+      {
+        "path": "examples/optimize_motor_two_extrema_stageF5.py",
+        "sha256": "4f9d5c9be7f99b86afd7d00570f029ab558bc8c58f29591bb838e9171945443b"
+      },
+      {
+        "path": "examples/optimize_motor_two_extrema_stageF6.py",
+        "sha256": "b3c3565790c0fe8e6c00fb7548edeaf6f4cc7d31e15f630061c8fbb60d892eea"
+      },
+      {
+        "path": "examples/refine_motor_four_stage_hx9d_variable_gas.py",
+        "sha256": "aff841528ca2822d20c07919902e68ea752a431a3a588b88d2eb733a1caaa481"
+      },
+      {
+        "path": "examples/refine_motor_fourier_c2_260k.py",
+        "sha256": "4c92400022312bd98dc9db611e41025af56a3f80b7d9638d65c792b4ed5d3521"
+      }
+    ],
+    "source_commit": "7c7c7c69b9b2ecf17dfffc10b3867cad09f1fa02",
+    "pair_candidate_id": "b7ceb1d75eff2f179d8f4a62ec44a33342d9fff1bc0b6eecd846afd741b92519",
+    "reference_candidate_id": "7118cb83769dcda54b49128a122bc576bafb880748a20eebd893189492cb1b4e",
+    "length_unit": "crank_radius",
+    "angle_unit": "rad",
+    "physical_boundary": "external_air_input",
+    "capacity_scaling": {
+      "version": 1,
+      "mode": "capacity",
+      "factor": 5,
+      "source_candidate_id": "a16ed2c7f3fb24dbef2f4e5497e6141af04b17acdb3df106593511e97649243b",
+      "source_study_id": "9523ec043e0a215588da3f06ea4e36b8454178fd6c4031d3965c360e5e4e50d0",
+      "source_definition_id": "f0c7051782fe47c1ebc20d1019e220287e5aa04cb7e2a8385aac0916380bce9a",
+      "source": "examples/human_cell_stage0/campaign",
+      "source_basis_sha256": "701388a430b2f77211729315d3a3037611a3ab7ff8961014961e77137af19beb",
+      "changes": [
+        {
+          "quantity": "basis.small_cylinder.minimum",
+          "before": 0.0002756870564982146,
+          "after": 0.0013784352824910732
+        },
+        {
+          "quantity": "basis.small_cylinder.maximum",
+          "before": 0.0011946439114922634,
+          "after": 0.005973219557461317
+        },
+        {
+          "quantity": "basis.large_cylinder.minimum",
+          "before": 0.00027084759696713187,
+          "after": 0.0013542379848356593
+        },
+        {
+          "quantity": "basis.large_cylinder.maximum",
+          "before": 0.0011736729201909048,
+          "after": 0.005868364600954524
+        },
+        {
+          "quantity": "basis.cold_heat_exchanger",
+          "before": 1.9801980198019803e-05,
+          "after": 9.900990099009902e-05
+        },
+        {
+          "quantity": "basis.hot_heat_exchanger",
+          "before": 1.9801980198019803e-05,
+          "after": 9.900990099009902e-05
+        },
+        {
+          "quantity": "basis.charge.total_mass",
+          "before": 0.0012027347024506055,
+          "after": 0.006013673512253027
+        },
+        {
+          "quantity": "basis.cold_thermal_conductance",
+          "before": 49.504275427542765,
+          "after": 247.52137713771384
+        },
+        {
+          "quantity": "basis.hot_thermal_conductance",
+          "before": 49.504275427542765,
+          "after": 247.52137713771384
+        },
+        {
+          "quantity": "basis.hydraulics.large_to_hot_cda",
+          "before": 0.0001663343654365437,
+          "after": 0.0008316718271827186
+        },
+        {
+          "quantity": "basis.hydraulics.small_to_cold_cda",
+          "before": 0.0002970256525652566,
+          "after": 0.001485128262826283
+        },
+        {
+          "quantity": "basis.hydraulics.hot_to_small_valve_cda",
+          "before": 0.0001663343654365437,
+          "after": 0.0008316718271827186
+        },
+        {
+          "quantity": "basis.hydraulics.cold_to_large_valve_cda",
+          "before": 0.0005940513051305131,
+          "after": 0.002970256525652566
+        },
+        {
+          "quantity": "heat_in.tube_count",
+          "before": 4279,
+          "after": 21395
+        },
+        {
+          "quantity": "heat_in.additional_internal_volume_m3",
+          "before": 2e-06,
+          "after": 9.999999999999999e-06
+        },
+        {
+          "quantity": "heat_in.extra_wall_capacity_j_k",
+          "before": 2.0,
+          "after": 10.0
+        },
+        {
+          "quantity": "heat_in.outlet_valve_cda_m2",
+          "before": 0.0006454780766911644,
+          "after": 0.003227390383455822
+        },
+        {
+          "quantity": "heat_in.external_stream.mass_flow_kg_s",
+          "before": 0.05,
+          "after": 0.25
+        },
+        {
+          "quantity": "heat_in.external_stream.wall_conductance_w_k",
+          "before": 150.0,
+          "after": 750.0
+        },
+        {
+          "quantity": "heat_out.tube_count",
+          "before": 4554,
+          "after": 22770
+        },
+        {
+          "quantity": "heat_out.additional_internal_volume_m3",
+          "before": 2e-06,
+          "after": 9.999999999999999e-06
+        },
+        {
+          "quantity": "heat_out.extra_wall_capacity_j_k",
+          "before": 2.0,
+          "after": 10.0
+        },
+        {
+          "quantity": "heat_out.outlet_valve_cda_m2",
+          "before": 0.00020432929734721052,
+          "after": 0.0010216464867360527
+        },
+        {
+          "quantity": "heat_out.external_stream.mass_flow_kg_s",
+          "before": 0.05,
+          "after": 0.25
+        },
+        {
+          "quantity": "heat_out.external_stream.wall_conductance_w_k",
+          "before": 150.0,
+          "after": 750.0
+        },
+        {
+          "quantity": "volume.total_swept_m3",
+          "before": 0.0018217821782178217,
+          "after": 0.009108910891089108
+        },
+        {
+          "quantity": "charge.total_mass_kg",
+          "before": 0.0012027347024506055,
+          "after": 0.006013673512253027
+        },
+        {
+          "quantity": "microtube.heat_in.tube_count",
+          "before": 4279,
+          "after": 21395
+        },
+        {
+          "quantity": "microtube.heat_out.tube_count",
+          "before": 4554,
+          "after": 22770
+        },
+        {
+          "quantity": "external_stream.heat_in.mass_flow_kg_s",
+          "before": 0.05,
+          "after": 0.25
+        },
+        {
+          "quantity": "external_stream.heat_in.wall_conductance_w_k",
+          "before": 150.0,
+          "after": 750.0
+        },
+        {
+          "quantity": "external_stream.heat_out.mass_flow_kg_s",
+          "before": 0.05,
+          "after": 0.25
+        },
+        {
+          "quantity": "external_stream.heat_out.wall_conductance_w_k",
+          "before": 150.0,
+          "after": 750.0
+        }
+      ],
+      "active_bounds": "extensive bounds multiplied; integer bounds ceil/floor; intensive bounds unchanged",
+      "constraints": "unchanged; physical limits are not automatically relaxed",
+      "header_geometry": "production discrete packing, not exact capacity similarity",
+      "warm_start": "original source guess scaled when inventory-compatible; not a cached solution"
+    }
+  },
+  "schema_version": 3
+}

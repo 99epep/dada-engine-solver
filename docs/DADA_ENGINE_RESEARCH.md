@@ -73,6 +73,25 @@ relative margin where meaningful, and satisfied/violated/unavailable state.
 Amber highlights satisfied limits within 5%; it is not a safety factor.
 Research provides evidence without automatic scientific recommendations.
 
+## Rescale and inspect an existing candidate
+
+`rescale SOURCE --candidate ID --mode capacity --factor 5 --output study.toml`
+creates a new portable V2/V3 study and basis centered on that candidate. It
+scales inventory, cylinder capacity, parallel tubes, CdA and extensive thermal
+inputs together, including basis-owned inputs. Active extensive bounds follow
+the same factor; intensive inputs and all constraints stay unchanged. It never
+integrates, overwrites an existing study, or modifies source histories.
+
+Reports now provide clickable column sorting and a **Sort by** control for
+metrics, active coordinates and constraint margins. Topology availability,
+reflux detection and worst signed flow are visible in the main table.
+`report SOURCE --candidate ID --plots volumes --html comparison.html` adds
+both cylinder volume curves without thermodynamic integration. Repeat
+`--candidate` to compare candidates; HTML remains standalone and offline.
+
+See [capacity scaling, exact rules and examples](DADA_ENGINE_RESEARCH_CAPACITY.md)
+for limitations, valve-event availability and the measured Human Cell ×5 checks.
+
 ## V1 fixed-pair validation study
 
 The following walkthrough remains valid for `sixbar-thermo5d` (schema 1).

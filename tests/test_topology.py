@@ -47,3 +47,9 @@ def test_nominal_classification_is_invariant_to_cycle_origin(offset):
     rotated = events[offset:] + events[:offset]
     rotated = tuple(replace(event, angle=0.5+i) for i, event in enumerate(rotated))
     assert classify_cycle_topology(rotated).classification is CycleTopologyClassification.NOMINAL
+
+
+def test_empty_sequence_is_unavailable_not_non_nominal():
+    diagnostic = classify_cycle_topology(())
+    assert diagnostic.classification is CycleTopologyClassification.UNAVAILABLE
+    assert diagnostic.reasons == ('no_usable_valve_event_sequence',)

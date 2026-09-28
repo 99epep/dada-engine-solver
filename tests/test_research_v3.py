@@ -142,3 +142,13 @@ def test_initial_fluid_domain_rejection_is_a_candidate_result(study):
     new=compile_study(load_study(study))
     r=MachineEvaluator(new).evaluate(candidate_for_values(new,{}))
     assert r['status']=='invalid_fluid_domain' and not r['integrated']
+
+
+def test_continuous_diode_wall_events_are_explicitly_unavailable(refrigerator):
+    _, definition, result = refrigerator
+    assert definition.configuration.valve_model == 'continuous_ideal_diode'
+    diagnostics = result['diagnostics']
+    assert diagnostics['valve_events'] == []
+    assert diagnostics['topology']['classification'] == 'unavailable'
+    assert diagnostics['topology']['reasons'] == ['wall_integrator_does_not_record_valve_events']
+    assert 'detected' in result['derived']['local_reflux']

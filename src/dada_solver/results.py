@@ -156,7 +156,8 @@ def extract_cycle_diagnostics(
             float(np.min(hot_heat_rates)), float(np.max(hot_heat_rates))
         ),
         valve_events=tuple(event_diagnostics),
-        topology=classify_cycle_topology(cycle.events),
+        topology=classify_cycle_topology(cycle.events,
+            unavailable_reason=getattr(cycle, 'valve_events_unavailable_reason', None)),
         orifice_pressure_regularization=regularization_width,
         regularization_sample_fraction=float(np.mean(regularization_hits)),
     )

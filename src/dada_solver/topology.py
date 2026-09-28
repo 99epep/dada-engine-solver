@@ -11,6 +11,7 @@ from dada_solver.valves import ValveState
 
 
 class CycleTopologyClassification(Enum):
+    UNAVAILABLE = "unavailable"
     NOMINAL = "nominal"
     NON_NOMINAL = "non_nominal"
 
@@ -24,8 +25,13 @@ class CycleTopologyDiagnostic:
 def classify_cycle_topology(
     events: tuple[ValveEvent, ...],
     simultaneous_angle_tolerance: float = 1.0e-10,
+    *, unavailable_reason: str | None = None,
 ) -> CycleTopologyDiagnostic:
     """Classify an observed event sequence without constraining it."""
+
+    if unavailable_reason is not None or not events:
+        return CycleTopologyDiagnostic(CycleTopologyClassification.UNAVAILABLE,
+            (unavailable_reason or "no_usable_valve_event_sequence",))
 
     expected = (
         ("cold_to_large", ValveState.CLOSED),
