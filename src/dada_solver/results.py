@@ -78,7 +78,7 @@ def extract_cycle_diagnostics(
     ):
         if replay is None:
             state = ThermodynamicState.from_array(cycle.states[:, index])
-            temperatures[:, index] = state.temperatures(model.gas)
+            temperatures[:, index] = state.temperatures(model.gas, model.volumes(float(angle)))
             pressures[:, index] = state.pressures(model.gas, model.volumes(float(angle)))
         else:
             sample = replay.samples[index]

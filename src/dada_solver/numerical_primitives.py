@@ -201,6 +201,14 @@ def wall_kernel(values,volumes,volume_rates,gas,links,walls,sources,destinations
             return False,result
         t[j]=temperature(m,u,cv)
         pressures[j]=pressure(m,r,t[j],volumes[j])
+    return wall_balance_kernel(values, volume_rates, gas, links, walls, sources,
+        destinations, one_way, ports, t, pressures, None)
+
+
+def wall_balance_kernel(values,volume_rates,gas,links,walls,sources,destinations,one_way,ports,t,pressures,enthalpies):
+    """Common conservative balances after backend-specific state reconstruction."""
+    result=np.zeros(15)
+    r,cv,cp,gamma,omega=gas
     flows=np.empty(4)
     # Same transport accumulation order as ThermodynamicModel.assemble_rates.
     mass=result[:8:2];energy=result[1:8:2]
@@ -214,7 +222,7 @@ def wall_kernel(values,volumes,volume_rates,gas,links,walls,sources,destinations
         ok,flow=directed_flow(pressures[a],pressures[b],t[a],links[link],r,gamma)
         if not ok: return False,result
         flows[link]=-flow if reverse else flow
-        accumulate_transfer(mass,energy,a,b,flow,enthalpy(cp,t[a]))
+        accumulate_transfer(mass,energy,a,b,flow,enthalpy(cp,t[a]) if enthalpies is None else enthalpies[a])
     for side in range(2):
         j=side+2
         # wall: capacity, air inlet, air conductance, film resistance, internal

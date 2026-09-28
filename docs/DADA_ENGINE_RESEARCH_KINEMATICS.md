@@ -212,12 +212,11 @@ resolve that inventory explicitly, as the Fourier parity fixture does.
 For a refrigerator, the basis selects positive angular speed, the objective
 `maximize_cooling_cop`, and constraints such as `minimum_cooling_power` and
 `maximum_mechanical_input_power` [W]. The latter limits **indicated** input, not
-human shaft power. Shaft losses remain unknown. The validated refrigeration composition currently
-uses the reservoir branch. The existing `air_wall` wrapper explicitly requires
-motor operation with continuous ideal diodes; this restriction is preserved.
-Finite-air microtube refrigeration therefore needs a separate exchanger/model
-adaptation and physical validation, not a rewrite of the kinematic family or
-campaign layer. No calibrated human-power model or cooling-cell optimization is
+human shaft power. Shaft losses remain unknown. V2 validated refrigeration with
+the reservoir branch. V3 also validates the conservative wall/external-stream
+branch in refrigeration; see [external thermal streams](EXTERNAL_STREAM_THERMAL_MODEL.md).
+Both use the same kinematic and campaign interfaces. No calibrated human-power
+model or cooling-cell optimization is
 supplied. Generic kinematic constructors contain no motor-efficiency objective. The historical motor-time laws retain their angle
 orientation; selecting refrigeration does not silently redesign their chronology.
 

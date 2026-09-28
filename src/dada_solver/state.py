@@ -87,9 +87,12 @@ class ThermodynamicState:
     def total_internal_energy(self) -> float:
         return float(np.sum(self.energies))
 
-    def temperatures(self, gas: CaloricallyPerfectGas) -> NDArray[np.float64]:
+    def temperatures(self, gas: CaloricallyPerfectGas, volumes=None) -> NDArray[np.float64]:
         """Return temperatures ordered as S, L, C, H in K."""
 
+        if type(gas) is not CaloricallyPerfectGas:
+            if volumes is None: raise ValueError('General fluid temperature reconstruction requires volumes.')
+            return np.array([p.temperature for p in self.fluid_states(gas, volumes)])
         values = self.as_array()
         return numeric.temperature(values[0::2],values[1::2],gas.heat_capacity_cv)
 
@@ -110,12 +113,20 @@ class ThermodynamicState:
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Reconstruct both primitive arrays from one conservative-state copy."""
 
+        if type(gas) is not CaloricallyPerfectGas:
+            states = self.fluid_states(gas, volumes)
+            return np.array([p.temperature for p in states]), np.array([p.pressure for p in states])
         values = self.as_array()
         masses = values[0::2]
         temperatures = numeric.temperature(masses,values[1::2],gas.heat_capacity_cv)
         volume_array = np.fromiter(volumes.as_tuple(), dtype=float, count=4)
         pressures = numeric.pressure(masses,gas.gas_constant,temperatures,volume_array)
         return temperatures, pressures
+
+    def fluid_states(self, gas, volumes):
+        values = self.as_array()
+        return tuple(gas.state_from_rho_u(values[2*j]/v, values[2*j+1]/values[2*j])
+                     for j,v in enumerate(volumes.as_tuple()))
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,6 +149,11 @@ class UniformCharge:
     ) -> ThermodynamicState:
         """Distribute charge mass according to each volume at uniform P and T."""
 
+        if type(gas) is not CaloricallyPerfectGas:
+            rho = gas.density_from_pt(self.pressure, self.temperature)
+            point = gas.state_from_rho_t(rho, self.temperature)
+            return ThermodynamicState.from_array(np.array([
+                value for v in volumes.as_tuple() for value in (rho*v, rho*v*point.specific_internal_energy)]))
         masses = [
             gas.mass(self.pressure, self.temperature, volume)
             for volume in volumes.as_tuple()
@@ -161,6 +177,8 @@ class UniformCharge:
     ) -> float:
         """Return the gas inventory defined by the filling configuration."""
 
+        if type(gas) is not CaloricallyPerfectGas:
+            return gas.density_from_pt(self.pressure, self.temperature)*volumes.total
         return self.pressure * volumes.total / (
             gas.gas_constant * self.temperature
         )

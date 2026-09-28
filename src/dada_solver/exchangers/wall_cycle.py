@@ -301,7 +301,7 @@ class WallDiagnosticCycle:
 
 
 def wall_cycle_performance(wrapper, trajectory):
-    """Use external-air heat, including wall storage, at the machine boundary."""
+    """Use external-stream heat, including wall storage, at the machine boundary."""
     frequency = abs(wrapper.model.signed_angular_speed)/(2*math.pi)
     heat_in = float(trajectory[10, -1]-trajectory[10, 0])
     heat_out = float(trajectory[11, -1]-trajectory[11, 0])
@@ -312,11 +312,14 @@ def wall_cycle_performance(wrapper, trajectory):
     residual = stored-heat_in-heat_out+work
     scale = max(abs(gas0.total_internal_energy)+abs(float(np.sum(trajectory[8:10, 0]))),
                 abs(heat_in)+abs(heat_out)+abs(work), np.finfo(float).tiny)
-    motor = wrapper.model.signed_angular_speed < 0 and heat_in > 0 and heat_out < 0 and work > 0
-    return CyclePerformance(heat_in, heat_out, work, -work, None, None,
-        heat_in*frequency, -heat_out*frequency, -work*frequency,
-        OperatingMode.MOTOR if motor else OperatingMode.NON_REFRIGERATION,
+    from dada_solver.performance import classify_cycle
+    mode = classify_cycle(wrapper.model.signed_angular_speed, heat_in, heat_out, work)
+    refrigerator = mode is OperatingMode.REFRIGERATION
+    return CyclePerformance(heat_in, heat_out, work, -work,
+        heat_in/-work if refrigerator else None, -heat_out/-work if refrigerator else None,
+        heat_in*frequency, -heat_out*frequency, -work*frequency, mode,
         ConservationReport(mass, mass/gas0.total_mass, residual, residual/scale))
+
 
 
 def convergence_summary(history):
@@ -325,3 +328,6 @@ def convergence_summary(history):
         last_normalized_periodic_error=errors[-1] if errors else None,
         normalized_periodic_error_ratio=(errors[-1]/errors[0] if errors and errors[0] else None),
         improving=bool(len(errors) >= 2 and errors[-1] < errors[0]), history=list(history))
+
+# Neutral entry point; the historical name remains import-compatible.
+solve_periodic_wall_machine = solve_periodic_wall_motor

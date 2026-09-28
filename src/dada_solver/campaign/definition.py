@@ -139,7 +139,7 @@ class CampaignDefinition:
     def resume(cls, directory):
         directory = Path(directory)
         recorded = json.loads((directory/'definition.json').read_text())
-        if recorded.get('definition_kind') in ('research_v1','research_v2'):
+        if recorded.get('definition_kind') in ('research_v1','research_v2','research_v3'):
             from dada_solver.research.schema import load_study, compile_study
             definition = compile_study(load_study(directory/'study.toml', basis_path=directory/'basis.json',artifact_directory=directory))
             if recorded['definition_id'] != definition.definition_id:

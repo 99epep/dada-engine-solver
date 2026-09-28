@@ -29,6 +29,9 @@ POLICIES=dict(volume_partition='total_swept_and_clearance_ratios',charge='explic
     fan_consumption='excluded_from_balance',local_reflux='retain_signed_flows')
 
 
+POLICIES_V3={k:v for k,v in POLICIES.items() if k not in ('external_air_aerodynamic_losses','fan_consumption')}
+POLICIES_V3.update(external_loop_hydraulics='unmodelled',external_pump_fan_consumption='excluded_from_balance')
+
 @dataclass(frozen=True)
 class StudyV2:
     path: Path
@@ -50,16 +53,18 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     path=Path(path); source=path.read_text(); raw=tomllib.loads(source); canonical_json(raw)
     keys(raw,('schema_version','study','sources','kinematics','parameters','policies','objective','constraints',
               'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 2')
-    if type(raw['schema_version']) is not int or raw['schema_version']!=2: raise ValueError('Expected schema_version = 2.')
+    if type(raw['schema_version']) is not int or raw['schema_version'] not in (2,3): raise ValueError('Expected schema_version = 2.')
     keys(raw['study'],('name','protocol','purpose'),'study',('parent_candidate_id',))
     if raw['study']['protocol']!='machine_design': raise ValueError('V2 protocol must be machine_design.')
     if any(not isinstance(x,str) or not x for x in raw['study'].values()): raise ValueError('Study labels must be nonempty strings.')
     keys(raw['sources'],('machine',),'sources'); ref=raw['sources']['machine']
     keys(ref,('path','sha256'),'sources.machine')
     basis=load_machine_basis(basis_path or path.parent/ref['path'],ref['sha256'])
+    if basis.data['schema_version']!=raw['schema_version']: raise ValueError('Study and machine schema versions must match.')
     specs,defaults=machine_parameters(basis)
+    expected_policy=POLICIES_V3 if raw['schema_version']==3 else POLICIES
     policy=raw['policies']
-    if dict(policy,outlet_valve_cda=POLICIES['outlet_valve_cda'])!=POLICIES or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda'):
+    if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'])!=expected_policy or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda'):
         raise ValueError('Unsupported V2 physical policy.')
     kin=raw['kinematics']; keys(kin,('coupling','small','large'),'kinematics')
     if kin['coupling'] not in ('independent','shared_crank'): raise ValueError('Choose independent or shared_crank coupling.')
@@ -122,9 +127,9 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
         if field: positive(row[field],kind)
     if 'valid_thermodynamic_model' not in names: raise ValueError('An explicit model-validity constraint is required.')
     objective=raw['objective']; keys(objective,('type','unit'),'objective')
-    if objective['type'] not in ('maximize_thermal_efficiency','maximize_cooling_cop','maximize_motor_power') or objective['unit']!=('W' if objective['type']=='maximize_motor_power' else '1'):
+    if objective['type'] not in ('maximize_thermal_efficiency','maximize_cooling_cop','maximize_motor_power','maximize_cooling_power') or objective['unit']!=('W' if objective['type'] in ('maximize_motor_power','maximize_cooling_power') else '1'):
         raise ValueError('Unsupported objective or unit.')
-    if basis.configuration.motor_operation != (objective['type']!='maximize_cooling_cop'):
+    if basis.configuration.motor_operation != (objective['type'] not in ('maximize_cooling_cop','maximize_cooling_power')):
         raise ValueError('The objective must match the basis operating direction.')
     signatures=set()
     for row in mechanical:
@@ -222,11 +227,19 @@ class ResearchDefinitionV2(CampaignDefinition):
         self.seed,self.scramble=raw['search']['seed'],raw['search']['scramble']; self.elite_size=5
         for name in ('initial_evaluation_seconds','deadline_grace_seconds'): setattr(self,name,raw['execution'][name])
         self.maximum_candidates=raw['execution']['default_max_candidates']
-        self.identity=dict(schema_version=2,definition_kind='research_v2',study_id=study.study_id,scientific=study.scientific,runtime=runtime_identity(),wall_backend=backend_identity(self.wall_backend))
+        self.identity=dict(schema_version=raw['schema_version'],definition_kind='research_v'+str(raw['schema_version']),study_id=study.study_id,scientific=study.scientific,runtime=runtime_identity(),wall_backend=backend_identity(self.wall_backend))
+        if raw['schema_version']==3:
+            self.families['exchanger']='external_stream_wall' if study.basis.heat_in is not None and hasattr(study.basis.heat_in.inputs,'external_stream') else self.families['exchanger']
+            fluid=self.configuration.gas
+            if hasattr(fluid,'identity'):
+                self.identity['fluid']=fluid.identity
+                self.numerical_settings['fluid']=fluid.identity
+                self.identity['compiled_kernel']='tabulated_rho_u_wall_v1'
+            else: self.identity['compiled_kernel']='calorically_perfect_wall_v1'
         self.definition_id=content_hash(self.identity)
 
     def write_snapshots(self,directory):
         atomic_text(directory/'basis.json',self.study.basis.source)
         atomic_text(directory/'study.toml',self.study.source)
-        atomic_json(directory/'study.json',dict(schema_version=2,study_id=self.study.study_id,definition_id=self.definition_id,name=self.study.data['study']['name'],scientific=self.study.scientific))
+        atomic_json(directory/'study.json',dict(schema_version=self.study.data['schema_version'],study_id=self.study.study_id,definition_id=self.definition_id,name=self.study.data['study']['name'],scientific=self.study.scientific))
         for side,artifact in self.study.artifacts.items(): atomic_json(directory/(side+'.mechanism.json'),artifact.data)

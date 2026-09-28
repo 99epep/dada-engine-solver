@@ -67,6 +67,8 @@ class TubeHalfLink:
         object.__setattr__(self, '_flow_cap', CompressibleOrifice(min(area, self.valve_cda_m2 or area)))
 
     def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas):
+        from dada_solver.fluids import require_ideal_hydraulics
+        gas = require_ideal_hydraulics(gas)
         if any(not math.isfinite(v) or v <= 0 for v in (upstream_pressure, downstream_pressure, upstream_temperature)):
             raise ValueError('Pressures and temperature must be positive.')
         if downstream_pressure >= upstream_pressure:

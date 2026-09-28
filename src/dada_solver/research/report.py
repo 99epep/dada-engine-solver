@@ -29,7 +29,7 @@ def inspect(path):
         title = artifact['name']
     else:
         definition = json.loads((path/'definition.json').read_text())
-        if definition.get('definition_kind') not in ('research_v1','research_v2'):
+        if definition.get('definition_kind') not in ('research_v1','research_v2','research_v3'):
             raise ValueError('This report requires a Dada-Engine Research study directory.')
         study = json.loads((path/'study.json').read_text())
         if study['study_id'] != definition['study_id'] or study['definition_id'] != definition['definition_id']:
@@ -147,7 +147,7 @@ body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:
 </style><main>
 <h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or trajectory replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
-<p id="boundary">Efficiency uses indicated gas work divided by external-air heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-air aerodynamic losses and fan consumption are excluded from the balance, not physically zero.</p>
+<p id="boundary">Efficiency uses indicated gas work divided by external-stream heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-loop hydraulic losses and pump/fan consumption are excluded from the balance, not physically zero.</p>
 <div class="plots"><div class="card"><h2 id="performanceTitle">Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
 <h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
 <div class="card"><table id="candidates"></table></div>
@@ -166,10 +166,10 @@ const fmt=v=>v===null||v===undefined?'unavailable':typeof v==='number'?Number(v.
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rows=[...new Map((d.selected||d.records).map(r=>[r.candidate_id,r])).values()];
 byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>').join('');
-const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=d.scientific.objective.type==='maximize_cooling_cop';
+const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=['maximize_cooling_cop','maximize_cooling_power'].includes(d.scientific.objective.type);
 const ykey=cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=cooling?'Cooling COP [1]':'Indicated efficiency [%]';
 byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Families: '+esc(d.scientific.kinematics?d.scientific.kinematics.small.family+' / '+d.scientific.kinematics.large.family:JSON.stringify(d.scientific.families))+'</p>';
-if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling COP uses the recorded thermal cooling power and indicated mechanical input. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
+if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling power and COP use heat absorbed at the cold external-stream boundary and indicated mechanical input. External-loop hydraulics and pump/fan consumption are unmodelled. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
 for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
@@ -189,7 +189,7 @@ function scatter(id,points,xlabel,ylabel){
 }
 function show(){
  const visible=rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied)));
- table('candidates',['Candidate ID','Status','Indicated gas power [W]',cooling?'Cooling COP [1]':'Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,r.metrics.indicated_power_w,r.metrics[ykey],r.periodic_cycle_count,r.duration_seconds]));
+ table('candidates',['Candidate ID','Status',cooling?'Indicated input [W]':'Indicated gas power [W]',cooling?'Cooling power [W]':'Heat input [W]',cooling?'Cooling COP [1]':'Efficiency [1]','Cycles','Duration [s]'],visible.map(r=>[r.candidate_id,r.status,(cooling?r.metrics.indicated_mechanical_input_power_w:r.metrics.indicated_power_w),(cooling?r.metrics.cooling_power_w:r.metrics.heat_input_w),r.metrics[ykey],r.periodic_cycle_count,r.duration_seconds]));
  scatter('scatter',visible.filter(r=>Number.isFinite(r.metrics.indicated_power_w)&&Number.isFinite(r.metrics[ykey])).map(r=>[r.metrics.indicated_power_w,yscale*r.metrics[ykey],r.candidate_id,r.status]),'Indicated gas power [W]',ylabel);
  let elapsed=0,points=[];for(const r of d.records){elapsed+=r.duration_seconds||0;if(Number.isFinite(r.metrics[ykey]))points.push([elapsed,yscale*r.metrics[ykey],r.candidate_id,r.status]);}scatter('progress',points,'Cumulative evaluation time [s]',ylabel);
 }
@@ -202,6 +202,7 @@ function compare(){
  for(const name of new Set([...Object.keys(ap),...Object.keys(bp)]))add(name+' ['+(a.parameter_units?.[name]||b.parameter_units?.[name]||'see definition')+']',ap[name],bp[name]);
  for(const [key,unit] of Object.entries({indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',cooling_power_w:'W',cooling_cop:'1',indicated_mechanical_input_power_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
  for(const side of ['heat_in','heat_out'])add(side+' external / peak internal capacity rate [1]',a.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio,b.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio);
+ for(const side of ['heat_in','heat_out'])for(const key of ['fluid','inlet_temperature_k','outlet_minimum_k','outlet_maximum_k','mass_flow_kg_s','cp_j_kg_k','capacity_rate_w_k','wall_conductance_w_k','heat_into_machine_per_cycle_j','mean_heat_into_machine_w','external_loop_losses'])add(side+' external '+key,a.derived?.external_streams?.[side]?.[key],b.derived?.external_streams?.[side]?.[key]);
  for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);
  for(const c of a.constraints){const other=b.constraints.find(x=>x.name===c.name);const unit=c.unit||d.scientific.constraints.find(x=>x.type===c.name)?.unit||'1';add(c.name+' margin ['+unit+']',c.available?c.margin:null,other?.available?other.margin:null);}
  for(const [id,candidate] of [['constraintsA',a],['constraintsB',b]]){

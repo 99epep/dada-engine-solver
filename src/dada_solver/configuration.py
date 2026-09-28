@@ -108,6 +108,8 @@ class ChargeConfiguration:
         if self.pressure is not None:
             return self.pressure
         assert self.total_mass is not None
+        if type(gas) is not CaloricallyPerfectGas:
+            return gas.state_from_rho_t(self.total_mass/total_filling_volume,self.temperature).pressure
         return self.total_mass * gas.gas_constant * self.temperature / total_filling_volume
 
 

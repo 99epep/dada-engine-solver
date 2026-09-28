@@ -9,7 +9,7 @@ from dada_solver import numerical_primitives as numeric
 import numpy as np
 from numpy.typing import NDArray
 
-from dada_solver.fluids import CaloricallyPerfectGas
+from dada_solver.fluids import CaloricallyPerfectGas, ThermodynamicFluid
 from dada_solver.geometry import InstantaneousVolumes, MachineVolumes
 from dada_solver.heat_transfer import HeatTransferModel
 from dada_solver.hydraulics import HydraulicFlowModel, FlowResult
@@ -55,6 +55,7 @@ class InstantaneousPoint:
     pressures: NDArray[np.float64]
     topology: ValveTopology
     flows: NetworkFlows
+    specific_enthalpies: NDArray[np.float64] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,7 +75,7 @@ class ModelRates:
 class ThermodynamicModel:
     """First-level conservative model with four independent pressures."""
 
-    gas: CaloricallyPerfectGas
+    gas: ThermodynamicFluid
     machine_volumes: MachineVolumes
     kinematics: KinematicsModel
     angular_speed: float
@@ -99,6 +100,10 @@ class ThermodynamicModel:
             raise ValueError("Angular speed must be finite and positive.")
         if self.study_crank_direction not in (-1, 1):
             raise ValueError("Study crank direction must be -1 or 1.")
+        from dada_solver.fluids import require_ideal_hydraulics
+        if any(not hasattr(link,'flow_from_states') for link in (
+                self.large_hot_link,self.small_cold_link,self.hot_small_valve.flow_model,self.cold_large_valve.flow_model)):
+            require_ideal_hydraulics(self.gas)
         placements = (self.heat_in_valve_placement, self.heat_out_valve_placement)
         if any(value not in {"upstream", "downstream"} for value in placements):
             raise ValueError("Valve placement must be 'upstream' or 'downstream'.")
@@ -163,21 +168,43 @@ class ThermodynamicModel:
             )
             volume_rate_small = self.angular_speed * small_derivative
             volume_rate_large = self.angular_speed * large_derivative
-        temperatures, pressures = state.temperatures_and_pressures(self.gas, volumes)
+        enthalpies = None
+        if type(self.gas) is CaloricallyPerfectGas:
+            temperatures, pressures = state.temperatures_and_pressures(self.gas, volumes)
+        else:
+            primitives = state.fluid_states(self.gas, volumes)
+            temperatures = np.array([p.temperature for p in primitives])
+            pressures = np.array([p.pressure for p in primitives])
+            enthalpies = np.array([p.specific_enthalpy for p in primitives])
+            enthalpies.flags.writeable = False
 
         effective_topology = self._topology_from_pressures(pressures, topology)
-        if self.heat_out_valve_placement == 'upstream':
-            large_hot = self.large_hot_link.directed_flow(pressures[1], pressures[3], temperatures[1], self.gas)
-            hot_small = self.hot_small_valve.flow_model.bidirectional_flow(pressures[3], pressures[0], temperatures[3], temperatures[0], self.gas)
+        links=(self.large_hot_link,self.small_cold_link,self.hot_small_valve.flow_model,self.cold_large_valve.flow_model)
+        if any(hasattr(link,'flow_from_states') for link in links):
+            primitives=state.fluid_states(self.gas,volumes)
+            def flow(link,a,b,one_way,opened=True):
+                if one_way and not opened: return FlowResult(0.,False)
+                if hasattr(link,'flow_from_states'):
+                    return link.flow_from_states(primitives[a],primitives[b],self.gas,one_way=one_way)
+                if one_way: return link.directed_flow(pressures[a],pressures[b],temperatures[a],self.gas)
+                return link.bidirectional_flow(pressures[a],pressures[b],temperatures[a],temperatures[b],self.gas)
+            large_hot=flow(links[0],1,3,self.heat_out_valve_placement=='upstream')
+            small_cold=flow(links[1],0,2,self.heat_in_valve_placement=='upstream')
+            hot_small=flow(links[2],3,0,self.heat_out_valve_placement=='downstream',effective_topology.hot_to_small is ValveState.OPEN)
+            cold_large=flow(links[3],2,1,self.heat_in_valve_placement=='downstream',effective_topology.cold_to_large is ValveState.OPEN)
         else:
-            large_hot = self.large_hot_link.bidirectional_flow(pressures[1], pressures[3], temperatures[1], temperatures[3], self.gas)
-            hot_small = self.hot_small_valve.flow(effective_topology.hot_to_small, pressures[3], pressures[0], temperatures[3], self.gas)
-        if self.heat_in_valve_placement == 'upstream':
-            small_cold = self.small_cold_link.directed_flow(pressures[0], pressures[2], temperatures[0], self.gas)
-            cold_large = self.cold_large_valve.flow_model.bidirectional_flow(pressures[2], pressures[1], temperatures[2], temperatures[1], self.gas)
-        else:
-            small_cold = self.small_cold_link.bidirectional_flow(pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas)
-            cold_large = self.cold_large_valve.flow(effective_topology.cold_to_large, pressures[2], pressures[1], temperatures[2], self.gas)
+            if self.heat_out_valve_placement == 'upstream':
+                large_hot = self.large_hot_link.directed_flow(pressures[1], pressures[3], temperatures[1], self.gas)
+                hot_small = self.hot_small_valve.flow_model.bidirectional_flow(pressures[3], pressures[0], temperatures[3], temperatures[0], self.gas)
+            else:
+                large_hot = self.large_hot_link.bidirectional_flow(pressures[1], pressures[3], temperatures[1], temperatures[3], self.gas)
+                hot_small = self.hot_small_valve.flow(effective_topology.hot_to_small, pressures[3], pressures[0], temperatures[3], self.gas)
+            if self.heat_in_valve_placement == 'upstream':
+                small_cold = self.small_cold_link.directed_flow(pressures[0], pressures[2], temperatures[0], self.gas)
+                cold_large = self.cold_large_valve.flow_model.bidirectional_flow(pressures[2], pressures[1], temperatures[2], temperatures[1], self.gas)
+            else:
+                small_cold = self.small_cold_link.bidirectional_flow(pressures[0], pressures[2], temperatures[0], temperatures[2], self.gas)
+                cold_large = self.cold_large_valve.flow(effective_topology.cold_to_large, pressures[2], pressures[1], temperatures[2], self.gas)
 
         temperatures.flags.writeable = False
         pressures.flags.writeable = False
@@ -189,7 +216,7 @@ class ThermodynamicModel:
                 hot_small.mass_flow_rate, cold_large.mass_flow_rate,
                 large_hot.is_choked, small_cold.is_choked,
                 hot_small.is_choked, cold_large.is_choked,
-            ),
+            ), enthalpies,
         )
 
     def assemble_rates(
@@ -213,7 +240,14 @@ class ThermodynamicModel:
                  (3, 0, hot_small, self.heat_out_valve_placement == 'downstream'),
                  (2, 1, cold_large, self.heat_in_valve_placement == 'downstream'))
         for source, destination, flow, directed in links:
-            if directed:
+            if point.specific_enthalpies is not None:
+                amount = flow.mass_flow_rate
+                if amount < 0 and not directed:
+                    source, destination = destination, source
+                    amount = -amount
+                numeric.accumulate_transfer(mass_rates, energy_rates, source, destination,
+                    amount, point.specific_enthalpies[source])
+            elif directed:
                 self._apply_directed_link(mass_rates, energy_rates, source, destination,
                                           flow, temperatures[source])
             else:

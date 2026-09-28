@@ -8,6 +8,7 @@ import numpy as np
 from dada_solver.dynamics import InstantaneousPoint
 from dada_solver.state import ThermodynamicState
 from dada_solver.exchangers.air_wall import AirWallExchanger, WallThermalPoint
+from dada_solver.exchangers.external_stream import ExternalStreamWallExchanger
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,7 +60,7 @@ def replay_wall_trajectory(wrapper, cycle, trajectory):
                 contexts,(((0,2),(2,1)),((1,3),(3,0)))):
             temperature=point.temperatures[index]
             energy=values[index+6]
-            if type(wall) is AirWallExchanger:
+            if type(wall) in (AirWallExchanger, ExternalStreamWallExchanger):
                 evaluated=wall.thermal_point(temperature,energy,context=context)
             else:
                 # Preserve custom wall protocols and overridden public rates.
