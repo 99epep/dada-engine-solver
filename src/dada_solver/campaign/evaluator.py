@@ -168,6 +168,8 @@ class MachineEvaluator:
             heat_out_gas_volume_m3=model.machine_volumes.hot_heat_exchanger,
             small_physical_stroke_m=model.kinematics.small_physical_stroke,
             large_physical_stroke_m=model.kinematics.large_physical_stroke)
+        if getattr(design,'charge_diagnostics',None) is not None:
+            derived['charge'] = design.charge_diagnostics
         direction = 'motor' if design.configuration.motor_operation else 'receiver'
         mechanical=getattr(design.kinematics,'mechanical_diagnostics',())
         if mechanical:
@@ -177,6 +179,8 @@ class MachineEvaluator:
             result=self._wall(candidate, design, built, derived, direction, control)
         else:
             result=self._reservoir(candidate, design, built, derived, direction, control)
+        if getattr(design,'charge_diagnostics',None) is not None:
+            result['metrics'].setdefault('total_mass_kg',design.configuration.charge.total_mass)
         if mechanical: result['constraints']=list(mechanical)+result['constraints']
         return result
 
@@ -186,7 +190,10 @@ class MachineEvaluator:
         initial = topology = None
         if source:
             saved = source.get('initial_guess_state') or source['final_periodic_state']
-            initial = ThermodynamicState.from_array(saved['values'])
+            values = np.asarray(saved['values'],dtype=float)
+            if getattr(design,'charge_diagnostics',None) is not None:
+                values = values * (design.configuration.charge.total_mass / values[:8:2].sum())
+            initial = ThermodynamicState.from_array(values)
             topology_data = saved.get('topology')
             if topology_data:
                 from dada_solver.valves import ValveState

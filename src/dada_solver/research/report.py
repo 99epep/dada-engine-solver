@@ -270,6 +270,7 @@ const columns=[
  ['id','Candidate ID',r=>r.candidate_id],['status','Status',r=>r.status],
  ['input','Indicated input [W]',r=>r.metrics.indicated_mechanical_input_power_w],
  ['power','Indicated gas power [W]',r=>r.metrics.indicated_power_w],
+ ['mass','Gas inventory [kg]',r=>r.metrics.total_mass_kg],
  ['cooling','Cooling power [W]',r=>r.metrics.cooling_power_w],
  ['cop','Cooling COP [1]',r=>r.metrics.cooling_cop],
  ['efficiency','Efficiency [1]',r=>r.metrics.indicated_thermal_efficiency],
@@ -330,7 +331,7 @@ function compare(){
  for(const side of ['small','large'])add(side+' kinematic family',a.families?.[side]||a.families?.kinematics,b.families?.[side]||b.families?.kinematics);
  const ap=a.resolved_parameters||a.physical,bp=b.resolved_parameters||b.physical;
  for(const name of new Set([...Object.keys(ap),...Object.keys(bp)]))add(name+' ['+(a.parameter_units?.[name]||b.parameter_units?.[name]||'see definition')+']',ap[name],bp[name]);
- for(const [key,unit] of Object.entries({indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',cooling_power_w:'W',cooling_cop:'1',indicated_mechanical_input_power_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
+ for(const [key,unit] of Object.entries({total_mass_kg:'kg',indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',cooling_power_w:'W',cooling_cop:'1',indicated_mechanical_input_power_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
  for(const side of ['heat_in','heat_out'])add(side+' external / peak internal capacity rate [1]',a.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio,b.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio);
  for(const side of ['heat_in','heat_out'])for(const key of ['fluid','inlet_temperature_k','outlet_minimum_k','outlet_maximum_k','mass_flow_kg_s','cp_j_kg_k','capacity_rate_w_k','wall_conductance_w_k','heat_into_machine_per_cycle_j','mean_heat_into_machine_w','external_loop_losses'])add(side+' external '+key,a.derived?.external_streams?.[side]?.[key],b.derived?.external_streams?.[side]?.[key]);
  for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);

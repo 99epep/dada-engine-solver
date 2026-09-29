@@ -350,3 +350,22 @@ No long optimization was used for validation.
 
 The single final full-suite run passed **782 tests, 0 warnings in 286.82 s**:
 `PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q`.
+
+## Reference-pressure inventory policy
+
+The Research/campaign/model-interface/exchanger-coupling suite passes
+**256 tests, 0 warnings in 265.00 s**, including 29 reference-charge cases:
+explicit-inventory compatibility, schema exclusions, simultaneous analytic
+harmonic maxima, flat and breakpoint laws, all eleven families, HX replacement
+and additional volume, geometry/motion changes, determinism, screening independence,
+scientific identity, wall and reservoir warm-state inventory, reporting and
+factor-one capacity rescaling.
+
+One 60-second-budget evaluation of the current Human Cell Stage 2 seed converged
+in 13 cycles. Its derived inventory is 0.008674367589288079 kg at maximum total
+volume 0.007298096764755425 m³; reconstructed reference pressure is 100000 Pa.
+The cycle is non-refrigerating (signed Qcold=-1.00842 W, indicated input=72.48983 W,
+COP unavailable), and its maximum flow 0.118805 kg/s exceeds the unchanged
+0.08 kg/s constraint. Thermodynamic and microtube domain verdicts are valid,
+with the existing transition uncertainty reported separately.
+See [the copied study, exact result and report](../outputs/human_cell_stage2_reference_charge/README.md).

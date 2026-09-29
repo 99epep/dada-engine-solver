@@ -1621,3 +1621,15 @@ Mach, pressure-drop, Knudsen/slip and transport-temperature limits are preserved
 Transition uncertainty is explicit and does not alone invalidate a candidate.
 See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) for the Gnielinski 2013
 source, project-specific endpoint choices, diagnostics and quasi-steady limits.
+
+## 2026-09-29 — Geometry-derived reference filling inventory
+
+The user authorizes the optional Research policy
+`reference_pressure_at_maximum_total_volume_v1`. For calorically perfect gas,
+compute inventory from an absolute reference pressure and uniform temperature
+at the maximum simultaneous total gas volume of the assembled candidate.
+Independent cylinder maxima must not be added. Use final connected HX hold-up
+once; preserve the conservative solver and exchanger/domain constraints.
+Explicit inventory remains unchanged. Exact source warm starts are incompatible
+with this policy; ordinary guesses must be inventory-rescaled. See the Research
+user guide for the deterministic numerical maximum and its limits.

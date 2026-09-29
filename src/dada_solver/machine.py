@@ -19,6 +19,7 @@ class MachineDesign:
     heat_in: ExchangerModel | None = None
     heat_out: ExchangerModel | None = None
     kinematics: KinematicsModel | None = None
+    charge_diagnostics: dict | None = None
 
     def __post_init__(self):
         if (self.heat_in is None) != (self.heat_out is None):
