@@ -166,6 +166,11 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
                 last_angles, last_trajectory,
                 last_trajectory[:10, -1].copy() if last_trajectory is not None else None, tuple(statistics), backend_snapshot(), dict(anderson_counts))
         except (ValueError, RuntimeError, ArithmeticError) as error:
+            from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
+            if isinstance(error, MicrotubeDomainError) and statistics_callback is not None:
+                from dada_solver.exchangers.failure_diagnostics import microtube_failure_snapshot
+                record_segment(dict(phase='microtube_failure', cycle=cycle,
+                    snapshot=microtube_failure_snapshot(error)))
             if anderson_pending is not None:
                 from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
                 if isinstance(error,MicrotubeDomainError):anderson_counts['domain_failure_count']+=1
