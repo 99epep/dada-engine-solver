@@ -9,7 +9,7 @@ from dada_solver import numerical_primitives as numeric
 import time
 
 import numpy as np
-from scipy.integrate import solve_ivp
+from dada_solver.solver_output import quiet_solve_ivp as solve_ivp
 
 from dada_solver.dynamics import ThermodynamicModel
 from dada_solver.exchangers.base import LumpedWallThermalModel

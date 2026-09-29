@@ -141,7 +141,7 @@ def test_cli_and_offline_volume_plots(source,tmp_path,monkeypatch):
     assert 'sortBy' in html and 'sortedRows' in html and 'topology_display' in html
     assert 'relative_margin' in html and 'data-candidate' in html
     assert '<script src=' not in html
-    with pytest.raises(ValueError,match='already exists'):report.render_html(data,tmp_path/'report.html')
+    assert report.render_html(data,tmp_path/'report.html').read_text()==html
     with pytest.raises(ValueError,match='Only volume'):report.compare([directory],plots='temperatures')
 
 

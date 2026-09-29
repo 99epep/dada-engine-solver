@@ -45,12 +45,15 @@ def inspect(path):
             except (ValueError, UnicodeDecodeError):
                 if i != len(lines)-1: raise ValueError('Corrupt non-final journal record.')
                 warnings.append('Incomplete final journal append ignored for inspection; resume performs recovery.')
-        known = {r['evaluation_number'] for r in records}
-        for candidate_file in sorted((path/'candidates').glob('*.json')):
-            record = json.loads(candidate_file.read_text())
+        from dada_solver.campaign.history import recovery_records
+        known = {r['evaluation_number']:r for r in records}
+        for record in recovery_records(path):
+            verify_record(record)
+            if record['evaluation_number'] in known and known[record['evaluation_number']] != record:
+                raise ValueError('Recovery conflicts with a journal evaluation.')
             if record['evaluation_number'] not in known:
                 records.append(record)
-                known.add(record['evaluation_number'])
+                known[record['evaluation_number']] = record
                 warnings.append('Completed record awaiting journal recovery included read-only.')
         records.sort(key=lambda r:r['evaluation_number'])
         state_path = path/'state.json'
@@ -68,11 +71,15 @@ def inspect(path):
     if not compatible: warnings.append('Stored runtime/source differs from the current checkout. Inspection is available; execution resume is not compatible.')
     scientific = definition['scientific']
     from .margins import enrich_constraints
+    from .cockpit import unique_prefixes
+    prefixes = unique_prefixes(r['candidate_id'] for r in records)
     for record in records:
         record['constraints']=enrich_constraints(record.get('constraints',[]),scientific['constraints'])
         record['resolved_parameters']=dict(scientific.get('fixed_parameters',{}),**record['physical'])
         record['parameter_units']={p['name']:p['unit'] for p in scientific['parameters']}
         record['kinematic_families']=record.get('families',{})
+        record['report_source'] = str(path)
+        record['display_candidate_id'] = prefixes[record['candidate_id']]
         diagnostic = record.get('diagnostics') or {}
         topology = diagnostic.get('topology')
         record['topology_display'] = topology
@@ -81,7 +88,9 @@ def inspect(path):
             record['topology_display'] = dict(classification='unavailable',
                 reasons=['legacy_record_has_no_usable_valve_event_sequence'],
                 stored_classification=topology.get('classification'))
-    return dict(schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
+    from .cockpit import campaign_evidence
+    return dict(cockpit=campaign_evidence(records, scientific, str(path), path.is_dir()),
+                schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
                 scientific=scientific, runtime_compatible=compatible, warnings=warnings,
                 status_counts=dict(Counter(r['status'] for r in records)), records=records,
                 best=elite_records(records,5), source=str(path), replay='not_requested')
@@ -108,8 +117,12 @@ def compare(paths, selectors=(), *, plots=None):
     studies = [inspect(path) for path in paths]
     records = []
     if plots not in (None, 'volumes'): raise ValueError('Only volume plots are available; thermodynamic replay is not implemented.')
+    chosen = None
+    if selectors:
+        chosen = {r['candidate_id'] for r in select_records(
+            {'records':[r for s in studies for r in s['records']]}, selectors)}
     for study in studies:
-        selected = select_records(study, selectors)
+        selected = [r for r in select_records(study) if chosen is None or r['candidate_id'] in chosen]
         if plots:
             from .snapshots import stored_study
             from .visualization import sample_report_volumes
@@ -128,6 +141,7 @@ def compare(paths, selectors=(), *, plots=None):
     compatible = len({s['study_id'] for s in studies}) == 1
     result = dict(studies[0], name='Candidate comparison', records=records, selected=records,
                   status_counts=dict(Counter(r['status'] for r in records)), comparison_compatible=compatible,
+                  cockpits=[s['cockpit'] for s in studies],
                   compared_sources=[dict(source=s['source'], study_id=s['study_id'], scientific=s['scientific']) for s in studies],
                   warnings=[w for s in studies for w in s['warnings']], best=elite_records(records,5) if compatible else [])
     if not compatible:
@@ -135,11 +149,11 @@ def compare(paths, selectors=(), *, plots=None):
     return result
 
 
-def text_report(data):
+def text_report(data, *, list_candidates=False):
     lines = [data['name'], f"Study: {data['study_id']}",
              f"Attempts: {len(data['records'])}; statuses: {data['status_counts']}",
              'Power is indicated gas power. Useful output is unavailable; mechanical losses are unknown.']
-    for row in data.get('selected', data['best']):
+    for row in data.get('selected', data['records']) if list_candidates else data['best'][:1]:
         m = row.get('metrics',{})
         if m.get('cooling_cop') is not None:
             performance=f"cooling={m.get('cooling_power_w')} W; COP={m.get('cooling_cop')}; indicated input={m.get('indicated_mechanical_input_power_w')} W"
@@ -153,7 +167,6 @@ def text_report(data):
 def render_html(data, destination):
     destination = Path(destination)
     if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
-    if destination.exists(): raise ValueError('HTML report already exists; choose a new filename.')
     if 'selected' in data:
         # Retain lightweight progress for every attempt, and detailed evidence
         # only for the requested candidates. No stored artifact is modified.
@@ -174,6 +187,10 @@ body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:
 </style><main>
 <h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or thermodynamic replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
+<h2>Campaign funnel</h2><div class="card" id="funnel"></div>
+<h2>Pressure on parameter bounds</h2><div class="card" id="bounds"></div>
+<h2>Suggested next steps</h2><p class="muted">Deterministic observations from stored data. Commands are suggestions for human review; this page never executes them. Run commands from the checkout used to generate this report. Resume still checks runtime compatibility.</p>
+<div class="card" id="suggestions"></div><div class="card" id="selectedCommands"></div>
 <p id="boundary">Efficiency uses indicated gas work divided by external-stream heat input. Useful shaft power is unavailable; mechanical losses are unknown. External-loop hydraulic losses and pump/fan consumption are excluded from the balance, not physically zero.</p>
 <div class="plots"><div class="card"><h2 id="performanceTitle">Power and efficiency</h2><div id="scatter"></div></div><div class="card"><h2>Evaluation progress</h2><div id="progress"></div></div></div>
 <h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
@@ -205,6 +222,37 @@ for(const status of Object.keys(d.status_counts)){const o=new Option(status,stat
 for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
 byId('right').selectedIndex=Math.min(1,rows.length-1);
 function table(id,head,body){byId(id).innerHTML='<thead><tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+r.map(v=>'<td>'+esc(fmt(v))+'</td>').join('')+'</tr>').join('')+'</tbody>';}
+function commandBox(signal,command,parent){
+ const box=document.createElement('div'),p=document.createElement('p'),code=document.createElement('code'),button=document.createElement('button');
+ p.textContent=signal;code.textContent=command;button.textContent='Copy';button.type='button';button.style.margin='8px';
+ button.onclick=async()=>{try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(command);else throw Error('clipboard unavailable');button.textContent='Copied';}
+ catch(_){const input=document.createElement('textarea');input.value=command;document.body.append(input);input.select();const ok=document.execCommand('copy');input.remove();button.textContent=ok?'Copied':'Select command to copy';}};
+ box.append(p,code,button);parent.append(box);
+}
+function cockpit(){
+ for(const evidence of d.cockpits||[d.cockpit]){
+  if(!evidence)continue;
+  const f=evidence.funnel,section=document.createElement('section');
+  const title=document.createElement('b');title.textContent=evidence.source;section.append(title);
+  const counts=document.createElement('p');counts.textContent='Attempted '+f.attempted+' · Integrated '+f.integrated+' · Converged '+f.converged+' · Feasible '+f.feasible+' · Cache hits '+f.cache_hits+' · Distinct '+f.distinct_candidates;section.append(counts);
+  const rejects=document.createElement('p');rejects.textContent='Rejections: '+(Object.entries(evidence.rejection_categories).map(([k,v])=>k+'='+v).join(' · ')||'none');section.append(rejects);byId('funnel').append(section);
+  const note=document.createElement('p');note.textContent=evidence.source+' — '+evidence.bound_convention;byId('bounds').append(note);
+  const tableElement=document.createElement('table');tableElement.innerHTML='<thead><tr><th>Parameter</th><th>Bound</th><th>Limit</th><th>Global near / total</th><th>Global %</th><th>Elites near / total</th></tr></thead><tbody>'+evidence.bounds.map(b=>'<tr class="'+(b.pressed?'near':'')+'">'+[b.parameter,b.side,fmt(b.limit)+' '+b.unit,b.count+' / '+b.total,fmt(b.percent),b.elite_count+' / '+b.elite_total].map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody>';byId('bounds').append(tableElement);
+  for(const suggestion of evidence.suggestions)commandBox(suggestion.signal,suggestion.command,byId('suggestions'));
+ }
+}
+const shellQuote=value=>/^[a-zA-Z0-9_./:=@%-]+$/.test(value)?value:"'"+value.split("'").join("'\\''")+"'";
+function selectedCommands(a,b){
+ const parent=byId('selectedCommands');parent.replaceChildren();
+ const selected=[...new Map([a,b].map(r=>[r.candidate_id,r])).values()],groups=new Map();
+ for(const r of selected){const source=r.report_source||d.source;if(!groups.has(source))groups.set(source,[]);groups.get(source).push(r);}
+ for(const [source,items] of groups){
+  const output=source.endsWith('.json')?source.slice(0,-5)+'.selected-volumes.html':source+'/selected-volumes.html';
+  const args=['dada-research','report',source];for(const r of items)args.push('--candidate',r.display_candidate_id||r.candidate_id);
+  args.push('--plots','volumes','--html',output);
+  commandBox('Compare selected candidate volumes without thermodynamic integration.',args.map(shellQuote).join(' '),parent);
+ }
+}
 function scatter(id,points,xlabel,ylabel){
  const w=500,h=280,l=68,b=48,t=15,r=20;
  if(!points.length){byId(id).textContent='No available converged metrics.';return;}
@@ -277,6 +325,7 @@ function volumePlots(){
 function compare(){
  if(!rows.length){byId('comparison').textContent='No evaluated candidates yet.';return;}
  const a=rows[Number(byId('left').value)],b=rows[Number(byId('right').value)],out=[];
+ selectedCommands(a,b);
  const add=(label,x,y)=>out.push([label,x,y,typeof x==='number'&&typeof y==='number'?y-x:null]);
  for(const side of ['small','large'])add(side+' kinematic family',a.families?.[side]||a.families?.kinematics,b.families?.[side]||b.families?.kinematics);
  const ap=a.resolved_parameters||a.physical,bp=b.resolved_parameters||b.physical;
@@ -292,5 +341,5 @@ function compare(){
  }
  table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
 }
-byId('sortBy').onchange=show;byId('sortDirection').onchange=show;volumePlots();byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
+cockpit();byId('sortBy').onchange=show;byId('sortDirection').onchange=show;volumePlots();byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
 </script></html>'''

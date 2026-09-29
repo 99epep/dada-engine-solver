@@ -69,7 +69,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
         search=dict(type='sobol',seed=3965000,scramble=True,domain='fixed_global_bounds'),
         numerical=dict(maximum_cycles=100,backend='numba',candidate_budget_seconds=180.,domain_error_retry='once_safe_uniform_state_with_source_wall_temperatures'),
         warm_start=dict(initial_source='source_exact' if champion or (small==large and small in ('six_bar','hybrid_compact')) else 'uniform'),
-        execution=dict(default_budget='2m',default_max_candidates=2,initial_evaluation_seconds=30.,deadline_grace_seconds=5.))
+        execution=dict(default_budget='2m',default_max_candidates=512,initial_evaluation_seconds=30.,deadline_grace_seconds=5.))
     source=dumps(raw)
     # Validate in isolation so bad family combinations cannot leave partial inputs.
     from .schema import load_study

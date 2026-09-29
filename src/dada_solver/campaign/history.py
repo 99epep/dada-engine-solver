@@ -29,7 +29,6 @@ class CampaignHistory:
     def __init__(self, directory):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
-        (self.directory/'candidates').mkdir(exist_ok=True)
         self.path = self.directory/'history.jsonl'
 
     @contextmanager
@@ -58,21 +57,24 @@ class CampaignHistory:
                     (self.directory/f'history_torn_tail_{stamp}.bin').write_bytes(data[offset:])
                     with self.path.open('r+b') as stream:
                         stream.truncate(offset); stream.flush(); os.fsync(stream.fileno())
-        known = {r['evaluation_number'] for r in records}
-        # A completed candidate is saved before the journal append. Recover that
-        # small crash window without repeating its expensive integration.
+        known = {r['evaluation_number']:r for r in records}
         orphans = []
-        for path in (self.directory/'candidates').glob('*.json'):
-            record = json.loads(path.read_text())
-            if record['evaluation_number'] not in known: orphans.append(record)
+        for record in recovery_records(self.directory):
+            verify_record(record)
+            number = record['evaluation_number']
+            if number in known:
+                if known[number] != record:
+                    raise ValueError('Recovery conflicts with a journal evaluation.')
+            else:
+                orphans.append(record); known[number] = record
+        # Validate everything before publishing recovered records.
+        numbers = sorted(known)
+        if numbers != list(range(len(numbers))):
+            raise ValueError('History evaluation numbers are not contiguous.')
         for record in sorted(orphans, key=lambda r:r['evaluation_number']):
             self._append(record); records.append(record)
         records.sort(key=lambda r:r['evaluation_number'])
-        for record in records:
-            payload = {k: record[k] for k in ('schema_version','definition_id','normalized',
-                'physical','families','numerical_settings')}
-            if content_hash(payload) != record['candidate_id']:
-                raise ValueError('Persisted candidate payload does not match its identity.')
+        for record in records: verify_record(record)
         if [r['evaluation_number'] for r in records] != list(range(len(records))):
             raise ValueError('History evaluation numbers are not contiguous.')
         return records
@@ -82,9 +84,18 @@ class CampaignHistory:
             stream.write(canonical_json(record)+'\n'); stream.flush(); os.fsync(stream.fileno())
 
     def save(self, record):
-        if not record.get('cache_hit', False):
-            atomic_json(self.directory/'candidates'/f"{record['candidate_id']}.json", record)
+        # One recovery slot, including cache hits: durable completion precedes
+        # the append. The runner acknowledges only after state.json is durable.
+        atomic_json(self.directory/'recovery.json', record)
         self._append(record)
+
+    def clear_recovery(self):
+        path = self.directory/'recovery.json'
+        if path.exists():
+            path.unlink()
+            fd = os.open(self.directory, os.O_RDONLY)
+            try: os.fsync(fd)
+            finally: os.close(fd)
 
     def state(self):
         path = self.directory/'state.json'
@@ -92,3 +103,19 @@ class CampaignHistory:
 
     def save_state(self, state):
         atomic_json(self.directory/'state.json', state)
+
+
+def verify_record(record):
+    payload = {k:record[k] for k in ('schema_version','definition_id','normalized',
+        'physical','families','numerical_settings')}
+    if content_hash(payload) != record['candidate_id']:
+        raise ValueError('Persisted candidate payload does not match its identity.')
+
+
+def recovery_records(directory):
+    """Read the single completion slot and legacy files without modifying either."""
+    directory = Path(directory)
+    recovery = directory/'recovery.json'
+    paths = ([recovery] if recovery.exists() else []) + sorted((directory/'candidates').glob('*.json'))
+    for path in paths:
+        yield json.loads(path.read_text())

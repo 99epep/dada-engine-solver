@@ -102,9 +102,10 @@ def main(argv=None):
         p = commands.add_parser(name, help='Read stored results; never run integration')
         p.add_argument('paths', nargs='+' if name=='compare' else 1, type=Path)
         p.add_argument('--candidate', action='append', default=[], help='Exact ID, unambiguous prefix or best; repeat to compare')
-        p.add_argument('--json', action='store_true', help='Print the inspection dataset')
+        p.add_argument('--json', action='store_true', help='Print the complete inspection dataset')
+        p.add_argument('--list-candidates', action='store_true', help='List selected candidates in the terminal')
         if name != 'status':
-            p.add_argument('--html', type=Path, help='Write a new standalone offline HTML report')
+            p.add_argument('--html', type=Path, help='Write or regenerate standalone HTML (report default: CAMPAIGN/report.html)')
             p.add_argument('--plots', choices=['volumes'], help='Sample selected candidate volumes without thermodynamic integration')
     args = parser.parse_args(argv)
     try:
@@ -152,10 +153,9 @@ def main(argv=None):
                 if not hasattr(definition,'study'): raise ValueError('Use dada-optimize to resume a legacy campaign.')
                 campaign = OptimizationCampaign(definition,args.directory)
             budget = parse_budget(args.budget or definition.study.data['execution']['default_budget'])
-            summary = campaign.run(budget, maximum_candidates=args.max_candidates,
+            from .progress import CLIProgress
+            campaign.run(budget, maximum_candidates=args.max_candidates, progress_callback=CLIProgress(),
                                    retry_incomplete=getattr(args,'retry_incomplete',False))
-            print(f"Phase {summary['phase_id']}: {summary['attempted']} attempts; {summary['feasible']} feasible; {summary['stopping_reason']}.")
-            print(report.text_report(report.inspect(args.directory)), end='')
         elif args.command == 'rescale':
             from .rescale import rescale
             path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)
@@ -166,8 +166,16 @@ def main(argv=None):
             print(json.dumps(record['metrics'],indent=2))
         else:
             data = report.compare(args.paths,args.candidate, plots=getattr(args,'plots',None))
-            print(json.dumps(data,indent=2) if args.json else report.text_report(data),end='\n' if args.json else '')
-            if getattr(args,'html',None): print(f'Saved {report.render_html(data,args.html)}')
+            destination = getattr(args,'html',None)
+            if args.command == 'report' and destination is None:
+                source = args.paths[0]
+                destination = source/'report.html' if source.is_dir() else source.with_suffix('.html')
+            if destination is not None: report.render_html(data,destination)
+            if args.json:
+                print(json.dumps(data,indent=2))
+            else:
+                print(report.text_report(data, list_candidates=args.list_candidates),end='')
+                if destination is not None: print(f'HTML: {destination}')
     except KeyboardInterrupt:
         parser.exit(130, 'Interrupted. Campaign pending state is preserved; use resume. Standalone evaluations must be requested again.\n')
     except (ValueError, OSError, KeyError, TypeError, RuntimeError) as error:

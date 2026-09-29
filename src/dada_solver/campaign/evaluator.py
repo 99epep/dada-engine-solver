@@ -25,7 +25,9 @@ class EvaluationControl:
     clock: object = time.monotonic
     previous_records: tuple = ()
     statistics_callback: object = None
+    progress_callback: object = None
     def check(self, _progress=None):
+        if self.progress_callback is not None: self.progress_callback(_progress)
         if self.deadline is not None and self.clock() >= self.deadline:
             raise IntegrationInterrupted('Campaign wall-clock deadline reached.')
 
@@ -284,6 +286,8 @@ class MachineEvaluator:
             status = ('invalid_fluid_domain' if isinstance(error,FluidDomainError) else
                 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure')
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
+            if getattr(error, 'native_solver_stderr', None):
+                result['technical_diagnostics'] = dict(native_solver_stderr=error.native_solver_stderr)
             if backend_last: result['rhs_backend'] = backend_last
             if hasattr(self.definition, 'safe_domain_retry'):
                 result.update(safe_retry_used=safe_retry,
