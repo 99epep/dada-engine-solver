@@ -254,7 +254,15 @@ class MachineEvaluator:
             state = np.asarray(external['values'], dtype=float).copy()
             state[8:10] *= np.asarray(caps)/np.asarray(external['wall_capacities_j_k'])
         backend_last = {}
+        first_microtube_failure = None
+        def retain_failure(result):
+            if first_microtube_failure is not None:
+                result.setdefault('diagnostics', {})['first_microtube_failure'] = first_microtube_failure
+            return result
         def record_backend(record):
+            nonlocal first_microtube_failure
+            if record['phase'] == 'microtube_failure' and first_microtube_failure is None:
+                first_microtube_failure = record['snapshot']
             if record['phase']=='rhs_backend': backend_last.update(record)
             if control.statistics_callback is not None: control.statistics_callback(record)
         def solve(initial):
@@ -266,14 +274,14 @@ class MachineEvaluator:
                 adaptive_acceleration=getattr(self.definition, "adaptive_wall_acceleration", None),
                 statistics_callback=record_backend)
         safe_retry = False
-        first_microtube_failure = None
         try:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             try:
                 periodic = solve(state)
             except MicrotubeDomainError as error:
                 from dada_solver.exchangers.failure_diagnostics import microtube_failure_snapshot
-                first_microtube_failure = microtube_failure_snapshot(error)
+                if first_microtube_failure is None:
+                    first_microtube_failure = microtube_failure_snapshot(error)
                 if not getattr(self.definition, 'safe_domain_retry', False): raise
                 control.check()
                 safe_retry = True
@@ -283,21 +291,19 @@ class MachineEvaluator:
         except IntegrationInterrupted as error:
             result = rejected('budget_exhausted', str(error))
             result.update(integrated=True, derived=derived, constraints=self._unavailable_constraints())
-            return result
+            return retain_failure(result)
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             status = ('invalid_fluid_domain' if isinstance(error,FluidDomainError) else
                 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure')
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
-            if first_microtube_failure is not None:
-                result['diagnostics'] = dict(first_microtube_failure=first_microtube_failure)
             if getattr(error, 'native_solver_stderr', None):
                 result['technical_diagnostics'] = dict(native_solver_stderr=error.native_solver_stderr)
             if backend_last: result['rhs_backend'] = backend_last
             if hasattr(self.definition, 'safe_domain_retry'):
                 result.update(safe_retry_used=safe_retry,
                     warm_start_source=source['candidate_id'] if source else external['source_candidate_id'] if external else None)
-            return result
+            return retain_failure(result)
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         guess = (_state_record(periodic.last_complete_state, layout, family, direction,
             periodic=periodic.converged, wall_capacities=caps) if periodic.last_complete_state is not None else None)
@@ -316,13 +322,13 @@ class MachineEvaluator:
             result.update(integrated=True, derived=derived, periodic_cycle_count=len(periodic.history),
                 periodic_convergence=convergence, initial_guess_state=guess, **warm)
             result['constraints'] = self._unavailable_constraints()
-            return result
+            return retain_failure(result)
         if not periodic.converged:
             result = rejected('periodic_non_convergence', periodic.message)
             result.update(integrated=True, derived=derived, periodic_cycle_count=len(periodic.history),
                           periodic_convergence=convergence, initial_guess_state=guess,
                           constraints=self._unavailable_constraints(), **warm)
-            return result
+            return retain_failure(result)
         cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
         performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
         from dada_solver.diagnostic_replay import replay_wall_trajectory
@@ -391,7 +397,7 @@ class MachineEvaluator:
                 threshold_kg_s=1e-8,
                 detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
                 minimum_signed_flows_kg_s={k:v.minimum for k,v in diagnostics.mass_flow_extrema.items()})
-        return result
+        return retain_failure(result)
 
     def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None, replay=None):
         if replay is not None: replay.require(wrapper=wrapper, angles=angles, trajectory=trajectory)

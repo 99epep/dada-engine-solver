@@ -292,7 +292,7 @@ at the same unsupported trial state, so the same instrumentation covers both
 backends. The exception message and rejection status remain unchanged.
 
 The snapshot records the exact criterion, available flow numbers, passage,
-exchanger (`H_i` / `H_o` are storage-node names, not operating-mode labels),
+exchanger (`heat_in` / `heat_out` identify configured sides, not operating-mode labels),
 pressures, gas temperature and tube geometry. Angle and time refer to the local
 cycle's rejected RHS trial, which is not necessarily an accepted solver sample.
 Thermal flow is signed in the named passage direction; hydraulic flow is in the
@@ -301,7 +301,10 @@ hydraulic link still uses half that length). If hydraulic closure fails before
 producing a flow, unavailable fields remain null; an available preliminary
 Reynolds estimate is explicitly named `hydraulic_trial_reynolds`.
 
-When the existing safe-domain retry also fails, the snapshot retains the first
-failure, while the top-level reason still describes the terminal failure.
+The first failure remains attached even after a safe-domain retry or an
+acceleration rollback; the top-level status still describes the final outcome.
+Missing optional frame locals or properties remain null without discarding the
+rest of the snapshot. The integrator callback and model method both named
+`derivative` are supported, including the callback without a `self` local.
 Snapshot extraction is best effort and cannot replace the scientific exception.
 Older artifacts are unchanged and do not acquire these fields retrospectively.
