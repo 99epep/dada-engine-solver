@@ -102,6 +102,7 @@ def flow_numbers(flow,p1,p2,t,d,length,area,r,mu,k,cp):
 
 def thermal_kind(re,pr):
     if re<2300: return 0
+    if 2300<=re<4000 and .5<=pr<=2000: return 3
     if 4000<=re<=5e6 and .5<=pr<=2000: return 1
     return 2
 
@@ -115,7 +116,9 @@ def domain_flags(re,pr,ma,kn,drop,length,d,max_ma,max_drop):
     if not .5<=pr<=2000: flags|=16
     kind=thermal_kind(re,pr)
     if kind==0 and length<.05*re*d: flags|=32
-    if kind==1 and length<10*d: flags|=64
+    # Transition interpolates endpoint closures; retain both entry guards.
+    if kind==3 and length<.05*2300*d: flags|=32
+    if kind in (1,3) and length<10*d: flags|=64
     if kind==2: flags|=128
     return flags
 

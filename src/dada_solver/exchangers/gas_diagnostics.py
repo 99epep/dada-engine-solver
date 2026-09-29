@@ -53,6 +53,8 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory, *, replay=None):
     time=np.asarray(angles)/wrapper.model.angular_speed
     integrate=lambda y: float(trapezoid(np.asarray(y,dtype=float),time))
     duration=time[-1]-time[0]; result={}; failures=set()
+    transition_any=np.zeros(len(time),dtype=bool)
+    transition_heat=0.; all_heat=0.
     fields=('reynolds','prandtl','mach','knudsen','mean_knudsen','graetz','pressure_ratio',
             'compressibility_parameter','womersley','strouhal','viscous_diffusion_time_s',
             'thermal_diffusion_time_s','residence_time_s','acoustic_time_s')
@@ -64,7 +66,7 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory, *, replay=None):
             values=[getattr(r,key) for r in rows if getattr(r,key) is not None]
             ranges[key]=dict(minimum=min(values),maximum=max(values)) if values else None
         domains={}
-        for field in ('correlation_id','continuum_regime','slip_regime','model_validity',
+        for field in ('flow_regime','correlation_id','continuum_regime','slip_regime','model_validity',
                       'thermal_developing','hydrodynamic_developing','compressibility_significant'):
             domains[field]={}
             for value in sorted(set(getattr(r,field) for r in rows),key=str):
@@ -79,9 +81,22 @@ def cycle_microtube_diagnostics(wrapper, angles, trajectory, *, replay=None):
         hydraulic_ranges={key:dict(minimum=min(getattr(r,key) for r in hydraulics[name]),
                                    maximum=max(getattr(r,key) for r in hydraulics[name]))
                           for key in ('reynolds','mach','knudsen','pressure_ratio')}
+        transition=np.array([r.flow_regime=='transition' or h.flow_regime=='transition'
+                             for r,h in zip(rows,hydraulics[name])])
+        transition_re=[r.reynolds for r in (*rows,*hydraulics[name]) if r.flow_regime=='transition']
+        transition_any |= transition
+        heat_in_transition=integrate(transition*heat)
+        transition_heat+=heat_in_transition; all_heat+=total_heat
         result[name]=dict(ranges=ranges,domains=domains,hydraulic_upstream_ranges=hydraulic_ranges,
-                         absolute_gas_heat_J=total_heat)
+            absolute_gas_heat_J=total_heat, transition_model_used=bool(np.any(transition)),
+            transition_time_fraction=integrate(transition)/duration,
+            transition_absolute_heat_fraction=heat_in_transition/total_heat if total_heat else None,
+            transition_reynolds_range=dict(minimum=min(transition_re),maximum=max(transition_re)) if transition_re else None)
     return dict(passages=result,model_validity='invalid' if failures else 'valid',
+        transition_model_used=bool(np.any(transition_any)),
+        confidence='transition_uncertainty' if np.any(transition_any) else 'standard_correlation_scope',
+        transition_time_fraction=integrate(transition_any)/duration,
+        transition_absolute_heat_fraction=transition_heat/all_heat if all_heat else None,
         failed_criteria=sorted(failures),time_weighting='trapezoidal physical time',
         heat_weighting='absolute wall-to-gas heat, split by instantaneous half-film conductance',
         limitations=['quasi_steady_pulse_response_unvalidated','stagnant_radial_heat_is_lumped_screening',

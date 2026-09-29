@@ -49,7 +49,8 @@ is represented by omitted values / Python `None`, never by an inferred metal
 TMAC. Production defaults reject unsupported states with `MicrotubeDomainError`;
 campaigns classify these as `invalid_exchanger`, not an integration failure.
 The explicit `domain_policy="report"` allows only available extrapolative
-closures with an invalid domain verdict. It does not create a transition model.
+closures with an invalid domain verdict. Transition has its own explicit closure
+under either policy; report mode does not relax its underlying domain guards.
 
 ## State, flow and thermal coupling
 
@@ -207,14 +208,74 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   single-phase fluid, locally constant wall temperature.
 - Domain: existing conservative 4000 <= Re <= 5e6, 0.5 <= Pr <= 2000,
   L/D >= 10, low Ma and relative pressure drop, Kn < 0.001, property scope above.
-  Re 2300–4000 is unavailable. A continuous friction bridge is used only to
-  bracket the algebraic root; a root in that interval is rejected.
+  Re 2300–4000 now uses the explicit transition bridge described below.
+  The fully turbulent closure and its domain are unchanged.
 - Pressure/temperature: no additional validated gas-specific absolute range.
   [Yang et al. 2014](https://doi.org/10.1016/j.ijheatmasstransfer.2014.07.017),
   pp.732–740, stainless 750/510/170 micrometre tubes, Re 3000–12000, supplies
   gas evidence and warns about compressibility. Its boundary is imposed heat
   input, not the DADA lumped-wall boundary. No quantitative Yang enhancement
   was implemented from the abstract. Rough-tube extensions remain unavailable.
+
+### GAS-TRANSITION-ENDPOINT-INTERPOLATION (2026-09-29)
+
+The user-authorized transition closure removes the unavailable-correlation gap,
+not the laminar Reynolds limit. For `2300 <= Re < 4000`, use
+`w=(Re-2300)/1700` and
+`Nu=(1-w)*Nu_Hausen(2300,Pr,D/L)+w*Nu_Gnielinski(4000,Pr)`.
+When thermal entry is explicitly disabled, the laminar endpoint remains 3.66.
+Outside this interval the existing Hausen and smooth Gnielinski laws are unchanged.
+`correlation_id=gnielinski_transition_interpolation` identifies the bridge.
+
+New primary source: V. Gnielinski, *On heat transfer in tubes*, International
+Journal of Heat and Mass Transfer **63** (2013), 134–140,
+[DOI 10.1016/j.ijheatmasstransfer.2013.04.015](https://doi.org/10.1016/j.ijheatmasstransfer.2013.04.015).
+The publisher's abstract explicitly recommends linear interpolation of Nusselt
+values at 2300 and 4000. We apply that principle to the project's existing
+endpoint equations; this is not an implementation of every endpoint correction
+in that paper. The earlier local 1976 reference alone did not document this
+transition construction.
+
+Hydraulics promotes the existing linear Darcy bridge to an explicit engineering
+closure: `f=(1-w)*(64/2300)+w*f_Haaland(4000)`. Pressure-squared Poiseuille is
+algebraically identical to Darcy with `64/Re` at the same mean density, so
+pressure drop and solved flow join continuously. If explicitly configured,
+the existing laminar slip factor divides the low endpoint; slip and thermal
+validity guards still apply. This friction interpolation is a project modelling
+assumption anchored to the existing closures, not a new measured microtube law.
+It is continuous and monotone but need not have continuous endpoint slopes.
+No Churchill replacement or change to turbulent friction is introduced.
+
+Both thermal endpoints must be available: the transition retains the laminar
+endpoint's developed-velocity requirement `L/D >= 0.05*2300` and the turbulent
+endpoint's `L/D >= 10`, plus the existing Pr guard. Mach, relative pressure drop,
+Knudsen/slip and transport-temperature limits are unchanged. Transition is not
+an excuse to accept a pressure drop above the configured limit.
+
+`flow_regime` distinguishes laminar, transition and turbulent. To keep Research
+constraint semantics compatible, `model_validity` remains `valid` / `invalid`;
+`valid` means the declared model domain is respected, not experimental certainty.
+Cycle diagnostics add `transition_model_used`, `confidence=transition_uncertainty`,
+transition time fraction, absolute-heat fraction and per-passage transition
+Reynolds ranges. Per-passage `domains.flow_regime` also reports time and heat
+fractions of each thermal regime. Transition usage includes either the thermal
+or upstream hydraulic Reynolds state; overall time is the union across passages,
+not the sum. Heat is allocated by the existing instantaneous half-film conductance
+weights. Zero total absolute heat gives null heat fractions. These are sampled,
+trapezoidal physical-time diagnostics, not exact event-duration measurements.
+
+The specialized compiled kernel remains laminar-only. Shared domain flags now
+recognize transition, but `thermal_kind == 0` still gates the compiled fast path.
+Transition/turbulent states explicitly fall back to the Python RHS at the same
+state. Backend statistics retain `fallback_calls` and `unsupported_state`.
+No Python-only acceptance or silently divergent compiled correlation is used.
+
+This remains a quasi-steady approximation in a pulsed machine. Transition onset,
+intermittency, inlet disturbances, hysteresis and micro/mini-channel surface effects
+are not resolved. A candidate with substantial transition usage needs experimental
+validation; neither the interpolation nor its continuity establishes accuracy.
+Existing histories are not rewritten. Changed source/runtime identity prevents
+silently resuming or reusing results from the previous physical closure.
 
 ### GAS-UNSTEADY-DIAGNOSTICS
 
@@ -308,3 +369,13 @@ rest of the snapshot. The integrator callback and model method both named
 `derivative` are supported, including the callback without a `self` local.
 Snapshot extraction is best effort and cannot replace the scientific exception.
 Older artifacts are unchanged and do not acquire these fields retrospectively.
+
+### Transition validation result
+
+Boundary/continuity, retained guards, cycle-weighted usage and explicit Numba
+fallback tests pass. Related tests: **146 passed**. Complete suite:
+**815 passed, 0 warnings in 295.04 s**.
+The single bounded Human Cell evaluation at N=1000, D=0.770 mm, L=0.8 m
+reaches Re=2393.30 with `gnielinski_transition_interpolation`, then rejects
+relative pressure drop 0.2005927 above the unchanged 0.2 guard. This is not a
+converged performance result. See [the artifact and reproduction command](../outputs/research_microtube_transition/README.md).

@@ -1610,3 +1610,14 @@ single-phase validation table executed inside a separate compiled RHS. This is
 an architectural validation, not real-helium validation. Existing ideal hydraulic
 closures require a compatible calorically perfect fluid; cryogenic transport,
 real-fluid hydraulics and physical helium property data remain separate work.
+
+
+## 2026-09-29 — Explicit microtube transition closure
+
+The user authorizes a thermal endpoint interpolation between Re 2300 and 4000
+and promotion of the existing continuous friction bridge to a transition law.
+Hausen below 2300 and smooth turbulent closures at/above 4000 remain unchanged.
+Mach, pressure-drop, Knudsen/slip and transport-temperature limits are preserved.
+Transition uncertainty is explicit and does not alone invalidate a candidate.
+See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) for the Gnielinski 2013
+source, project-specific endpoint choices, diagnostics and quasi-steady limits.
