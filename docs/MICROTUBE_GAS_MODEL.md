@@ -281,3 +281,27 @@ Poiseuille reconstruction, Mach and rarefaction diagnostics still need scientifi
 revalidation for real helium. `DiluteGasTransport` remains limited to 200–1000 K;
 there is no cryogenic extrapolation or two-phase extension. See
 [working-fluid models and compiled backends](WORKING_FLUID_MODELS.md).
+
+### First rejected trial-state diagnostics
+
+Research wall evaluations rejected during integration retain
+`diagnostics.first_microtube_failure`. This failure-only snapshot reads the
+existing Python exception traceback; it does not replay the cycle or evaluate a
+correlation again. The compiled wall RHS already falls back to the Python RHS
+at the same unsupported trial state, so the same instrumentation covers both
+backends. The exception message and rejection status remain unchanged.
+
+The snapshot records the exact criterion, available flow numbers, passage,
+exchanger (`H_i` / `H_o` are storage-node names, not operating-mode labels),
+pressures, gas temperature and tube geometry. Angle and time refer to the local
+cycle's rejected RHS trial, which is not necessarily an accepted solver sample.
+Thermal flow is signed in the named passage direction; hydraulic flow is in the
+upstream-to-downstream direction. Tube length is the full bank length (the
+hydraulic link still uses half that length). If hydraulic closure fails before
+producing a flow, unavailable fields remain null; an available preliminary
+Reynolds estimate is explicitly named `hydraulic_trial_reynolds`.
+
+When the existing safe-domain retry also fails, the snapshot retains the first
+failure, while the top-level reason still describes the terminal failure.
+Snapshot extraction is best effort and cannot replace the scientific exception.
+Older artifacts are unchanged and do not acquire these fields retrospectively.

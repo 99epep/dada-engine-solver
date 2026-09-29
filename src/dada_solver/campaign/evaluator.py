@@ -266,11 +266,14 @@ class MachineEvaluator:
                 adaptive_acceleration=getattr(self.definition, "adaptive_wall_acceleration", None),
                 statistics_callback=record_backend)
         safe_retry = False
+        first_microtube_failure = None
         try:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             try:
                 periodic = solve(state)
-            except MicrotubeDomainError:
+            except MicrotubeDomainError as error:
+                from dada_solver.exchangers.failure_diagnostics import microtube_failure_snapshot
+                first_microtube_failure = microtube_failure_snapshot(error)
                 if not getattr(self.definition, 'safe_domain_retry', False): raise
                 control.check()
                 safe_retry = True
@@ -286,6 +289,8 @@ class MachineEvaluator:
             status = ('invalid_fluid_domain' if isinstance(error,FluidDomainError) else
                 'invalid_exchanger' if isinstance(error, MicrotubeDomainError) else 'integration_failure')
             result = rejected(status, f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
+            if first_microtube_failure is not None:
+                result['diagnostics'] = dict(first_microtube_failure=first_microtube_failure)
             if getattr(error, 'native_solver_stderr', None):
                 result['technical_diagnostics'] = dict(native_solver_stderr=error.native_solver_stderr)
             if backend_last: result['rhs_backend'] = backend_last
