@@ -2,7 +2,6 @@
 from collections import Counter
 import re
 import shlex
-from . import margins
 from dada_solver.campaign.report import elite_records
 
 
@@ -23,7 +22,8 @@ def reason_category(record, scientific):
     if match:
         temperature = float(match[1]); domains = []
         for side in ('heat_in','heat_out'):
-            transport = (((scientific.get('basis',{}).get(side) or {}).get('inputs',{}).get('gas_model') or {}).get('transport',{})
+            inputs = (scientific.get('basis',{}).get(side) or {}).get('inputs',{})
+            transport = (inputs.get('gas_model') or {}).get('transport',{})
             if 'minimum_temperature' in transport and 'maximum_temperature' in transport:
                 domains.append((transport['minimum_temperature'], transport['maximum_temperature']))
         if domains and temperature < min(x[0] for x in domains): return 'transport_temperature_below_domain'
@@ -31,6 +31,8 @@ def reason_category(record, scientific):
         return 'transport_temperature_outside_domain'
     lower = reason.lower()
     for fragment, category in (
+        ('hydrodynamic_entry_unresolved','hydrodynamic_entry_domain'),
+        ('large_relative_pressure_drop','relative_pressure_drop_domain'),
         ('transition flow','hydraulic_transition_domain'),('high_mach','mach_domain'),
         ('beyond_continuum','continuum_domain'),('knudsen','continuum_domain'),
         ('thermal closure','thermal_correlation_domain'),('slip','slip_model_domain'),

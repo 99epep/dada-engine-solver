@@ -154,7 +154,9 @@ def main(argv=None):
                 campaign = OptimizationCampaign(definition,args.directory)
             budget = parse_budget(args.budget or definition.study.data['execution']['default_budget'])
             from .progress import CLIProgress
-            campaign.run(budget, maximum_candidates=args.max_candidates, progress_callback=CLIProgress(),
+            # Retire the historical 16-attempt Research default without editing snapshots.
+            limit = 512 if args.max_candidates is None and definition.maximum_candidates == 16 else args.max_candidates
+            campaign.run(budget, maximum_candidates=limit, progress_callback=CLIProgress(),
                                    retry_incomplete=getattr(args,'retry_incomplete',False))
         elif args.command == 'rescale':
             from .rescale import rescale

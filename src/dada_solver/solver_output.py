@@ -15,7 +15,9 @@ _LOCK = threading.RLock()
 
 
 def _flush():
-    sys.stderr.flush()
+    # A closed/replaced Python stream must not hide a solver exception.
+    try: sys.stderr.flush()
+    except (OSError, ValueError): pass
     ctypes.CDLL(None).fflush(None)
 
 
