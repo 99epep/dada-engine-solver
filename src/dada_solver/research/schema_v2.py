@@ -160,9 +160,8 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     if type(screen['samples']) is not int or screen['samples']<360: raise ValueError('Mechanical screen requires at least 360 samples per cycle.')
     positive(screen['maximum_large_enclosed_volume_m3'],'maximum_large_enclosed_volume_m3')
     if basis.configuration.motor_operation and screen['maximum_large_enclosed_volume_m3']>.066: raise ValueError('Motor large-cylinder ceiling must not exceed 0.066 m^3.')
-    search=raw['search']; keys(search,('type','seed','scramble','domain'),'search')
-    if search['type']!='sobol' or search['domain']!='fixed_global_bounds' or type(search['seed']) is not int or search['seed']<0 or type(search['scramble']) is not bool:
-        raise ValueError('Use explicit bounded Sobol settings.')
+    from .local_search import validate_search
+    validate_search(raw['search'],space)
     num=raw['numerical']; keys(num,('maximum_cycles','backend','candidate_budget_seconds','domain_error_retry'),'numerical')
     if type(num['maximum_cycles']) is not int or num['maximum_cycles']<1: raise ValueError('maximum_cycles must be a positive integer.')
     WallBackendSettings(num['backend']); positive(num['candidate_budget_seconds'],'candidate_budget_seconds')
@@ -248,6 +247,7 @@ class ResearchDefinitionV2(CampaignDefinition):
         self.candidate_budget_seconds=raw['numerical']['candidate_budget_seconds']
         self.numerical_settings=dict(asdict(self.configuration.numerical),wall_cycle=asdict(self.wall_numerical_settings) if self.wall_numerical_settings else None,
             wall_backend=backend_identity(self.wall_backend),research=raw['numerical'],screening=raw['screening'])
+        self.search_settings=raw['search']
         self.seed,self.scramble=raw['search']['seed'],raw['search']['scramble']; self.elite_size=5
         for name in ('initial_evaluation_seconds','deadline_grace_seconds'): setattr(self,name,raw['execution'][name])
         self.maximum_candidates=raw['execution']['default_max_candidates']

@@ -30,6 +30,13 @@ class Candidate:
             families=families, numerical_settings=numerical_settings)
         return cls(canonical_json(payload), content_hash(payload))
 
+    @classmethod
+    def from_physical(cls, space, physical, *, families, numerical_settings, definition_id):
+        payload = dict(schema_version=1, definition_id=definition_id,
+            normalized=space.encode(physical), physical=dict(physical),
+            families=families, numerical_settings=numerical_settings)
+        return cls(canonical_json(payload),content_hash(payload))
+
     @property
     def payload(self):
         return json.loads(self.payload_json)

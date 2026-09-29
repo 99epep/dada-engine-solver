@@ -26,8 +26,10 @@ New code lives in `dada_solver.campaign`:
 
 There is no database, plugin discovery, distributed execution, Bayesian search
 or new external optimization dependency. The first strategy is Sobol, not
-SLSQP. A later strategy can implement the same incremental protocol, but local
-refinement is not implemented here.
+SLSQP. Research V2/V3 additionally use `scheduled_search.ScheduledSobol` for
+explicit initial evaluations and center-first local regions; the original global
+Sobol path stays unchanged. See [Research local refinement](DADA_ENGINE_RESEARCH.md#local-refinement-and-explicit-initial-evaluations)
+for normalization, round-robin allocation and resume semantics.
 
 ## Kinematics injection
 

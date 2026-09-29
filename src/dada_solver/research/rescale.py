@@ -38,6 +38,8 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
     data = inspect(source)
     if data['scientific']['schema_version'] not in (2, 3):
         raise ValueError('Capacity rescale requires a V2/V3 machine study; V1 needs explicit migration first.')
+    if data['scientific']['search'].get('domain')=='local_regions_v1':
+        raise ValueError('Capacity scaling of local-region studies is not supported; rescale the global source first, then refine.')
     record, = select_records(data, [candidate])
     changes = []
     def scale(value, name, integer=False):

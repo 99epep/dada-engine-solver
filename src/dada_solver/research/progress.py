@@ -25,7 +25,7 @@ class CLIProgress:
     def __call__(self, event):
         limit = event['maximum_candidates'] if event['maximum_candidates'] is not None else 'unlimited'
         if event['event'] == 'start':
-            text = (f"Phase {event['phase_id']} · Sobol index {event['sobol_index']} · "
+            text = (f"Phase {event['phase_id']} · {'Search step' if event.get('scheduled_search') else 'Sobol index'} {event['sobol_index']} · "
                     f"budget {duration(event['budget_seconds'])} · max {limit} new candidates")
             print(text, file=self.stream, flush=True)
             return
