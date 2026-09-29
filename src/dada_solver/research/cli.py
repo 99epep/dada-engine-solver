@@ -92,6 +92,11 @@ def main(argv=None):
     single.add_argument('--reference', action='store_true', help='Start from the stored regression candidate instead of TOML initials')
     single.add_argument('--set', action='append', default=[], metavar='PARAMETER=VALUE')
     single.add_argument('--budget')
+    refinement = commands.add_parser('refine', help='Create a portable center-first local Sobol study')
+    refinement.add_argument('sources',nargs='+',type=Path)
+    refinement.add_argument('--candidate',action='append',default=[],help='ID, unique prefix or best; repeat for several centers')
+    refinement.add_argument('--radius',type=float,required=True,help='Half-width in global normalized coordinates, in (0,1]')
+    refinement.add_argument('--output',type=Path,required=True)
     resize = commands.add_parser('rescale', help='Create a new capacity-scaled candidate study and portable basis; never integrate')
     resize.add_argument('source', type=Path)
     resize.add_argument('--candidate', required=True, help='Exact ID or unambiguous prefix')
@@ -158,6 +163,10 @@ def main(argv=None):
             limit = 512 if args.max_candidates is None and definition.maximum_candidates == 16 else args.max_candidates
             campaign.run(budget, maximum_candidates=limit, progress_callback=CLIProgress(),
                                    retry_incomplete=getattr(args,'retry_incomplete',False))
+        elif args.command == 'refine':
+            from .refine import refine
+            path=refine(args.sources,args.candidate,args.radius,args.output)
+            print(f'Created {path}. Centers will be evaluated before local Sobol sampling.')
         elif args.command == 'rescale':
             from .rescale import rescale
             path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)

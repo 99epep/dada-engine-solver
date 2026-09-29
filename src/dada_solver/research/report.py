@@ -89,7 +89,8 @@ def inspect(path):
                 reasons=['legacy_record_has_no_usable_valve_event_sequence'],
                 stored_classification=topology.get('classification'))
     from .cockpit import campaign_evidence
-    return dict(cockpit=campaign_evidence(records, scientific, str(path), path.is_dir()),
+    from .local_search import region_summary
+    return dict(local_search=region_summary(records,scientific),cockpit=campaign_evidence(records, scientific, str(path), path.is_dir()),
                 schema_version=1, name=title, study_id=definition['study_id'], definition_id=definition['definition_id'],
                 scientific=scientific, runtime_compatible=compatible, warnings=warnings,
                 status_counts=dict(Counter(r['status'] for r in records)), records=records,
@@ -144,6 +145,8 @@ def compare(paths, selectors=(), *, plots=None):
                   cockpits=[s['cockpit'] for s in studies],
                   compared_sources=[dict(source=s['source'], study_id=s['study_id'], scientific=s['scientific']) for s in studies],
                   warnings=[w for s in studies for w in s['warnings']], best=elite_records(records,5) if compatible else [])
+    from .local_search import region_summary
+    result['local_search']=region_summary(records,result['scientific']) if compatible else None
     if not compatible:
         result['warnings'].append('Different scientific study identities: values are shown side by side; no combined feasible ranking is assigned. Review each source definition before interpreting differences.')
     return result
@@ -160,6 +163,12 @@ def text_report(data, *, list_candidates=False):
         else:
             performance=f"power={m.get('indicated_power_w')} W; efficiency={m.get('indicated_thermal_efficiency')}"
         lines.append(f"{row['candidate_id']} {row['status']}: {performance}")
+    local=data.get('local_search')
+    if local:
+        lines.append(f"Local regions: {len(local['regions'])}; radius={local['radius_fraction']}; round-robin")
+        for region in local['regions']:
+            best=region['best']; metrics=best.get('metrics',{}) if best else {}
+            lines.append(f"{region['id']}: {region['attempts']} attempts, {region['converged']} converged, {region['feasible']} feasible; best objective={best['objective']['value'] if best else None}; best COP={metrics.get('cooling_cop')}; best ID={best['candidate_id'] if best else None}; rejections={region['rejection_counts']}")
     lines.extend(data['warnings'])
     return '\n'.join(lines)+'\n'
 
@@ -184,7 +193,7 @@ HTML = '''<!doctype html>
 <title>TITLE_TEXT</title>
 <style>
 #bounds{max-height:420px}#bounds th{position:sticky;top:0}#suggestions{max-height:440px}body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}th button{font:inherit;font-weight:600;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
-</style><main>
+</style><main><section class="card" id="localRegions" hidden><h2>Local regions</h2><div id="regionSummary"></div></section>
 <h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or thermodynamic replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
 <h2>Campaign funnel</h2><div class="card" id="funnel"></div>
@@ -266,7 +275,18 @@ function scatter(id,points,xlabel,ylabel){
  s+='<text x="280" y="273" text-anchor="middle" font-size="12">'+esc(xlabel)+'</text><text transform="translate(14 130) rotate(-90)" text-anchor="middle" font-size="12">'+esc(ylabel)+'</text></svg>';byId(id).innerHTML=s;
 }
 const refluxMin=r=>{const v=Object.values(r.derived?.local_reflux?.minimum_signed_flows_kg_s||{}).filter(Number.isFinite);return v.length?Math.min(...v):null;};
+if(d.local_search){
+ byId('localRegions').hidden=false;
+ const root=byId('regionSummary');
+ const intro=document.createElement('p');intro.textContent=d.local_search.regions.length+' regions · normalized radius '+d.local_search.radius_fraction+' · round-robin';root.append(intro);
+ for(const r of d.local_search.regions){
+  const p=document.createElement('p');p.textContent=r.id+': '+r.attempts+' attempts, '+r.converged+' converged, '+r.feasible+' feasible; best objective '+(r.best?.objective?.value??'unavailable')+'; best COP '+(r.best?.metrics?.cooling_cop??'unavailable')+'; best '+(r.best?.candidate_id??'none');root.append(p);
+  const detail=document.createElement('details');const title=document.createElement('summary');title.textContent='Center and rejection evidence';detail.append(title);
+  const pre=document.createElement('pre');pre.textContent=JSON.stringify({source_candidate_id:r.source_candidate_id,center:r.center,rejection_rates:r.rejection_rates},null,2);detail.append(pre);root.append(detail);
+ }
+}
 const columns=[
+ ['origin','Search origin',r=>r.search_origin? r.search_origin.kind+' / '+r.search_origin.region_id : 'global'],
  ['id','Candidate ID',r=>r.candidate_id],['status','Status',r=>r.status],
  ['input','Indicated input [W]',r=>r.metrics.indicated_mechanical_input_power_w],
  ['power','Indicated gas power [W]',r=>r.metrics.indicated_power_w],

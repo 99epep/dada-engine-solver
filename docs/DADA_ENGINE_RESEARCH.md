@@ -113,6 +113,124 @@ both cylinder volume curves without thermodynamic integration. Repeat
 See [capacity scaling, exact rules and examples](DADA_ENGINE_RESEARCH_CAPACITY.md)
 for limitations, valve-event availability and the measured Human Cell ×5 checks.
 
+## Local refinement and explicit initial evaluations
+
+`run` starts a campaign from a study; `resume` continues its saved schedule.
+`rescale` changes machine capacity and its extensive inputs. `refine` instead
+creates a new portable study with unchanged physical inputs, objective,
+constraints, global parameter bounds and transforms. It does not run an
+optimization or import a source result as an already evaluated center.
+
+```sh
+dada-research refine outputs/source/campaign --candidate abc123 --radius 0.20 --output outputs/local/study.toml
+dada-research validate outputs/local/study.toml
+dada-research run outputs/local/study.toml --directory outputs/local/campaign --budget 3m --max-candidates 32
+dada-research resume outputs/local/campaign --budget 3m --max-candidates 32
+dada-research report outputs/local/campaign
+```
+
+Use a full ID, a unique prefix, or `best`. Repeat `--candidate` for several
+basins in one source campaign. Several standalone `research_evaluation_v1`
+artifacts can supply centers implicitly:
+
+```sh
+dada-research refine replay_A.json replay_B.json replay_C.json --radius 0.20 --output outputs/multi/study.toml
+```
+
+Sources must have the **same scientific study identity**; runtime/source-code
+fingerprints may differ. This deliberately strict compatibility check refuses
+mixing different physical definitions, bounds or policies. Candidate IDs and
+source study IDs are embedded provenance, never external dependencies. The
+new study includes a copied basis and any required mechanism artifacts.
+Existing files are never overwritten. Creation defaults to 512 new attempts
+per invocation; validation runs should explicitly use a small limit.
+
+The generated V2/V3 TOML contains the following search structure (the real
+center table contains every active coordinate in physical units):
+
+```toml
+[search]
+type = "sobol"
+domain = "local_regions_v1"
+seed = 29092026
+scramble = true
+radius_fraction = 0.20
+allocation = "round_robin"
+evaluate_centers = true
+
+[[search.regions]]
+id = "basin_1"
+source_candidate_id = "<full SHA-256 candidate ID>"
+source_study_id = "<full SHA-256 study ID>"
+
+[search.regions.center]
+"volume.swept_ratio" = 1.5
+# All other active physical values follow.
+```
+
+For global normalized coordinate `z`, the interval is
+`[max(0, z-radius), min(1, z+radius)]`. Radius is finite and in `(0, 1]`;
+0.20 means **±20% of the original global normalized width**, not ±20% of the
+physical value. Log transforms keep their existing meaning. Near a global
+bound the interval becomes asymmetric. Sobol points are mapped into this
+interval and decoded using the existing parameter implementation. Integer
+counts keep nearest-even decoding: rounding can move the encoded integer by
+up to half a bin beyond the continuous local interval, never beyond the global
+integer bounds. Exact center values are preserved without an encode/decode
+round trip. Branches and unordered categories remain fixed scientific inputs;
+they are not assigned a numeric distance or made active by refinement.
+
+Every distinct center is evaluated before any local Sobol point. The first
+center also becomes the standalone `evaluate` initial. Each region then has
+its own Sobol index, using the same seed/scramble pattern. Allocation is fixed
+round-robin in declared region order, with no adaptive basin selection. Equal
+centers are evaluated once and credited to their associated regions. Overlapping
+regions reuse exact candidate results, including identical decoded integer
+points. Region origin lives in `search_origin` outside the candidate payload.
+Identical physical points **within the same study/runtime definition** therefore
+share candidate IDs, regardless of origin. A new refinement study does have a
+new study/definition ID: its centers and search protocol participate in that
+identity, so IDs are not promised to match the source study.
+
+The existing journal/recovery/state protocol persists the in-flight candidate,
+center progress, next region and each region's Sobol index. An interrupted local
+evaluation remains pending, including a deadline-limited center, and is retried
+before the schedule advances on resume. Completed centers are never inserted
+again. Reports count evaluation attempts (including retries and cache hits);
+shared centers can contribute to more than one region's summary. `status` and
+the offline cockpit show per-region attempts, convergence, feasibility, best
+objective/COP and rejection evidence, with exact center values in HTML details.
+
+Global V2/V3 studies can explicitly opt into one initial evaluation:
+
+```toml
+[search]
+type = "sobol"
+domain = "fixed_global_bounds"
+seed = 29092026
+scramble = true
+evaluate_initial = true
+```
+
+Absent this field, historical behavior is unchanged: the campaign starts at
+Sobol index zero and does not insert the initial. Existing snapshots are never
+amended on resume. Adding the flag changes study identity and requires a new
+campaign. Current presets retain their historical setting; local studies always
+evaluate their centers. V1 remains unchanged.
+
+There is no adaptive allocation, local gradient optimizer or cross-study cache.
+Capacity scaling of an already local study is explicitly refused, because its
+embedded centers would also need a scientifically consistent transformation;
+rescale the global source first, then refine the resulting evaluation. No
+thermodynamic equation, correlation, validity threshold or constraint is changed
+by this search layer.
+
+The [bounded Human Cell check](../outputs/human_cell_stage2c/README.md)
+reproduces the atmospheric center exactly (COP 1.1220429906193439) and records
+one additional feasible local Sobol point. Its 6-minute budget stopped after
+7 attempts; 32 was a cap, not an achieved sample count. The small observed
+feasibility rate is evidence of local sampling, not a convergence claim.
+
 ## V1 fixed-pair validation study
 
 The following walkthrough remains valid for `sixbar-thermo5d` (schema 1).

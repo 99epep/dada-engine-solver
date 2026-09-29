@@ -85,10 +85,17 @@ class OptimizationCampaign:
                 from dada_solver.campaign.candidate import canonical_json
                 pending = dict(candidate_id=retry['candidate_id'], payload_json=canonical_json(payload),
                                sequence_index=retry['sequence_index'])
+                if 'search_origin' in retry: pending['search_origin']=retry['search_origin']
         consumed = max((r['sequence_index']+1 for r in records if r['status'] != 'budget_exhausted'), default=0)
         index = max(consumed, state.get('search',{}).get('index',0))
-        strategy = SobolStrategy(len(self.definition.space.parameters), seed=self.definition.seed,
-                                 scramble=self.definition.scramble, index=index)
+        settings = getattr(self.definition,'search_settings',{})
+        scheduled = settings.get('domain')=='local_regions_v1' or settings.get('evaluate_initial',False)
+        if scheduled:
+            from dada_solver.campaign.scheduled_search import ScheduledSobol
+            strategy = ScheduledSobol(self.definition.space,settings,index=index)
+        else:
+            strategy = SobolStrategy(len(self.definition.space.parameters), seed=self.definition.seed,
+                                     scramble=self.definition.scramble, index=index)
         cache = {r['candidate_id']:r for r in records
                  if not r.get('cache_hit') and r['status'] != 'budget_exhausted'}
         phase = []
@@ -102,7 +109,7 @@ class OptimizationCampaign:
             if progress_callback is None: return
             now = self.clock()
             if event == 'progress' and now-last_progress < 10 and len(phase)-last_attempt < 10: return
-            progress_callback(dict(event=event, phase_id=phase_id, sobol_index=strategy.index,
+            progress_callback(dict(event=event, phase_id=phase_id, sobol_index=strategy.index, scheduled_search=scheduled,
                 attempted=len(phase), maximum_candidates=limit, elapsed_seconds=now-started,
                 budget_seconds=budget, converged=converged, feasible=feasible,
                 failure_counts=dict(counts), best=None if best is None else
@@ -125,11 +132,14 @@ class OptimizationCampaign:
                 sequence_index = pending['sequence_index']
             else:
                 sequence_index = strategy.index
-                candidate = Candidate.create(self.definition.space, strategy.next_point(),
+                coordinates = strategy.next_point()
+                create = Candidate.from_physical if scheduled else Candidate.create
+                candidate = create(self.definition.space, strategy.last_physical if scheduled else coordinates,
                     families=self.definition.families, numerical_settings=self.definition.numerical_settings,
                     definition_id=self.definition.definition_id)
                 pending = dict(candidate_id=candidate.candidate_id, payload_json=candidate.payload_json,
                                sequence_index=sequence_index)
+                if scheduled: pending['search_origin']=strategy.last_origin
                 # Record the in-flight coordinate before integration. Resume retries
                 # only this point if no durable completed result was written.
                 save_state()
@@ -137,7 +147,7 @@ class OptimizationCampaign:
             cached = cache.get(candidate.candidate_id)
             if cached is not None:
                 reserved = {'candidate_id','timestamp','evaluation_number','sequence_index','phase_id',
-                    'duration_seconds','cache_hit','cache_source_evaluation',*candidate.payload.keys()}
+                    'duration_seconds','cache_hit','cache_source_evaluation','search_origin',*candidate.payload.keys()}
                 result = {k:v for k,v in cached.items() if k not in reserved}
             else:
                 controlled = getattr(self.evaluator, 'evaluate_with_control', None)
@@ -153,10 +163,11 @@ class OptimizationCampaign:
                 evaluation_number=len(records), sequence_index=sequence_index, phase_id=phase_id,
                 duration_seconds=self.clock()-evaluation_started, cache_hit=cached is not None,
                 cache_source_evaluation=None if cached is None else cached['evaluation_number'])
+            if 'search_origin' in pending: record['search_origin']=pending['search_origin']
             self.history.save(record)
             records.append(record); phase.append(record)
             if cached is None and record['status'] != 'budget_exhausted': cache[candidate.candidate_id] = record
-            pending = None
+            if not (scheduled and record['status']=='budget_exhausted'): pending = None
             save_state()
             self.history.clear_recovery()
             converged += bool(record.get('converged'))
