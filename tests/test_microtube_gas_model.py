@@ -79,7 +79,7 @@ def test_thermal_entry_correction_tends_to_fully_developed_limit():
 
 def test_no_silent_use_outside_correlation_domain():
     m=MicrotubeGasModel();tr=m.transport
-    flow=2500*309*math.pi*.00033*tr.viscosity(300)/4
+    flow=(5e6+1)*309*math.pi*.00033*tr.viscosity(300)/4
     d=m.diagnose(BANK,flow,3e5,2.99e5,300)
     assert d.nusselt is None and d.model_validity=='invalid'
     with pytest.raises(MicrotubeDomainError): m.require(d)

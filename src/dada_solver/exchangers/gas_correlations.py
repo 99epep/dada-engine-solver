@@ -91,6 +91,31 @@ def gnielinski(reynolds,prandtl):
     return _nusselt_number(reynolds,prandtl,1.,f,CorrelationRegime.TURBULENT)
 
 
+def transition_nusselt(reynolds, prandtl, diameter_over_length, thermal_entry=True):
+    """Gnielinski (2013) interpolation principle using the production endpoints.
+
+    Hausen at 2300 and existing smooth Gnielinski at 4000; no new pulse factor.
+    DOI: 10.1016/j.ijheatmasstransfer.2013.04.015.
+    """
+    if not 2300 <= reynolds <= 4000 or not .5 <= prandtl <= 2000:
+        raise MicrotubeDomainError('Transition interpolation outside declared Re/Pr domain.')
+    low = laminar_entry_nusselt(2300*prandtl*diameter_over_length) if thermal_entry else 3.66
+    high = gnielinski(4000, prandtl)
+    return low + (high-low)*(reynolds-2300)/1700
+
+
+def transition_darcy(reynolds, laminar_slip_factor=1.):
+    """Explicit engineering bridge; not an experimentally validated pulse law.
+
+    Preserve the existing pressure-squared laminar endpoint, including its
+    declared slip factor, and the unchanged smooth turbulent endpoint.
+    """
+    if not 2300 <= reynolds <= 4000:
+        raise MicrotubeDomainError('Transition friction outside 2300-4000.')
+    low = 64/(2300*laminar_slip_factor)
+    return low + (darcy_smooth(4000)-low)*(reynolds-2300)/1700
+
+
 @dataclass(frozen=True)
 class MicrotubeFlowDiagnostics:
     reynolds: float
@@ -116,6 +141,14 @@ class MicrotubeFlowDiagnostics:
     acoustic_time_s: float
     model_validity: str
     issues: tuple[str,...]
+
+    @property
+    def flow_regime(self):
+        return 'laminar' if self.reynolds < 2300 else 'transition' if self.reynolds < 4000 else 'turbulent'
+
+    @property
+    def transition_model_used(self):
+        return self.correlation_id == 'gnielinski_transition_interpolation'
 
 
 @dataclass(frozen=True)
@@ -172,10 +205,13 @@ class MicrotubeGasModel:
             nu=laminar_entry_nusselt(gz) if self.thermal_entry else 3.66
             correlation='hausen_constant_wall' if self.thermal_entry else 'fully_developed_3_66_screening'
             if re==0: correlation='stagnant_radial_screening'
+        elif 2300<=re<4000 and .5<=pr<=2000:
+            nu=transition_nusselt(re,pr,d/length,self.thermal_entry)
+            correlation='gnielinski_transition_interpolation'
         elif re>=4000 and re<=5e6 and .5<=pr<=2000:
             nu=gnielinski(re,pr);correlation='gnielinski_smooth'
         else:
-            nu=None;correlation='unavailable_transition_or_out_of_range'
+            nu=None;correlation='unavailable_out_of_range'
         viscous=(d/2)**2*rho/mu;thermal=viscous*pr
         return MicrotubeFlowDiagnostics(re,pr,ma,kn,knm,gz,ratio,compressibility,
             length<.05*re*pr*d,length<.05*re*d,knudsen_regime(kn),

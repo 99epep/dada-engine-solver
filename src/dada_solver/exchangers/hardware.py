@@ -11,7 +11,7 @@ import tomllib
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.hydraulics import CompressibleOrifice, FlowResult
-from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError, compressible_poiseuille, darcy_smooth
+from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError, compressible_poiseuille, darcy_smooth, transition_darcy
 
 
 def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
@@ -112,25 +112,21 @@ class TubeHalfLink:
         flow = numeric.laminar_network_flow(dp,linear,quadratic)
         re = flow*diameter/(area*mu)
         if re >= 2300:
-            # The transition bridge is only a root-bracketing device. A root in
-            # transition is rejected below, never certified as a correlation.
+            # Continuous explicit transition bridge; uncertainty is diagnosed.
             def residual(m):
                 reynolds = m*diameter/(area*mu)
                 if reynolds < 2300: loss = linear*m
                 else:
-                    f0 = 64/2300
-                    f = (f0+(darcy_smooth(4000)-f0)*(reynolds-2300)/1700
-                         if reynolds<4000 else darcy_smooth(reynolds))
+                    f = transition_darcy(reynolds,factor) if reynolds<4000 else darcy_smooth(reynolds)
                     loss = self.core_loss_multiplier*f*length/diameter*m*m/(2*rho*area*area)
                 return loss+quadratic*m*m-dp
             upper = min(flow,5e6*area*mu/diameter)
             if residual(upper)<0: raise MicrotubeDomainError('Required flow exceeds turbulent domain.')
             flow = brentq(residual,0,upper,xtol=1e-15)
             re = flow*diameter/(area*mu)
-            if 2300<=re<4000: raise MicrotubeDomainError('Transition flow has no validated hydraulic closure.')
         diagnostics = self.gas_model.diagnose(self.bank,flow,pin,pout,temperature)
         failures = [x for x in diagnostics.issues if x in ('high_mach','beyond_continuum_model')]
-        if re>=4000:
+        if re>=2300:
             failures += [x for x in diagnostics.issues if x in ('large_relative_pressure_drop','thermal_slip_not_implemented')]
         if failures and self.gas_model.domain_policy=='reject': raise MicrotubeDomainError('; '.join(failures))
         cap = self._flow_cap.directed_flow(pin,pout,temperature,gas)

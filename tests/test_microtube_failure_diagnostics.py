@@ -14,7 +14,7 @@ from dada_solver.wall_backend import WallRHS, WallBackendSettings
 
 @pytest.mark.parametrize('flow,p1,p2,criterion', [
     (.00001, 4e5, 2e5, 'large_relative_pressure_drop'),
-    (3000 * BANK.tube_flow_area_m2 * MicrotubeGasModel().transport.viscosity(350.) / BANK.inner_diameter_m,
+    ((5e6+1) * BANK.tube_flow_area_m2 * MicrotubeGasModel().transport.viscosity(350.) / BANK.inner_diameter_m,
      2e5, 2e5, 'reynolds_outside_correlation_domain'),
 ])
 def test_film_snapshot(flow, p1, p2, criterion):
@@ -87,7 +87,8 @@ def test_thermal_wall_snapshot_identifies_passage_and_angle(monkeypatch):
         ValveTopology(ValveState.CLOSED, ValveState.CLOSED))
     film = wrapper.heat_in.gas_film
     flow = 3000 * film.bank.tube_flow_area_m2 * film.model.transport.viscosity(350.) / film.bank.inner_diameter_m
-    point = replace(point, flows=replace(point.flows, small_to_cold=flow))
+    pressures = point.pressures.copy(); pressures[0] *= 1.5
+    point = replace(point, pressures=pressures, flows=replace(point.flows, small_to_cold=flow))
     monkeypatch.setattr(type(wrapper.model), 'instantaneous_point', lambda *args: point)
     with pytest.raises(MicrotubeDomainError) as caught:
         wrapper.derivative(.25, x)
@@ -102,7 +103,8 @@ def test_thermal_wall_snapshot_identifies_passage_and_angle(monkeypatch):
 @pytest.mark.parametrize('backend', ['python', 'numba'])
 @pytest.mark.parametrize('diameter,criterion', [
     (.00075, 'large_relative_pressure_drop'),
-    (.00080, 'reynolds_outside_correlation_domain'),
+    (.00080, 'large_relative_pressure_drop'),
+    (.00077, 'large_relative_pressure_drop'),
 ])
 def test_real_first_cycle_callback_rejections(backend, diameter, criterion):
     """Exercise LSODA's nested derivative callback, not only the direct RHS."""
@@ -128,6 +130,9 @@ def test_real_first_cycle_callback_rejections(backend, diameter, criterion):
     assert snapshot['tube_count'] == 1000
     assert snapshot['inner_diameter_m'] == diameter
     assert snapshot['tube_length_m'] == .8
+    if diameter == .00077:
+        assert 2300 < snapshot['reynolds'] < 4000
+        assert snapshot['relative_pressure_drop'] > .2
     for key in ('mass_flow_kg_s', 'reynolds', 'prandtl', 'mach', 'knudsen',
                 'pressure_ratio', 'relative_pressure_drop', 'p1_pa', 'p2_pa', 'temperature_k'):
         assert snapshot[key] is not None
