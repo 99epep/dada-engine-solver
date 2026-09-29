@@ -329,3 +329,24 @@ Final full-suite result: **760 passed, 0 warnings in 258.43 s** using
 The old static-cycle assertion was updated to require unavailable chronology
 for an empty event sequence, as requested; pressure checks and nonempty-event
 classification tests remain intact.
+
+## Research cockpit and journal-first UX
+
+The targeted UX regression set passes 93 tests covering default/overwritable
+HTML, compact CLI output, explicit listing/full JSON, unique/ambiguous IDs,
+real fd 2 writes and real LSODA callback failure with restoration, TTY/non-TTY
+progress, 512 execution defaults, unchanged scientific/candidate identity when
+only execution caps change, deterministic Sobol continuation and exact cache.
+
+Crash cases include recovery-only completion, journal plus residual recovery,
+torn append, legacy candidate files, state-publication failure, invalid recovery
+identity and a live writer acknowledging recovery during read-only inspection.
+No new per-candidate result file is produced. Original empty-event and physical
+parity tests remain in the suite.
+
+Nine browser checks and a visual review cover the live selection/copy commands
+and retained plots in the [standalone cockpit demonstration](../outputs/research_ux/cockpit.html).
+No long optimization was used for validation.
+
+The single final full-suite run passed **782 tests, 0 warnings in 286.82 s**:
+`PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q`.

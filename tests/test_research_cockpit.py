@@ -37,7 +37,8 @@ def test_report_default_overwrite_compact_and_full_json(tmp_path,capsys):
     main(['report',str(c.directory),'--json'])
     assert len(json.loads(capsys.readouterr().out)['records'])==3
     main(['status',str(c.directory),'--list-candidates'])
-    assert all(candidate in capsys.readouterr().out for candidate in [])  # Read once below.
+    text=capsys.readouterr().out
+    assert all(candidate in text for candidate in ids)
     main(['report',str(c.directory),'--list-candidates'])
     text=capsys.readouterr().out
     assert all(candidate in text for candidate in ids)
@@ -190,3 +191,84 @@ def test_new_and_rescaled_execution_defaults_are_512(tmp_path):
     _,_,r=snapshot(path,tmp_path/'run')
     out=rescale(tmp_path/'run',r['candidate_id'][:8],1,tmp_path/'scaled.toml')
     assert load_study(out).data['execution']['default_max_candidates']==512
+
+
+def test_real_lsoda_callback_exception_is_quiet_and_preserved(capfd):
+    error=ValueError('synthetic callback domain rejection')
+    def rhs(t,y):raise error
+    with pytest.raises(ValueError) as caught:quiet_solve_ivp(rhs,(0,1),[1.],method='LSODA')
+    assert caught.value is error
+    assert capfd.readouterr().err==''
+    os.write(2,b'after LSODA\n')
+    assert capfd.readouterr().err=='after LSODA\n'
+
+
+def test_capture_restores_on_keyboard_interrupt(capfd):
+    with pytest.raises(KeyboardInterrupt):
+        with capture_native_stderr():
+            os.write(2,b'native interrupted\n');raise KeyboardInterrupt
+    os.write(2,b'restored after interrupt\n')
+    assert capfd.readouterr().err=='restored after interrupt\n'
+
+
+def test_execution_default_does_not_change_scientific_or_candidate_identity(tmp_path):
+    import tomllib
+    from dada_solver.research.study_io import dumps
+    from dada_solver.research.schema import load_study,compile_study,candidate_for_values
+    d=definition(tmp_path);path=tmp_path/'study.toml'
+    raw=tomllib.loads(path.read_text());raw['execution']['default_max_candidates']=16
+    path.write_text(dumps(raw));legacy=compile_study(load_study(path))
+    assert legacy.study.study_id==d.study.study_id
+    values={p.name:p.initial for p in d.space.parameters}
+    assert candidate_for_values(legacy,values).candidate_id==candidate_for_values(d,values).candidate_id
+
+
+def test_cli_legacy_16_default_and_explicit_override(tmp_path,capsys):
+    import tomllib
+    from dada_solver.research.study_io import dumps
+    from dada_solver.research.schema import load_study,compile_study
+    definition(tmp_path);path=tmp_path/'study.toml'
+    raw=tomllib.loads(path.read_text());raw['execution']['default_max_candidates']=16
+    path.write_text(dumps(raw))
+    d=compile_study(load_study(path));directory=tmp_path/'run'
+    OptimizationCampaign(d,directory)
+    snapshot=(directory/'study.toml').read_bytes()
+    main(['resume',str(directory),'--budget','0'])
+    text=capsys.readouterr().out
+    assert 'max 512 new candidates' in text and 'Done' in text
+    assert 'Study:' not in text
+    main(['resume',str(directory),'--budget','0','--max-candidates','16'])
+    assert 'max 16 new candidates' in capsys.readouterr().out
+    assert (directory/'study.toml').read_bytes()==snapshot
+
+
+def test_recovery_mismatch_is_not_appended(tmp_path):
+    c,_=campaign(tmp_path,1);record=c.history.load()[0];before=c.history.path.read_bytes()
+    record['candidate_id']='bad'
+    atomic_json(c.directory/'recovery.json',record)
+    with pytest.raises(ValueError,match='identity'):c.history.load()
+    assert c.history.path.read_bytes()==before
+
+
+def test_selected_command_shell_quoting(tmp_path):
+    import shlex
+    import shutil
+    import subprocess
+    from dada_solver.research.report import HTML
+    if not shutil.which('node'):pytest.skip('Optional JavaScript runtime for browser command quoting check')
+    line=next(line for line in HTML.splitlines() if line.startswith('const shellQuote='))
+    values=['campaign path',"campaign's path",'$(touch nope)', 'one\ntwo', 'normal/path']
+    script=line+'\nconsole.log(JSON.stringify('+json.dumps(values)+'.map(shellQuote)));'
+    result=subprocess.check_output(['node','-e',script],text=True)
+    assert [shlex.split(value) for value in json.loads(result)]==[[v] for v in values]
+
+
+def test_inspection_tolerates_live_recovery_acknowledgment(tmp_path,monkeypatch):
+    from dada_solver.campaign.history import recovery_records
+    path=tmp_path/'recovery.json';path.write_text('{}')
+    read=Path.read_text
+    def disappeared(self,*args,**kwargs):
+        if self==path:raise FileNotFoundError('writer acknowledged recovery')
+        return read(self,*args,**kwargs)
+    monkeypatch.setattr(Path,'read_text',disappeared)
+    assert list(recovery_records(tmp_path))==[]

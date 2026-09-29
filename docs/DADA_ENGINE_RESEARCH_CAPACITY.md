@@ -133,7 +133,7 @@ metrics, leaving room for future plot types without implying thermal replay is
 available. Only volumes are currently accepted. Standalone V2/V3 evaluations and
 campaign snapshots can be reconstructed using current production models, even
 when execution resume is incompatible; the runtime warning remains visible.
-Reports refuse overwrite, need no network/server, and preserve scientific input
+Reports may regenerate derived HTML, need no network/server, and preserve scientific input
 provenance. Cross-study comparison is evidence, not a combined optimization
 ranking.
 

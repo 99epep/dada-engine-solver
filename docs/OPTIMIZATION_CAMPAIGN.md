@@ -202,7 +202,8 @@ campaign_directory/
     definition.json           # immutable content/runtime identity
     state.json                # Sobol index, pending candidate, phase and archive IDs
     history.jsonl             # append-only attempt/result journal
-    candidates/<sha256>.json  # durable original result for each unique candidate
+    recovery.json            # one transient durable completed result before state commit
+    candidates/<sha256>.json  # legacy only; retained/read, never newly generated
     report.json
     report.txt
     reports/phase_0001.json
@@ -212,20 +213,22 @@ campaign_directory/
 
 Before integration, `state.json` records the pending candidate and advanced
 sequence index. After evaluation, its full candidate record is written using
-an atomic rename and filesystem sync, then the journal is appended and synced,
-then the state/archive snapshot is updated. Completed candidate files absent
-from the journal are recovered on restart. An unfinished pending candidate may
+an atomic rename and filesystem sync to `recovery.json`, then the journal is
+appended and synced, then the state/archive snapshot is updated and synced.
+Only then is recovery removed and the directory synced. A completed recovery
+record (or legacy candidate file) absent from the journal is recovered on restart;
+an already journaled recovery is acknowledged without duplication. An unfinished pending candidate may
 be retried; a completed result is not silently re-integrated.
 
 The sole journal-edit exception is recovery of a torn final append: its bytes
 are saved to `history_torn_tail_*.bin`, the incomplete tail is removed, and any
-completed candidate file is recovered. Non-final corruption fails explicitly.
+completed recovery record or legacy candidate file is recovered. Non-final corruption fails explicitly.
 Thus a process crash loses at most the in-flight evaluation. This assumes a
 local filesystem honoring the sync/atomic-rename operations; it is not a
 replicated storage system. A POSIX advisory lock prevents concurrent writers.
 
-Cache hits append an attempt referring to the original evaluation without
-rewriting its candidate file. Archives are reconstructed from history on resume.
+Cache hits append a complete attempt referring to the original evaluation,
+using the same single recovery slot. Legacy candidate files are not rewritten. Archives are reconstructed from history on resume.
 They contain distinct feasible candidate identities ranked by minimum objective,
 not the last iterate. The phase report also preserves the best at phase start,
 best at phase end, and the best candidates evaluated in that phase.

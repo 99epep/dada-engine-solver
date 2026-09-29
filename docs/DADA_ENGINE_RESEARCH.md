@@ -10,6 +10,27 @@ The V1 fixed six-bar / five-parameter study remains available as a regression
 preset. Exact identities, Sobol continuation, deadlines and recovery are retained;
 production thermodynamic physics is unchanged.
 
+## Daily cockpit workflow
+
+```sh
+dada-research report outputs/my_study/campaign
+dada-research resume outputs/my_study/campaign --budget 30m
+```
+
+Reports default to `CAMPAIGN/report.html` and may overwrite derived HTML.
+Terminal output is compact; use `--list-candidates` or `--json` explicitly.
+Generated/rescaled studies default to 512 new attempts per invocation, with
+`--max-candidates` available for a deliberate override. Progress reports counts,
+failures and the best objective without recomputing reports. The HTML shows the
+campaign funnel, bound pressure, factual review actions and copyable commands
+that follow the selected candidates. Native solver stderr is captured around
+solver calls while original Python exceptions remain visible.
+
+New evaluations use a single `recovery.json` followed by durable journal/state
+commits; old per-candidate files remain readable and recoverable. See the
+[cockpit and persistence reference](DADA_ENGINE_RESEARCH_COCKPIT.md) for exact
+thresholds, crash ordering, compatibility and fd 2 scope.
+
 ## External streams and refrigeration (V3)
 
 ```sh

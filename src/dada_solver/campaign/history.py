@@ -57,6 +57,7 @@ class CampaignHistory:
                     (self.directory/f'history_torn_tail_{stamp}.bin').write_bytes(data[offset:])
                     with self.path.open('r+b') as stream:
                         stream.truncate(offset); stream.flush(); os.fsync(stream.fileno())
+        for record in records: verify_record(record)
         known = {r['evaluation_number']:r for r in records}
         orphans = []
         for record in recovery_records(self.directory):
@@ -74,7 +75,6 @@ class CampaignHistory:
         for record in sorted(orphans, key=lambda r:r['evaluation_number']):
             self._append(record); records.append(record)
         records.sort(key=lambda r:r['evaluation_number'])
-        for record in records: verify_record(record)
         if [r['evaluation_number'] for r in records] != list(range(len(records))):
             raise ValueError('History evaluation numbers are not contiguous.')
         return records
@@ -118,4 +118,8 @@ def recovery_records(directory):
     recovery = directory/'recovery.json'
     paths = ([recovery] if recovery.exists() else []) + sorted((directory/'candidates').glob('*.json'))
     for path in paths:
-        yield json.loads(path.read_text())
+        try: text = path.read_text()
+        except FileNotFoundError:
+            if path == recovery: continue  # A live writer may have acknowledged it.
+            raise
+        yield json.loads(text)
