@@ -10,7 +10,7 @@ from typing import Callable
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.integrate import solve_ivp
+from dada_solver.solver_output import quiet_solve_ivp as solve_ivp
 from scipy.optimize import brentq
 
 from dada_solver.dynamics import ThermodynamicModel, ValveTopology

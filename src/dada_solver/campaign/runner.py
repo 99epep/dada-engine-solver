@@ -4,6 +4,7 @@ from pathlib import Path
 import math
 import re
 import time
+from collections import Counter
 import numpy as np
 from dada_solver.campaign.candidate import Candidate
 from dada_solver.campaign.definition import CampaignDefinition
@@ -56,16 +57,16 @@ class OptimizationCampaign:
     def resume(cls, directory, *, evaluator=None, clock=time.monotonic):
         return cls(CampaignDefinition.resume(directory), directory, evaluator=evaluator, clock=clock)
 
-    def run(self, budget_seconds, *, maximum_candidates=None, retry_incomplete=False):
+    def run(self, budget_seconds, *, maximum_candidates=None, retry_incomplete=False, progress_callback=None):
         if not math.isfinite(budget_seconds) or budget_seconds < 0:
             raise ValueError('Budget must be finite and nonnegative.')
         limit = self.definition.maximum_candidates if maximum_candidates is None else maximum_candidates
         if limit is not None and (not isinstance(limit, int) or limit < 0):
             raise ValueError('Candidate limit must be a nonnegative integer.')
         with self.history.locked():
-            return self._run_locked(float(budget_seconds), limit, retry_incomplete)
+            return self._run_locked(float(budget_seconds), limit, retry_incomplete, progress_callback)
 
-    def _run_locked(self, budget, limit, retry_incomplete):
+    def _run_locked(self, budget, limit, retry_incomplete, progress_callback):
         started = self.clock()
         records = self.history.load()
         before = list(records)
@@ -91,11 +92,29 @@ class OptimizationCampaign:
         cache = {r['candidate_id']:r for r in records
                  if not r.get('cache_hit') and r['status'] != 'budget_exhausted'}
         phase = []
+        best = next(iter(elite_records(records, 1)), None)
+        counts = Counter()
+        converged = feasible = 0
+        last_progress = started
+        last_attempt = 0
+        def notify(event='progress'):
+            nonlocal last_progress, last_attempt
+            if progress_callback is None: return
+            now = self.clock()
+            if event == 'progress' and now-last_progress < 10 and len(phase)-last_attempt < 10: return
+            progress_callback(dict(event=event, phase_id=phase_id, sobol_index=strategy.index,
+                attempted=len(phase), maximum_candidates=limit, elapsed_seconds=now-started,
+                budget_seconds=budget, converged=converged, feasible=feasible,
+                failure_counts=dict(counts), best=None if best is None else
+                {k:best.get(k) for k in ('candidate_id','objective','metrics')}))
+            last_progress, last_attempt = now, len(phase)
         def save_state():
             self.history.save_state(dict(schema_version=1, phase_counter=phase_id,
                 search=strategy.state(), pending=pending,
                 best_feasible_ids=[r['candidate_id'] for r in elite_records(records,self.definition.elite_size)]))
         save_state()
+        self.history.clear_recovery()
+        notify('start')
         while limit is None or len(phase)<limit:
             remaining = budget-(self.clock()-started)
             estimate = estimated_next_seconds(records, self.definition.initial_evaluation_seconds)
@@ -127,7 +146,7 @@ class OptimizationCampaign:
                 reporting_reserve = min(self.definition.deadline_grace_seconds, 2.0)
                 result = (controlled(candidate, EvaluationControl(
                     deadline=started+budget+self.definition.deadline_grace_seconds-reporting_reserve,
-                    clock=self.clock, previous_records=tuple(records)))
+                    clock=self.clock, previous_records=tuple(records), progress_callback=lambda _: notify()))
                     if controlled is not None else self.evaluator.evaluate(candidate))
             record = dict(**candidate.payload, **result,
                 candidate_id=candidate.candidate_id, timestamp=datetime.now(timezone.utc).isoformat(),
@@ -139,6 +158,14 @@ class OptimizationCampaign:
             if cached is None and record['status'] != 'budget_exhausted': cache[candidate.candidate_id] = record
             pending = None
             save_state()
+            self.history.clear_recovery()
+            converged += bool(record.get('converged'))
+            feasible += record['status'] == 'feasible'
+            if record['status'] != 'feasible': counts[record['status']] += 1
+            improved = elite_records(([best] if best else [])+[record], 1)
+            new_best = bool(improved and (best is None or improved[0]['objective']['value'] < best['objective']['value']))
+            if improved: best = improved[0]
+            notify('best' if new_best else 'progress')
             if record['status'] == 'budget_exhausted':
                 break
         report = make_report(self.definition.space, before, phase, requested_seconds=budget,
@@ -152,4 +179,5 @@ class OptimizationCampaign:
         (reports/f'phase_{phase_id:04d}.txt').write_text(readable_report(report))
         atomic_json(self.directory/'report.json', report)
         (self.directory/'report.txt').write_text(readable_report(report))
+        notify('finish')
         return report

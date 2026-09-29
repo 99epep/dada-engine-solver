@@ -52,6 +52,7 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
         return new
     with stored_study(data) as study:
         raw = copy.deepcopy(study.data)
+        raw['execution']['default_max_candidates'] = 512
         physical = dict(study.fixed_parameters, **record['physical'])
         design = compile_study(study).adapter.build(physical)
         b = copy.deepcopy(study.basis.data)

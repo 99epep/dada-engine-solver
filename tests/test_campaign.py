@@ -131,6 +131,7 @@ def test_duplicate_cache_uses_preexisting_exact_candidate(tmp_path,definition):
     # Isolated fixture journal: this is not a production history rewrite.
     (tmp_path/'history.jsonl').write_text(json.dumps(record)+'\n')
     for p in (tmp_path/'candidates').glob('*.json'): p.unlink()
+    (tmp_path/'candidates').mkdir(exist_ok=True)
     atomic_json(tmp_path/'candidates'/f'{candidate.candidate_id}.json',record)
     resumed=Evaluator(clock)
     result=OptimizationCampaign.resume(tmp_path,evaluator=resumed,clock=clock).run(100,maximum_candidates=1)
@@ -226,7 +227,8 @@ def test_orphan_completed_record_and_torn_tail_recover_without_rerun(tmp_path,de
     campaign=OptimizationCampaign(definition,tmp_path,evaluator=ev,clock=clock)
     campaign.run(100,maximum_candidates=1)
     original=(tmp_path/'history.jsonl').read_bytes()
-    # Crash after atomic candidate save but during the journal append.
+    # Simulate the durable recovery slot present during a torn append.
+    atomic_json(tmp_path/'recovery.json',json.loads(original))
     (tmp_path/'history.jsonl').write_bytes(original[:25])
     recovered=CampaignHistory(tmp_path).load()
     assert len(recovered)==1
