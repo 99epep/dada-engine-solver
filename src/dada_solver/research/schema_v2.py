@@ -52,7 +52,7 @@ class StudyV2:
 def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     path=Path(path); source=path.read_text(); raw=tomllib.loads(source); canonical_json(raw)
     keys(raw,('schema_version','study','sources','kinematics','parameters','policies','objective','constraints',
-              'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 2')
+              'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 2',('charge_reference',))
     if type(raw['schema_version']) is not int or raw['schema_version'] not in (2,3): raise ValueError('Expected schema_version = 2.')
     keys(raw['study'],('name','protocol','purpose'),'study',('parent_candidate_id',))
     if raw['study']['protocol']!='machine_design': raise ValueError('V2 protocol must be machine_design.')
@@ -64,8 +64,26 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     specs,defaults=machine_parameters(basis)
     expected_policy=POLICIES_V3 if raw['schema_version']==3 else POLICIES
     policy=raw['policies']
-    if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'])!=expected_policy or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda'):
+    from .charge import POLICY as REFERENCE_CHARGE
+    if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'],charge='explicit_inventory')!=expected_policy or policy.get('charge') not in ('explicit_inventory',REFERENCE_CHARGE) or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda'):
         raise ValueError('Unsupported V2 physical policy.')
+    if policy['charge']==REFERENCE_CHARGE:
+        from dada_solver.fluids import CaloricallyPerfectGas
+        if type(basis.configuration.gas) is not CaloricallyPerfectGas:
+            raise ValueError('Reference-pressure inventory currently requires CaloricallyPerfectGas; no real-gas ideal filling approximation is implicit.')
+        if 'charge_reference' not in raw: raise ValueError('Derived charge requires charge_reference.')
+        reference=raw['charge_reference']
+        keys(reference,('pressure_pa','temperature_k','volume_state'),'charge_reference')
+        for key in ('pressure_pa','temperature_k'): positive(reference[key],'charge_reference.'+key)
+        if reference['volume_state']!='maximum_total_gas_volume':
+            raise ValueError('charge_reference.volume_state must be maximum_total_gas_volume.')
+        if any(row.get('name')=='charge.total_mass_kg' for row in raw['parameters']):
+            raise ValueError('charge.total_mass_kg is derived and must not be declared under the reference-pressure policy.')
+        if raw['warm_start'].get('initial_source')=='source_exact':
+            raise ValueError('source_exact is incompatible with geometry-derived reference-pressure charge; use uniform.')
+        specs.pop('charge.total_mass_kg'); defaults.pop('charge.total_mass_kg')
+    elif 'charge_reference' in raw:
+        raise ValueError('charge_reference requires the reference-pressure charge policy.')
     kin=raw['kinematics']; keys(kin,('coupling','small','large'),'kinematics')
     if kin['coupling'] not in ('independent','shared_crank'): raise ValueError('Choose independent or shared_crank coupling.')
     settings={}; artifacts={}; mechanical=list(raw['mechanical_constraints'])
@@ -203,7 +221,13 @@ class V2Adapter:
                 raise PreflightRejection('invalid_kinematics',str(error),rows) from error
         if any(not r['satisfied'] for r in rows):
             raise PreflightRejection('invalid_kinematics','Mechanical or volume constraint violated before integration.',rows)
-        return replace(design,kinematics=ComposedKinematics(*laws,tuple(rows),tuple(measured)))
+        design=replace(design,kinematics=ComposedKinematics(*laws,tuple(rows),tuple(measured)))
+        from .charge import POLICY, apply_reference_charge
+        if raw['policies']['charge']==POLICY:
+            try: design=apply_reference_charge(design,raw['charge_reference'])
+            except (ValueError,ArithmeticError) as error:
+                raise PreflightRejection('invalid_parameterization',str(error)) from error
+        return design
 
 
 class ResearchDefinitionV2(CampaignDefinition):

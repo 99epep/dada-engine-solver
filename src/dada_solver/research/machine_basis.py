@@ -96,7 +96,8 @@ def build_machine(basis, configuration, physical, policies):
         smin=small*p['volume.small_clearance_ratio']; lmin=large*p['volume.large_clearance_ratio']
         volumes=replace(configuration.machine_volumes,small_cylinder=CylinderVolumeLimits(smin,smin+small),large_cylinder=CylinderVolumeLimits(lmin,lmin+large))
         config=replace(configuration,machine_volumes=volumes,angular_speed=math.copysign(2*math.pi*p['operation.frequency_hz'],configuration.angular_speed),
-            charge=replace(configuration.charge,total_mass=p['charge.total_mass_kg']))
+            charge=replace(configuration.charge,total_mass=p['charge.total_mass_kg'])
+                if policies['charge']=='explicit_inventory' else configuration.charge)
     except (ValueError,ArithmeticError) as error: raise PreflightRejection('invalid_parameterization',str(error)) from error
     exchangers=[]
     for side in ('heat_in','heat_out'):

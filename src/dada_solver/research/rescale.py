@@ -102,7 +102,7 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
             b['warm_start']['values'] = [v * factor for v in b['warm_start']['values']]
             b['warm_start']['wall_capacities_j_k'] = [v * factor for v in b['warm_start']['wall_capacities_j_k']]
             old_mass = study.basis.configuration.charge.total_mass
-            if old_mass != physical['charge.total_mass_kg']:
+            if old_mass != design.configuration.charge.total_mass or raw['policies']['charge']!='explicit_inventory':
                 b['warm_start'] = None
                 raw['warm_start']['initial_source'] = 'uniform'
         specs, _ = machine_parameters(study.basis)

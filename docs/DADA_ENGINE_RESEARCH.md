@@ -318,3 +318,65 @@ Before adding other campaigns, the user must try this first study and assess:
 
 Record that feedback before broadening the module. Automated and agent-operated
 smoke checks are not a substitute for this real researcher usability review.
+
+## Filling at a reference pressure and maximum total gas volume
+
+V2/V3 retain `charge = "explicit_inventory"` unchanged. To derive inventory from
+each candidate's final geometry instead, remove every `charge.total_mass_kg`
+parameter declaration and use:
+
+```toml
+[policies]
+charge = "reference_pressure_at_maximum_total_volume_v1"
+# Keep the study's other policies unchanged.
+
+[charge_reference]
+pressure_pa = 100000.0
+temperature_k = 293.15
+volume_state = "maximum_total_gas_volume"
+
+[warm_start]
+initial_source = "uniform"
+```
+
+Pressure is absolute. This policy currently requires the calorically perfect
+working gas; it does not apply an ideal filling approximation to real-gas tables.
+It derives `m = p_ref * max_theta(V_total(theta)) / (R * T_ref)` after construction
+of the candidate kinematics and connection of both actual exchanger designs.
+Both cylinders use the **same angle**. The production model's four gas volumes
+already include its clearances, exchanger gas, headers and additional hold-up;
+configuration HX seeds are replaced, not added a second time.
+
+The basis inventory remains historical input metadata and is overwritten before
+integration. The uniform initial gas temperature is `T_ref`; at the solver's
+starting angle zero the filling pressure can differ from `p_ref`. The reference
+pressure applies at the maximum-volume position, not at every shaft position.
+Reservoir/external temperatures and all periodic-convergence criteria are unchanged.
+`source_exact` is rejected. Ordinary nearby candidate guesses are rescaled to the
+new inventory (gas mass and energy together), retaining specific internal energies
+and, for wall models, wall temperatures.
+
+The versioned numerical method uses 8192 equal angular intervals, declared
+kinematic breakpoints, bracketed roots of the total-volume derivative and local
+bounded refinement of sampled peaks. It is independent of `screening.samples`.
+All families share this method, including harmonic laws whose analytic maximum
+is used as a test oracle. It is a deterministic numerical search, not a proof of
+the global maximum for arbitrarily narrow/pathological motion features. Roots
+and local refinements use a 1e-13 rad absolute target; maxima within 2e-14 relative
+volume are tied by the lowest solver angle. The reported volume is evaluated at
+that reported angle. Flat total-volume laws choose angle zero. Changing this
+algorithm requires a deliberate policy/method version change.
+
+`derived.charge` records `policy`, `reference_pressure_pa`,
+`reference_temperature_k`, `reference_total_gas_volume_m3`, `reference_angle_rad`,
+`derived_total_mass_kg` and `reference_volume_method`. The angle is the solver
+angle after the existing operation-direction transform. The mass appears in
+`metrics.total_mass_kg` and the HTML inventory column even when subsequent
+integration fails; it is not evidence of a converged cycle. Earlier geometry
+rejections cannot have a computed reference volume.
+
+The policy and reference settings participate in scientific study/candidate
+identity. Existing explicit-inventory studies retain their scientific identity;
+normal source/runtime compatibility guards still apply. Capacity rescaling keeps
+the reference pressure/temperature and derives mass again from the scaled final
+geometry, rather than introducing an independent mass parameter.
