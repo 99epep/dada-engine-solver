@@ -4,7 +4,7 @@
 
 [ "charge_reference" ]
 "pressure_pa" = 100000.0
-"temperature_k" = 293.15
+"temperature_k" = 298.15
 "volume_state" = "maximum_total_gas_volume"
 
 [[ "constraints" ]]
@@ -33,7 +33,7 @@
 [[ "parameters" ]]
 "name" = "volume.total_swept_m3"
 "unit" = "m^3"
-"value" = 0.009108910891089108
+"value" = 0.06072
 
 [[ "parameters" ]]
 "name" = "volume.small_clearance_ratio"
@@ -48,10 +48,10 @@
 [[ "parameters" ]]
 "name" = "operation.frequency_hz"
 "unit" = "Hz"
-"value" = 2.8
+"value" = 0.151517
 
 [[ "parameters" ]]
-"initial" = 1.1523083682265132
+"initial" = 0.84
 "kind" = "continuous"
 "lower" = 0.5
 "name" = "volume.swept_ratio"
@@ -60,7 +60,7 @@
 "upper" = 1.6
 
 [[ "parameters" ]]
-"initial" = 131.53581911325455
+"initial" = 124.823708
 "kind" = "continuous"
 "lower" = 100.0
 "name" = "kinematics.small.small_max_deg"
@@ -69,16 +69,16 @@
 "upper" = 220.0
 
 [[ "parameters" ]]
-"initial" = 175.17169620096684
+"initial" = 235.255040
 "kind" = "continuous"
 "lower" = 80.0
 "name" = "kinematics.small.small_down_duration_deg"
 "transform" = "linear"
 "unit" = "deg"
-"upper" = 240.0
+"upper" = 250.0
 
 [[ "parameters" ]]
-"initial" = 0.16359127939119933
+"initial" = 0.008
 "kind" = "continuous"
 "lower" = 0.02
 "name" = "kinematics.small.small_up_rounding"
@@ -87,7 +87,7 @@
 "upper" = 0.35
 
 [[ "parameters" ]]
-"initial" = 0.38546221191063534
+"initial" = 0.187701542
 "kind" = "continuous"
 "lower" = 0.15
 "name" = "kinematics.small.small_down_kink_u"
@@ -96,7 +96,7 @@
 "upper" = 0.9
 
 [[ "parameters" ]]
-"initial" = 0.5233305620960891
+"initial" = 0.410812850
 "kind" = "continuous"
 "lower" = 0.15
 "name" = "kinematics.small.small_down_kink_q"
@@ -105,7 +105,7 @@
 "upper" = 0.9
 
 [[ "parameters" ]]
-"initial" = 168.38330140337348
+"initial" = 126.473651
 "kind" = "continuous"
 "lower" = 120.0
 "name" = "kinematics.large.large_down_duration_deg"
@@ -114,7 +114,7 @@
 "upper" = 300.0
 
 [[ "parameters" ]]
-"initial" = 0.250929372670129
+"initial" = 0.008
 "kind" = "continuous"
 "lower" = 0.02
 "name" = "kinematics.large.large_down_rounding"
@@ -123,7 +123,7 @@
 "upper" = 0.35
 
 [[ "parameters" ]]
-"initial" = 0.4652557624038309
+"initial" = 0.845785044
 "kind" = "continuous"
 "lower" = 0.15
 "name" = "kinematics.large.large_up_kink_u"
@@ -132,7 +132,7 @@
 "upper" = 0.9
 
 [[ "parameters" ]]
-"initial" = 0.4168513478245585
+"initial" = 0.678405222
 "kind" = "continuous"
 "lower" = 0.15
 "name" = "kinematics.large.large_up_kink_q"
@@ -142,7 +142,7 @@
 
 [[ "parameters" ]]
 "encoding" = "nearest_even_v1"
-"initial" = 870
+"initial" = 2675
 "kind" = "integer"
 "lower" = 100
 "name" = "microtube.heat_in.tube_count"
@@ -150,7 +150,7 @@
 "upper" = 1000
 
 [[ "parameters" ]]
-"initial" = 0.2592695330524685
+"initial" = 0.11686
 "kind" = "continuous"
 "lower" = 0.2
 "name" = "microtube.heat_in.tube_length_m"
@@ -159,7 +159,7 @@
 "upper" = 0.8
 
 [[ "parameters" ]]
-"initial" = 0.0017774003742675344
+"initial" = 0.001951
 "kind" = "continuous"
 "lower" = 0.00033
 "name" = "microtube.heat_in.inner_diameter_m"
@@ -184,7 +184,7 @@
 
 [[ "parameters" ]]
 "encoding" = "nearest_even_v1"
-"initial" = 545
+"initial" = 2675
 "kind" = "integer"
 "lower" = 100
 "name" = "microtube.heat_out.tube_count"
@@ -192,7 +192,7 @@
 "upper" = 1000
 
 [[ "parameters" ]]
-"initial" = 0.5589436008005618
+"initial" = 0.11686
 "kind" = "continuous"
 "lower" = 0.15
 "name" = "microtube.heat_out.tube_length_m"
@@ -201,7 +201,7 @@
 "upper" = 0.8
 
 [[ "parameters" ]]
-"initial" = 0.0019315327857816458
+"initial" = 0.001951
 "kind" = "continuous"
 "lower" = 0.00033
 "name" = "microtube.heat_out.inner_diameter_m"
@@ -257,7 +257,7 @@
 [[ "parameters" ]]
 "name" = "external_stream.heat_in.inlet_temperature_k"
 "unit" = "K"
-"value" = 258.15
+"value" = 268.15
 
 [[ "parameters" ]]
 "name" = "external_stream.heat_in.mass_flow_kg_s"
@@ -316,37 +316,27 @@
 "allocation" = "round_robin"
 "evaluate_centers" = true
 
-[[ "search"."regions" ]]
-"id" = "basin_1"
-"source_candidate_id" = "55820d1a5c99da266356c72193832b5037be4eec21b3b25728976e41b6d9d67d"
-"source_study_id" = "fdd3bb7c8b63cc9de894f95ee2f6288232db5ccb9f952c26593a3e2b937fd00e"
-
 [ "search"."regions"."center" ]
-"kinematics.large.large_down_duration_deg" = 168.38330140337348
-"kinematics.large.large_down_rounding" = 0.250929372670129
-"kinematics.large.large_up_kink_q" = 0.4168513478245585
-"kinematics.large.large_up_kink_u" = 0.4652557624038309
+"kinematics.large.large_down_duration_deg" = 126.473651
+"kinematics.large.large_down_rounding" = 0.008
+"kinematics.large.large_up_kink_q" = 0.678405222
+"kinematics.large.large_up_kink_u" = 0.845785044
 "kinematics.small.small_down_duration_deg" = 175.17169620096684
-"kinematics.small.small_down_kink_q" = 0.5233305620960891
-"kinematics.small.small_down_kink_u" = 0.38546221191063534
-"kinematics.small.small_max_deg" = 131.53581911325455
-"kinematics.small.small_up_rounding" = 0.16359127939119933
-"microtube.heat_in.inner_diameter_m" = 0.0017774003742675344
-"microtube.heat_in.tube_count" = 870
-"microtube.heat_in.tube_length_m" = 0.2592695330524685
-"microtube.heat_out.inner_diameter_m" = 0.0019315327857816458
-"microtube.heat_out.tube_count" = 545
-"microtube.heat_out.tube_length_m" = 0.5589436008005618
-"volume.swept_ratio" = 1.1523083682265132
+"kinematics.small.small_down_kink_q" = 0.410812850
+"kinematics.small.small_down_kink_u" = 0.187701542
+"kinematics.small.small_max_deg" = 124.823708
+"kinematics.small.small_up_rounding" = 0.008
+"microtube.heat_in.inner_diameter_m" = 0.001951
+"microtube.heat_in.tube_count" = 2675
+"microtube.heat_in.tube_length_m" = 0.11686
+"microtube.heat_out.inner_diameter_m" = 0.001951
+"microtube.heat_out.tube_count" = 2675
+"microtube.heat_out.tube_length_m" = 0.11686
+"volume.swept_ratio" = 0.84
 
 [ "sources" ]
 
-[ "sources"."machine" ]
-"path" = "study.basis.json"
-"sha256" = "6577e265f2c659ee33d6a028757355e77164e7a195e2c452850d5251098445ef"
-
 [ "study" ]
-"parent_candidate_id" = "4f40954796eb48c915138b52342caa70d2523c325fa5ebc92fe3d6f78c11e901"
 "protocol" = "machine_design"
 "purpose" = "coupled_refrigeration_motion_volume_partition_and_manufacturable_microtube_search"
 "name" = "Human Cell Stage 2 — reference-pressure filling at maximum total gas volume — local refinement — local refinement — local refinement"
