@@ -148,15 +148,13 @@ def test_machine_composes_independent_families_without_a_registry():
         MachineDesign(c, StaticTestExchanger(4e-5, 598.15))
 
 
-def test_generic_closure_without_reservoir_has_unavailable_optional_diagnostic(ideal_gas):
+def test_generic_closure_does_not_need_obsolete_reservoir_diagnostic(ideal_gas):
     from tests.test_periodic import create_static_cycle
     from dada_solver.heat_transfer import PrescribedHeatRate
     from dada_solver.validity import assess_cycle_validity
-    from dada_solver.sizing.constraints import MaximumIsothermalityError
     from types import SimpleNamespace
     model, _, cycle = create_static_cycle(ideal_gas)
     model = replace(model, cold_heat_transfer=PrescribedHeatRate(0), hot_heat_transfer=PrescribedHeatRate(0))
     report = assess_cycle_validity(cycle, model, config().validity)
-    assert report.cold_isothermality_error is None
-    assert report.hot_isothermality_error is None
-    assert not MaximumIsothermalityError(.1).evaluate(SimpleNamespace(validity=report)).available
+    assert not hasattr(report,"cold_isothermality_error")
+    assert not hasattr(report,"hot_isothermality_error")

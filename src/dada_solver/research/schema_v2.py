@@ -156,10 +156,10 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
         signature=(row['side'],row['metric'],row['relation'])
         if signature in signatures: raise ValueError('Duplicate mechanical constraint, including artifact constraints.')
         signatures.add(signature)
-    screen=raw['screening']; keys(screen,('samples','maximum_large_enclosed_volume_m3'),'screening')
+    screen=raw['screening']; keys(screen,('samples',),'screening',('maximum_large_enclosed_volume_m3',))
     if type(screen['samples']) is not int or screen['samples']<360: raise ValueError('Mechanical screen requires at least 360 samples per cycle.')
-    positive(screen['maximum_large_enclosed_volume_m3'],'maximum_large_enclosed_volume_m3')
-    if basis.configuration.motor_operation and screen['maximum_large_enclosed_volume_m3']>.066: raise ValueError('Motor large-cylinder ceiling must not exceed 0.066 m^3.')
+    if 'maximum_large_enclosed_volume_m3' in screen:
+        positive(screen['maximum_large_enclosed_volume_m3'],'maximum_large_enclosed_volume_m3')
     from .local_search import validate_search
     validate_search(raw['search'],space)
     num=raw['numerical']; keys(num,('maximum_cycles','backend','candidate_budget_seconds','domain_error_retry'),'numerical')
@@ -196,8 +196,9 @@ class V2Adapter:
         if set(physical)!=expected: raise PreflightRejection('invalid_parameterization','Candidate parameters do not match the declared ownership.')
         design=build_machine(study.basis,self.configuration,physical,raw['policies'])
         rows=[]; laws=[]; measured=[]
-        ceiling=raw['screening']['maximum_large_enclosed_volume_m3']
-        rows.append(margin_record('maximum_large_enclosed_volume',design.configuration.machine_volumes.large_cylinder.maximum,ceiling,'maximum','m^3',method='exact volume limits'))
+        ceiling=raw['screening'].get('maximum_large_enclosed_volume_m3')
+        if ceiling is not None:
+            rows.append(margin_record('maximum_large_enclosed_volume',design.configuration.machine_volumes.large_cylinder.maximum,ceiling,'maximum','m^3',method='exact volume limits'))
         for side in ('small','large'):
             prefix=f'kinematics.{side}.'; p={k[len(prefix):]:v for k,v in physical.items() if k.startswith(prefix)}
             if raw['kinematics']['coupling']=='shared_crank':

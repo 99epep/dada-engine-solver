@@ -413,7 +413,7 @@ def test_valid_microtube_cycle_can_satisfy_global_validity_constraint():
     from types import SimpleNamespace
     from dada_solver.validity import ValidityReport, ValidityVerdict
     from dada_solver.sizing.constraints import RequireValidThermodynamicModel
-    generic=ValidityReport(ValidityVerdict.INDETERMINATE,.01,None,None,None,'unavailable',
+    generic=ValidityReport(ValidityVerdict.INDETERMINATE,.01,None,'unavailable',
         0.,0.,(),('mach_number',))
     actual=finalize_microtube_validity(generic,maximum_reynolds=500,maximum_mach=.06,mach_limit=.2)
     constraint=RequireValidThermodynamicModel().evaluate(SimpleNamespace(validity=actual))

@@ -64,11 +64,12 @@ equations. Separate three kinds of result in a future reporting revision:
 - design behavior: temperature excursion, nominal phase order, useful power,
   efficiency, pressure and force requirements.
 
-The existing isothermality metric is `(T_max-T_min)/T_reservoir`. It measures
+The former isothermality metric was `(T_max-T_min)/T_reservoir`. It measures
 excursion, not the mean gas/reservoir temperature difference or lost work.
 The subsequent user decision makes it a diagnostic only for the current work.
-It no longer fails the core validity verdict. Historical explicitly configured
-isothermality sizing constraints remain opt-in; none is added to the motor work.
+On 2026-09-30 the metric and sizing constraint were removed entirely. Old
+configuration keys load but are ignored; pressure inequality remains a diagnostic
+without a validity veto. See [limit ownership](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
 
 Non-nominal valve order is likewise a behavior diagnostic. Ideal diodes prevent
 reverse valve flow by construction, which does not validate actual valve lift,

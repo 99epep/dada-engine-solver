@@ -159,41 +159,6 @@ class MaximumMachNumber:
 
 
 @dataclass(frozen=True, slots=True)
-class MaximumPressureEqualizationError:
-    limit: float
-    name: str = "maximum_pressure_equalization_error"
-
-    def __post_init__(self) -> None:
-        _require_positive_limit(self.name, self.limit)
-
-    def evaluate(self, evaluation: DesignEvaluation) -> ConstraintValue:
-        if evaluation.validity is None:
-            return _unavailable(self.name)
-        margin = self.limit - evaluation.validity.maximum_pressure_equalization_error
-        return ConstraintValue(self.name, margin, margin >= 0.0, True)
-
-
-@dataclass(frozen=True, slots=True)
-class MaximumIsothermalityError:
-    limit: float
-    name: str = "maximum_isothermality_error"
-
-    def __post_init__(self) -> None:
-        _require_positive_limit(self.name, self.limit)
-
-    def evaluate(self, evaluation: DesignEvaluation) -> ConstraintValue:
-        if evaluation.validity is None:
-            return _unavailable(self.name)
-        excursions = (evaluation.validity.cold_isothermality_error,
-                      evaluation.validity.hot_isothermality_error)
-        if any(value is None for value in excursions):
-            return _unavailable(self.name)
-        maximum = max(excursions)
-        margin = self.limit - maximum
-        return ConstraintValue(self.name, margin, margin >= 0.0, True)
-
-
-@dataclass(frozen=True, slots=True)
 class RequireNominalCycleTopology:
     name: str = "nominal_cycle_topology"
 

@@ -12,7 +12,6 @@ from dada_solver.sizing.constraints import (
     MaximumPressure,
     MinimumCoolingPower,
     MaximumPistonGasForce,
-    MaximumIsothermalityError,
     RequireNominalCycleTopology,
     RequireValidThermodynamicModel,
     CompleteCoolingTaskWithinTime,
@@ -285,16 +284,12 @@ def test_validity_and_topology_constraints_are_explicit() -> None:
         ),
         validity=SimpleNamespace(
             verdict=ValidityVerdict.INDETERMINATE,
-            cold_isothermality_error=0.02,
-            hot_isothermality_error=0.03,
         ),
     )
 
-    isothermality = MaximumIsothermalityError(0.04).evaluate(evaluation)
     topology = RequireNominalCycleTopology().evaluate(evaluation)
     validity = RequireValidThermodynamicModel().evaluate(evaluation)
 
-    assert isothermality.satisfied
     assert not topology.satisfied
     assert not validity.satisfied
 

@@ -21,6 +21,10 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     if any(p.exists() for p in (output,basis_file,*artifact_paths.values())): raise ValueError('Study or associated input already exists; choose a new output name.')
     if champion: small=large='structured_c2_15p'
     basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis_v2.json').read_text()
+    basis_data=json.loads(basis_text)
+    for key in ('maximum_pressure_equalization_error','maximum_isothermality_error','maximum_mach_number'):
+        basis_data['configuration']['validity'].pop(key,None)
+    basis_text=json.dumps(basis_data,indent=2)+'\n'
     digest=hashlib.sha256(basis_text.encode()).hexdigest()
     # Build and validate all content before publishing a complete template.
     import tempfile
@@ -44,7 +48,8 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
                     ('crank_axis_to_EFH_clearance_over_crank','minimum',.5,'crank_radius'),
                     ('H_axis_lateral_rms_over_stroke','maximum',.25,'1'),('H_axis_lateral_span_over_stroke','maximum',.65,'1'),
                     ('zero_crossing_count','equal',2,'1'))]
-            artifact=MechanismArtifact.create(family,parameters,settings=settings,constraints=constraints,
+            mechanical.extend(dict(row,side=side) for row in constraints)
+            artifact=MechanismArtifact.create(family,parameters,settings=settings,constraints=[],
                 provenance=dict(description='Historical geometry seed; no new optimization',sources=seed_data['provenance']))
             artifacts[side]=artifact
             settings=dict(settings,artifact=artifact_paths[side].name,sha256=artifact.content_hash)
@@ -63,9 +68,8 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
         protocol='machine_design',purpose='bounded_family_evaluation'),sources=dict(machine=dict(path=basis_file.name,sha256=digest)),
         kinematics=kinematics,parameters=declarations,policies=POLICIES,
         objective=dict(type='maximize_thermal_efficiency',unit='1'),
-        constraints=[dict(type='minimum_motor_power',required_power=25.,unit='W'),dict(type='maximum_pressure',limit=1200000.,unit='Pa'),
-            dict(type='maximum_temperature',limit=850.,unit='K'),dict(type='maximum_absolute_mass_flow',limit=.08,unit='kg/s'),dict(type='valid_thermodynamic_model',unit='1')],
-        mechanical_constraints=mechanical,screening=dict(samples=1440,maximum_large_enclosed_volume_m3=.066),
+        constraints=[dict(type='valid_thermodynamic_model',unit='1')],
+        mechanical_constraints=mechanical,screening=dict(samples=1440),
         search=dict(type='sobol',seed=3965000,scramble=True,domain='fixed_global_bounds'),
         numerical=dict(maximum_cycles=100,backend='numba',candidate_budget_seconds=180.,domain_error_retry='once_safe_uniform_state_with_source_wall_temperatures'),
         warm_start=dict(initial_source='source_exact' if champion or (small==large and small in ('six_bar','hybrid_compact')) else 'uniform'),

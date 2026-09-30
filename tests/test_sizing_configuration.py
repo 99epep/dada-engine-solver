@@ -22,7 +22,9 @@ def test_complete_sizing_configuration_loads_without_running_simulation() -> Non
         DesignParameter.LARGE_SWEPT_VOLUME,
         DesignParameter.CHARGE_PRESSURE,
     )
-    assert len(loaded.problem.constraints) == 7
+    # The legacy pressure-equalization veto and its scale are ignored.
+    assert len(loaded.problem.constraints) == 6
+    assert "maximum_pressure_equalization_error" not in {c.name for c in loaded.problem.constraints}
     assert set(loaded.optimization_settings.constraint_scales) == {
         constraint.name for constraint in loaded.problem.constraints
     }

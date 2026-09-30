@@ -15,11 +15,9 @@ from dada_solver.thermal_load_configuration import (
 from dada_solver.sizing.constraints import (
     MaximumAbsoluteMassFlow,
     MaximumMachNumber,
-    MaximumIsothermalityError,
     MaximumAbsoluteGeneralizedGasTorque,
     MaximumPistonGasForce,
     MaximumPressure,
-    MaximumPressureEqualizationError,
     MaximumTemperature,
     MinimumCoolingPower,
     RequirePeriodicConvergence,
@@ -69,11 +67,13 @@ def load_sizing_problem(path: str | Path) -> LoadedSizingProblem:
         objective = _load_objective(data["objective"])
         constraints = tuple(
             _load_constraint(item, scenario) for item in data.get("constraints", [])
+            if item.get("type") not in ("maximum_isothermality_error", "maximum_pressure_equalization_error")
         )
         optimizer = data["optimizer"]
         scales = {
             str(name): float(value)
             for name, value in optimizer["constraint_scales"].items()
+            if name not in ("maximum_isothermality_error", "maximum_pressure_equalization_error")
         }
         settings = OptimizationSettings(
             objective_scale=float(optimizer["objective_scale"]),
@@ -158,10 +158,6 @@ def _load_constraint(
         return MaximumAbsoluteMassFlow(float(data["limit"]))
     if constraint_type == "maximum_mach_number":
         return MaximumMachNumber(float(data["limit"]))
-    if constraint_type == "maximum_pressure_equalization_error":
-        return MaximumPressureEqualizationError(float(data["limit"]))
-    if constraint_type == "maximum_isothermality_error":
-        return MaximumIsothermalityError(float(data["limit"]))
     if constraint_type == "nominal_cycle_topology":
         return RequireNominalCycleTopology()
     if constraint_type == "valid_thermodynamic_model":

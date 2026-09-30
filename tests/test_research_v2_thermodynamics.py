@@ -21,6 +21,9 @@ def test_historical_thermal_machine_and_initial_state(tmp_path,family):
     basis.write_text(json.dumps(case['basis']))
     raw['sources']['machine']['sha256']=hashlib.sha256(basis.read_bytes()).hexdigest()
     raw['parameters']=[r for r in raw['parameters'] if r['name'].startswith('kinematics.')]
+    # This fixture reproduces a historical study's power requirement. Generic
+    # presets no longer supply it; it must be selected explicitly here.
+    raw['constraints'].append(dict(type='minimum_motor_power',required_power=25.,unit='W'))
     raw['policies']['outlet_valve_cda']='fixed_source_cda'
     raw['warm_start']['initial_source']='source_exact'
     raw['numerical']['backend']=case['backend']
