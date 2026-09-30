@@ -64,14 +64,14 @@ def campaign_evidence(records, scientific, source, is_campaign):
     pressed = [b for b in bounds if b['pressed']]
     if pressed:
         for b in pressed:
-            suggestions.append(dict(signal=f"{b['elite_count']}/{b['elite_total']} elites are within 5% normalized distance of the {b['side']} bound of {b['parameter']}. Review this bound before extending exploration; no bound change is inferred.", command=report_command))
+            suggestions.append(dict(signal=f"{b['elite_count']}/{b['elite_total']} elites are within 5% normalized distance of the {b['side']} bound of {b['parameter']}. Review this bound before extending exploration; no bound change is inferred.", action=dict(type='bounds',parameter=b['parameter'],side=b['side'])))
     elif is_campaign and (len(sampled)<512 or len(elites)<5):
         suggestions.append(dict(signal=f'{len(sampled)} distinct candidates and {len(elites)} retained feasible elites: below the display reference of 512 candidates / 5 elites. Continuing the same bounds is an available action, not a convergence or saturation claim.',
             command=shlex.join(['dada-research','resume',source,'--budget','30m'])))
     for category,count in sorted(failures.items(), key=lambda x:(-x[1],x[0]))[:3]:
-        suggestions.append(dict(signal=f'{count} attempts classified as {category}. Inspect exact failure evidence before changing the study or model domain.',command=report_command))
+        suggestions.append(dict(signal=f'{count} attempts classified as {category}. Inspect exact failure evidence before changing the study or model domain.',action=dict(type='filter',field='failure_category',value=category,source=source)))
     for name,count in sorted(violations.items(), key=lambda x:(-x[1],x[0]))[:3]:
-        suggestions.append(dict(signal=f'{name} is violated in {count} records with available evidence. Inspect its values and margins; limits are not relaxed automatically.',command=report_command))
+        suggestions.append(dict(signal=f'{name} is violated in {count} records with available evidence. Inspect its values and margins; limits are not relaxed automatically.',action=dict(type='filter',field='violated_constraint',value=name,source=source)))
     suggestions.append(dict(signal='Regenerate this derived report from the stored journal; no integration.',command=report_command))
     return dict(source=source,is_campaign=is_campaign,
         funnel=dict(attempted=len(records),integrated=sum(bool(r.get('integrated')) for r in records),

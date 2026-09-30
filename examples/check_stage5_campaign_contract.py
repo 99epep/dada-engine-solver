@@ -1,6 +1,8 @@
 """Read-only feasibility-contract check on saved exact benchmark evaluations."""
 from dataclasses import replace
 import json
+import tomllib
+from dataclasses import fields
 from pathlib import Path
 from types import SimpleNamespace
 import numpy as np
@@ -32,12 +34,17 @@ def check():
                 d[key]={k:SimpleNamespace(**v) for k,v in d[key].items()}
             topology=dict(d['topology']);topology['classification']=CycleTopologyClassification(topology['classification'])
             d['topology']=SimpleNamespace(**topology)
-            v=dict(r['validity']);v['verdict']=ValidityVerdict(v['verdict'])
+            # Adapt stored diagnostics without reviving removed isothermality fields.
+            v={k:v for k,v in r['validity'].items() if k in {f.name for f in fields(ValidityReport)}}
+            v['verdict']=ValidityVerdict(v['verdict'])
             evaluation=SimpleNamespace(configuration=design.configuration,usable=True,status=EvaluationStatus.CONVERGED,
                 periodic=SimpleNamespace(message=r['message']),performance=performance,diagnostics=SimpleNamespace(**d),
                 validity=ValidityReport(**v),model=wrapper.model,cycle=cycle)
             domains=r['microtube_gas_domains']
-            ok=domains['model_validity']=='valid' and r['maximum_tube_mach_number']<=design.configuration.validity.maximum_mach_number
+            # This compares two historical saved assessments, not current model
+            # validity: reproduce the guard explicitly stored in their source.
+            legacy_limit=tomllib.loads(definition.base_source)['validity'].get('maximum_mach_number')
+            ok=domains['model_validity']=='valid' and (legacy_limit is None or r['maximum_tube_mach_number']<=legacy_limit)
             extra=[dict(name='microtube_model_domain',margin=1. if ok else -1.,satisfied=ok,available=True)]
             reports.append(json_values(helper._assessment(evaluation,{},None,None,r['convergence'],row['final_state'],extra)))
         results.append(dict(case=case['name'],exact=reports[0]==reports[1],status=reports[1]['status'],

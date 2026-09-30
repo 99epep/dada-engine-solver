@@ -36,4 +36,5 @@ def test_validity_thresholds_are_explicit_and_positive() -> None:
         maximum_cp_variation=0.02,
     )
 
-    assert thresholds.maximum_mach_number == pytest.approx(0.2)
+    assert not hasattr(thresholds, "maximum_mach_number")
+    assert thresholds.maximum_cp_variation == pytest.approx(0.02)

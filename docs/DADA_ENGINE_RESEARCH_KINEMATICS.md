@@ -347,8 +347,11 @@ The default mechanical grid has 1440 angles (minimum configurable 360). Sampled
 screens are **not continuous proofs**; increasing samples cannot establish one.
 Historical six-bar thresholds are explicit preset inputs, not universal defaults
 for all machines. The maximum large-cylinder enclosed volume is separately
-screened; motor studies retain the 0.066 m^3 ceiling. No constraints are weakened
-to make a demonstration feasible. Reports offer no automatic scientific advice.
+screened only when `screening.maximum_large_enclosed_volume_m3` is declared;
+there is no universal 0.066 m^3 restriction. New artifacts omit synthesis-quality
+constraints: presets put them in editable study `mechanical_constraints` rows.
+Historical artifact constraints remain inherited. See
+[limit ownership](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
 
 ## Established synthesis workflow and current boundary
 

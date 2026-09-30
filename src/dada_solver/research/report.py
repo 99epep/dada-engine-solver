@@ -70,11 +70,14 @@ def inspect(path):
     compatible = definition['runtime'] == runtime_identity()
     if not compatible: warnings.append('Stored runtime/source differs from the current checkout. Inspection is available; execution resume is not compatible.')
     scientific = definition['scientific']
-    from .margins import enrich_constraints
+    from .margins import enrich_constraints, limiting_evidence
     from .cockpit import unique_prefixes
     prefixes = unique_prefixes(r['candidate_id'] for r in records)
     for record in records:
         record['constraints']=enrich_constraints(record.get('constraints',[]),scientific['constraints'])
+        from .cockpit import reason_category
+        record['failure_category']=reason_category(record,scientific) if record['status']!='feasible' else None
+        record['limiting_evidence']=limiting_evidence(record,scientific)
         record['resolved_parameters']=dict(scientific.get('fixed_parameters',{}),**record['physical'])
         record['parameter_units']={p['name']:p['unit'] for p in scientific['parameters']}
         record['kinematic_families']=record.get('families',{})
@@ -176,6 +179,9 @@ def text_report(data, *, list_candidates=False):
 def render_html(data, destination):
     destination = Path(destination)
     if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
+    chosen=data.get('selected',data['records'])
+    ranked=elite_records(chosen,2) if data.get('comparison_compatible',True) else []
+    data=dict(data,comparison_default_ids=[r['candidate_id'] for r in ranked])
     if 'selected' in data:
         # Retain lightweight progress for every attempt, and detailed evidence
         # only for the requested candidates. No stored artifact is modified.
@@ -192,7 +198,7 @@ HTML = '''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TITLE_TEXT</title>
 <style>
-#bounds{max-height:420px}#bounds th{position:sticky;top:0}#suggestions{max-height:440px}body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}th button{font:inherit;font-weight:600;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
+#candidateViewport{max-height:640px;overflow:auto;padding:0}#candidates td{height:24px;white-space:nowrap}#candidates th{position:sticky;top:0;z-index:1}#candidates tbody tr{cursor:pointer}#candidates tbody tr:hover{background:#edf6fa}#bounds{max-height:420px}#bounds th{position:sticky;top:0}#suggestions{max-height:440px}body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}th button{font:inherit;font-weight:600;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
 </style><main><section class="card" id="localRegions" hidden><h2>Local regions</h2><div id="regionSummary"></div></section>
 <h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or thermodynamic replay during rendering</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
@@ -205,14 +211,18 @@ HTML = '''<!doctype html>
 <h2>Candidates</h2><label>Status <select id="status"><option value="all">All statuses</option></select></label><label><input type="checkbox" id="validOnly">All constraints available and satisfied</label>
 <label>Sort by <select id="sortBy"></select></label><label>Direction <select id="sortDirection"><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
 <p class="muted">Click a column heading to sort. Missing values stay last. Additional metrics, active parameters and constraint margins are available in Sort by.</p>
-<div class="card"><table id="candidates"></table></div>
+<label>Failure category <select id="failureCategory"><option value="all">All categories</option></select></label>
+<label>Violated constraint <select id="violatedConstraint"><option value="all">All constraints</option></select></label>
+<button id="clearInspection" type="button">Clear inspection filters</button><p id="inspectionContext" class="muted"></p>
+<p class="muted">All records remain available. Scroll for additional candidates; click a row to inspect it as Candidate A.</p>
+<div class="card" id="candidateViewport" tabindex="0" aria-label="Scrollable candidate table"><table id="candidates"></table></div>
 <section id="volumeSection" hidden><h2>Cylinder volumes</h2><p>One cycle in solver angle, with the operation convention applied once. Solid: small cylinder; dashed: large cylinder. No thermodynamic integration.</p><div class="card" id="volumes"></div></section>
 <h2>Compare selected candidates</h2><p>Values are absolute; the difference is B − A. Missing data stays unavailable.</p>
 <label>Candidate A <select id="left"></select></label><label>Candidate B <select id="right"></select></label>
 <div class="card"><table id="comparison"></table></div>
-<h2>Constraint values and margins</h2><p>Positive margins satisfy the limit. Amber marks a satisfied constraint within 5% of a nonzero limit; this is a visual cue, not a safety factor. Categorical constraints have no relative margin.</p>
-<div class="card"><h3>Candidate A</h3><table id="constraintsA"></table><h3>Candidate B</h3><table id="constraintsB"></table></div>
-<details class="card"><summary>Selected candidate details, constraints and convergence</summary><pre id="detail"></pre></details>
+<h2>Constraint values and margins</h2><p>Stored constraints and model-domain evidence are ordered by violation, unavailable evidence, then proximity to a limit. Positive margins satisfy the displayed boundary. Near boundary means within 5% of a nonzero limit: a display cue, not an optimization active-set or safety factor. Categorical verdicts have no relative margin. Trial-state rejections and sampled cycle extrema are labelled separately; missing boundaries remain unavailable.</p>
+<div class="card"><h3 id="constraintContextA">Candidate A</h3><table id="constraintsA"></table><h3 id="constraintContextB">Candidate B</h3><table id="constraintsB"></table></div>
+<details class="card" id="candidateDetails"><summary>Selected candidate details, constraints and convergence</summary><pre id="detail"></pre></details>
 <details class="card"><summary>Scientific definition and provenance</summary><pre id="provenance"></pre></details>
 <p class="muted">Closure screens are sampled numerical checks, not continuous feasibility proofs. This validation study does not establish a global optimum. Volume curves are available on request. Thermodynamic trajectories and animations are not generated by this report.</p>
 </main><script id="data" type="application/json">EMBEDDED_DATA</script><script>
@@ -229,7 +239,9 @@ if(cooling){byId('performanceTitle').textContent='Indicated power and cooling CO
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
 for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
-byId('right').selectedIndex=Math.min(1,rows.length-1);
+const defaults=(d.comparison_default_ids||[]).map(id=>rows.findIndex(r=>r.candidate_id===id)).filter(i=>i>=0);
+for(let i=0;defaults.length<2&&i<rows.length;i++)if(!defaults.includes(i))defaults.push(i);
+byId('left').selectedIndex=defaults[0]??-1;byId('right').selectedIndex=defaults[1]??defaults[0]??-1;
 function table(id,head,body){byId(id).innerHTML='<thead><tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+r.map(v=>'<td>'+esc(fmt(v))+'</td>').join('')+'</tr>').join('')+'</tbody>';}
 function commandBox(signal,command,parent){
  const box=document.createElement('div'),p=document.createElement('p'),code=document.createElement('code'),button=document.createElement('button');
@@ -247,7 +259,12 @@ function cockpit(){
   const rejects=document.createElement('p');rejects.textContent='Rejections: '+(Object.entries(evidence.rejection_categories).map(([k,v])=>k+'='+v).join(' · ')||'none');section.append(rejects);byId('funnel').append(section);
   const note=document.createElement('p');note.textContent=evidence.source+' — '+evidence.bound_convention;byId('bounds').append(note);
   const tableElement=document.createElement('table');tableElement.innerHTML='<thead><tr><th>Parameter</th><th>Bound</th><th>Limit</th><th>Global near / total</th><th>Global %</th><th>Elites near / total</th></tr></thead><tbody>'+evidence.bounds.map(b=>'<tr class="'+(b.pressed?'near':'')+'">'+[b.parameter,b.side,fmt(b.limit)+' '+b.unit,b.count+' / '+b.total,b.percent.toFixed(1)+'%',b.elite_count+' / '+b.elite_total].map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody>';byId('bounds').append(tableElement);
-  for(const suggestion of evidence.suggestions)commandBox(suggestion.signal,suggestion.command,byId('suggestions'));
+  for(const suggestion of evidence.suggestions){
+   if(suggestion.command){commandBox(suggestion.signal,suggestion.command,byId('suggestions'));continue;}
+   const box=document.createElement('div'),p=document.createElement('p');p.textContent=suggestion.signal;box.append(p);
+   if(suggestion.action){const button=document.createElement('button');button.type='button';button.textContent=suggestion.action.type==='bounds'?'Inspect bound pressure':'Inspect matching candidates';button.onclick=()=>inspectAction(suggestion.action);box.append(button);}
+   byId('suggestions').append(box);
+  }
  }
 }
 const shellQuote=value=>/^[a-zA-Z0-9_./:=@%-]+$/.test(value)?value:String.fromCharCode(39)+value.split(String.fromCharCode(39)).join(String.fromCharCode(39,34,39,34,39))+String.fromCharCode(39);
@@ -286,7 +303,8 @@ if(d.local_search){
  }
 }
 const columns=[
- ['origin','Search origin',r=>r.search_origin? r.search_origin.kind+' / '+r.search_origin.region_id : 'global'],
+ ['basin','Basin',r=>r.search_origin?.region_id||'global'],
+ ['origin','Search origin',r=>r.search_origin?.kind||'global Sobol'],
  ['id','Candidate ID',r=>r.candidate_id],['status','Status',r=>r.status],
  ['input','Indicated input [W]',r=>r.metrics.indicated_mechanical_input_power_w],
  ['power','Indicated gas power [W]',r=>r.metrics.indicated_power_w],
@@ -314,11 +332,31 @@ function sortedRows(visible){
  return [...visible].sort((a,b)=>{const x=get(a),y=get(b);if(missing(x)||missing(y))return missing(x)===missing(y)?a.candidate_id.localeCompare(b.candidate_id):missing(x)?1:-1;
  const order=typeof x==='number'||typeof x==='boolean'?Number(x)-Number(y):String(x).localeCompare(String(y));return sign*order||a.candidate_id.localeCompare(b.candidate_id);});
 }
+let inspectionSource=null;
+for(const category of [...new Set(rows.map(r=>r.failure_category).filter(Boolean))].sort())byId('failureCategory').add(new Option(category,category));
+for(const name of [...new Set(rows.flatMap(r=>(r.constraints||[]).filter(c=>c.available&&!c.satisfied).map(c=>c.name)))].sort())byId('violatedConstraint').add(new Option(name,name));
+function matchesInspection(r){return (!inspectionSource||r.report_source===inspectionSource)&&
+ (byId('failureCategory').value==='all'||r.failure_category===byId('failureCategory').value)&&
+ (byId('violatedConstraint').value==='all'||r.constraints.some(c=>c.name===byId('violatedConstraint').value&&c.available&&!c.satisfied));}
+function clearInspection(){inspectionSource=null;byId('failureCategory').value='all';byId('violatedConstraint').value='all';byId('status').value='all';byId('validOnly').checked=false;}
+function inspectAction(action){
+ if(action.type==='bounds'){byId('bounds').scrollIntoView({block:'center'});return;}
+ clearInspection();inspectionSource=action.source;
+ const select=byId(action.field==='failure_category'?'failureCategory':'violatedConstraint');
+ if(![...select.options].some(option=>option.value===action.value))select.add(new Option(action.value,action.value));
+ select.value=action.value;
+ show();byId('candidateViewport').scrollIntoView({block:'center'});
+ const first=sortedRows(rows.filter(matchesInspection))[0];
+ if(first){byId('left').value=String(rows.indexOf(first));compare();byId('candidateDetails').open=true;}
+}
 function show(){
- const visible=sortedRows(rows.filter(r=>(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied))));
+ const visible=sortedRows(rows.filter(r=>matchesInspection(r)&&(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied))));
  const shown=columns.filter(c=>cooling?c[0]!=='efficiency':!['input','cooling','cop'].includes(c[0]));
  table('candidates',shown.map(c=>c[1]),visible.map(r=>shown.map(c=>c[2](r))));
- [...byId('candidates').querySelectorAll('tbody tr')].forEach((tr,i)=>{tr.cells[0].title=visible[i].candidate_id;tr.cells[0].textContent=visible[i].candidate_id.slice(0,12);});
+ byId('inspectionContext').textContent=visible.length+' / '+rows.length+' distinct candidates shown'+(inspectionSource?' · Source: '+inspectionSource:'')+(!visible.length?' · No matching records in this embedded selection. Clear filters or generate the full campaign report to inspect omitted candidates.':'');
+ const idColumn=shown.findIndex(c=>c[0]==='id');
+ [...byId('candidates').querySelectorAll('tbody tr')].forEach((tr,i)=>{tr.cells[idColumn].title=visible[i].candidate_id;tr.cells[idColumn].textContent=visible[i].candidate_id.slice(0,12);
+ tr.onclick=()=>{byId('left').value=String(rows.indexOf(visible[i]));compare();byId('candidateDetails').open=true;};});
  [...byId('candidates').querySelectorAll('th')].forEach((th,i)=>{const key=shown[i][0],selected=byId('sortBy').value===key;
  th.setAttribute('aria-sort',selected?(byId('sortDirection').value==='asc'?'ascending':'descending'):'none');
  const button=document.createElement('button');button.textContent=shown[i][1]+(selected?(byId('sortDirection').value==='asc'?' ↑':' ↓'):'');
@@ -357,10 +395,13 @@ function compare(){
  for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);
  for(const c of a.constraints){const other=b.constraints.find(x=>x.name===c.name);const unit=c.unit||d.scientific.constraints.find(x=>x.type===c.name)?.unit||'1';add(c.name+' margin ['+unit+']',c.available?c.margin:null,other?.available?other.margin:null);}
  for(const [id,candidate] of [['constraintsA',a],['constraintsB',b]]){
-  table(id,['Constraint','Current value','Relation','Limit','Unit','Absolute margin','Relative margin','State','Evidence'],candidate.constraints.map(c=>[c.name,c.value,c.relation,c.limit,c.unit,c.margin,c.relative_margin,c.state,c.method]));
-  [...byId(id).querySelectorAll('tbody tr')].forEach((tr,i)=>{const c=candidate.constraints[i];tr.className=!c.available?'muted':!c.satisfied?'bad':c.near_active?'near':'good';if(c.near_active)tr.setAttribute('aria-label',c.name+' near active limit');});
+  const evidence=candidate.limiting_evidence||candidate.constraints;
+  byId(id==='constraintsA'?'constraintContextA':'constraintContextB').textContent=(id==='constraintsA'?'Candidate A':'Candidate B')+' · '+candidate.candidate_id.slice(0,12)+' · '+candidate.status+' · '+(candidate.search_origin?.region_id||'global');
+  table(id,['Constraint / boundary','Current value','Relation','Limit','Unit','Signed margin','Relative margin','Near boundary','State','Scope / context','Evidence'],evidence.map(c=>[c.name,c.value,c.relation,c.limit,c.unit,c.margin,c.relative_margin,c.near_active,c.state,[c.scope,c.context].filter(Boolean).join(' / '),c.method]));
+  [...byId(id).querySelectorAll('tbody tr')].forEach((tr,i)=>{const c=evidence[i];tr.className=!c.available?'muted':!c.satisfied?'bad':c.near_active?'near':'good';if(c.near_active)tr.setAttribute('aria-label',c.name+' near active limit');});
  }
  table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
 }
+byId('clearInspection').onclick=()=>{clearInspection();show();};byId('failureCategory').onchange=show;byId('violatedConstraint').onchange=show;
 cockpit();byId('sortBy').onchange=show;byId('sortDirection').onchange=show;volumePlots();byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
 </script></html>'''

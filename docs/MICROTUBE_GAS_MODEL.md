@@ -379,3 +379,17 @@ The single bounded Human Cell evaluation at N=1000, D=0.770 mm, L=0.8 m
 reaches Re=2393.30 with `gnielinski_transition_interpolation`, then rejects
 relative pressure drop 0.2005927 above the unchanged 0.2 guard. This is not a
 converged performance result. See [the artifact and reproduction command](../outputs/research_microtube_transition/README.md).
+
+
+## Research limit ownership (2026-09-30)
+
+Microtube validity uses each selected gas model's declared Mach limit, including
+its hydraulic upstream diagnostics. The historical generic validity value 0.2
+no longer adds a second exchanger-domain veto to a model allowing 0.3. An explicit
+study `maximum_mach_number` constraint may impose a stricter engineering limit.
+No transport, pressure-drop, entry, rarefaction or correlation limit is relaxed.
+There is no universal 0.08 kg/s admissible flow: geometry and local state determine
+velocity, Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass flow
+remains an observable and an optional explicit study constraint. Pressure inequality
+is diagnostic-only; isothermality excursion is no longer reported or constrained.
+See [the limit audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).

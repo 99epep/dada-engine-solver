@@ -109,7 +109,9 @@ def load_study(path, *, basis_path=None, artifact_directory=None):
         if field: positive(row[field], kind)
         if kind == 'minimum_motor_power' and row['boundary'] != 'indicated_gas_power':
             raise ValueError('Useful power is unavailable; the power floor is indicated gas power.')
-    if seen != set(CONSTRAINTS): raise ValueError('All five declared physical constraints are required in this protocol.')
+    required_constraints = set(CONSTRAINTS)-{'maximum_absolute_mass_flow'}
+    if not required_constraints <= seen:
+        raise ValueError('Power, pressure, temperature and model-validity constraints are required in this protocol; an absolute mass-flow cap is optional.')
     parameters = []
     for row in raw['parameters']:
         name = row.get('name')

@@ -369,3 +369,31 @@ COP unavailable), and its maximum flow 0.118805 kg/s exceeds the unchanged
 0.08 kg/s constraint. Thermodynamic and microtube domain verdicts are valid,
 with the existing transition uncertainty reported separately.
 See [the copied study, exact result and report](../outputs/human_cell_stage2_reference_charge/README.md).
+
+## 2026-09-30 — Limit ownership and report audit
+
+See [RESEARCH_LIMIT_OWNERSHIP_AUDIT.md](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) for
+scope, historical inventory and migration. No optimization campaign was launched.
+
+Final full-checkout command:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q
+```
+
+Result: **912 passed, 0 warnings**, 362.27 seconds on this checkout/machine.
+Targeted runs covered generic/explicit constraints, legacy TOML loading,
+pressure-equalization diagnostics, removal of isothermality, model versus design
+Mach thresholds, Cp/Z checks, optional volume screening, study-owned mechanical
+limits, preserved unconstrained kinematic metrics and report actions.
+Historical slider-crank parity explicitly declares its former 25 W study
+requirement; integrated metrics and tolerances are unchanged.
+
+The offline report was checked in Chromium against 528 saved campaign records:
+12 checks passed, including category/constraint filtering, an absent category,
+all-row retention, scrolling, basin/ID cells, ranked default comparison, manual
+selection and constraint evidence. Artifacts are in `outputs/research_flow_audit/`.
+The source campaign was read without changing its journal/state/definition;
+checksums were recorded. That campaign directory was subsequently removed
+externally during the task. The report remains a captured historical snapshot,
+not a regenerated/reclassified campaign or an optimization result.

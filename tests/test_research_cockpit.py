@@ -164,11 +164,12 @@ def test_funnel_bounds_categories_and_suggestions(tmp_path):
     assert evidence['funnel']['attempted']==6 and evidence['funnel']['feasible']==3
     assert evidence['rejection_categories']=={'transport_temperature_below_domain':3}
     assert evidence['bounds'][1]['count']==6 and evidence['bounds'][1]['elite_count']==3
-    assert all(' resume ' not in s['command'] for s in evidence['suggestions'])
+    assert all(' resume ' not in s.get('command','') for s in evidence['suggestions'])
     assert any('bound' in s['signal'] for s in evidence['suggestions'])
-    assert "'run with spaces'" in evidence['suggestions'][0]['command']
+    assert evidence['suggestions'][0]['action']['type']=='bounds'
+    assert "'run with spaces'" in evidence['suggestions'][-1]['command']
     sparse=campaign_evidence(rows[:1],scientific,'run',True)
-    assert any(s['command']=='dada-research resume run --budget 30m' for s in sparse['suggestions'])
+    assert any(s.get('command')=='dada-research resume run --budget 30m' for s in sparse['suggestions'])
     high=dict(rows[-1],reason='Transport temperature 1001 K outside declared domain.')
     assert reason_category(high,scientific)=='transport_temperature_above_domain'
 

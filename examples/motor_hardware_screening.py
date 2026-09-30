@@ -165,7 +165,10 @@ report=dict(mean_inlet_air_gas_temperature_differences_k=mean_temperature_differ
     applicability=('variable_transport_and_entry; pulse_and_distribution_unvalidated' if gas_domains is not None
                    else 'screening_only; constant_Nusselt; entrance_pulse_and_distribution_unvalidated'),
     laminar_reynolds_screen_passed=bool(max_reynolds<2300),
-    mach_screen_passed=bool(max_mach <= config.validity.maximum_mach_number),
+    # Only the selected gas model declares a Mach domain. Legacy screening
+    # has no independent Mach rating; the hydraulic sonic cap remains active.
+    mach_screen_passed=(not any('high_mach' in issue for issue in gas_domains['failed_criteria'])
+                        if gas_domains is not None else None),
     mechanical_losses='unavailable', calibration='Doty_geometry_reference; no_empirical_UA_fit')
 output=output_path('_screening.json')
 output.write_text(json.dumps(report,indent=2))

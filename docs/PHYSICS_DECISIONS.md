@@ -1633,3 +1633,20 @@ once; preserve the conservative solver and exchanger/domain constraints.
 Explicit inventory remains unchanged. Exact source warm starts are incompatible
 with this policy; ordinary guesses must be inventory-rescaled. See the Research
 user guide for the deterministic numerical maximum and its limits.
+
+
+## 2026-09-30 — Model domains versus study requirements
+
+The current user decision supersedes earlier global interpretation of motor
+campaign guards. Generic Research presets omit 25 W, 1.2 MPa, 850 K and 0.08 kg/s
+requirements. The historical 0.066 m^3 motor volume ceiling is an optional study
+requirement, not schema-level physics. Explicit constraints remain available.
+Pressure equalization is diagnostic-only; remove isothermality diagnostics and
+constraints. Old validity keys load but are ignored. Retain Cp-variation and
+compressibility-deviation approximation checks. Microtube validity uses its own
+Mach domain; a stricter design Mach constraint belongs in the study.
+New mechanism seeds expose synthesis-quality limits in study-level mechanical
+constraints; intrinsic closure/branch validity remains in the model. Historical
+artifacts/results retain their content and interpretation as historical evidence.
+See [the audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) for compatibility, inventory and
+remaining legacy limits. No exchanger correlation or numerical tolerance changes.

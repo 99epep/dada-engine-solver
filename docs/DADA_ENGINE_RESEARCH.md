@@ -10,6 +10,27 @@ The V1 fixed six-bar / five-parameter study remains available as a regression
 preset. Exact identities, Sobol continuation, deadlines and recovery are retained;
 production thermodynamic physics is unchanged.
 
+## Limit ownership and migration
+
+Generic V2/V3 presets impose no inherited 25 W minimum power, 1.2 MPa pressure,
+850 K temperature, 0.08 kg/s internal-flow or 66 L volume ceiling. These are
+optional explicit study requirements, not universal physical limits. The named
+V1 historical-parity preset keeps its original requirements. Model domains,
+study requirements, search bounds and numerical settings have distinct owners;
+see [the audit and migration notes](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+
+Pressure equalization is diagnostic-only; isothermality fields/criteria are
+removed. Old validity keys load but are ignored. Microtube Mach validity comes
+from each exchanger's gas model, while `maximum_mach_number` remains an optional
+study constraint. New mechanism seed quality limits live in editable
+`[[mechanical_constraints]]`, outside seed artifacts. Existing embedded artifact
+constraints remain enforced.
+
+Existing results are not reclassified or overwritten. After this implementation
+change, regenerate the intended study and use a new campaign directory; runtime
+compatibility prevents silently resuming the old scientific computation.
+`refine`/`rescale` preserve explicit source constraints, including historical caps.
+
 ## Daily cockpit workflow
 
 ```sh
@@ -43,7 +64,15 @@ The existing source/runtime compatibility checks still apply after code updates.
 
 The HTML shows the
 campaign funnel, bound pressure, factual review actions and copyable commands
-that follow the selected candidates. Native solver stderr is captured around
+that follow the selected candidates. Diagnostic suggestions filter the exact
+failure category or violated constraint and open matching stored records; bound
+actions show bound evidence. Only report regeneration gets a regeneration command.
+The full candidate data remains in a scrollable table (about 15 visible rows),
+with a Basin column and sticky sortable headers. Comparison opens on the best
+two candidates under the existing objective ranking; selectors remain editable.
+Constraint evidence prioritizes violated/near-boundary limits with actual values,
+signed/relative margins and candidate/passage context. Missing model boundaries
+are not guessed. Native solver stderr is captured around
 solver calls while original Python exceptions remain visible.
 
 New evaluations use a single `recovery.json` followed by durable journal/state
@@ -310,7 +339,7 @@ while retaining incompatible physics. The adapter changes exchanger hold-up,
 wall capacity, heat transfer and losses through geometry and scales valve CdA
 with tube count. Those derived quantities are not independent parameters.
 
-Keep the five physical constraints explicit. Their thresholds are configurable;
+The V1 parity preset retains five explicit historical study constraints. Their thresholds are configurable;
 units and meanings are validated. After changing bounds, constraints or physical
 inputs, start a **new campaign directory**. `resume` reads its stored definition,
 not edits to the original TOML. Presentation names, input path relocation and
@@ -425,7 +454,8 @@ zero. Finite air flow, thermal-film resistance, pause heat transfer, wall
 storage and signed local reflux remain active. The large-cylinder maximum
 enclosed volume, including clearance, is checked against the 0.066 m³ ceiling.
 Mechanism lengths are in crank-radius units; no physical stroke or manufacturing
-scale is inferred. Isothermality remains diagnostic-only.
+scale is inferred. This ceiling belongs to the V1 study; generic V2/V3 studies
+may omit or choose another ceiling. Isothermality diagnostics are no longer computed.
 
 ## Acceptance and the next review
 
@@ -518,3 +548,42 @@ identity. Existing explicit-inventory studies retain their scientific identity;
 normal source/runtime compatibility guards still apply. Capacity rescaling keeps
 the reference pressure/temperature and derives mass again from the scaled final
 geometry, rather than introducing an independent mass parameter.
+
+### Explicit design limits in new studies
+
+A stricter Mach requirement is optional and distinct from the selected
+exchanger's correlation domain:
+
+```toml
+# Example study requirement, not a generic model limit.
+[[constraints]]
+type = "maximum_mach_number"
+limit = 0.20
+unit = "1"
+```
+
+The screen only needs its numerical resolution. Declare an enclosed-volume
+ceiling only if the study requires one:
+
+```toml
+[screening]
+samples = 1440
+# Optional study requirement; values above 0.066 m^3 are allowed.
+# maximum_large_enclosed_volume_m3 = 0.100
+```
+
+New six-bar presets expose engineering defaults directly in the study, for
+example the following existing row can be edited or removed without regenerating
+the mechanism artifact (do not add a duplicate row):
+
+```toml
+[[mechanical_constraints]]
+side = "small"
+metric = "minimum_primary_transmission_sine"
+relation = "minimum"
+limit = 0.30
+unit = "1"
+```
+
+A bound on a searched coordinate belongs in that parameter's declaration;
+it does not automatically create a feasibility constraint.

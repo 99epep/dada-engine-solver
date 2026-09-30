@@ -160,7 +160,6 @@ def _evaluate(
         validity,
         maximum_reynolds,
         maximum_mach,
-        design.configuration.validity.maximum_mach_number,
         requires_laminar=gas_domains is None,
         domain_failures=gas_domains['failed_criteria'] if gas_domains else (),
     )

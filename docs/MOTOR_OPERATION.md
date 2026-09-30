@@ -143,7 +143,8 @@ On 2026-09-08, the reference run converged in five cycles:
 | First-law residual | 5.09e-11 J |
 
 The efficiency is below the 50% two-reservoir Carnot limit. The temperature excursion at `H_o` is 8.38%. Following the user decision,
-isothermality is diagnostic-only and no longer fails core validity. Mach remains
+isothermality no longer fails core validity (the metric itself was removed on
+2026-09-30; this paragraph records historical measurements). Mach remains
 unavailable, giving an **indeterminate** verdict, and passive valve chronology
 remains non-nominal. Ideal chronology is still a design target; efficiency is
 the primary objective. No experimental motor performance is claimed.

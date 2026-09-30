@@ -93,13 +93,18 @@ def rescale_wall_state(values, target_gas_mass, old_wall_capacities, new_wall_ca
     return state
 
 
-def finalize_microtube_validity(validity, maximum_reynolds, maximum_mach, mach_limit,
+def finalize_microtube_validity(validity, maximum_reynolds, maximum_mach, mach_limit=None,
                                *, requires_laminar=True, domain_failures=()):
-    """Replace generic Mach unavailability and recompute the global verdict."""
+    """Replace generic Mach unavailability with the selected domain diagnostics.
+
+    Variable-film callers supply each passage's domain failures, never a generic
+    configuration Mach threshold. ``mach_limit`` is retained for callers that
+    explicitly supply a particular closure's own domain.
+    """
     failed = list(validity.failed_criteria)
     if requires_laminar and maximum_reynolds >= 2300: failed.append('microtube_internal_laminar_reynolds')
     failed.extend(domain_failures)
-    if maximum_mach > mach_limit: failed.append('microtube_mach_number')
+    if mach_limit is not None and maximum_mach > mach_limit: failed.append('microtube_mach_number')
     unavailable = tuple(x for x in validity.unavailable_criteria if x != 'mach_number')
     verdict = (ValidityVerdict.INVALID if failed else
         ValidityVerdict.INDETERMINATE if unavailable else ValidityVerdict.VALID)
@@ -174,7 +179,9 @@ class MachineEvaluator:
         mechanical=getattr(design.kinematics,'mechanical_diagnostics',())
         if mechanical:
             derived['mechanical_constraints']=list(mechanical)
-            derived['kinematic_metrics']=list(getattr(design.kinematics,'mechanical_metrics',()))
+        kinematic_metrics=getattr(design.kinematics,'mechanical_metrics',())
+        if kinematic_metrics:
+            derived['kinematic_metrics']=list(kinematic_metrics)
         if isinstance(built, AirWallMotor):
             result=self._wall(candidate, design, built, derived, direction, control)
         else:
@@ -348,18 +355,19 @@ class MachineEvaluator:
         max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains,replay=replay)
         if validity is not None:
             validity = finalize_microtube_validity(validity, max_re, max_mach,
-                design.configuration.validity.maximum_mach_number,
                 requires_laminar=gas_domains is None,
                 domain_failures=gas_domains['failed_criteria'] if gas_domains else ())
         evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
             status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
             periodic=SimpleNamespace(message=periodic.message), performance=performance,
             diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle)
-        domain = dict(name='microtube_model_domain', margin=float(min(2300-max_re,
-            design.configuration.validity.maximum_mach_number-max_mach)),
-            satisfied=bool(max_re < 2300 and max_mach <= design.configuration.validity.maximum_mach_number), available=True)
+        # Variable-property films/hydraulic passages already diagnose each side
+        # against that side's declared gas-model domain, including Mach. Never
+        # compare a global maximum with an unrelated generic/design threshold.
+        domain = dict(name='microtube_model_domain', margin=float(2300-max_re),
+            satisfied=bool(max_re < 2300), available=True)
         if gas_domains is not None:
-            satisfied = gas_domains['model_validity']=='valid' and max_mach<=design.configuration.validity.maximum_mach_number
+            satisfied = gas_domains['model_validity']=='valid'
             domain.update(satisfied=satisfied, margin=1. if satisfied else -1.)
         result = self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
             maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])

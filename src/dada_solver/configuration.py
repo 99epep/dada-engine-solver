@@ -50,25 +50,25 @@ class HydraulicNetworkConfiguration:
             )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class ValidityThresholds:
-    """User-selected limits required for a physical-validity verdict."""
+    """Approximation checks; legacy pressure/temperature/Mach keys are ignored.
 
-    maximum_pressure_equalization_error: float
-    maximum_mach_number: float
-    maximum_isothermality_error: float
+    The old positional/keyword constructor is accepted for source compatibility.
+    Only caloric/EOS approximation tolerances are retained or serialized. Mach
+    domains belong to the selected exchanger, and design limits to the study.
+    """
+
     maximum_compressibility_deviation: float
     maximum_cp_variation: float
 
-    def __post_init__(self) -> None:
-        for name, value in (
-            ("pressure equalization error", self.maximum_pressure_equalization_error),
-            ("Mach number", self.maximum_mach_number),
-            ("isothermality error", self.maximum_isothermality_error),
-            ("compressibility deviation", self.maximum_compressibility_deviation),
-            ("Cp variation", self.maximum_cp_variation),
-        ):
-            _require_positive(f"maximum {name}", value)
+    def __init__(self, maximum_pressure_equalization_error=None,
+                 maximum_mach_number=None, maximum_isothermality_error=None,
+                 maximum_compressibility_deviation=None, maximum_cp_variation=None):
+        for name, value in (("maximum_compressibility_deviation", maximum_compressibility_deviation),
+                            ("maximum_cp_variation", maximum_cp_variation)):
+            _require_positive(name, value)
+            object.__setattr__(self, name, value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -357,13 +357,6 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
             hot_to_small_valve=_load_valve_thresholds(valve_data["hot_to_small"]),
             cold_to_large_valve=_load_valve_thresholds(valve_data["cold_to_large"]),
             validity=ValidityThresholds(
-                maximum_pressure_equalization_error=float(
-                    validity_data["maximum_pressure_equalization_error"]
-                ),
-                maximum_mach_number=float(validity_data["maximum_mach_number"]),
-                maximum_isothermality_error=float(
-                    validity_data["maximum_isothermality_error"]
-                ),
                 maximum_compressibility_deviation=float(
                     validity_data["maximum_compressibility_deviation"]
                 ),
