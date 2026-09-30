@@ -161,8 +161,9 @@ def main(argv=None):
             from .progress import CLIProgress
             # Retire the historical 16-attempt Research default without editing snapshots.
             limit = 512 if args.max_candidates is None and definition.maximum_candidates == 16 else args.max_candidates
-            campaign.run(budget, maximum_candidates=limit, progress_callback=CLIProgress(),
-                                   retry_incomplete=getattr(args,'retry_incomplete',False))
+            with CLIProgress(scientific=definition.study.scientific) as progress:
+                campaign.run(budget, maximum_candidates=limit, progress_callback=progress,
+                             retry_incomplete=getattr(args,'retry_incomplete',False))
         elif args.command == 'refine':
             from .refine import refine
             path=refine(args.sources,args.candidate,args.radius,args.output)

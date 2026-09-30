@@ -1,0 +1,362 @@
+[
+  {
+    "event": "start",
+    "phase_id": 1,
+    "sobol_index": 0,
+    "scheduled_search": true,
+    "attempted": 0,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 0.0,
+    "budget_seconds": 300.0,
+    "converged": 0,
+    "feasible": 0,
+    "failure_counts": {},
+    "evaluation": null,
+    "new_best": false,
+    "best": null
+  },
+  {
+    "event": "progress",
+    "phase_id": 1,
+    "sobol_index": 1,
+    "scheduled_search": true,
+    "attempted": 0,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 11.0,
+    "budget_seconds": 300.0,
+    "converged": 0,
+    "feasible": 0,
+    "failure_counts": {},
+    "evaluation": null,
+    "new_best": false,
+    "best": null
+  },
+  {
+    "event": "evaluation",
+    "phase_id": 1,
+    "sobol_index": 1,
+    "scheduled_search": true,
+    "attempted": 1,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 13.0,
+    "budget_seconds": 300.0,
+    "converged": 1,
+    "feasible": 1,
+    "failure_counts": {},
+    "evaluation": {
+      "evaluation_number": 0,
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "status": "feasible",
+      "reason": "",
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      },
+      "constraints": [],
+      "search_origin": {
+        "kind": "center",
+        "region_id": "basin_1",
+        "region_ids": [
+          "basin_1"
+        ],
+        "region_sequence_index": null
+      },
+      "cache_hit": false
+    },
+    "new_best": true,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "progress",
+    "phase_id": 1,
+    "sobol_index": 2,
+    "scheduled_search": true,
+    "attempted": 1,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 24.0,
+    "budget_seconds": 300.0,
+    "converged": 1,
+    "feasible": 1,
+    "failure_counts": {},
+    "evaluation": null,
+    "new_best": false,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "evaluation",
+    "phase_id": 1,
+    "sobol_index": 2,
+    "scheduled_search": true,
+    "attempted": 2,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 26.0,
+    "budget_seconds": 300.0,
+    "converged": 2,
+    "feasible": 1,
+    "failure_counts": {
+      "converged_infeasible": 1
+    },
+    "evaluation": {
+      "evaluation_number": 1,
+      "candidate_id": "1032c451eed3331d909d548cbbd170e44f37d78ce86e6c314cfbe6d1eb0fadbc",
+      "status": "converged_infeasible",
+      "reason": "maximum_absolute_mass_flow: violated",
+      "metrics": {
+        "maximum_absolute_mass_flow_kg_s": 0.084
+      },
+      "constraints": [
+        {
+          "name": "maximum_absolute_mass_flow",
+          "satisfied": false,
+          "available": true,
+          "value": 0.084,
+          "limit": 0.08,
+          "relation": "maximum",
+          "margin": -0.004
+        }
+      ],
+      "search_origin": {
+        "kind": "center",
+        "region_id": "basin_2",
+        "region_ids": [
+          "basin_2"
+        ],
+        "region_sequence_index": null
+      },
+      "cache_hit": false
+    },
+    "new_best": false,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "progress",
+    "phase_id": 1,
+    "sobol_index": 3,
+    "scheduled_search": true,
+    "attempted": 2,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 37.0,
+    "budget_seconds": 300.0,
+    "converged": 2,
+    "feasible": 1,
+    "failure_counts": {
+      "converged_infeasible": 1
+    },
+    "evaluation": null,
+    "new_best": false,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "evaluation",
+    "phase_id": 1,
+    "sobol_index": 3,
+    "scheduled_search": true,
+    "attempted": 3,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 39.0,
+    "budget_seconds": 300.0,
+    "converged": 2,
+    "feasible": 1,
+    "failure_counts": {
+      "converged_infeasible": 1,
+      "invalid_exchanger": 1
+    },
+    "evaluation": {
+      "evaluation_number": 2,
+      "candidate_id": "5fbbb10381bbb3326f2a4539039033f97a499f70de8f8a6fe34d247e9e9f4891",
+      "status": "invalid_exchanger",
+      "reason": "MicrotubeDomainError: large_relative_pressure_drop",
+      "metrics": {},
+      "constraints": [],
+      "search_origin": {
+        "kind": "sobol",
+        "region_id": "basin_1",
+        "region_sequence_index": 0
+      },
+      "cache_hit": false
+    },
+    "new_best": false,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "progress",
+    "phase_id": 1,
+    "sobol_index": 4,
+    "scheduled_search": true,
+    "attempted": 3,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 50.0,
+    "budget_seconds": 300.0,
+    "converged": 2,
+    "feasible": 1,
+    "failure_counts": {
+      "converged_infeasible": 1,
+      "invalid_exchanger": 1
+    },
+    "evaluation": null,
+    "new_best": false,
+    "best": {
+      "candidate_id": "63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1472,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1472,
+        "cooling_power_w": 151.8,
+        "indicated_mechanical_input_power_w": 132.3,
+        "maximum_absolute_mass_flow_kg_s": 0.061
+      }
+    }
+  },
+  {
+    "event": "evaluation",
+    "phase_id": 1,
+    "sobol_index": 4,
+    "scheduled_search": true,
+    "attempted": 4,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 52.0,
+    "budget_seconds": 300.0,
+    "converged": 3,
+    "feasible": 2,
+    "failure_counts": {
+      "converged_infeasible": 1,
+      "invalid_exchanger": 1
+    },
+    "evaluation": {
+      "evaluation_number": 3,
+      "candidate_id": "397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e",
+      "status": "feasible",
+      "reason": "",
+      "metrics": {
+        "cooling_cop": 1.1892,
+        "cooling_power_w": 286.4,
+        "indicated_mechanical_input_power_w": 240.8,
+        "maximum_absolute_mass_flow_kg_s": 0.078
+      },
+      "constraints": [],
+      "search_origin": {
+        "kind": "sobol",
+        "region_id": "basin_2",
+        "region_sequence_index": 0
+      },
+      "cache_hit": false
+    },
+    "new_best": true,
+    "best": {
+      "candidate_id": "397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1892,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1892,
+        "cooling_power_w": 286.4,
+        "indicated_mechanical_input_power_w": 240.8,
+        "maximum_absolute_mass_flow_kg_s": 0.078
+      }
+    }
+  },
+  {
+    "event": "finish",
+    "phase_id": 1,
+    "sobol_index": 4,
+    "scheduled_search": true,
+    "attempted": 4,
+    "maximum_candidates": 4,
+    "elapsed_seconds": 52.0,
+    "budget_seconds": 300.0,
+    "converged": 3,
+    "feasible": 2,
+    "failure_counts": {
+      "converged_infeasible": 1,
+      "invalid_exchanger": 1
+    },
+    "evaluation": null,
+    "new_best": false,
+    "best": {
+      "candidate_id": "397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e",
+      "objective": {
+        "name": "synthetic_negative_cop",
+        "value": -1.1892,
+        "available": true
+      },
+      "metrics": {
+        "cooling_cop": 1.1892,
+        "cooling_power_w": 286.4,
+        "indicated_mechanical_input_power_w": 240.8,
+        "maximum_absolute_mass_flow_kg_s": 0.078
+      }
+    }
+  }
+]

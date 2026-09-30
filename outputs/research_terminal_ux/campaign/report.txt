@@ -1,0 +1,19 @@
+Optimization campaign phase
+Requested: 300.0 s; actual: 52.0 s
+Attempts: 4; cached: 0; preflight rejected: 1; integrated: 3; converged: 3; feasible: 2
+Objective improvement: None (minimization)
+Best at start: none
+Best at end: 397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e objective=-1.1892
+Best physical metrics: {'cooling_cop': 1.1892, 'cooling_power_w': 286.4, 'indicated_mechanical_input_power_w': 240.8, 'maximum_absolute_mass_flow_kg_s': 0.078}
+Best constraint margins:
+Largest normalized parameter changes:
+  volume.swept_ratio: 0.877401 -> 0.91643; normalized delta +0.1112
+Top distinct feasible candidates:
+  397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e objective=-1.1892
+  63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490 objective=-1.1472
+Bound pressure: []
+Failure reasons: {'maximum_absolute_mass_flow: violated': 1, 'MicrotubeDomainError: large_relative_pressure_drop': 1}
+Violated constraints: {'maximum_absolute_mass_flow': 1}
+Unavailable constraints: {}
+Convergence histories: [{'candidate_id': '63f539138c06793a5fba638536b29874700b9c67a172dead8f0b3c86e2b5f490', 'status': 'feasible', 'convergence': {'cycles_completed': 0, 'first_normalized_periodic_error': None, 'last_normalized_periodic_error': None, 'normalized_periodic_error_ratio': None, 'improving': False, 'history': []}}, {'candidate_id': '1032c451eed3331d909d548cbbd170e44f37d78ce86e6c314cfbe6d1eb0fadbc', 'status': 'converged_infeasible', 'convergence': {'cycles_completed': 0, 'first_normalized_periodic_error': None, 'last_normalized_periodic_error': None, 'normalized_periodic_error_ratio': None, 'improving': False, 'history': []}}, {'candidate_id': '397c54c0d1b457296f9650852764b55c001022fdc19f0b8dfd23f6ff2927761e', 'status': 'feasible', 'convergence': {'cycles_completed': 0, 'first_normalized_periodic_error': None, 'last_normalized_periodic_error': None, 'normalized_periodic_error_ratio': None, 'improving': False, 'history': []}}]
+Evaluation timing: {'count': 4, 'total_seconds': 52.0, 'median_seconds': 13.0, 'p90_seconds': 13.0, 'maximum_seconds': 13.0}

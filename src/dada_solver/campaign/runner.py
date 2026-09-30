@@ -104,7 +104,7 @@ class OptimizationCampaign:
         converged = feasible = 0
         last_progress = started
         last_attempt = 0
-        def notify(event='progress'):
+        def notify(event='progress', record=None, new_best=False):
             nonlocal last_progress, last_attempt
             if progress_callback is None: return
             now = self.clock()
@@ -112,7 +112,10 @@ class OptimizationCampaign:
             progress_callback(dict(event=event, phase_id=phase_id, sobol_index=strategy.index, scheduled_search=scheduled,
                 attempted=len(phase), maximum_candidates=limit, elapsed_seconds=now-started,
                 budget_seconds=budget, converged=converged, feasible=feasible,
-                failure_counts=dict(counts), best=None if best is None else
+                failure_counts=dict(counts),
+                evaluation=None if record is None else {k:record.get(k) for k in
+                    ('evaluation_number','candidate_id','status','reason','metrics','constraints','search_origin','cache_hit')},
+                new_best=new_best, best=None if best is None else
                 {k:best.get(k) for k in ('candidate_id','objective','metrics')}))
             last_progress, last_attempt = now, len(phase)
         def save_state():
@@ -176,7 +179,7 @@ class OptimizationCampaign:
             improved = elite_records(([best] if best else [])+[record], 1)
             new_best = bool(improved and (best is None or improved[0]['objective']['value'] < best['objective']['value']))
             if improved: best = improved[0]
-            notify('best' if new_best else 'progress')
+            notify('evaluation', record, new_best)
             if record['status'] == 'budget_exhausted':
                 break
         report = make_report(self.definition.space, before, phase, requested_seconds=budget,
