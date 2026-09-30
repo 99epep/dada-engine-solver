@@ -88,7 +88,9 @@ def test_progress_sink_and_runner_callback(tmp_path,tty):
     c.run(100,maximum_candidates=22,progress_callback=lambda x:(events.append(x),sink(x)))
     assert events[0]['event']=='start' and events[0]['sobol_index']==0
     assert events[-1]['event']=='finish' and events[-1]['attempted']==22
-    assert len(events)<12 and any(e['event']=='best' for e in events)
+    completed=[e for e in events if e['event']=='evaluation']
+    assert len(completed)==22 and sum(e['new_best'] for e in completed)==1
+    assert [e['evaluation']['evaluation_number'] for e in completed]==list(range(22))
     assert events[-1]['feasible']==22
     assert ('\r' in stream.getvalue())==tty
     assert 'max 22 new candidates' in stream.getvalue()
@@ -235,7 +237,7 @@ def test_cli_legacy_16_default_and_explicit_override(tmp_path,capsys):
     snapshot=(directory/'study.toml').read_bytes()
     main(['resume',str(directory),'--budget','0'])
     text=capsys.readouterr().out
-    assert 'max 512 new candidates' in text and 'Done' in text
+    assert 'max 512 new candidates' in text and 'Finished' in text
     assert 'Study:' not in text
     main(['resume',str(directory),'--budget','0','--max-candidates','16'])
     assert 'max 16 new candidates' in capsys.readouterr().out

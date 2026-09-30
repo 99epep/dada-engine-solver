@@ -20,8 +20,28 @@ dada-research resume outputs/my_study/campaign --budget 30m
 Reports default to `CAMPAIGN/report.html` and may overwrite derived HTML.
 Terminal output is compact; use `--list-candidates` or `--json` explicitly.
 Generated/rescaled studies default to 512 new attempts per invocation, with
-`--max-candidates` available for a deliberate override. Progress reports counts,
-failures and the best objective without recomputing reports. The HTML shows the
+`--max-candidates` available for a deliberate override.
+
+On an interactive terminal, each completed evaluation gets exactly one permanent
+line: its campaign evaluation number (one-based), region and center/Sobol origin,
+status, and either principal performance metrics or rejection evidence. `BEST`
+marks an improved feasible champion; `(cached)` identifies exact cache reuse.
+A separate bottom line refreshes in place about every ten seconds during solver
+progress checks and immediately after each completed evaluation. It shows phase
+counts, elapsed time/budget and the champion, without repeated error counters.
+Its width follows the output terminal and preserves progress, feasibility and
+COP/objective ahead of secondary metrics. `Pin` is indicated mechanical input;
+`Pgas` is indicated gas power, never an assumed useful shaft output.
+
+Redirected/non-TTY output contains the start line, one line per completed
+evaluation and a final `Finished` summary. It contains no periodic status spam,
+carriage returns or terminal escape sequences. Normal completion, Ctrl-C and
+exceptions terminate/clear the interactive status before returning control.
+Detailed evidence stays in the journal; presentation neither recalculates reports
+nor changes scheduling, candidate identity construction or durable resume.
+The existing source/runtime compatibility checks still apply after code updates.
+
+The HTML shows the
 campaign funnel, bound pressure, factual review actions and copyable commands
 that follow the selected candidates. Native solver stderr is captured around
 solver calls while original Python exceptions remain visible.
