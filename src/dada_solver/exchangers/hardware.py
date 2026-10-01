@@ -36,7 +36,8 @@ def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
         settings = dict(data['gas_model'])
         mode = settings.pop('mode', 'variable_properties')
         if mode != 'variable_properties': raise ValueError('gas_model.mode must be variable_properties; omit the section for legacy.')
-        transport = DiluteGasTransport(settings.pop('species', 'air'))
+        transport = DiluteGasTransport(settings.pop('species', 'air'),
+            **{name:settings.pop(name) for name in ('minimum_temperature','maximum_temperature','correlation_version') if name in settings})
         accommodation = GasSurfaceAccommodation(**settings.pop('accommodation', {}))
         slip = settings.pop('slip', None)
         model = MicrotubeGasModel(transport, accommodation,

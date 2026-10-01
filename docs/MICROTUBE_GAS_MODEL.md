@@ -79,8 +79,9 @@ multiplier is introduced.
 
 ## Equation provenance and applicability ledger
 
-The general implementation guard is 200–1000 K for transport, an ideal dilute
-gas, smooth circular tubes and single-phase flow. No universal pressure ceiling
+The property-temperature domains are air 100–1000 K, nitrogen/argon 200–1000 K,
+and helium 50–1000 K. The model assumes dilute gas and smooth circular tubes.
+These property domains are not single-phase or EOS validity domains. No universal pressure ceiling
 is inferred from dilute-gas sources: nonideality at higher density remains a
 separate thermodynamic limitation. The local safeguards Ma <= 0.3 and
 `2*abs(p1-p2)/(p1+p2) <= 0.2` are conservative **project screening thresholds**,
@@ -92,7 +93,7 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
 
 - Equation: `x(T)=x0*(T/T0)^1.5*(T0+S)/(T+S)`, separately for mu and k.
 - Meaning: dilute-gas transport temperature dependence, not a fitted DADA loss.
-- Geometry/boundary: bulk property, geometry independent; air, N2 and Ar.
+- Geometry/boundary: bulk property, geometry independent; N2 and Ar. Historical air used this law; current air uses the dilute correlation below.
 - Re/Pr/Ma/Kn: not property-law fit coordinates. Pressure: dilute-gas limit.
   Temperature: implementation restricted to 200–1000 K; this is an application
   envelope, not a universal accuracy guarantee from the table.
@@ -103,7 +104,7 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
 - Limits: density effects, mixtures other than the stated air approximation,
   and high-temperature chemistry are not resolved.
 
-### GAS-CP-SHOMATE and GAS-HE-NIST
+### GAS-CP-SHOMATE
 
 - Equations: `cp_molar=A+B*t+C*t^2+D*t^3+E/t^2`, `t=T/1000`;
   mass cp divides by molar mass. Ar/He use monatomic `cp=2.5*R`.
@@ -111,14 +112,12 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   100–500 / 500–2000 K branches; [O2 table](https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Mask=11),
   100–700 / 700–2000 K branches. Air transport cp uses a disclosed approximate
   79/21 mole N2/O2 mixture. The solver's calorically perfect cp/cv are unchanged.
-- He mu and k: piecewise-linear interpolation of the
-  [NIST helium dilute-gas table](https://www.nist.gov/pml/sensor-science/fluid-metrology/database-thermophysical-properties-gases-used-semiconductor-9),
-  200–1000 K rows, columns eta/lambda; provenance Hurly & Moldover (2000).
-  Table uncertainty is not the interpolation error.
+- Historical He mu/k used NIST table interpolation (200–1000 K); the current
+  dilute Arp / Hands-Arp formulas below replace it.
 - Meaning/type: thermochemical reference fits and calculated reference transport
   data, not microtube experiments. Geometry/boundary/Re/Pr/Ma/Kn: not applicable
   to the property fits; pressure: ideal/dilute gas.
-- Implementation: `gas_transport.DiluteGasTransport.cp/_helium`.
+- Implementation: `gas_transport.DiluteGasTransport.cp`.
 - Limits: temperature range checked; no extrapolation. cp(T) affects Pr and
   diagnostic sound speed, not conservative internal energy or enthalpy transport.
 
@@ -339,7 +338,7 @@ role of transport Cp. The validation table is analytically ideal and may use
 the existing ideal-density/constant-gamma hydraulic laws. Those laws explicitly
 reject an incompatible real-fluid model. Microtube density, sonic caps,
 Poiseuille reconstruction, Mach and rarefaction diagnostics still need scientific
-revalidation for real helium. `DiluteGasTransport` remains limited to 200–1000 K;
+revalidation for real helium. `DiluteGasTransport` now uses the species-dependent temperature domains below;
 there is no cryogenic extrapolation or two-phase extension. See
 [working-fluid models and compiled backends](WORKING_FLUID_MODELS.md).
 
@@ -393,3 +392,90 @@ velocity, Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass fl
 remains an observable and an optional explicit study constraint. Pressure inequality
 is diagnostic-only; isothermality excursion is no longer reported or constrained.
 See [the limit audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+
+
+## Species-dependent dilute transport, version `dilute_species_v2`
+
+This is a scientific property-law change, not an EOS replacement. New air defaults
+are 100–1000 K; helium 50–1000 K; nitrogen and argon remain 200–1000 K.
+`minimum_temperature` and `maximum_temperature` may restrict, never expand, these
+ranges. Serialized old explicit 200 K lower bounds remain restrictive. Old studies
+remain readable, but new code uses the new correlation formulas even at 200–1000 K;
+source/backend identity prevents silently resuming a historical runtime. Preserve
+old outputs and use a new study/basis/campaign, not a rewritten journal.
+
+### Formulas and provenance
+
+Adapted from CoolProp **v8.0.0**, MIT: [Air.json](https://github.com/CoolProp/CoolProp/blob/v8.0.0/dev/fluids/Air.json)
+and [TransportRoutines.cpp](https://github.com/CoolProp/CoolProp/blob/v8.0.0/src/Backends/Helmholtz/TransportRoutines.cpp).
+Attribution and the complete MIT license are in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+No residual-density or critical enhancement terms are included.
+
+- Air: [Lemmon & Jacobsen (2004), *Viscosity and Thermal Conductivity Equations
+  for Nitrogen, Oxygen, Argon, and Air*, IJT 25, 21–69](https://www.nist.gov/publications/viscosity-and-thermal-conductivity-equations-nitrogen-oxygen-argon-and-air).
+  With `x=ln(T/103.3)` and `S=exp(0.431-0.4623*x+0.08406*x²+0.005341*x³-0.00331*x⁴)`,
+  `mu=2.66958e-8*sqrt(28.9586*T)/(0.36²*S)` Pa s.
+  With `tau=132.6312/T`, `k=0.001308*(mu*1e6)+0.001405*tau^-1.1-0.001036*tau^-0.3` W/(m K).
+  The reducing temperature is the EOS reducing value, not the separate critical-state value.
+- Helium viscosity: [Arp, McCarty & Friend, NIST TN 1334 revised (1998)](https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf),
+  dilute limit of CoolProp's `viscosity_helium_hardcoded`.
+  For `T<=100 K`, `mu=1e-7*exp(-0.135311743/x+1.00347841+1.20654649*x-0.149564551*x²+0.012520841*x³)`,
+  `x=ln(T)`. Above 100 K, `mu=1e-7*196*T^0.71938*exp(12.451/T-295.67/T²-4.1249)` Pa s.
+- Helium conductivity: [Hands & Arp (1981), *A Correlation of Thermal Conductivity
+  Data for Helium*, Cryogenics 21, 697–703](https://doi.org/10.1016/0011-2275(81)90211-3).
+  `k=2.7870034e-3*T^0.7034007057*exp(3.739232544/T-26.20316969/T²+59.82252246/T³-49.26397634/T⁴)` W/(m K).
+  The paper's reported data range ends at 830 K; the requested 1000 K DADA ceiling
+  follows the implemented CoolProp dilute expression, not new experimental validation above 830 K.
+- Air transport Cp retains the NIST Shomate 79/21 molar N2/O2 approximation,
+  with branches documented from 100 K. Helium retains `Cp=2.5*2077.1` J/(kg K).
+  None of these transport Cp values replaces DADA conservative caloric properties.
+
+The oracle's air EOS is [Lemmon, Jacobsen, Penoncello & Friend (2000), JPCRD 29,
+331–385](https://www.nist.gov/publications/thermodynamic-properties-air-and-mixtures-nitrogen-argon-and-oxygen-60-2000-k-pressures).
+It is **not** installed as DADA's thermodynamic EOS. `property_temperature_domain`
+is not `single_phase_domain`: no condensation, mixture phase equilibrium or
+real-gas nonideality check is added. A future `(T,p)` phase/nonideality layer remains
+necessary. Tube transport is still quasi-steady in a pulsed machine.
+
+### Frozen oracle and measured changes
+
+`tools/generate_coolprop_transport_reference.py` requires optional CoolProp 8.x
+only to regenerate `tests/data/coolprop8_dilute_transport.json`. Runtime and normal
+tests do not import CoolProp. The oracle uses `(T,Dmass)` at `1e-10 kg/m³` and
+checks density reduction to `1e-11 kg/m³` to bound residual contamination.
+
+On the requested 19 temperature points (air 100–1000 K, He 50–1000 K), maximum
+relative errors versus CoolProp 8.0.0 are:
+
+| Species | mu | k | Cp |
+|---|---:|---:|---:|
+| Air | 7.31e-14 | 3.18e-13 | 0.007061 |
+| Helium | 3.17e-13 | 3.67e-13 | 0.00007881 |
+
+Tests allow 2e-11 for directly ported mu/k, 0.8% for approximate air Cp, and 0.01%
+for helium Cp using unchanged rounded R. These are oracle agreement tolerances,
+not experimental accuracy claims.
+
+Compared with the prior formulas on a 1 K grid from 200 to 1000 K:
+
+| Species | mu relative change | k relative change |
+|---|---:|---:|
+| Air | +0.1566% to +4.0740% | -0.6811% to +3.0224% |
+| Helium | -0.5200% to +0.2476% | -0.5684% to +0.2922% |
+| Nitrogen / argon | 0 | 0 |
+
+Transport Cp is unchanged for all four species. Frozen legacy samples are retained
+in `tests/data/legacy_dilute_transport_v1.json`. The Doty He variable-flow regression
+shifts by about +0.248%; its tolerance and experimental comparison remain unchanged.
+
+### Domain failures and campaign isolation
+
+`TransportDomainError` records species, temperature and allowed bounds, with
+`transport_temperature_below_domain`, `transport_temperature_above_domain`, or
+`transport_temperature_nonfinite`. Research records `invalid_fluid_domain` and
+`diagnostics.transport_failure`, including integration/postprocessing phase.
+A postprocessing failure retains convergence evidence but exposes no usable
+objective or reusable final state. The next candidate is still evaluated.
+Only this typed property-domain error is intercepted; programming errors are not
+swallowed in the runner. Compiled temperature guards fall back to Python, which
+raises the same typed error. No CoolProp property call occurs inside the RHS.

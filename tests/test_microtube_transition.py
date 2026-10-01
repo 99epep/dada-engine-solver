@@ -69,7 +69,7 @@ def test_other_guards_remain():
     assert 'thermal_slip_not_implemented' in diagnostic(3000,p1=100,p2=100).issues
     assert 'beyond_continuum_model' in diagnostic(3000,p1=1,p2=1).issues
     assert 'reynolds_outside_correlation_domain' in diagnostic(5e6+1).issues
-    with pytest.raises(ValueError): MODEL.transport.viscosity(199.)
+    with pytest.raises(ValueError): MODEL.transport.viscosity(99.9)
     with pytest.raises(MicrotubeDomainError): MODEL.require(diagnostic(3000,p1=1.5e6))
     assert numeric.thermal_kind(3000,.7) == 3
     assert not numeric.laminar_diagnostics(3000*BANK.tube_flow_area_m2*MODEL.transport.viscosity(350)/BANK.inner_diameter_m,1e6,1e6,350,.00077,.8,

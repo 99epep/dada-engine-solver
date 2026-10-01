@@ -209,3 +209,5 @@ The dynamic-wall composition example is
 Use `--retry-incomplete` with a larger budget to deliberately revisit the most
 recent deadline-interrupted candidate. Interrupted records are reusable initial
 guesses, not periodic solutions or cached feasibility verdicts.
+
+Transport formula adaptations are attributed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); DADA remains GPL-3.0-or-later.

@@ -2,6 +2,7 @@
 from dataclasses import replace
 from pathlib import Path
 import math
+import re
 
 import numpy as np
 import pytest
@@ -116,7 +117,7 @@ def test_invalid_transport_state_keeps_exception_semantics():
     values=np.r_[state.as_array(),wrapper.heat_in.wall_capacity_j_k*450,
                  wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
     with pytest.raises(ValueError) as expected: reference.derivative(wrapper,.3,values)
-    with pytest.raises(type(expected.value),match=str(expected.value)):
+    with pytest.raises(type(expected.value),match=re.escape(str(expected.value))):
         wrapper.derivative(.3,values)
 
 

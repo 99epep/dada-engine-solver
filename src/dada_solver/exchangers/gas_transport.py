@@ -6,6 +6,26 @@ import numpy as np
 from dada_solver import numerical_primitives as numeric
 
 
+PROPERTY_TEMPERATURE_DOMAINS = {
+    'air': (100.,1000.), 'nitrogen': (200.,1000.),
+    'argon': (200.,1000.), 'helium': (50.,1000.),
+}
+
+
+class TransportDomainError(ValueError):
+    """A property-temperature failure, not a phase/EOS validity verdict."""
+    def __init__(self, temperature, species, minimum, maximum):
+        self.category = ('transport_temperature_nonfinite' if not math.isfinite(temperature)
+                         else 'transport_temperature_below_domain' if temperature<minimum
+                         else 'transport_temperature_above_domain')
+        self.diagnostics = dict(category=self.category, species=species,
+            temperature_k=temperature if math.isfinite(temperature) else None,
+            minimum_temperature_k=minimum, maximum_temperature_k=maximum,
+            domain_kind='property_temperature_domain')
+        super().__init__(f'Transport temperature {temperature:g} K outside declared domain '
+                         f'[{minimum:g}, {maximum:g}] K for {species}: {self.category}')
+
+
 class GasTransportModel(Protocol):
     gas_constant: float
     provenance: str
@@ -18,16 +38,17 @@ class GasTransportModel(Protocol):
 
 @dataclass(frozen=True)
 class DiluteGasTransport:
-    """Air/N2/Ar Sutherland; He NIST interpolation; ideal-gas Shomate cp.
+    """Dilute air/He correlations, N2/Ar Sutherland; ideal-gas Shomate cp.
 
     Air cp uses an explicitly approximate 79/21 mole N2/O2 mixture. R stays
     compatible with the existing calorically perfect thermodynamic gas. cp(T)
     here informs transport only, never silently replaces caloric state energy.
     """
     species: str = 'air'
-    minimum_temperature: float = 200.
+    minimum_temperature: float | None = None
     maximum_temperature: float = 1000.
-    provenance: str = 'COMSOL Sutherland tables 5-2/5-3; NIST Shomate; NIST helium table'
+    provenance: str = 'Air: Lemmon/Jacobsen 2004; He: Arp/McCarty/Friend and Hands/Arp; N2/Ar: COMSOL Sutherland; NIST Shomate cp'
+    correlation_version: str = 'dilute_species_v2'
 
     @property
     def mean_free_path_convention(self):
@@ -36,8 +57,13 @@ class DiluteGasTransport:
     def __post_init__(self):
         if self.species not in ('air','nitrogen','argon','helium'):
             raise ValueError('Unsupported transport species.')
-        if not 200 <= self.minimum_temperature < self.maximum_temperature <= 1000:
-            raise ValueError('Transport implementation is limited to 200-1000 K.')
+        lower,upper=PROPERTY_TEMPERATURE_DOMAINS[self.species]
+        if self.minimum_temperature is None:
+            object.__setattr__(self,'minimum_temperature',lower)
+        if not lower <= self.minimum_temperature < self.maximum_temperature <= upper:
+            raise ValueError(f'{self.species} transport is limited to {lower:g}-{upper:g} K; user bounds may only restrict it.')
+        if self.correlation_version!='dilute_species_v2':
+            raise ValueError('Unsupported transport correlation version.')
 
     @property
     def gas_constant(self):
@@ -45,7 +71,7 @@ class DiluteGasTransport:
 
     def _check(self, t):
         if not math.isfinite(t) or not self.minimum_temperature <= t <= self.maximum_temperature:
-            raise ValueError(f'Transport temperature {t:g} K outside declared domain.')
+            raise TransportDomainError(t,self.species,self.minimum_temperature,self.maximum_temperature)
 
     def viscosity(self, t):
         self._check(t)
