@@ -479,3 +479,21 @@ objective or reusable final state. The next candidate is still evaluated.
 Only this typed property-domain error is intercepted; programming errors are not
 swallowed in the runner. Compiled temperature guards fall back to Python, which
 raises the same typed error. No CoolProp property call occurs inside the RHS.
+
+### Historical machine replays under the changed transport law
+
+`tools/generate_transport_v2_thermal_reference.py` performs four bounded fixed-input
+DADA evaluations (no search) and writes a separate versioned test reference.
+`tests/data/transport_v2_thermal_reference.json` does not replace historical result
+artifacts. On those machines the measured indicated-power / efficiency changes are:
+
+| Historical geometry | Periodic cycles | Indicated-power change | Efficiency change |
+|---|---:|---:|---:|
+| Fourier C2 | 4 | -0.13685% | -0.09601% |
+| Free spline | 3 | -0.11267% | -0.10866% |
+| Six-bar | 13 | -0.09318% | -0.06692% |
+| Structured C2 15p | 3 | -0.11506% | -0.11116% |
+
+The existing numerical comparison tolerances are retained against these new-law
+references; comparing to the old-law numbers with roundoff tolerances would test
+a different physical model. Historical constant-transport cases are unchanged.

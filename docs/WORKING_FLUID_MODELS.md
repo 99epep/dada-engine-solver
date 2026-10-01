@@ -29,8 +29,8 @@ an appropriate consistent energy reference or explicitly extend that validation.
 conductivity and correlation Cp do not replace the thermodynamic EOS/caloric
 model. Its species-dependent property-temperature domains are air 100–1000 K, He
 50–1000 K, and N2/Ar 200–1000 K; see [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md).
-These are not phase/EOS validity domains. No
-cryogenic helium transport model are introduced.
+These are not phase/EOS validity domains. No real-fluid helium EOS, two-phase
+model or cryogenic hydraulic validation is introduced.
 
 ## Runtime table and scientific identity
 

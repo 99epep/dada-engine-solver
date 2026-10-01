@@ -31,7 +31,10 @@ def test_stored_reference_physical_metrics(definition):
         pytest.skip('Stored reference uses Numba; the independent legacy parity checks still exercise the available backend.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,values(definition)))
     json.dumps(result, allow_nan=False)
-    reference=definition.study.basis.data['reference_result']
+    # Historical stored metrics retain the former transport law. This reference
+    # uses the same machine with the explicitly changed dilute transport v2.
+    case=json.loads((ROOT/'tests/data/transport_v2_thermal_reference.json').read_text())['cases']['six_bar']
+    reference=dict(case['metrics'],cycles_completed=case['cycles'])
     assert result['status']=='feasible'
     # Same-backend wrapper parity: the existing RHS equivalence tolerance is
     # 2e-11 relative / 1e-11 absolute. This is not a physical accuracy claim.
@@ -67,8 +70,20 @@ def test_varied_inputs_match_original_evaluator(definition,variant,monkeypatch,t
     old_design=legacy.build_design(seed,geometry,mass,old_p,pair['small'],pair['large'])
     new_design=definition.adapter.build(p)
     assert asdict(new_design.configuration)==asdict(old_design.configuration)
-    assert asdict(new_design.heat_in)==asdict(old_design.heat_in)
-    assert asdict(new_design.heat_out)==asdict(old_design.heat_out)
+    for side in ('heat_in','heat_out'):
+        new_hw=asdict(getattr(new_design,side));old_hw=asdict(getattr(old_design,side))
+        # Stored sources retain explicit Tmin=200 and historical provenance;
+        # the historical script now instantiates today's default Tmin=100.
+        # Both execute today's same correlation, tested over the shared range.
+        for hw in (new_hw,old_hw):
+            transport=hw['inputs']['gas_model']['transport']
+            assert transport.pop('minimum_temperature') in (100.,200.)
+            transport.pop('provenance')
+        assert new_hw==old_hw
+        for temperature in (200.,300.,600.,1000.):
+            a=getattr(new_design,side).inputs.gas_model.transport
+            b=getattr(old_design,side).inputs.gas_model.transport
+            assert (a.viscosity(temperature),a.conductivity(temperature),a.cp(temperature)) == (b.viscosity(temperature),b.conductivity(temperature),b.cp(temperature))
     for side in ('small','large'):
         for suffix in ('cylinder_volume','cylinder_volume_derivative'):
             method=f'{side}_{suffix}'

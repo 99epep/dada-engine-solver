@@ -69,7 +69,7 @@ def test_real_geometry_can_accept_high_flow_without_relaxing_domains():
     mach=model.diagnose(narrow,.12,2e5,1.99e5,300)
     assert 'high_mach' in mach.issues
     with pytest.raises(MicrotubeDomainError):model.require(mach)
-    with pytest.raises(ValueError):model.diagnose(bank,.12,2e5,1.99e5,199)
+    with pytest.raises(ValueError):model.diagnose(bank,.12,2e5,1.99e5,99.9)
 
 
 def test_suggestions_have_specific_offline_actions():
