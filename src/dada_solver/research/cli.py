@@ -46,8 +46,8 @@ def evaluate(study_path, output, *, assignments=(), reference=False, budget=None
         if not sep or name not in owned or name in assigned:
             raise ValueError(f'Expected a unique known parameter=value, got {assignment!r}.')
         assigned.add(name)
-        from dada_solver.campaign.parameters import IntegerParameter
-        values[name] = int(value) if isinstance(owned[name],IntegerParameter) else float(value)
+        from dada_solver.campaign.parameters import IntegerParameter, ChoiceParameter
+        values[name] = value if isinstance(owned[name],ChoiceParameter) else int(value) if isinstance(owned[name],IntegerParameter) else float(value)
     candidate = candidate_for_values(definition, values)
     started = time.monotonic()
     seconds = parse_budget(budget) if budget is not None else definition.candidate_budget_seconds
@@ -141,7 +141,7 @@ def main(argv=None):
                 else:
                     print(f"Families: {study.settings['small']['family']} / {study.settings['large']['family']}; {len(study.space.parameters)} active coordinates; no integration started.")
                 for p in study.data['parameters']:
-                    description=f"fixed {p['value']}" if 'value' in p else f"{p['lower']} .. {p['upper']}; initial {p['initial']}"
+                    description=f"fixed {p['value']}" if 'value' in p else f"choices {p['choices']}; initial {p['initial']}" if p.get('kind')=='choice' else f"{p['lower']} .. {p['upper']}; initial {p['initial']}"
                     print(f"  {p['name']} [{p['unit']}]: {description}")
                 if definition.wall_backend.name=='numba' and not validation['backend'].get('numba_available'):
                     print('Numba is unavailable; the existing Python fallback will be recorded in each result.')

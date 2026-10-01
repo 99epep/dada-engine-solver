@@ -23,4 +23,4 @@ def dumps(data):
             elif isinstance(v,list) and v and isinstance(v[0],dict):
                 for item in v: table(item,(*path,k),True)
     table(data)
-    return '# Dada-Engine Research: fixed values use value; active coordinates use initial/lower/upper.\n'+'\n'.join(lines)+'\n'
+    return '# Dada-Engine Research: fixed values use value; active coordinates use initial with lower/upper or choices.\n'+'\n'.join(lines)+'\n'

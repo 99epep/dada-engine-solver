@@ -1,5 +1,6 @@
 """Validation and offline evidence for local Sobol regions."""
 import math
+from dada_solver.campaign.parameters import ChoiceParameter
 from collections import Counter
 from dada_solver.campaign.report import elite_records
 from .schema import keys
@@ -31,8 +32,12 @@ def validate_search(search, space):
         for key in ('source_candidate_id','source_study_id'):
             value=region[key]
             if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value): raise ValueError('Region provenance requires SHA-256 IDs.')
-        if not isinstance(region['center'],dict) or any(isinstance(v,bool) or not isinstance(v,(int,float)) for v in region['center'].values()):
-            raise ValueError('Region centers require named finite physical numeric values.')
+        if not isinstance(region['center'],dict):
+            raise ValueError('Region centers require named physical values.')
+        for parameter in space.parameters:
+            value=region['center'].get(parameter.name)
+            if not isinstance(parameter,ChoiceParameter) and (isinstance(value,bool) or not isinstance(value,(int,float))):
+                raise ValueError('Numeric region coordinates require finite physical numeric values.')
         space.encode(region['center'])
 
 

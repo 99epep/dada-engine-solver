@@ -47,6 +47,7 @@ def campaign_evidence(records, scientific, source, is_campaign):
     active = [p for p in scientific['parameters'] if 'value' not in p]
     bounds = []
     for i,p in enumerate(active):
+        if p.get('kind')=='choice': continue
         for side in ('lower','upper'):
             def near(r):
                 values=r.get('normalized',[])

@@ -61,7 +61,7 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     keys(ref,('path','sha256'),'sources.machine')
     basis=load_machine_basis(basis_path or path.parent/ref['path'],ref['sha256'])
     if basis.data['schema_version']!=raw['schema_version']: raise ValueError('Study and machine schema versions must match.')
-    specs,defaults=machine_parameters(basis)
+    specs,defaults=machine_parameters(basis, [p.get('name') for p in raw['parameters']])
     expected_policy=POLICIES_V3 if raw['schema_version']==3 else POLICIES
     policy=raw['policies']
     from .charge import POLICY as REFERENCE_CHARGE
@@ -123,6 +123,12 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
         if 'value' in row:
             keys(row,('name','value','unit'),name)
             spec.validate(row['value']); fixed[name]=row['value']
+        elif spec.kind=='choice':
+            keys(row,('name','initial','choices','unit','kind'),name)
+            if row['kind']!='choice': raise ValueError(f'Incorrect parameter kind for {name}.')
+            parameter=parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})
+            for value in parameter.choices: spec.validate(value)
+            active.append(parameter); fixed.pop(name,None)
         else:
             if spec.kind not in ('continuous','integer'): raise ValueError(f'{name} must remain fixed; branches/categories are not continuous search coordinates.')
             mode='encoding' if spec.kind=='integer' else 'transform'

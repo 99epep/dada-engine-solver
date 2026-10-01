@@ -69,17 +69,48 @@ class IntegerParameter:
         return (physical-self.lower)/(self.upper-self.lower)
 
 
+@dataclass(frozen=True, slots=True)
+class ChoiceParameter:
+    """Explicit categorical bins; their order is an encoding, not a distance."""
+    name: str
+    choices: tuple
+    initial: str | int | float | bool
+
+    def __post_init__(self):
+        if not self.name or not isinstance(self.choices, (list, tuple)) or not self.choices:
+            raise ValueError('Choices require a name and a nonempty list or tuple.')
+        choices = tuple(self.choices)
+        if any(type(v) not in (str, int, float, bool) or
+               (isinstance(v, float) and not math.isfinite(v)) for v in choices):
+            raise ValueError('Choices must be finite scalar values.')
+        if len(set(choices)) != len(choices) or self.initial not in choices:
+            raise ValueError('Choices must be distinct and contain the initial value.')
+        object.__setattr__(self, 'choices', choices)
+
+    def decode(self, normalized):
+        u = float(normalized)
+        if not math.isfinite(u) or not 0 <= u <= 1:
+            raise ValueError('Normalized coordinates must lie in [0, 1].')
+        return self.choices[min(int(u * len(self.choices)), len(self.choices)-1)]
+
+    def encode(self, physical):
+        if physical not in self.choices:
+            raise ValueError('Physical value is not one of the declared choices.')
+        return (self.choices.index(physical) + .5) / len(self.choices)
+
+
 def parameter_from_mapping(data):
     settings = dict(data)
     kind = settings.pop('kind', 'continuous')
     if kind == 'continuous': return ContinuousParameter(**settings)
     if kind == 'integer': return IntegerParameter(**settings)
+    if kind == 'choice': return ChoiceParameter(**settings)
     raise ValueError(f'Unknown parameter kind: {kind}')
 
 
 @dataclass(frozen=True, slots=True)
 class ParameterSpace:
-    parameters: tuple[ContinuousParameter | IntegerParameter, ...]
+    parameters: tuple[ContinuousParameter | IntegerParameter | ChoiceParameter, ...]
     allow_empty: bool = False
 
     def __post_init__(self):

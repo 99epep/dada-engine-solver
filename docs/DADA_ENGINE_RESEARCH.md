@@ -601,3 +601,34 @@ evidence when its criterion matches the recorded final cause (legacy records
 without a reason retain their rejection evidence). Other final outcomes or a
 different final cause do not inherit that earlier violation. This distinction
 changes presentation only, not validity, solver behavior or stored records.
+
+### Categorical valve placements
+
+V2/V3 studies can mix continuous, integer and categorical coordinates:
+
+```toml
+[[parameters]]
+name = "valve.heat_in.placement"
+unit = "1"
+kind = "choice"
+initial = "downstream"
+choices = ["downstream", "upstream"]
+```
+
+Use `valve.heat_out.placement` independently for the other exchanger. Omitted
+placements retain the machine basis values; fixed declarations use `value`.
+These parameters select existing valve configurations without changing their physics.
+The global Sobol search can explore DD, UD, DU and UU in one campaign.
+
+Choices occupy equal bins in their declared order. Encoding uses bin centers
+(0.25 and 0.75 for two choices); 1 decodes to the last choice. Candidate identity
+canonicalizes choice coordinates to those centers, so repeated draws of the
+same categorical value do not create different identities. Existing numerical
+coordinates and historical study identities are unchanged.
+
+`refine` embeds categorical center values like other physical coordinates.
+Its normalized radius acts on the declared bins, not a physical distance between
+categories: radius 0.20 retains each binary center's choice; a larger radius can
+cross a bin boundary. Multiple regions can retain different valve topologies.
+Reports display the selected strings and exclude categories from numerical
+bound-pressure diagnostics.

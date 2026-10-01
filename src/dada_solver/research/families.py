@@ -36,8 +36,12 @@ class ParameterSpec:
     unit: str = '1'
     kind: str = 'continuous'
     positive: bool = False
+    choices: tuple = ()
 
     def validate(self, value):
+        if self.kind=='choice':
+            if value not in self.choices: raise ValueError('Unknown categorical value.')
+            return
         if self.kind=='boolean':
             if type(value) is not bool: raise ValueError('Expected a boolean scientific input.')
             return
