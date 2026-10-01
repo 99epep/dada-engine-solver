@@ -148,3 +148,52 @@ def test_obsolete_generic_mach_and_isothermality_are_not_model_boundaries():
         'cold_isothermality_error':.8}})
     evidence=limiting_evidence(record,scientific)
     assert evidence==[]
+
+
+@pytest.mark.parametrize('status,reason',[
+    ('feasible',''),('converged_infeasible','maximum_pressure: violated'),
+    ('periodic_non_convergence','periodic tolerance not reached'),
+    ('budget_exhausted','deadline'),('integration_failure','other failure'),
+    ('invalid_exchanger','MicrotubeDomainError: large_relative_pressure_drop'),
+])
+def test_historical_trial_is_not_a_final_boundary(tmp_path,status,reason):
+    scientific={'basis':{'heat_out':{'inputs':{'gas_model':{'maximum_mach':.3}}}}}
+    failure=dict(state_kind='rejected_trial_state',criterion='high_mach',mach=.99,
+        exchanger='heat_out',passage='hot_to_small',angle_rad=0,time_s=0.)
+    record=dict(status=status,reason=reason,safe_retry_used=True,constraints=[],
+        diagnostics={'first_microtube_failure':failure},derived={'microtube_gas_domains':{
+            'passages':{'Ho.outlet':{'ranges':{'mach':{'maximum':.007}},
+                'hydraulic_upstream_ranges':{'mach':{'maximum':.006}}}}}})
+    before=copy.deepcopy(record)
+    evidence=limiting_evidence(record,scientific)
+    assert record==before
+    assert next(c for c in evidence if c['name']=='microtube.mach')['value']==.007
+    assert all(c['satisfied'] for c in evidence)
+    assert not any(c['value']==.99 or c['method']=='first rejected trial state' for c in evidence)
+
+
+def test_matching_final_domain_rejection_keeps_first_trial_evidence():
+    record=dict(status='invalid_exchanger',reason='MicrotubeDomainError: high_mach',safe_retry_used=True,
+        diagnostics={'first_microtube_failure':dict(criterion='high_mach',mach=.99,exchanger='heat_out')})
+    scientific={'basis':{'heat_out':{'inputs':{'gas_model':{'maximum_mach':.3}}}}}
+    row=next(r for r in limiting_evidence(record,scientific) if r['name']=='microtube.mach')
+    assert row['value']==.99 and row['state']=='violated'
+    assert row['method']=='first rejected trial state'
+
+
+def test_recovered_trial_remains_in_html_history_not_current_boundaries(tmp_path):
+    from tests.test_research_cockpit import campaign
+    from dada_solver.research.report import compare
+    c,_=campaign(tmp_path,1);data=compare([c.directory]);record=data['selected'][0]
+    record.update(status='feasible',safe_retry_used=True,diagnostics={'first_microtube_failure':dict(
+        state_kind='rejected_trial_state',criterion='high_mach',mach=.99,exchanger='heat_out')})
+    record['derived']={'microtube_gas_domains':{'passages':{'Ho.inlet':{'ranges':{'mach':{'maximum':.007}}}}}}
+    data['scientific']['basis']={'heat_out':{'inputs':{'gas_model':{'maximum_mach':.3}}}}
+    record['limiting_evidence']=limiting_evidence(record,data['scientific'])
+    html=render_html(data,tmp_path/'recovered.html').read_text()
+    embedded=json.loads(html.split('<script id="data" type="application/json">')[1].split('</script>')[0])['selected'][0]
+    assert embedded['diagnostics']['first_microtube_failure']['mach']==.99
+    mach=[c for c in embedded['limiting_evidence'] if c['name']=='microtube.mach']
+    assert len(mach)==1 and mach[0]['value']==.007 and mach[0]['satisfied']
+    assert 'Rejected trial history' in html and 'Recovered trial diagnostic' in html
+    assert 'candidate.diagnostics?.first_microtube_failure' in html
