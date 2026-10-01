@@ -1,0 +1,335 @@
+# Dada-Engine Research: fixed values use value; active coordinates use initial/lower/upper.
+"mechanical_constraints" = []
+"schema_version" = 3
+
+[ "charge_reference" ]
+"pressure_pa" = 100000.0
+"temperature_k" = 298.15
+"volume_state" = "maximum_total_gas_volume"
+
+[[ "constraints" ]]
+"type" = "valid_thermodynamic_model"
+"unit" = "1"
+
+[ "kinematics" ]
+"coupling" = "independent"
+
+[ "kinematics"."large" ]
+"family" = "hybrid_compact"
+
+[ "kinematics"."small" ]
+"family" = "hybrid_compact"
+
+[ "numerical" ]
+"backend" = "numba"
+"candidate_budget_seconds" = 300.0
+"domain_error_retry" = "once_safe_uniform_state_with_source_wall_temperatures"
+"maximum_cycles" = 100
+
+[ "objective" ]
+"type" = "maximize_cooling_cop"
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "volume.total_swept_m3"
+"unit" = "m^3"
+"value" = 0.005
+
+[[ "parameters" ]]
+"name" = "volume.small_clearance_ratio"
+"unit" = "1"
+"value" = 0.01
+
+[[ "parameters" ]]
+"name" = "volume.large_clearance_ratio"
+"unit" = "1"
+"value" = 0.01
+
+[[ "parameters" ]]
+"name" = "operation.frequency_hz"
+"unit" = "Hz"
+"value" = 2.8
+
+[[ "parameters" ]]
+"name" = "volume.swept_ratio"
+"unit" = "1"
+"initial" = 1.114466541260481
+"lower" = 0.5
+"upper" = 1.6
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.small_max_deg"
+"unit" = "deg"
+"initial" = 106.3980956748128
+"lower" = 100.0
+"upper" = 220.0
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.small_down_duration_deg"
+"unit" = "deg"
+"initial" = 145.82592951133847
+"lower" = 80.0
+"upper" = 300.0
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.small_up_rounding"
+"unit" = "1"
+"initial" = 0.21001576786488294
+"lower" = 0.008
+"upper" = 0.35
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.small_down_kink_u"
+"unit" = "1"
+"initial" = 0.3264219357073307
+"lower" = 0.08
+"upper" = 0.92
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.small_down_kink_q"
+"unit" = "1"
+"initial" = 0.3453129320591688
+"lower" = 0.08
+"upper" = 0.92
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.large_down_duration_deg"
+"unit" = "deg"
+"initial" = 188.1857361830771
+"lower" = 80.0
+"upper" = 300.0
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.large_down_rounding"
+"unit" = "1"
+"initial" = 0.32849472591280937
+"lower" = 0.008
+"upper" = 0.35
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.large_up_kink_u"
+"unit" = "1"
+"initial" = 0.34329180665314196
+"lower" = 0.08
+"upper" = 0.92
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.large_up_kink_q"
+"unit" = "1"
+"initial" = 0.3491622235253453
+"lower" = 0.08
+"upper" = 0.92
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_count"
+"unit" = "1"
+"initial" = 6563
+"lower" = 500
+"upper" = 8000
+"kind" = "integer"
+"encoding" = "nearest_even_v1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_length_m"
+"unit" = "m"
+"initial" = 0.08966084428131581
+"lower" = 0.03
+"upper" = 0.15
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.inner_diameter_m"
+"unit" = "m"
+"initial" = 0.0007714484232477844
+"lower" = 0.0007
+"upper" = 0.0018
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.wall_thickness_m"
+"unit" = "m"
+"value" = 0.0005
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.pitch_m"
+"unit" = "m"
+"value" = 0.0032
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.header_depth_m"
+"unit" = "m"
+"value" = 0.002
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_count"
+"unit" = "1"
+"initial" = 5078
+"lower" = 500
+"upper" = 8000
+"kind" = "integer"
+"encoding" = "nearest_even_v1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_length_m"
+"unit" = "m"
+"initial" = 0.13074977215379477
+"lower" = 0.03
+"upper" = 0.15
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.inner_diameter_m"
+"unit" = "m"
+"initial" = 0.001389452590420842
+"lower" = 0.0007
+"upper" = 0.0018
+"kind" = "continuous"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.wall_thickness_m"
+"unit" = "m"
+"value" = 0.0005
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.pitch_m"
+"unit" = "m"
+"value" = 0.0032
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.header_depth_m"
+"unit" = "m"
+"value" = 0.002
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_conductivity_w_m_k"
+"unit" = "W/(m*K)"
+"value" = 200.0
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_density_kg_m3"
+"unit" = "kg/m^3"
+"value" = 8000.0
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_cp_j_kg_k"
+"unit" = "J/(kg*K)"
+"value" = 500.0
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_conductivity_w_m_k"
+"unit" = "W/(m*K)"
+"value" = 200.0
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_density_kg_m3"
+"unit" = "kg/m^3"
+"value" = 8000.0
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_cp_j_kg_k"
+"unit" = "J/(kg*K)"
+"value" = 500.0
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.inlet_temperature_k"
+"unit" = "K"
+"value" = 258.15
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.mass_flow_kg_s"
+"unit" = "kg/s"
+"value" = 0.25
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.cp_j_kg_k"
+"unit" = "J/(kg*K)"
+"value" = 4180.0
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.wall_conductance_w_k"
+"unit" = "W/K"
+"value" = 500.0
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.inlet_temperature_k"
+"unit" = "K"
+"value" = 298.15
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.mass_flow_kg_s"
+"unit" = "kg/s"
+"value" = 0.25
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.cp_j_kg_k"
+"unit" = "J/(kg*K)"
+"value" = 4180.0
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.wall_conductance_w_k"
+"unit" = "W/K"
+"value" = 500.0
+
+[ "policies" ]
+"charge" = "reference_pressure_at_maximum_total_volume_v1"
+"external_loop_hydraulics" = "unmodelled"
+"external_pump_fan_consumption" = "excluded_from_balance"
+"local_reflux" = "retain_signed_flows"
+"mechanical_losses" = "unknown"
+"outlet_valve_cda" = "fixed_source_cda"
+"useful_power" = "unavailable"
+"volume_partition" = "total_swept_and_clearance_ratios"
+
+[ "screening" ]
+"samples" = 1440
+
+[ "search" ]
+"type" = "sobol"
+"domain" = "fixed_global_bounds"
+"seed" = 20261001
+"scramble" = true
+"evaluate_initial" = true
+
+[ "sources" ]
+
+[ "sources"."machine" ]
+"path" = "study.basis.json"
+"sha256" = "77557f63a9c297cf550ad1c4883de8f515fb60accdf635e6b2d217141d016202"
+
+[ "study" ]
+"protocol" = "machine_design"
+"purpose" = "frozen_candidate_passive_check_valve_placement_screen"
+"name" = "5 L / 2.8 Hz valve screen — best1 — UU"
+
+[ "warm_start" ]
+"initial_source" = "uniform"
+
+[ "execution" ]
+"default_budget" = "6h"
+"default_max_candidates" = 4096
+"initial_evaluation_seconds" = 30.0
+"deadline_grace_seconds" = 5.0
