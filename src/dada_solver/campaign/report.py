@@ -1,6 +1,7 @@
 """Factual phase summaries and deterministic suggestions for human review."""
 from collections import Counter
 import numpy as np
+from .parameters import ChoiceParameter
 
 
 def elite_records(records, size=5):
@@ -42,6 +43,7 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
     unique_phase = [r for r in phase if not r.get('cache_hit')]
     bound_pressure = []
     for i, p in enumerate(space.parameters):
+        if isinstance(p,ChoiceParameter): continue
         for side in ('lower','upper'):
             def near(r): return r['normalized'][i] <= .05 if side == 'lower' else r['normalized'][i] >= .95
             count = sum(near(r) for r in unique_phase)
@@ -105,6 +107,8 @@ def make_report(space, before, phase, *, requested_seconds, elapsed_seconds, eli
 
 
 def readable_report(report):
+    def value_text(value):
+        return format(value, ".6g") if isinstance(value, (int,float)) else str(value)
     def brief(best):
         return 'none' if best is None else f"{best['candidate_id']} objective={best['objective']['value']}"
     lines = ['Optimization campaign phase',
@@ -121,7 +125,7 @@ def readable_report(report):
             lines.append(f"  {c['name']}: margin={c['margin']}; available={c['available']}; satisfied={c['satisfied']}")
     lines.append('Largest normalized parameter changes:')
     for x in report['parameter_changes'][:8]:
-        lines.append(f"  {x['name']}: {x['physical_start']:.6g} -> {x['physical_end']:.6g}; normalized delta {x['normalized_delta']:+.4f}")
+        lines.append(f"  {x['name']}: {value_text(x['physical_start'])} -> {value_text(x['physical_end'])}; normalized delta {x['normalized_delta']:+.4f}")
     lines.append('Top distinct feasible candidates:')
     lines.extend('  '+brief(r) for r in report['top_distinct_feasible'])
     lines.extend([f"Bound pressure: {report['bound_pressure']}", f"Failure reasons: {report['dominant_reasons']}",

@@ -25,6 +25,11 @@ class Candidate:
     @classmethod
     def create(cls, space, coordinates, *, families, numerical_settings, definition_id):
         coordinates = tuple(0.0 if float(x) == 0 else float(x) for x in coordinates)
+        if len(coordinates) != len(space.parameters):
+            raise ValueError('Coordinate dimension does not match parameter space.')
+        from .parameters import ChoiceParameter
+        coordinates = tuple(p.encode(p.decode(u)) if isinstance(p, ChoiceParameter) else u
+                            for p, u in zip(space.parameters, coordinates))
         payload = dict(schema_version=1, definition_id=definition_id,
             normalized=coordinates, physical=space.decode(coordinates),
             families=families, numerical_settings=numerical_settings)

@@ -66,7 +66,7 @@ INPUT_SPECS={'air_inlet_temperature_k':ParameterSpec('K',positive=True),
     'metal_cp_j_kg_k':ParameterSpec('J/(kg*K)',positive=True)}
 
 
-def machine_parameters(basis):
+def machine_parameters(basis, valve_parameters=()):
     c=basis.configuration; v=c.machine_volumes
     defaults={'volume.swept_ratio':v.small_cylinder.swept/v.large_cylinder.swept,
         'volume.total_swept_m3':v.small_cylinder.swept+v.large_cylinder.swept,
@@ -74,6 +74,11 @@ def machine_parameters(basis):
         'volume.large_clearance_ratio':v.large_cylinder.minimum/v.large_cylinder.swept,
         'operation.frequency_hz':abs(c.angular_speed)/(2*math.pi),'charge.total_mass_kg':c.charge.total_mass}
     specs=dict(MACHINE_SPECS)
+    for side in ('heat_in', 'heat_out'):
+        name=f'valve.{side}.placement'
+        if name in valve_parameters:
+            specs[name]=ParameterSpec(kind='choice', choices=('downstream','upstream'))
+            defaults[name]=getattr(c,f'{side}_valve_placement')
     for side in ('heat_in','heat_out'):
         exchanger=getattr(basis,side)
         if exchanger is None: continue
@@ -95,7 +100,10 @@ def build_machine(basis, configuration, physical, policies):
         large=p['volume.total_swept_m3']/(1+p['volume.swept_ratio']); small=p['volume.total_swept_m3']-large
         smin=small*p['volume.small_clearance_ratio']; lmin=large*p['volume.large_clearance_ratio']
         volumes=replace(configuration.machine_volumes,small_cylinder=CylinderVolumeLimits(smin,smin+small),large_cylinder=CylinderVolumeLimits(lmin,lmin+large))
-        config=replace(configuration,machine_volumes=volumes,angular_speed=math.copysign(2*math.pi*p['operation.frequency_hz'],configuration.angular_speed),
+        config=replace(configuration,
+            heat_in_valve_placement=p.get('valve.heat_in.placement',configuration.heat_in_valve_placement),
+            heat_out_valve_placement=p.get('valve.heat_out.placement',configuration.heat_out_valve_placement),
+            machine_volumes=volumes,angular_speed=math.copysign(2*math.pi*p['operation.frequency_hz'],configuration.angular_speed),
             charge=replace(configuration.charge,total_mass=p['charge.total_mass_kg'])
                 if policies['charge']=='explicit_inventory' else configuration.charge)
     except (ValueError,ArithmeticError) as error: raise PreflightRejection('invalid_parameterization',str(error)) from error
