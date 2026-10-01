@@ -17,6 +17,9 @@ def unique_prefixes(ids, minimum=8):
 
 def reason_category(record, scientific):
     """Use declared domains, never round temperatures into guessed thresholds."""
+    transport_failure=record.get('diagnostics',{}).get('transport_failure',{})
+    if transport_failure.get('category') in ('transport_temperature_below_domain','transport_temperature_above_domain','transport_temperature_nonfinite'):
+        return transport_failure['category']
     reason = record.get('reason') or ''
     match = re.search(r'Transport temperature ([\deE+.\-]+) K outside declared domain', reason)
     if match:

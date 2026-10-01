@@ -8,6 +8,7 @@ import numpy as np
 
 from dada_solver.campaign.adapters import PreflightRejection
 from dada_solver.exchangers.air_wall import AirWallMotor
+from dada_solver.exchangers.gas_transport import TransportDomainError
 from dada_solver.exchangers.wall_cycle import (WallDiagnosticCycle,
     convergence_summary, solve_periodic_wall_motor, wall_cycle_performance)
 from dada_solver.factory import build_initial_state, initial_valve_topology
@@ -61,6 +62,15 @@ def rejected(status, reason, diagnostics=None):
         periodic_convergence=convergence_summary(()), warm_start_source=None,
         warm_start_normalized_distance=None, warm_start_source_status=None,
         final_periodic_state=None, initial_guess_state=None, preflight_diagnostics=diagnostics)
+
+
+def transport_rejection(error, phase, **updates):
+    result=rejected('invalid_fluid_domain',f'{error.category}: {error}')
+    result.update(updates)
+    result['diagnostics']=dict(transport_failure=dict(error.diagnostics,phase=phase))
+    if getattr(error,'native_solver_stderr',None):
+        result['technical_diagnostics']=dict(native_solver_stderr=error.native_solver_stderr)
+    return result
 
 
 def select_warm_start(records, normalized, layout, family, direction):
@@ -140,7 +150,10 @@ class MachineEvaluator:
         if candidate_budget is not None:
             deadline = control.clock() + candidate_budget
             control = replace(control, deadline=min(deadline, control.deadline) if control.deadline is not None else deadline)
-        result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
+        try:
+            result = control.measure('candidate_evaluation', self._evaluate_with_control, candidate, control)
+        except TransportDomainError as error:
+            result=transport_rejection(error,'candidate_build_or_diagnostics',constraints=self._unavailable_constraints())
         if hasattr(self.definition, 'study'):
             from dada_solver.research.margins import enrich_constraints
             result['timing_seconds'] = timings
@@ -165,6 +178,7 @@ class MachineEvaluator:
         try: built = control.measure('build', design.build)
         except KinematicConstraintViolation as error:
             return rejected('invalid_kinematics', str(error), [asdict(d) for d in error.diagnostics])
+        except TransportDomainError: raise
         except (ValueError, ArithmeticError) as error: return rejected('invalid_exchanger', str(error))
         model = built.model if isinstance(built, AirWallMotor) else built
         derived = dict(small_volume_limits=asdict(model.machine_volumes.small_cylinder),
@@ -212,6 +226,9 @@ class MachineEvaluator:
             result = rejected('budget_exhausted', str(error)); result.update(integrated=True, derived=derived,
                 constraints=self._unavailable_constraints())
             return result
+        except TransportDomainError as error:
+            return transport_rejection(error,'integration',integrated=True,derived=derived,
+                constraints=self._unavailable_constraints())
         except (ValueError, RuntimeError, ArithmeticError) as error:
             result = rejected('integration_failure', f'{type(error).__name__}: {error}'); result.update(integrated=True, derived=derived)
             return result
@@ -306,6 +323,11 @@ class MachineEvaluator:
             result = rejected('budget_exhausted', str(error))
             result.update(integrated=True, derived=derived, constraints=self._unavailable_constraints())
             return retain_failure(result)
+        except TransportDomainError as error:
+            result=transport_rejection(error,'integration',integrated=True,derived=derived,
+                constraints=self._unavailable_constraints(),safe_retry_used=safe_retry)
+            if backend_last: result['rhs_backend']=backend_last
+            return retain_failure(result)
         except (ValueError, RuntimeError, ArithmeticError) as error:
             from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
             status = ('invalid_fluid_domain' if isinstance(error,FluidDomainError) else
@@ -343,76 +365,84 @@ class MachineEvaluator:
                           periodic_convergence=convergence, initial_guess_state=guess,
                           constraints=self._unavailable_constraints(), **warm)
             return retain_failure(result)
-        cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
-        performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
-        from dada_solver.diagnostic_replay import replay_wall_trajectory
-        replay = control.measure('shared_replay', replay_wall_trajectory, wrapper, cycle, periodic.trajectory) if periodic.converged else None
-        diagnostics = (control.measure('generic_diagnostics', extract_cycle_diagnostics, cycle, wrapper.model,
-            replay=replay) if periodic.converged else None)
-        validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity, replay=replay) if periodic.converged else None
-        from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
-        gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory, replay=replay)
-        max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains,replay=replay)
-        if validity is not None:
-            validity = finalize_microtube_validity(validity, max_re, max_mach,
-                requires_laminar=gas_domains is None,
-                domain_failures=gas_domains['failed_criteria'] if gas_domains else ())
-        evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
-            status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
-            periodic=SimpleNamespace(message=periodic.message), performance=performance,
-            diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle)
-        # Variable-property films/hydraulic passages already diagnose each side
-        # against that side's declared gas-model domain, including Mach. Never
-        # compare a global maximum with an unrelated generic/design threshold.
-        domain = dict(name='microtube_model_domain', margin=float(2300-max_re),
-            satisfied=bool(max_re < 2300), available=True)
-        if gas_domains is not None:
-            satisfied = gas_domains['model_validity']=='valid'
-            domain.update(satisfied=satisfied, margin=1. if satisfied else -1.)
-        result = self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
-            maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
-        if hasattr(self.definition, 'study'):
-            result.update(warm)
-            result['metrics'].update(
-                maximum_pressure_pa=max(v.maximum for v in diagnostics.pressure_extrema.values()),
-                maximum_temperature_k=max(v.maximum for v in diagnostics.temperature_extrema.values()),
-                maximum_absolute_mass_flow_kg_s=max(max(abs(v.minimum),abs(v.maximum)) for v in diagnostics.mass_flow_extrema.values()),
-                total_mass_kg=float(periodic.trajectory[:8:2,-1].sum()))
-            result['diagnostics'] = json_values(asdict(diagnostics))
-            result['derived']['hardware'] = dict(heat_in=dict(design.heat_in.build().metadata), heat_out=dict(design.heat_out.build().metadata))
-            if self.definition.study.data['schema_version']==3:
-                streams={}
-                for i,(side,exchanger) in enumerate((('heat_in',wrapper.heat_in),('heat_out',wrapper.heat_out))):
-                    stream=exchanger.external_stream
-                    outlets=[s.walls[i].external_outlet_temperature_k for s in replay.samples]
-                    streams[side]=dict(asdict(stream),capacity_rate_w_k=stream.capacity_rate_w_k,
-                        outlet_minimum_k=min(outlets) if all(v is not None for v in outlets) else None,
-                        outlet_maximum_k=max(outlets) if all(v is not None for v in outlets) else None,
-                        heat_into_machine_per_cycle_j=performance.heat_in_per_cycle if i==0 else performance.heat_out_per_cycle,
-                        mean_heat_into_machine_w=performance.heat_in_power if i==0 else performance.heat_out_power,
-                        external_loop_losses='excluded; hydraulics and pump/fan consumption unmodelled')
-                result['derived']['external_streams']=streams
-                result['metrics'].update(operating_mode=performance.operating_mode.value,
-                    heating_power_w=performance.heating_power,heating_cop=performance.heating_cop)
-                result['rhs_backend']=periodic.backend_statistics
-            else:
-                result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.external_inlet_temperature_k, heat_out=wrapper.heat_out.external_inlet_temperature_k)
-                air = {}
-                for i, (side, exchanger, ports) in enumerate((
-                        ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
-                        ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
-                    peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
-                    capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
-                    air[side] = dict(peak_internal_mass_flow_kg_s=peak,
-                        external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
-                        maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
-                        scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
-                result['derived']['external_air_capacity_diagnostics'] = air
-            result['derived']['local_reflux'] = dict(
-                threshold_kg_s=1e-8,
-                detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
-                minimum_signed_flows_kg_s={k:v.minimum for k,v in diagnostics.mass_flow_extrema.items()})
-        return retain_failure(result)
+        try:
+            cycle = WallDiagnosticCycle(periodic.angles, periodic.trajectory)
+            performance = wall_cycle_performance(wrapper, periodic.trajectory) if periodic.converged else None
+            from dada_solver.diagnostic_replay import replay_wall_trajectory
+            replay = control.measure('shared_replay', replay_wall_trajectory, wrapper, cycle, periodic.trajectory) if periodic.converged else None
+            diagnostics = (control.measure('generic_diagnostics', extract_cycle_diagnostics, cycle, wrapper.model,
+                replay=replay) if periodic.converged else None)
+            validity = control.measure('generic_validity', assess_cycle_validity, cycle, wrapper.model, design.configuration.validity, replay=replay) if periodic.converged else None
+            from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
+            gas_domains = control.measure('microtube_diagnostics', cycle_microtube_diagnostics, wrapper, periodic.angles, periodic.trajectory, replay=replay)
+            max_re, max_mach = self._tube_validity(wrapper, periodic.angles, periodic.trajectory, gas_domains=gas_domains,replay=replay)
+            if validity is not None:
+                validity = finalize_microtube_validity(validity, max_re, max_mach,
+                    requires_laminar=gas_domains is None,
+                    domain_failures=gas_domains['failed_criteria'] if gas_domains else ())
+            evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
+                status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
+                periodic=SimpleNamespace(message=periodic.message), performance=performance,
+                diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle)
+            # Variable-property films/hydraulic passages already diagnose each side
+            # against that side's declared gas-model domain, including Mach. Never
+            # compare a global maximum with an unrelated generic/design threshold.
+            domain = dict(name='microtube_model_domain', margin=float(2300-max_re),
+                satisfied=bool(max_re < 2300), available=True)
+            if gas_domains is not None:
+                satisfied = gas_domains['model_validity']=='valid'
+                domain.update(satisfied=satisfied, margin=1. if satisfied else -1.)
+            result = self._assessment(evaluation, dict(derived, maximum_tube_reynolds=max_re,
+                maximum_tube_mach_number=max_mach, microtube_gas_domains=gas_domains), source, distance, convergence, guess, [domain])
+            if hasattr(self.definition, 'study'):
+                result.update(warm)
+                result['metrics'].update(
+                    maximum_pressure_pa=max(v.maximum for v in diagnostics.pressure_extrema.values()),
+                    maximum_temperature_k=max(v.maximum for v in diagnostics.temperature_extrema.values()),
+                    maximum_absolute_mass_flow_kg_s=max(max(abs(v.minimum),abs(v.maximum)) for v in diagnostics.mass_flow_extrema.values()),
+                    total_mass_kg=float(periodic.trajectory[:8:2,-1].sum()))
+                result['diagnostics'] = json_values(asdict(diagnostics))
+                result['derived']['hardware'] = dict(heat_in=dict(design.heat_in.build().metadata), heat_out=dict(design.heat_out.build().metadata))
+                if self.definition.study.data['schema_version']==3:
+                    streams={}
+                    for i,(side,exchanger) in enumerate((('heat_in',wrapper.heat_in),('heat_out',wrapper.heat_out))):
+                        stream=exchanger.external_stream
+                        outlets=[s.walls[i].external_outlet_temperature_k for s in replay.samples]
+                        streams[side]=dict(asdict(stream),capacity_rate_w_k=stream.capacity_rate_w_k,
+                            outlet_minimum_k=min(outlets) if all(v is not None for v in outlets) else None,
+                            outlet_maximum_k=max(outlets) if all(v is not None for v in outlets) else None,
+                            heat_into_machine_per_cycle_j=performance.heat_in_per_cycle if i==0 else performance.heat_out_per_cycle,
+                            mean_heat_into_machine_w=performance.heat_in_power if i==0 else performance.heat_out_power,
+                            external_loop_losses='excluded; hydraulics and pump/fan consumption unmodelled')
+                    result['derived']['external_streams']=streams
+                    result['metrics'].update(operating_mode=performance.operating_mode.value,
+                        heating_power_w=performance.heating_power,heating_cop=performance.heating_cop)
+                    result['rhs_backend']=periodic.backend_statistics
+                else:
+                    result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.external_inlet_temperature_k, heat_out=wrapper.heat_out.external_inlet_temperature_k)
+                    air = {}
+                    for i, (side, exchanger, ports) in enumerate((
+                            ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
+                            ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
+                        peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
+                        capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
+                        air[side] = dict(peak_internal_mass_flow_kg_s=peak,
+                            external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
+                            maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
+                            scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
+                    result['derived']['external_air_capacity_diagnostics'] = air
+                result['derived']['local_reflux'] = dict(
+                    threshold_kg_s=1e-8,
+                    detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
+                    minimum_signed_flows_kg_s={k:v.minimum for k,v in diagnostics.mass_flow_extrema.items()})
+            return retain_failure(result)
+        except TransportDomainError as error:
+            result=transport_rejection(error,'postprocessing',integrated=True,converged=True,
+                derived=derived,periodic_cycle_count=len(periodic.history),
+                periodic_convergence=convergence,constraints=self._unavailable_constraints(),**warm)
+            result['rhs_backend']=periodic.backend_statistics
+            return retain_failure(result)
+
 
     def _tube_validity(self, wrapper, angles, trajectory, *, gas_domains=None, replay=None):
         if replay is not None: replay.require(wrapper=wrapper, angles=angles, trajectory=trajectory)

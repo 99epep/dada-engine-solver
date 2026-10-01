@@ -121,7 +121,8 @@ def test_doty_nitrogen_hydraulics():
 def test_doty_helium_hydraulics():
     rows=check_doty('helium')
     variable=[r for r in rows if r['model_id']=='compressible_variable_transport']
-    np.testing.assert_allclose([r['predicted'] for r in variable],[3318.8793,2205.7510,5477.2102],rtol=.001)
+    # Updated dilute Arp viscosity: ~0.248% higher flow than the legacy interpolation.
+    np.testing.assert_allclose([r['predicted'] for r in variable],[3327.088720,2211.212221,5490.762659],rtol=.001)
     assert all(r['relative_error']>0 and not r['inside_experimental_uncertainty'] for r in variable)
 
 

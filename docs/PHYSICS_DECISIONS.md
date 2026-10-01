@@ -1650,3 +1650,15 @@ constraints; intrinsic closure/branch validity remains in the model. Historical
 artifacts/results retain their content and interpretation as historical evidence.
 See [the audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) for compatibility, inventory and
 remaining legacy limits. No exchanger correlation or numerical tolerance changes.
+
+
+## 2026-10-01 — Species-dependent dilute transport
+
+The explicit user decision replaces air Sutherland transport with dilute
+Lemmon/Jacobsen and He interpolation with dilute Arp / Hands-Arp as implemented
+in CoolProp 8. Air property temperatures are 100–1000 K, He 50–1000 K; N2/Ar
+stay 200–1000 K. User bounds may only narrow these ranges. CoolProp is an offline
+oracle, not a runtime dependency. The calorically perfect EOS is unchanged;
+property-temperature availability is not single-phase or nonideality validation.
+See [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) for formulas, oracle errors,
+licensing and new-campaign identity requirements.

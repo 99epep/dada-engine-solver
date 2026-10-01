@@ -19,11 +19,17 @@ def molar_cp(t, oxygen=False):
     x=t/1000
     return a+b*x+c*x*x+d*x**3+e/x**2
 
+# Adapted from CoolProp 8.0.0 (MIT), see THIRD_PARTY_NOTICES.md.
+# Only rho -> 0 terms: Arp/McCarty/Friend viscosity, Hands/Arp conductivity.
 def helium_property(t, conductivity):
-    temperatures=(200,225,250,273.15,275,300,325,350,375,400,450,500,600,700,800,900,1000)
-    values=((118.5,128.2,137.7,146.2,146.9,155.9,164.6,173.2,181.6,189.9,206.,221.7,251.9,280.9,308.9,336.1,362.6)
-            if conductivity else (15.1,16.4,17.6,18.7,18.8,19.9,21.,22.1,23.2,24.3,26.3,28.3,32.2,35.9,39.5,43.,46.4))
-    return float(np.interp(t,np.array(temperatures),np.array(values)))*(1e-3 if conductivity else 1e-6)
+    if conductivity:
+        exponent=3.739232544/t-26.20316969/t**2+59.82252246/t**3-49.26397634/t**4
+        return 2.7870034e-3*t**.7034007057*math.exp(exponent)
+    if t<=100:
+        x=math.log(t)
+        exponent=-.135311743/x+1.00347841+1.20654649*x-.149564551*x*x+.012520841*x*x*x
+        return math.exp(exponent)*1e-7
+    return 196*t**.71938*math.exp(12.451/t-295.67/t/t-4.1249)*1e-7
 
 def gas_constant(species):
     return (287.05,296.803,208.132,2077.1)[species]
@@ -31,12 +37,21 @@ def gas_constant(species):
 
 def viscosity(t,species):
     if species==3: return helium_property(t,False)
+    if species==0:
+        # Lemmon/Jacobsen collision integral, Air.json (CoolProp MIT).
+        x=math.log(t/103.3)
+        integral=math.exp(.431-.4623*x+.08406*x**2+.005341*x**3-.00331*x**4)
+        return 2.66958e-8*math.sqrt(28.9586*t)/(.36**2*integral)
     mu,s=((1.716e-5,111.),(1.663e-5,107.),(2.125e-5,114.))[species]
     return mu*(t/273.)**1.5*(273.+s)/(t+s)
 
 
 def conductivity(t,species):
     if species==3: return helium_property(t,True)
+    if species==0:
+        # Lemmon/Jacobsen eta0_and_poly; EOS reducing temperature, not Tc.
+        tau=132.6312/t
+        return .001308*viscosity(t,0)*1e6+.001405*tau**(-1.1)-.001036*tau**(-.3)
     k,s=((.0241,194.),(.0242,150.),(.0163,170.))[species]
     return k*(t/273.)**1.5*(273.+s)/(t+s)
 

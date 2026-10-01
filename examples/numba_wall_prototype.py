@@ -27,12 +27,19 @@ def molar_cp(t, oxygen):
     return a+b*x+c*x*x+d*x**3+e/x**2
 
 
+# Keep this historical prototype aligned with the authoritative transport laws.
+from dada_solver import numerical_primitives as transport_numeric
+from numba.extending import register_jitable
+for _function in (transport_numeric.helium_property, transport_numeric.gas_constant,
+                  transport_numeric.molar_cp, transport_numeric.viscosity,
+                  transport_numeric.conductivity, transport_numeric.transport_cp):
+    register_jitable(_function)
+
+
 @njit
 def properties(t):
-    mu=1.716e-5*(t/273.)**1.5*(273.+111.)/(t+111.)
-    k=.0241*(t/273.)**1.5*(273.+194.)/(t+194.)
-    cp=(.79*molar_cp(t,False)+.21*molar_cp(t,True))/(.79*.0280134+.21*.0319988)
-    return mu,k,cp
+    return (transport_numeric.viscosity(t,0), transport_numeric.conductivity(t,0),
+            transport_numeric.transport_cp(t,0))
 
 
 @njit
