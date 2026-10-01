@@ -587,3 +587,17 @@ unit = "1"
 
 A bound on a searched coordinate belongs in that parameter's declaration;
 it does not automatically create a feasibility constraint.
+
+### Rejected trials versus final-cycle boundaries
+
+`diagnostics.first_microtube_failure` preserves the first rejected trial even
+when a safe uniform retry later succeeds. The Constraints / boundary tables
+use final-cycle evidence for recovered results; the earlier snapshot is shown
+separately under **Rejected trial history**, with retry use and final status.
+It also remains intact in detailed JSON diagnostics. An earlier trial is not
+a measurement of the final periodic cycle or necessarily the last failed retry.
+For a final `invalid_exchanger` rejection, the first snapshot remains rejection
+evidence when its criterion matches the recorded final cause (legacy records
+without a reason retain their rejection evidence). Other final outcomes or a
+different final cause do not inherit that earlier violation. This distinction
+changes presentation only, not validity, solver behavior or stored records.

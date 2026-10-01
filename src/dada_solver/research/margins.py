@@ -100,7 +100,13 @@ def limiting_evidence(record, scientific):
         if hydraulic_mach is not None:
             boundary('microtube.hydraulic_mach',hydraulic_mach,limits.get('maximum_mach'),passage,'sampled hydraulic upstream maximum; not a continuous guarantee')
     failure=(record.get('diagnostics') or {}).get('first_microtube_failure')
-    if failure:
+    # A retained first trial is history, not a boundary of a recovered cycle.
+    # A retry can also fail for a different reason; do not attribute that final
+    # outcome to the first snapshot. Legacy rejection records may omit reason.
+    reason=record.get('reason') or ''
+    same_cause=bool(failure) and (not reason or any(
+        issue.strip() in reason for issue in (failure.get('criterion') or '').split(';') if issue.strip()))
+    if failure and record['status']=='invalid_exchanger' and not record.get('converged') and same_cause:
         side=failure.get('exchanger')
         limits=basis.get(side,{}).get('inputs',{}).get('gas_model') or {}
         context=f"{side or 'unknown exchanger'} / {failure.get('passage') or 'unknown passage'}; angle={failure.get('angle_rad')}; time={failure.get('time_s')}"
