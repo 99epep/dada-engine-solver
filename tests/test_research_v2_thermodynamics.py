@@ -31,6 +31,10 @@ def test_historical_thermal_machine_and_initial_state(tmp_path,family):
     if case['backend']=='numba' and not definition.numerical_settings['wall_backend'].get('numba_available'):
         pytest.skip('Stored historical case uses the optional Numba backend.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
+    if family in ('fourier_c2','free_spline'):
+        # Keep historical artifacts; separately freeze the new property-law replay.
+        updated=json.loads((Path(__file__).parent/'data/transport_v2_thermal_reference.json').read_text())['cases'][family]
+        case=dict(case,metrics=updated['metrics'],cycles=updated['cycles'])
     expected_status='feasible' if case['metrics']['indicated_power_w']>=25 else 'converged_infeasible'
     assert result['status']==expected_status,result['reason']
     if expected_status=='converged_infeasible':assert result['reason']=='minimum_motor_power: violated'
@@ -55,9 +59,8 @@ def test_packaged_historical_reference(tmp_path,family):
     definition=compile_study(load_study(path))
     if not definition.numerical_settings['wall_backend'].get('numba_available'):pytest.skip('Stored reference uses Numba.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
-    if family=='six_bar':
-        ref=json.loads((Path(__file__).parents[1]/'src/dada_solver/research/data/rank01_basis.json').read_text())['reference_result']
-    else:ref=definition.study.basis.data['provenance']['historical_result']
+    case=json.loads((Path(__file__).parent/'data/transport_v2_thermal_reference.json').read_text())['cases'][family]
+    ref=dict(case['metrics'],cycles_completed=case['cycles'])
     assert result['status']=='feasible',result['reason']
     for key in METRICS:assert result['metrics'][key]==pytest.approx(ref[key],rel=2e-11,abs=1e-11)
     assert result['periodic_cycle_count']==ref['cycles_completed']
