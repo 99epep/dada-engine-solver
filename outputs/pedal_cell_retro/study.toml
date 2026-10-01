@@ -104,7 +104,7 @@
 [[ "parameters" ]]
 "name" = "microtube.heat_in.tube_count"
 "unit" = "1"
-"value" = 2675
+"value" = 10184
 
 [[ "parameters" ]]
 "name" = "microtube.heat_in.tube_length_m"
@@ -114,7 +114,7 @@
 [[ "parameters" ]]
 "name" = "microtube.heat_in.inner_diameter_m"
 "unit" = "m"
-"value" = 0.001951219512195122
+"value" = 0.001
 
 [[ "parameters" ]]
 "name" = "microtube.heat_in.wall_thickness_m"
@@ -134,7 +134,7 @@
 [[ "parameters" ]]
 "name" = "microtube.heat_out.tube_count"
 "unit" = "1"
-"value" = 2675
+"value" = 10184
 
 [[ "parameters" ]]
 "name" = "microtube.heat_out.tube_length_m"
@@ -144,7 +144,7 @@
 [[ "parameters" ]]
 "name" = "microtube.heat_out.inner_diameter_m"
 "unit" = "m"
-"value" = 0.001951219512195122
+"value" = 0.001
 
 [[ "parameters" ]]
 "name" = "microtube.heat_out.wall_thickness_m"
@@ -194,7 +194,11 @@
 [[ "parameters" ]]
 "name" = "external_stream.heat_in.inlet_temperature_k"
 "unit" = "K"
-"value" = 268.15
+"initial" = 268.15
+"lower" = 258.15
+"upper" = 268.15
+"kind" = "continuous"
+"transform" = "linear"
 
 [[ "parameters" ]]
 "name" = "external_stream.heat_in.mass_flow_kg_s"
