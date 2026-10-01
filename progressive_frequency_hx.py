@@ -6,10 +6,17 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import tomllib
+
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+sys.path.insert(0, str(SRC))
+
 
 from dada_solver.research.study_io import dumps
 from dada_solver.research.report import inspect, select_records
@@ -28,7 +35,15 @@ DEFAULT_CANDIDATE = "bf589558b59a4f2b3cf0a4c208ccf03ffb5340bfe9cd437635f90c0eb23
 DEFAULT_OUTPUT = Path("outputs/pedal_cell_retro/frequency_hx_continuation")
 DEFAULT_FREQUENCIES = [0.25, 0.40, 0.60, 0.80, 1.00, 1.40, 2.00, 2.80]
 
+def run_research(args: list[str]) -> None:
+    env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONPATH"] = str(SRC)
 
+    cmd = [sys.executable, "-m", "dada_solver.research", *args]
+    print("\n+", " ".join(cmd), flush=True)
+    subprocess.run(cmd, check=True, env=env)
+    
 def run(cmd: list[str]) -> None:
     print("\n+", " ".join(cmd), flush=True)
     subprocess.run(cmd, check=True)
@@ -189,8 +204,8 @@ def main() -> int:
         print(f"\n=== STEP {index:02d}: {freq:g} Hz — source {candidate[:12]} ===")
 
         if not study.exists():
-            run([
-                "research", "refine", str(source), "--candidate", candidate,
+            run_research([
+                "refine", str(source), "--candidate", candidate,
                 "--radius", str(args.radius), "--output", str(study),
             ])
         else:
@@ -199,17 +214,17 @@ def main() -> int:
         # Idempotent: also repairs a study left between refine() and patching
         # if the script was interrupted at exactly that point.
         patch_study(study, freq, index)
-        run(["research", "validate", str(study)])
+        run_research(["validate", str(study)])
 
         if campaign.exists() and any(campaign.iterdir()):
             print("Resuming existing campaign:", campaign)
-            run([
-                "research", "resume", str(campaign), "--budget", args.budget,
+            run_research([
+                "resume", str(campaign), "--budget", args.budget,
                 "--max-candidates", str(args.max_candidates),
             ])
         else:
-            run([
-                "research", "run", str(study), "--budget", args.budget,
+            run_research([
+                "run", str(study), "--budget", args.budget,
                 "--max-candidates", str(args.max_candidates), "--directory", str(campaign),
             ])
 
