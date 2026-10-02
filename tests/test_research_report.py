@@ -13,9 +13,10 @@ def test_report_reads_torn_tail_and_orphans_without_mutating(tmp_path,monkeypatc
     d=definition(tmp_path); clock=Clock()
     run=tmp_path/'run'; c=OptimizationCampaign(d,run,evaluator=Evaluator(clock),clock=clock)
     c.run(100,maximum_candidates=2)
-    history=run/'history.jsonl'; lines=history.read_bytes().splitlines(keepends=True)
-    (run/'recovery.json').write_bytes(lines[1])
-    history.write_bytes(lines[0]+b'{"unfinished":')
+    import gzip
+    history=c.history.path; records=c.history.load()
+    (run/'recovery.json').write_text(json.dumps(records[1]))
+    history.write_bytes(gzip.compress((json.dumps(records[0])+'\n').encode(),mtime=0)+b'\x1f\x8b')
     before={str(p.relative_to(run)):p.read_bytes() for p in run.rglob('*') if p.is_file()}
     monkeypatch.setattr('dada_solver.campaign.evaluator.MachineEvaluator.evaluate',lambda *a:pytest.fail('evaluation called'))
     monkeypatch.setattr('dada_solver.campaign.runner.OptimizationCampaign.run',lambda *a,**k:pytest.fail('search called'))

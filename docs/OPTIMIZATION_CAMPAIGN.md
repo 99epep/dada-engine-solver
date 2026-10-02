@@ -203,7 +203,7 @@ campaign_directory/
     base.toml                 # complete thermodynamic configuration snapshot
     definition.json           # immutable content/runtime identity
     state.json                # Sobol index, pending candidate, phase and archive IDs
-    history.jsonl             # append-only attempt/result journal
+    history.jsonl.gz          # new campaigns: append-only gzip members, one full JSON record each
     recovery.json            # one transient durable completed result before state commit
     candidates/<sha256>.json  # legacy only; retained/read, never newly generated
     report.json
@@ -382,3 +382,5 @@ The established parallel-microtube regression was rerun from its saved state:
 37.6261105666 W indicated power, 353.5945084 W external heat input and
 0.1064103363 indicated thermal efficiency. This agrees with the recorded
 37.626110567 W result.
+
+Existing plain history.jsonl journals remain supported without migration. See the compressed-journal and HTML-retention section in [DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md) for recovery semantics.
