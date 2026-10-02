@@ -81,3 +81,28 @@ def test_cli_validation_and_no_budget_run(tmp_path,capsys,monkeypatch):
     assert inspect(tmp_path/'run')['records']==[]
     assert main(['resume',str(tmp_path/'run'),'--budget','0'])==0
     assert main(['status',str(tmp_path/'run')])==0
+
+
+def test_run_default_directory_and_resume_from_toml(tmp_path,monkeypatch,capsys):
+    path=initialize(tmp_path/'study.toml')
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',lambda *a,**k:pytest.fail('solver called'))
+    assert main(['run',str(path),'--budget','0'])==0
+    campaign=tmp_path/'campaign'
+    assert inspect(campaign)['records']==[]
+    # Resume uses stored scientific inputs, never reloads the editable TOML.
+    path.write_text('invalid TOML')
+    assert main(['resume',str(path),'--budget','0'])==0
+    with pytest.raises(SystemExit) as error:
+        main(['run',str(path),'--budget','0'])
+    assert error.value.code==2
+    assert 'use resume' in capsys.readouterr().err
+
+
+def test_resume_toml_missing_campaign_is_explicit(tmp_path,capsys):
+    with pytest.raises(SystemExit) as error:
+        main(['resume',str(tmp_path/'study.toml'),'--budget','0'])
+    assert error.value.code==2
+    message=capsys.readouterr().err
+    assert 'Campaign directory not found' in message
+    assert str(tmp_path/'campaign') in message
+    assert not (tmp_path/'campaign').exists()

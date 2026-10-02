@@ -9,6 +9,22 @@ The project is distributed under `GPL-3.0-or-later`. This replaces the earlier
 CC0 dedication. Third-party dependencies and referenced scientific material
 retain their own terms.
 
+## 2026-10-03: circular microtube collectors and lossless diode scope
+
+New circular microtube geometry uses a continuous triangular-cell face area,
+geometry-derived conduit area at least equal to total tube bore area, and two
+coaxial gas-filled conical frusta. The cone half-angle is an explicit study input.
+An ideal valve only imposes flow direction: its historical CdA no longer adds
+resistance or a smaller-area sonic cap in this geometry. Tube friction, the
+existing tube-area compressible cap and correlation-domain checks remain.
+Header K stays an independent lumped assumption, not a conical-distribution
+model. No external interstitial volume is added to the working-gas inventory.
+
+This overrides the earlier outlet-valve-loss assumption **for the new circular
+geometry only**. Legacy geometries keep their original volumes and CdA losses
+for reproducibility; existing outputs are not rewritten. See
+[MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md) for formulas and migration.
+
 ## 2026-09-17 clarification: temporary four-stage simplification
 
 The four-stage law simplifies features discovered in the previous freer-motion

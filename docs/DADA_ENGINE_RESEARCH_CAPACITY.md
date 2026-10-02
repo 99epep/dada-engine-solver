@@ -17,7 +17,7 @@ research evaluate outputs/my_human_cell_A5/study.toml \
 ```
 
 Here `research` is the shell helper documented in
-[DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md); `dada-research` is the
+[DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md); `research` is the
 installed entry point. Output paths must be unused.
 
 The selected candidate becomes the new initial point, including every active
@@ -144,3 +144,14 @@ No optimization was launched. A×1 and an original-A replay with identical unifo
 initialization have exactly equal recorded metrics on this runtime. Small
 differences from the historical campaign result arise from its different warm
 start and finite convergence tolerance, not changed factor-one physics.
+
+### Circular conical collectors
+
+Capacity scaling keeps `pitch_ratio`, `conduit_area_ratio` and cone half-angle
+fixed, while scaling tube count and declared additional gas volume by `s`.
+Consequently, bundle/conduit diameters and cone height scale by `sqrt(s)` and
+**collector volume scales by `s^(3/2)`**, not `s`. This is a physical consequence
+of the chosen collector shape, not forced extensive-volume similarity. Total
+exchanger hold-up (and geometry-derived atmospheric charge) is rebuilt normally.
+The reported ideal-diode area follows the conduit area and scales by `s`;
+historical CdA scaling policies cannot throttle a circular exchanger.

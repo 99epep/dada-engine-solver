@@ -19,7 +19,7 @@ from dada_solver.sizing.constraints import MaximumMechanicalInputPower
 from dada_solver.wall_backend import WallBackendSettings, backend_identity
 from .artifacts import MechanismArtifact
 from .families import validate_settings, build_side, side_metrics, ParameterSpec
-from .machine_basis import load_machine_basis, machine_parameters, build_machine
+from .machine_basis import load_machine_basis, machine_parameters, build_machine, validate_microtube_coordinate
 from .margins import PHYSICAL_CONSTRAINTS, validate_mechanical_constraint, margin_record
 from .schema import keys, positive
 
@@ -65,8 +65,10 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     expected_policy=POLICIES_V3 if raw['schema_version']==3 else POLICIES
     policy=raw['policies']
     from .charge import POLICY as REFERENCE_CHARGE
-    if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'],charge='explicit_inventory')!=expected_policy or policy.get('charge') not in ('explicit_inventory',REFERENCE_CHARGE) or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda'):
+    if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'],charge='explicit_inventory')!=expected_policy or policy.get('charge') not in ('explicit_inventory',REFERENCE_CHARGE) or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda','geometry_conduit_area_v1'):
         raise ValueError('Unsupported V2 physical policy.')
+    if policy['outlet_valve_cda']=='geometry_conduit_area_v1' and any(f'microtube.{side}.collector_half_angle_deg' not in specs for side in ('heat_in','heat_out')):
+        raise ValueError('geometry_conduit_area_v1 requires circular collectors on both exchangers.')
     if policy['charge']==REFERENCE_CHARGE:
         from dada_solver.fluids import CaloricallyPerfectGas
         if type(basis.configuration.gas) is not CaloricallyPerfectGas:
@@ -123,6 +125,7 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
         if 'value' in row:
             keys(row,('name','value','unit'),name)
             spec.validate(row['value']); fixed[name]=row['value']
+            validate_microtube_coordinate(name,row['value'])
         elif spec.kind=='choice':
             keys(row,('name','initial','choices','unit','kind'),name)
             if row['kind']!='choice': raise ValueError(f'Incorrect parameter kind for {name}.')
@@ -134,12 +137,14 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
             mode='encoding' if spec.kind=='integer' else 'transform'
             keys(row,('name','initial','lower','upper','unit','kind',mode),name)
             if row['kind']!=spec.kind: raise ValueError(f'Incorrect parameter kind for {name}.')
-            for k in ('initial','lower','upper'): spec.validate(row[k])
+            for k in ('initial','lower','upper'):
+                spec.validate(row[k]); validate_microtube_coordinate(name,row[k])
             active.append(parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})); fixed.pop(name,None)
         if row['unit']!=spec.unit: raise ValueError(f'{name} requires unit {spec.unit}.')
     if set(fixed)|{p.name for p in active}!=set(specs):
         raise ValueError(f'Missing family coordinates: {sorted(set(specs)-set(fixed)-{p.name for p in active})}')
-    for name,value in fixed.items(): specs[name].validate(value)
+    for name,value in fixed.items():
+        specs[name].validate(value); validate_microtube_coordinate(name,value)
     space=ParameterSpace(tuple(active),allow_empty=True)
     constraints=raw['constraints']; names=set()
     for row in constraints:

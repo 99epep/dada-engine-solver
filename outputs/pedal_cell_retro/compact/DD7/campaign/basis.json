@@ -1,0 +1,305 @@
+{
+  "configuration": {
+    "adiabatic_sector_fraction": 0.25,
+    "angular_speed": 0.9520107557799403,
+    "charge": {
+      "pressure": null,
+      "temperature": 298.15,
+      "total_mass": 0.0738546054087297
+    },
+    "cold_reservoir_temperature": 268.15,
+    "cold_thermal_conductance": 125.0,
+    "cold_to_large_valve": {
+      "closing_pressure_difference": 0.0,
+      "opening_pressure_difference": 1000.0
+    },
+    "example_data": true,
+    "four_bar_connecting_rod_ratio": null,
+    "four_bar_crank_angle_offset_degrees": 304.375,
+    "four_bar_crank_direction": -1,
+    "four_bar_ground_distance": 0.11937584698725914,
+    "free_kinematics": null,
+    "gas": {
+      "consistency_tolerance": 1e-10,
+      "gas_constant": 287.0,
+      "heat_capacity_cp": 1004.5,
+      "heat_capacity_cv": 717.5
+    },
+    "heat_in_valve_placement": "downstream",
+    "heat_out_valve_placement": "downstream",
+    "hot_reservoir_temperature": 298.15,
+    "hot_thermal_conductance": 125.0,
+    "hot_to_small_valve": {
+      "closing_pressure_difference": 0.0,
+      "opening_pressure_difference": 1000.0
+    },
+    "humidity_screening": null,
+    "hydraulic_flow_models": null,
+    "hydraulics": {
+      "cold_to_large_valve_cda": 0.0015,
+      "hot_to_small_valve_cda": 0.00042,
+      "large_to_hot_cda": 0.00042,
+      "orifice_pressure_regularization": 0.0,
+      "small_to_cold_cda": 0.00075
+    },
+    "kinematics_type": "shared_crank_rocker",
+    "large_lambda_target": 0.44,
+    "machine_volumes": {
+      "cold_heat_exchanger": 0.0009347421147493122,
+      "hot_heat_exchanger": 0.0009347421147493122,
+      "large_cylinder": {
+        "maximum": 0.03333,
+        "minimum": 0.00033
+      },
+      "small_cylinder": {
+        "maximum": 0.0279972,
+        "minimum": 0.0002772
+      }
+    },
+    "numerical": {
+      "integration_absolute_tolerance": 1e-09,
+      "integration_method": "LSODA",
+      "integration_relative_tolerance": 1e-07,
+      "maximum_cycles": 100,
+      "maximum_step_angle_degrees": 0.5,
+      "maximum_valve_events_per_cycle": 100,
+      "periodic_energy_absolute_tolerance": 1e-06,
+      "periodic_mass_absolute_tolerance": 1e-12,
+      "periodic_relative_tolerance": 1e-06
+    },
+    "shared_coupler_projection_design": null,
+    "shared_four_bar_design": {
+      "crank_ratio": 0.37769683420658107,
+      "large_coupler_ratio": 1.0105247422773391,
+      "large_four_bar_branch": -1,
+      "large_output_along_ratio": 0.7577473468333483,
+      "large_output_normal_ratio": 0.8755956188030541,
+      "large_pivot_x_ratio": 1.0,
+      "large_pivot_y_ratio": 0.0,
+      "large_rocker_ratio": 1.0263298945873975,
+      "large_slider_rod_ratio": 5.0,
+      "small_coupler_ratio": 1.0535716178640724,
+      "small_four_bar_branch": 1,
+      "small_output_along_ratio": 0.6936068420112134,
+      "small_output_normal_ratio": -0.8709663633070887,
+      "small_pivot_x_ratio": 1.0,
+      "small_pivot_y_ratio": 0.0,
+      "small_rocker_ratio": 1.083007834497839,
+      "small_slider_rod_ratio": 5.0
+    },
+    "small_lambda_target": 0.49,
+    "small_phase_offset_degrees": 0.0,
+    "validity": {
+      "maximum_compressibility_deviation": 0.01,
+      "maximum_cp_variation": 0.01,
+      "maximum_isothermality_error": 0.05,
+      "maximum_mach_number": 0.2,
+      "maximum_pressure_equalization_error": 0.05
+    },
+    "valve_model": "continuous_ideal_diode"
+  },
+  "geometry": {
+    "large_clearance_ratio": 0.01,
+    "seed_hi_cda": 0.00075,
+    "seed_ho_cda": 0.00042,
+    "seed_li": 0.11686,
+    "seed_lo": 0.11686,
+    "seed_ni": 2675,
+    "seed_no": 2675,
+    "small_clearance_ratio": 0.01,
+    "total_swept_m3": 0.06072
+  },
+  "heat_in": {
+    "bank": {
+      "additional_internal_volume_m3": 0.0,
+      "header_depth_m": 0.002,
+      "inner_diameter_m": 0.001951219512195122,
+      "pitch_ratio": 1.3,
+      "tube_count": 2675,
+      "tube_length_m": 0.11686,
+      "wall_thickness_m": 0.0005
+    },
+    "family": "external_stream_wall",
+    "inputs": {
+      "core_loss_multiplier": 1.0,
+      "external_stream": {
+        "cp_j_kg_k": 4180.0,
+        "fluid": "declared water-like liquid scenario",
+        "inlet_temperature_k": 268.15,
+        "mass_flow_kg_s": 0.25,
+        "wall_conductance_w_k": 500.0
+      },
+      "extra_wall_capacity_j_k": 10.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_model": {
+        "accommodation": {
+          "momentum_accommodation": null,
+          "provenance": "Unknown gas/metal accommodation; no silica value inferred",
+          "thermal_accommodation": null
+        },
+        "boundary_condition": "constant_wall_temperature",
+        "domain_policy": "reject",
+        "maximum_mach": 0.3,
+        "maximum_relative_pressure_drop": 0.2,
+        "slip": null,
+        "thermal_entry": true,
+        "transport": {
+          "correlation_version": "dilute_species_v2",
+          "maximum_temperature": 1000.0,
+          "minimum_temperature": 100.0,
+          "provenance": "Air: Lemmon/Jacobsen 2004; He: Arp/McCarty/Friend and Hands/Arp; N2/Ar: COMSOL Sutherland; NIST Shomate cp",
+          "species": "air"
+        }
+      },
+      "gas_nusselt": 3.66,
+      "gas_viscosity_pa_s": 2e-05,
+      "header_loss_coefficient": 2.0,
+      "metal_conductivity_w_m_k": 200.0,
+      "metal_cp_j_kg_k": 500.0,
+      "metal_density_kg_m3": 8000.0
+    },
+    "outlet_valve_cda_m2": 0.0015,
+    "valve_placement": "downstream"
+  },
+  "heat_out": {
+    "bank": {
+      "additional_internal_volume_m3": 0.0,
+      "header_depth_m": 0.002,
+      "inner_diameter_m": 0.001951219512195122,
+      "pitch_ratio": 1.3,
+      "tube_count": 2675,
+      "tube_length_m": 0.11686,
+      "wall_thickness_m": 0.0005
+    },
+    "family": "external_stream_wall",
+    "inputs": {
+      "core_loss_multiplier": 1.0,
+      "external_stream": {
+        "cp_j_kg_k": 4180.0,
+        "fluid": "declared water-like liquid scenario",
+        "inlet_temperature_k": 298.15,
+        "mass_flow_kg_s": 0.25,
+        "wall_conductance_w_k": 500.0
+      },
+      "extra_wall_capacity_j_k": 10.0,
+      "gas_conductivity_w_m_k": 0.03,
+      "gas_model": {
+        "accommodation": {
+          "momentum_accommodation": null,
+          "provenance": "Unknown gas/metal accommodation; no silica value inferred",
+          "thermal_accommodation": null
+        },
+        "boundary_condition": "constant_wall_temperature",
+        "domain_policy": "reject",
+        "maximum_mach": 0.3,
+        "maximum_relative_pressure_drop": 0.2,
+        "slip": null,
+        "thermal_entry": true,
+        "transport": {
+          "correlation_version": "dilute_species_v2",
+          "maximum_temperature": 1000.0,
+          "minimum_temperature": 100.0,
+          "provenance": "Air: Lemmon/Jacobsen 2004; He: Arp/McCarty/Friend and Hands/Arp; N2/Ar: COMSOL Sutherland; NIST Shomate cp",
+          "species": "air"
+        }
+      },
+      "gas_nusselt": 3.66,
+      "gas_viscosity_pa_s": 2e-05,
+      "header_loss_coefficient": 2.0,
+      "metal_conductivity_w_m_k": 200.0,
+      "metal_cp_j_kg_k": 500.0,
+      "metal_density_kg_m3": 8000.0
+    },
+    "outlet_valve_cda_m2": 0.00042,
+    "valve_placement": "downstream"
+  },
+  "provenance": {
+    "angle_unit": "rad",
+    "note": "Diagnostic translation only: hybrid_compact fit + circular microtube equivalent of the historical 200 x 40 mm x 1 mm x 116.86 mm channel bank.",
+    "physical_boundary": "external_stream_translation_of_cooling_cell_high_cop_candidate",
+    "source": "examples/cooling_cell_high_cop_candidate.toml + examples/cooling_cell_exchanger_exploratory.toml",
+    "transport_upgrade": {
+      "changes": {
+        "heat_in": {
+          "after": {
+            "correlation_version": "dilute_species_v2",
+            "maximum_temperature": 1000.0,
+            "minimum_temperature": 100.0,
+            "provenance": "Air: Lemmon/Jacobsen 2004; He: Arp/McCarty/Friend and Hands/Arp; N2/Ar: COMSOL Sutherland; NIST Shomate cp",
+            "species": "air"
+          },
+          "before": {
+            "maximum_temperature": 1000.0,
+            "minimum_temperature": 200.0,
+            "provenance": "COMSOL Sutherland tables 5-2/5-3; NIST Shomate; NIST helium table",
+            "species": "air"
+          }
+        },
+        "heat_out": {
+          "after": {
+            "correlation_version": "dilute_species_v2",
+            "maximum_temperature": 1000.0,
+            "minimum_temperature": 100.0,
+            "provenance": "Air: Lemmon/Jacobsen 2004; He: Arp/McCarty/Friend and Hands/Arp; N2/Ar: COMSOL Sutherland; NIST Shomate cp",
+            "species": "air"
+          },
+          "before": {
+            "maximum_temperature": 1000.0,
+            "minimum_temperature": 200.0,
+            "provenance": "COMSOL Sutherland tables 5-2/5-3; NIST Shomate; NIST helium table",
+            "species": "air"
+          }
+        }
+      },
+      "correlation_version": "dilute_species_v2",
+      "scope": "Transport properties only; calorically perfect EOS unchanged.",
+      "source_basis_sha256": "e9b594232124f88627197a66c4baedc27754c63d9f0bcbf105a5c708714ec5d9",
+      "source_study_id": "7550f4f68d1a5e453dd3c400c2fd3c4f54a6bea6bc93c7a7f7686845deed66e1"
+    },
+    "triangular_pitch_migration": {
+      "changes": {
+        "heat_in": {
+          "initial_inner_diameter_m": 0.00018397846093850392,
+          "legacy_pitch_m": 0.000225,
+          "pitch_ratio": 1.3
+        },
+        "heat_out": {
+          "initial_inner_diameter_m": 0.0001822344605656765,
+          "legacy_pitch_m": 0.000225,
+          "pitch_ratio": 1.3
+        }
+      },
+      "method": "User-selected fixed pitch_ratio 1.3 on both exchangers; triangular tube-edge header envelope.",
+      "source_basis_sha256": "d202b2ae812f9c731f4d142db873dd571e50568f08ce86ef906dc7de10605a9d",
+      "source_study_id": "0543fc174d6721908719fd2cb4a111977a367b94f752fdcabb67fdf741673ea3"
+    }
+  },
+  "schema_version": 3,
+  "wall_settings": {
+    "accelerate_walls": true,
+    "integration_absolute_tolerances": [
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-13,
+      1e-08,
+      1e-07,
+      1e-07,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08
+    ],
+    "integration_method": "LSODA",
+    "integration_relative_tolerance": 1e-08,
+    "maximum_step_angle_radians": 0.008726646259971648,
+    "periodic_absolute_tolerance": 1e-12,
+    "periodic_relative_tolerance": 1e-06,
+    "progress_interval_seconds": 1.0
+  },
+  "warm_start": null
+}

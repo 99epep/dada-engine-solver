@@ -14,8 +14,8 @@ from .study_io import dumps
 def stored_study(data):
     """Use verified campaign snapshots or the embedded evaluation definition.
 
-    Source/runtime mismatch remains visible in inspection. Reconstruction uses
-    current production kinematics and never integrates thermodynamics.
+    Source/runtime mismatch remains visible in inspection. This context only
+    reconstructs inputs; callers may separately request a bounded report replay.
     """
     path = Path(data['source'])
     if path.is_dir():

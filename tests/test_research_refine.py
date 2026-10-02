@@ -258,3 +258,19 @@ def test_rescale_local_region_is_explicitly_unsupported(source,tmp_path):
     OptimizationCampaign(definition,directory,evaluator=Evaluator(clock),clock=clock).run(100,maximum_candidates=1)
     with pytest.raises(ValueError,match='rescale the global source first'):
         rescale(directory,'best',5,tmp_path/'unsafe.toml')
+
+
+@pytest.mark.parametrize('center,missing,unexpected', [
+    ({'x':.5,'old_fixed':2}, '[]', "['old_fixed']"),
+    ({'old_fixed':2}, "['x']", "['old_fixed']"),
+])
+def test_local_center_name_error_is_actionable(center,missing,unexpected):
+    from dada_solver.research.local_search import validate_search
+    space=ParameterSpace((ContinuousParameter('x',0,1,.5),))
+    with pytest.raises(ValueError) as error:
+        validate_search(settings([center]),space)
+    message=str(error.value)
+    assert 'search.regions[basin_1].center' in message
+    assert f'Missing: {missing}' in message
+    assert f'unexpected (not active): {unexpected}' in message
+    assert 'fixed parameters belong only in [[parameters]]' in message

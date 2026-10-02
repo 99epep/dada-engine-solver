@@ -5,6 +5,7 @@ from importlib.resources import files
 import json
 from pathlib import Path
 import time
+import sys
 
 from dada_solver.campaign.definition import CampaignDefinition
 from dada_solver.campaign.evaluator import MachineEvaluator, EvaluationControl
@@ -79,9 +80,9 @@ def main(argv=None):
     validate.add_argument('--json', action='store_true', help='Print full validation and runtime metadata')
     run = commands.add_parser('run', help='Start a bounded Sobol campaign')
     run.add_argument('study', type=Path)
-    run.add_argument('--directory', type=Path, required=True)
+    run.add_argument('--directory', type=Path, help='Campaign directory (default: campaign beside the study TOML)')
     resume = commands.add_parser('resume', help='Continue a compatible stored campaign')
-    resume.add_argument('directory', type=Path)
+    resume.add_argument('directory', type=Path, help='Campaign directory, or study TOML to use its sibling campaign directory')
     resume.add_argument('--retry-incomplete', action='store_true')
     for p in (run,resume):
         p.add_argument('--budget', help='Wall-clock budget such as 2m or 1h30m')
@@ -94,7 +95,7 @@ def main(argv=None):
     single.add_argument('--budget')
     refinement = commands.add_parser('refine', help='Create a portable center-first local Sobol study')
     refinement.add_argument('sources',nargs='+',type=Path)
-    refinement.add_argument('--candidate',action='append',default=[],help='ID, unique prefix or best; repeat for several centers')
+    refinement.add_argument('--candidate',action='append',default=[],help='ID, unique prefix, best or second; repeat for several centers')
     refinement.add_argument('--radius',type=float,required=True,help='Half-width in global normalized coordinates, in (0,1]')
     refinement.add_argument('--output',type=Path,required=True)
     resize = commands.add_parser('rescale', help='Create a new capacity-scaled candidate study and portable basis; never integrate')
@@ -104,14 +105,14 @@ def main(argv=None):
     resize.add_argument('--mode', choices=['capacity'], default='capacity')
     resize.add_argument('--output', required=True, type=Path)
     for name in ('status','report','compare'):
-        p = commands.add_parser(name, help='Read stored results; never run integration')
+        p = commands.add_parser(name, help='Inspect stored results; report curves can replay one saved-state cycle')
         p.add_argument('paths', nargs='+' if name=='compare' else 1, type=Path)
-        p.add_argument('--candidate', action='append', default=[], help='Exact ID, unambiguous prefix or best; repeat to compare')
+        p.add_argument('--candidate', action='append', default=[], help='Exact ID, unambiguous prefix, best or second; repeat to compare')
         p.add_argument('--json', action='store_true', help='Print the complete inspection dataset')
         p.add_argument('--list-candidates', action='store_true', help='List selected candidates in the terminal')
         if name != 'status':
             p.add_argument('--html', type=Path, help='Write or regenerate standalone HTML (report default: CAMPAIGN/report.html)')
-            p.add_argument('--plots', choices=['volumes'], help='Sample selected candidate volumes without thermodynamic integration')
+            p.add_argument('--plots', action='append', metavar='NAMES', help='Comma-separated/repeated: positions, volumes, pressures, heat, temperatures, flows, velocity, acceleration, mechanisms; default, all or none. Report defaults to positions,heat,pressures,temperatures for the best two.')
     args = parser.parse_args(argv)
     try:
         if args.command == 'init':
@@ -149,11 +150,16 @@ def main(argv=None):
             if args.budget is not None: parse_budget(args.budget)
             if args.max_candidates is not None and args.max_candidates < 0: raise ValueError('Maximum candidates must be nonnegative.')
             if args.command == 'run':
+                args.directory = args.directory if args.directory is not None else args.study.parent/'campaign'
                 if args.directory.exists() and any(args.directory.iterdir()): raise ValueError('Study directory is not empty; use resume or choose a new directory.')
                 definition = compile_study(load_study(args.study))
                 if not definition.space.parameters: raise ValueError('No active parameters. Use evaluate, or replace a fixed value by initial/lower/upper before starting a search.')
                 campaign = OptimizationCampaign(definition,args.directory)
             else:
+                if args.directory.suffix.lower() == '.toml' and not args.directory.is_dir():
+                    args.directory = args.directory.parent/'campaign'
+                if not args.directory.is_dir():
+                    raise ValueError(f'Campaign directory not found: {args.directory}. Start it with run STUDY.toml first, or provide an existing campaign directory.')
                 definition = CampaignDefinition.resume(args.directory)
                 if not hasattr(definition,'study'): raise ValueError('Use dada-optimize to resume a legacy campaign.')
                 campaign = OptimizationCampaign(definition,args.directory)
@@ -177,11 +183,15 @@ def main(argv=None):
             print(f"{record['candidate_id']} {record['status']}; saved {args.output}")
             print(json.dumps(record['metrics'],indent=2))
         else:
-            data = report.compare(args.paths,args.candidate, plots=getattr(args,'plots',None))
             destination = getattr(args,'html',None)
             if args.command == 'report' and destination is None:
                 source = args.paths[0]
                 destination = source/'report.html' if source.is_dir() else source.with_suffix('.html')
+            plots=getattr(args,'plots',None)
+            if plots is None and args.command=='report': plots='default'
+            cache_directory=destination.parent/'.research-plot-cache' if destination is not None else None
+            data = report.compare(args.paths,args.candidate, plots=plots,cache_directory=cache_directory,
+                notify=lambda message: print(message,file=sys.stderr,flush=True))
             if destination is not None: report.render_html(data,destination)
             if args.json:
                 print(json.dumps(data,indent=2))

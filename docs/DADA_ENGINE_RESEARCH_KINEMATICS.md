@@ -246,7 +246,7 @@ stroke, without changing the normalized volume law or assuming a bore.
 | `volume.swept_ratio`, `volume.total_swept_m3` | Small/large swept ratio [1], total swept volume [m^3] |
 | `volume.small_clearance_ratio`, `volume.large_clearance_ratio` | Minimum enclosed / swept volume [1] |
 | `operation.frequency_hz`, `charge.total_mass_kg` | Positive Hz, kg; operation sign comes from the basis |
-| `microtube.heat_in.*`, `microtube.heat_out.*` | Integer `tube_count` [1]; `tube_length_m`, `inner_diameter_m`, `wall_thickness_m`, `pitch_m`, `header_depth_m` [m] |
+| `microtube.heat_in.*`, `microtube.heat_out.*` | Integer `tube_count` [1]; `tube_length_m`, `inner_diameter_m`, `wall_thickness_m`, `header_depth_m` [m]; triangular `pitch_ratio` [1], or legacy square `pitch_m` [m] |
 | `thermal.heat_in.*`, `thermal.heat_out.*` | `air_inlet_temperature_k` [K], `air_mass_flow_kg_s` [kg/s], `metal_conductivity_w_m_k` [W/(m*K)], `metal_density_kg_m3` [kg/m^3], `metal_cp_j_kg_k` [J/(kg*K)] |
 
 Heat transfer, hold-up, film resistance, wall capacity and losses are derived
@@ -406,3 +406,85 @@ remain separate from these scientific frames.
 See [validation](DADA_ENGINE_RESEARCH_VALIDATION.md) for measured tolerances and
 bounded demonstrations, and [migration status](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
 for the distinction between mathematical families and historical protocols.
+
+For new triangular microtube studies replace each `microtube.<side>.pitch_m`
+parameter with `microtube.<side>.pitch_ratio` (unit `1`). It may be fixed or
+continuous/active, with all bounds strictly above one. Explicit ratio ownership
+also works with a legacy basis: the adapter replaces its absolute pitch. A basis
+may instead store `pitch_ratio` directly, omitting `pitch_m`. Legacy presets and
+bases retain absolute pitch until explicitly migrated; historical physics is
+not silently changed. See [tube-bank geometry](MICROTUBE_GAS_MODEL.md#triangular-tube-banks-and-internal-header-volume).
+
+```toml
+[[parameters]]
+name = "microtube.heat_in.pitch_ratio"
+unit = "1"
+kind = "continuous"
+initial = 1.2
+lower = 1.01
+upper = 1.5
+transform = "linear"
+```
+
+DD5 was migrated to fixed ratios preserving each initial centre pitch of
+0.225 mm, retaining its 16 active coordinates. Its `legacy_square/` directory
+preserves the original study and basis. The derived atmospheric inventory can
+change because triangular headers have different gas volume.
+
+### Circular microtube collectors and ideal diodes
+
+For the circular geometry, replace `microtube.<side>.pitch_m` and
+`microtube.<side>.header_depth_m` declarations with `pitch_ratio` and
+`collector_half_angle_deg`. Use unit `1` for `pitch_ratio` and
+`conduit_area_ratio`, `deg` for the cone half-angle, and `m^3` for
+`additional_internal_volume_m3`. All eight geometry coordinates may be fixed or
+active (tube count remains integer); coordinate bounds must respect the geometry
+requirements. The coupled condition `conduit_diameter < bundle_diameter` is
+checked during preflight.
+
+For example, on **each** side, with illustrative values rather than a universal
+engineering recommendation:
+
+```toml
+[[parameters]]
+name = "microtube.heat_in.pitch_ratio"
+unit = "1"
+value = 1.3
+
+[[parameters]]
+name = "microtube.heat_in.collector_half_angle_deg"
+unit = "deg"
+value = 30.0
+
+[[parameters]]
+name = "microtube.heat_in.conduit_area_ratio"
+unit = "1"
+value = 1.0
+
+[[parameters]]
+name = "microtube.heat_in.additional_internal_volume_m3"
+unit = "m^3"
+value = 0.0
+```
+
+Keep the existing tube count/length/diameter/wall declarations. Remove old
+absolute-pitch and header-depth declarations and any corresponding local-region
+center coordinates. Add new active coordinates to each center if applicable.
+The existing basis may remain a legacy seed: declared circular coordinates
+replace its legacy geometry in the adapter. Alternatively, serialize the new
+bank directly with `pitch_ratio`, `collector_half_angle_deg` and
+`conduit_area_ratio`, omitting the legacy pitch and depth.
+
+Use `outlet_valve_cda = "geometry_conduit_area_v1"` under `[policies]` when both
+exchangers use circular collectors. Old `fixed_source_cda` and count-scaled CdA
+policies remain readable, but apply only to legacy geometries: circular
+exchangers always derive the area and use lossless diodes. No independent valve
+CdA is a Research coordinate for this model. The stored basis CdA, if any, cannot
+throttle it. This does not remove generic hydraulic CdA interfaces for other
+models or historical studies.
+
+The adapter includes the two collectors in actual exchanger gas hold-up once;
+reference-pressure charge therefore uses the new volume automatically. This is
+a new scientific definition, not a resume of an old geometry. Existing presets
+remain historical seeds until explicitly migrated. See
+[circular geometry and limitations](MICROTUBE_GAS_MODEL.md#circular-bundles-and-conical-collectors-circular_triangular_frustum_v1).

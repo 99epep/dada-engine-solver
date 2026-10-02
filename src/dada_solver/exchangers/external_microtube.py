@@ -36,10 +36,12 @@ class ExternalStreamHardwareInputs:
 class ExternalStreamMicrotubeExchanger:
     bank: MicrotubeBank
     inputs: ExternalStreamHardwareInputs
-    outlet_valve_cda_m2: float
+    outlet_valve_cda_m2: float | None = None
     valve_placement: str = 'downstream'
 
     def __post_init__(self):
+        if self.bank.circular_collectors:
+            object.__setattr__(self, "outlet_valve_cda_m2", self.bank.dimensions()["conduit_area_m2"])
         if self.valve_placement not in ('upstream','downstream'): raise ValueError('Invalid valve placement.')
 
     def build(self):
@@ -53,11 +55,16 @@ class ExternalStreamMicrotubeExchanger:
         film = MicrotubeGasFilm(bank, inputs.gas_model, metal_resistance/2) if inputs.gas_model else None
         thermal = ExternalStreamWallExchanger(1/(gas_resistance+metal_resistance/2), capacity, inputs.external_stream, film)
         def passage(valve=None):
+            if self.bank.circular_collectors: valve = None  # Ideal diode: direction is handled by the network.
             return TubeHalfLink(bank, inputs.gas_viscosity_pa_s, inputs.core_loss_multiplier,
                 inputs.header_loss_coefficient, valve, inputs.gas_model)
         report = dict(dimensions, gas_film_resistance_k_w=gas_resistance,
             metal_resistance_k_w=metal_resistance, wall_capacity_j_k=capacity,
             external_stream=asdict(inputs.external_stream), external_loop_losses='excluded; no hydraulic or pump/fan model')
+        if bank.circular_collectors:
+            report.update(valve_model='ideal_diode_no_hydraulic_loss', valve_cda_m2=self.outlet_valve_cda_m2,
+                header_loss_coefficient=inputs.header_loss_coefficient,
+                header_loss_model='lumped_coefficient_based_on_total_tube_velocity; independent_of_frustum_geometry')
         return ExchangerComponents(dimensions['working_gas_volume_m3'],
             passage(self.outlet_valve_cda_m2 if self.valve_placement=='upstream' else None),
             passage(self.outlet_valve_cda_m2 if self.valve_placement=='downstream' else None),

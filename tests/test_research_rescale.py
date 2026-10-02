@@ -142,7 +142,7 @@ def test_cli_and_offline_volume_plots(source,tmp_path,monkeypatch):
     assert 'relative_margin' in html and 'data-candidate' in html
     assert '<script src=' not in html
     assert report.render_html(data,tmp_path/'report.html').read_text()==html
-    with pytest.raises(ValueError,match='Only volume'):report.compare([directory],plots='temperatures')
+    with pytest.raises(ValueError,match='Unknown plot'):report.compare([directory],plots='unknown_plot')
 
 
 def test_legacy_empty_event_display_preserves_original_record(source,tmp_path):

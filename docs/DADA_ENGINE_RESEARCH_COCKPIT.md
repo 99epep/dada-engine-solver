@@ -10,20 +10,24 @@ accepted or rewritten.
 ## Short commands
 
 ```sh
-dada-research report outputs/my_study/campaign
-dada-research resume outputs/my_study/campaign --budget 30m
-dada-research report outputs/my_study/campaign --candidate a16ed2c7 --plots volumes
+research report outputs/my_study/campaign
+research resume outputs/my_study/campaign --budget 30m
+research report outputs/my_study/campaign --candidate a16ed2c7 --plots volumes
 ```
 
 `report CAMPAIGN` writes `CAMPAIGN/report.html`. For a standalone evaluation
 JSON it writes the sibling `.html`. `--html PATH` overrides the destination.
+The default curves are positions, gas-to-wall heat, pressures and temperatures
+for the two best feasible candidates. Thermal curves replay one saved-state
+cycle, announced on stderr and cached beside the HTML. `--plots none` skips
+reconstruction; see the [current guide](DADA_ENGINE_RESEARCH.md#reports-curves-and-animations).
 HTML is a derived artifact and may be regenerated in place; studies, bases,
 evaluation JSON and histories retain their existing protection rules.
 
 Normal report/status output contains the campaign summary and one best feasible
 result, not every candidate. Report output also identifies the HTML path.
 `--list-candidates` explicitly lists selected candidates; `--json` prints the
-complete inspection dataset as valid JSON. A candidate selector accepts `best`,
+complete inspection dataset as valid JSON. A candidate selector accepts `best`, `second`,
 a full ID or an unambiguous prefix. Comparison resolves prefixes across the
 supplied sources. Unknown or ambiguous prefixes fail explicitly.
 

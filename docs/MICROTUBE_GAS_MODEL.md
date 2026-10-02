@@ -497,3 +497,94 @@ artifacts. On those machines the measured indicated-power / efficiency changes a
 The existing numerical comparison tolerances are retained against these new-law
 references; comparing to the old-law numbers with roundoff tolerances would test
 a different physical model. Historical constant-transport cases are unchanged.
+
+### Triangular tube banks and internal header volume
+
+Use `pitch_ratio > 1` for triangular (hexagonal-neighbour) packing. The outer
+diameter is `Do = inner_diameter_m + 2*wall_thickness_m`; the centre pitch is
+`pitch_ratio*Do` (`MicrotubeBank.effective_pitch_m`). Diameter changes therefore
+preserve non-overlap without a separately chosen absolute pitch. Ratios equal
+to one are rejected, including Research lower bounds. This condition guarantees
+geometric separation, not a manufacturing tolerance or structural qualification.
+
+Packing is deterministic: `ceil(sqrt(N))` columns, filled row by row. Odd rows
+start half a pitch to the right; vertical separation is `sqrt(3)/2*pitch`.
+The rectangular frontal envelope spans the **occupied tube centres**, plus one
+outer radius at each edge. An incomplete final row does not introduce fictitious
+tubes. No packing optimization is performed. Both internal gas plenums use this
+full rectangular face: `V_headers = 2*width*height*header_depth_m`. Total gas
+hold-up adds tube bore volume and `additional_internal_volume_m3` exactly once.
+No external-fluid interstitial volume is calculated. These are internal header
+dimensions; vessel walls and extra fabrication clearances are not modeled.
+
+Compatibility is explicit: old `pitch_m` inputs retain the historical square
+packing and `columns*pitch_m` by `rows*pitch_m` envelope. Do not supply both pitch
+forms. Existing bases, examples and histories are not migrated implicitly.
+Selecting `pitch_ratio` changes header hold-up and scientific study identity;
+start a new campaign rather than resuming a square-packing history.
+
+### Circular bundles and conical collectors (`circular_triangular_frustum_v1`)
+
+Supply `collector_half_angle_deg` to select the circular model. It requires
+`pitch_ratio > 1` and replaces both `pitch_m` and `header_depth_m` as input fields.
+The remaining inputs are tube count, length, bore diameter, wall thickness,
+`conduit_area_ratio >= 1` (default 1), and nonnegative
+`additional_internal_volume_m3` (default 0). The half-angle is explicit and
+strictly between 0 and 90 degrees; no cone-angle optimum is assumed.
+
+With `Do = Di + 2*wall_thickness`, the implemented continuous approximation is:
+
+```text
+pitch = pitch_ratio * Do
+cell_area = sqrt(3)/2 * pitch^2
+bundle_face_area = tube_count * cell_area
+Db = sqrt(4*bundle_face_area/pi)
+tube_flow_area = tube_count*pi*Di^2/4
+conduit_area = conduit_area_ratio*tube_flow_area
+Dc = sqrt(4*conduit_area/pi)
+height = (Db-Dc)/(2*tan(collector_half_angle))
+one_collector_volume = pi*height*(Db^2+Db*Dc+Dc^2)/12
+header_gas_volume = 2*one_collector_volume
+working_gas_volume = tube_flow_area*tube_length + header_gas_volume + additional_internal_volume
+```
+
+`Dc >= Db` is rejected explicitly, without an inverted or degenerate cone.
+The triangular-cell area is a continuum envelope approximation, not an exact
+placement of a finite number of circles; no discrete edge correction is added.
+The model is most representative for large tube counts. `core_width_m` and
+`core_height_m` remain bounding-box extents equal to `Db`; their product is **not**
+the circular face area. The axial fluid envelope is `tube_length + 2*height`.
+No external interstitial fluid volume enters the gas inventory. No tube-sheet,
+collector wall storage or conduit length is invented.
+
+For this geometry, both `MicrotubeExchanger` and
+`ExternalStreamMicrotubeExchanger` derive the reported valve CdA from
+`conduit_area`. A supplied historical outlet CdA is replaced, not clamped.
+The ideal diode acts only through the production network's direction logic:
+no valve orifice loss is passed to either `TubeHalfLink`. In particular,
+merely enlarging a CdA would not suffice, because the old link also adds a
+quadratic valve resistance. Both that resistance and the smaller-valve sonic
+cap are absent. The **tube-area** compressible cap, tube friction, transport
+and gas-model validity guards remain. Upstream/downstream valve placement
+continues to determine which port blocks reverse flow. Generic orifices and
+legacy finite-CdA links are unchanged.
+
+`header_loss_coefficient` remains the existing lumped loss coefficient referred
+to total tube-passage velocity, divided between the two links. It is independent
+of cone angle and has not become a distribution, separation or pressure-recovery
+correlation for conical manifolds. For legacy external-air thermal models only,
+the existing equivalent-passage screen now uses the circular face area and
+perimeter; no new empirical correlation is claimed. Declared external-stream
+conductances are unchanged.
+
+Reports expose the geometry model, bundle area/diameter, actual pitch, total
+bore area, conduit area/diameter/ratio, cone angle/height, both header and total
+gas volumes, derived valve area, and loss-model scope. These values also appear
+in Research candidate comparisons when present in the recorded hardware data.
+
+**Compatibility:** no file or history is silently migrated. Without a cone-angle
+input, square-pitch and rectangular staggered legacy envelopes retain their old
+header volumes and finite-CdA hydraulic behavior. Selecting the circular model
+changes geometry and valve physics, hence scientific identity; use a new study/
+campaign. Exact reconstruction of historical inputs is still possible, subject
+to the existing runtime compatibility checks.
