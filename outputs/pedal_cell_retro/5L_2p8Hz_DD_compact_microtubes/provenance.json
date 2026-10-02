@@ -1,0 +1,67 @@
+{
+  "source_study": "outputs/pedal_cell_retro/5L_2p8Hz_coupled_valves18d_local_air100k/study.toml",
+  "source_machine_basis_sha256": "d202b2ae812f9c731f4d142db873dd571e50568f08ce86ef906dc7de10605a9d",
+  "campaign_intent": "Search for high-COP operation at fixed 5 L / 2.8 Hz by making exchanger dead volume aggressively small before power sizing.",
+  "retained": [
+    "5 L total swept volume",
+    "2.8 Hz",
+    "air dilute_species_v2 transport, 100-1000 K",
+    "hybrid_compact independent piston kinematics",
+    "swept-volume ratio bounds 0.5..1.6",
+    "three established DD kinematic basins",
+    "cooling COP objective",
+    "thermodynamic validity constraint"
+  ],
+  "changed": {
+    "valves": "DD fixed; valve-placement coordinates removed",
+    "tube_count_each": "20000..200000",
+    "tube_length_each_m": "0.006..0.020, log transform",
+    "inner_diameter_each_m": "0.000080..0.000180, log transform",
+    "wall_thickness_each_m": 2e-05,
+    "pitch_each_m": 0.000225,
+    "header_depth_each_m": 0.001,
+    "local_radius_fraction": 0.45,
+    "search_seed": 20261002
+  },
+  "nominal_geometry": {
+    "heat_in": {
+      "tube_count": 100000,
+      "tube_length_m": 0.01,
+      "inner_diameter_m": 0.00012,
+      "flow_area_m2": 0.0011309733552923255,
+      "internal_surface_m2": 0.3769911184307752,
+      "tube_gas_volume_m3": 1.1309733552923255e-05,
+      "header_gas_volume_m3": 1.0142415e-05,
+      "working_gas_volume_m3": 2.1452148552923256e-05,
+      "core_width_m": 0.071325,
+      "core_height_m": 0.0711
+    },
+    "heat_out": {
+      "tube_count": 120000,
+      "tube_length_m": 0.012,
+      "inner_diameter_m": 0.00012,
+      "flow_area_m2": 0.0013571680263507909,
+      "internal_surface_m2": 0.5428672105403163,
+      "tube_gas_volume_m3": 1.628601631620949e-05,
+      "header_gas_volume_m3": 1.21562775e-05,
+      "working_gas_volume_m3": 2.844229381620949e-05,
+      "core_width_m": 0.07807499999999999,
+      "core_height_m": 0.07785
+    },
+    "combined_working_gas_volume_m3": 4.9894442369132746e-05,
+    "combined_working_gas_volume_ml": 49.89444236913275,
+    "fraction_of_5L_swept": 0.00997888847382655
+  },
+  "bound_corner_check": {
+    "description": "Both exchangers simultaneously at N=200000, L=20 mm, ID=180 um.",
+    "combined_working_gas_volume_m3": 0.00024412704395261863,
+    "combined_working_gas_volume_ml": 244.12704395261864,
+    "fraction_of_5L_swept": 0.048825408790523724
+  },
+  "important_model_scope": [
+    "No manufacturability/low-tech constraint is imposed.",
+    "Unknown slip accommodation remains rejected by the existing production gas model.",
+    "Hydrodynamic-entry validity guards remain active.",
+    "Header distribution physics is still represented only by the existing lumped/header-loss model."
+  ]
+}

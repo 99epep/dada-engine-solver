@@ -632,3 +632,38 @@ categories: radius 0.20 retains each binary center's choice; a larger radius can
 cross a bin boundary. Multiple regions can retain different valve topologies.
 Reports display the selected strings and exclude categories from numerical
 bound-pressure diagnostics.
+
+### Compressed journals and bounded HTML reports
+
+New campaigns write `history.jsonl.gz`: one independent gzip member per completed
+record, containing its complete canonical JSON and newline. This is a standard
+concatenated gzip stream (`gzip -dc history.jsonl.gz` reads the JSONL). No metric,
+float precision, diagnostic, candidate identity or search origin is discarded.
+Independent members allow durable append without rewriting earlier results.
+Compression is lossless, level 6, with a deterministic zero gzip timestamp.
+
+The existing recovery sequence is unchanged: atomic `recovery.json`, journal
+append and fsync, durable `state.json`, then recovery acknowledgment. Resume
+preserves/truncates only an incomplete last member and recovers the completed
+result from the recovery slot. CRC corruption is an error, never silently ignored.
+Inspection reads a snapshot without repairing files. Existing plain
+`history.jsonl` campaigns remain readable and append in their original format;
+legacy `candidates/*.json` recovery remains supported. No automatic migration or
+rewriting occurs. Two journal formats in one directory are rejected as ambiguous.
+Normal runtime/source compatibility checks still govern execution resume.
+
+HTML reports retain detailed records only for the best **distinct feasible**
+candidates, using the existing objective ranking, up to `ceil(attempts/10)`:
+410 detailed candidates for 4096 journal attempts. Fewer feasible candidates means
+fewer details; none means an empty candidate table. Candidate selection/volume
+plots remain subject to this HTML cap. Cross-study comparisons with incompatible
+objectives retain feasible candidates in selection order, without a combined
+ranking. JSON inspection and journals retain every complete record.
+
+Funnel, rejection counts, bounds evidence, basin summaries and progression still
+cover the full report population. Lightweight progress records cover every attempt;
+per-basin best results remain summaries rather than extra full candidate records.
+The page states its retention policy and remains standalone, uncompressed and
+offline. The top two retained candidates are selected for comparison when available.
+Failure details omitted from HTML can be inspected with `dada-research report
+CAMPAIGN --json`. HTML filtering does not make omitted candidates available.

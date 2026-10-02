@@ -1,6 +1,7 @@
 """Read-only comparisons with optional kinematic sampling; no thermodynamic replay."""
 from collections import Counter
 import html
+import math
 import json
 from pathlib import Path
 
@@ -35,16 +36,10 @@ def inspect(path):
         if study['study_id'] != definition['study_id'] or study['definition_id'] != definition['definition_id']:
             raise ValueError('Study manifest does not match the campaign definition.')
         title = study['name']
-        records = []
-        journal = path/'history.jsonl'
-        lines = journal.read_bytes().splitlines(keepends=True) if journal.exists() else []
-        for i,line in enumerate(lines):
-            try:
-                if not line.endswith(b'\n'): raise ValueError('incomplete append')
-                records.append(json.loads(line))
-            except (ValueError, UnicodeDecodeError):
-                if i != len(lines)-1: raise ValueError('Corrupt non-final journal record.')
-                warnings.append('Incomplete final journal append ignored for inspection; resume performs recovery.')
+        from dada_solver.campaign.history import journal_path,read_journal
+        records,_,torn_offset=read_journal(journal_path(path))
+        if torn_offset is not None:
+            warnings.append('Incomplete final journal append ignored for inspection; resume performs recovery.')
         from dada_solver.campaign.history import recovery_records
         known = {r['evaluation_number']:r for r in records}
         for record in recovery_records(path):
@@ -179,14 +174,27 @@ def text_report(data, *, list_candidates=False):
 def render_html(data, destination):
     destination = Path(destination)
     if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
+    attempts=len(data['records'])
+    limit=math.ceil(attempts*.10)
     chosen=data.get('selected',data['records'])
-    ranked=elite_records(chosen,2) if data.get('comparison_compatible',True) else []
-    data=dict(data,comparison_default_ids=[r['candidate_id'] for r in ranked])
-    if 'selected' in data:
-        # Retain lightweight progress for every attempt, and detailed evidence
-        # only for the requested candidates. No stored artifact is modified.
-        data = dict(data, records=[{k:r.get(k) for k in
-            ('candidate_id','status','duration_seconds','metrics')} for r in data['records']])
+    if data.get('comparison_compatible',True):
+        chosen=elite_records(chosen,limit)
+    else:
+        # Incompatible studies cannot share an objective ranking.
+        chosen=list({r['candidate_id']:r for r in chosen if r['status']=='feasible'}.values())[:limit]
+    ranked=chosen[:2] if data.get('comparison_compatible',True) else []
+    def brief(record):
+        return {k:record.get(k) for k in ('candidate_id','objective','metrics')} if record else None
+    data=dict(data,selected=chosen,comparison_default_ids=[r['candidate_id'] for r in ranked],
+        html_selection=dict(policy='best_distinct_feasible_tenth_v1',attempts=attempts,
+                            limit=limit,retained=len(chosen)),
+        best=[brief(r) for r in data.get('best',[])],
+        records=[dict(candidate_id=r['candidate_id'],status=r['status'],
+                      duration_seconds=r.get('duration_seconds'),metrics={k:r.get('metrics',{}).get(k)
+                      for k in ('cooling_cop','indicated_thermal_efficiency')}) for r in data['records']])
+    if data.get('local_search'):
+        data['local_search']=dict(data['local_search'],regions=[dict(r,best=brief(r.get('best')))
+            for r in data['local_search']['regions']])
     escaped_data = json.dumps(data, allow_nan=False).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
     page = HTML.replace('TITLE_TEXT', html.escape(data['name'])).replace('EMBEDDED_DATA', escaped_data)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -236,6 +244,7 @@ byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>'
 const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=['maximize_cooling_cop','maximize_cooling_power'].includes(d.scientific.objective.type);
 const ykey=cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=cooling?'Cooling COP [1]':'Indicated efficiency [%]';
 byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Families: '+esc(d.scientific.kinematics?d.scientific.kinematics.small.family+' / '+d.scientific.kinematics.large.family:JSON.stringify(d.scientific.families))+'</p>';
+byId('summary').innerHTML+='<p>Detailed candidates: '+d.html_selection.retained+' / '+d.html_selection.limit+' maximum (best distinct feasible candidates; 10% of all attempts, rounded up). Global statistics and progress include all attempts. Complete records remain in the journal and JSON report.</p>';
 if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling power and COP use heat absorbed at the cold external-stream boundary and indicated mechanical input. External-loop hydraulics and pump/fan consumption are unmodelled. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
@@ -354,7 +363,7 @@ function show(){
  const visible=sortedRows(rows.filter(r=>matchesInspection(r)&&(byId('status').value==='all'||r.status===byId('status').value)&&(!byId('validOnly').checked||r.constraints.length>0&&r.constraints.every(c=>c.available&&c.satisfied))));
  const shown=columns.filter(c=>cooling?c[0]!=='efficiency':!['input','cooling','cop'].includes(c[0]));
  table('candidates',shown.map(c=>c[1]),visible.map(r=>shown.map(c=>c[2](r))));
- byId('inspectionContext').textContent=visible.length+' / '+rows.length+' distinct candidates shown'+(inspectionSource?' · Source: '+inspectionSource:'')+(!visible.length?' · No matching records in this embedded selection. Clear filters or generate the full campaign report to inspect omitted candidates.':'');
+ byId('inspectionContext').textContent=visible.length+' / '+rows.length+' distinct candidates shown'+(inspectionSource?' · Source: '+inspectionSource:'')+(!visible.length?' · No matching records in this embedded selection. Clear filters or inspect the complete JSON report for omitted candidates.':'');
  const idColumn=shown.findIndex(c=>c[0]==='id');
  [...byId('candidates').querySelectorAll('tbody tr')].forEach((tr,i)=>{tr.cells[idColumn].title=visible[i].candidate_id;tr.cells[idColumn].textContent=visible[i].candidate_id.slice(0,12);
  tr.onclick=()=>{byId('left').value=String(rows.indexOf(visible[i]));compare();byId('candidateDetails').open=true;};});
@@ -383,7 +392,7 @@ function volumePlots(){
  byId('volumes').innerHTML=svg+'<ul>'+plotted.map((r,i)=>'<li style="color:'+colors[i%colors.length]+'"><code>'+esc(r.candidate_id)+'</code> · solid small / dashed large</li>').join('')+'</ul>';
 }
 function compare(){
- if(!rows.length){byId('comparison').textContent='No evaluated candidates yet.';return;}
+ if(!rows.length){byId('comparison').textContent='No feasible candidates retained in this HTML report.';return;}
  const a=rows[Number(byId('left').value)],b=rows[Number(byId('right').value)],out=[];
  selectedCommands(a,b);
  const add=(label,x,y)=>out.push([label,x,y,typeof x==='number'&&typeof y==='number'?y-x:null]);

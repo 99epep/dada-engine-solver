@@ -130,8 +130,9 @@ def test_report_defaults_follow_existing_ranking_and_table_retains_data(tmp_path
     html=render_html(data,tmp_path/'report.html').read_text()
     raw=html.split('<script id="data" type="application/json">')[1].split('</script>')[0]
     embedded=json.loads(raw)
-    assert embedded['comparison_default_ids']==[original[-1]['candidate_id'],original[-2]['candidate_id']]
-    assert len(embedded['selected'])==4
+    assert embedded['comparison_default_ids']==[original[-1]['candidate_id']]
+    assert len(embedded['selected'])==1
+    assert len(embedded['records'])==4
     for token in ('max-height:640px','candidateViewport',"'Basin'",'matchesInspection','Inspect matching candidates','Signed margin','Near boundary','Scope / context'):
         assert token in html
     assert 'tr.cells[idColumn]' in html

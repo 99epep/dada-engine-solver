@@ -99,7 +99,7 @@ def test_resume_history_best_archive_and_phase_delta(tmp_path,definition):
     assert first['best_in_phase'][0]['objective']['value'] == -3
     assert first['attempted']==3 and first['integrated']==3
     assert first['best_at_phase_start'] is None
-    old_bytes=(tmp_path/'history.jsonl').read_bytes()
+    old_bytes=CampaignHistory(tmp_path).path.read_bytes()
     later=Evaluator(clock,[-4.,-2.])
     second=OptimizationCampaign.resume(tmp_path,evaluator=later,clock=clock).run(100,maximum_candidates=2)
     assert second['best_at_phase_start']['objective']['value']==-3
@@ -107,7 +107,7 @@ def test_resume_history_best_archive_and_phase_delta(tmp_path,definition):
     assert second['objective_improvement']==1
     assert second['next_sequence_index']==5
     assert set(later.calls).isdisjoint(evaluator.calls)
-    assert (tmp_path/'history.jsonl').read_bytes().startswith(old_bytes)
+    assert CampaignHistory(tmp_path).path.read_bytes().startswith(old_bytes)
     records=CampaignHistory(tmp_path).load()
     assert len(records)==5 and len({r['candidate_id'] for r in records})==5
     assert all(r['final_periodic_state'] for r in records)
@@ -129,7 +129,8 @@ def test_duplicate_cache_uses_preexisting_exact_candidate(tmp_path,definition):
     # Simulate an already completed external/initial candidate matching the next Sobol point.
     record.update(candidate.payload);record['candidate_id']=candidate.candidate_id
     # Isolated fixture journal: this is not a production history rewrite.
-    (tmp_path/'history.jsonl').write_text(json.dumps(record)+'\n')
+    import gzip
+    history.path.write_bytes(gzip.compress((json.dumps(record)+'\n').encode(),mtime=0))
     for p in (tmp_path/'candidates').glob('*.json'): p.unlink()
     (tmp_path/'candidates').mkdir(exist_ok=True)
     atomic_json(tmp_path/'candidates'/f'{candidate.candidate_id}.json',record)
@@ -226,13 +227,13 @@ def test_orphan_completed_record_and_torn_tail_recover_without_rerun(tmp_path,de
     clock=Clock(); ev=Evaluator(clock)
     campaign=OptimizationCampaign(definition,tmp_path,evaluator=ev,clock=clock)
     campaign.run(100,maximum_candidates=1)
-    original=(tmp_path/'history.jsonl').read_bytes()
+    original=CampaignHistory(tmp_path).path.read_bytes()
     # Simulate the durable recovery slot present during a torn append.
-    atomic_json(tmp_path/'recovery.json',json.loads(original))
-    (tmp_path/'history.jsonl').write_bytes(original[:25])
+    atomic_json(tmp_path/'recovery.json',campaign.history.load()[0])
+    campaign.history.path.write_bytes(original[:25])
     recovered=CampaignHistory(tmp_path).load()
     assert len(recovered)==1
-    assert (tmp_path/'history.jsonl').read_bytes()==original
+    assert CampaignHistory(tmp_path).path.read_bytes()==original
     assert list(tmp_path.glob('history_torn_tail_*.bin'))
     resumed=Evaluator(clock)
     result=OptimizationCampaign.resume(tmp_path,evaluator=resumed,clock=clock).run(100,maximum_candidates=1)

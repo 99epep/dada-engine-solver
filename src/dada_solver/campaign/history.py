@@ -3,6 +3,8 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 import fcntl
+import gzip
+import zlib
 import json
 import os
 from dada_solver.campaign.candidate import canonical_json, content_hash
@@ -25,11 +27,59 @@ def atomic_text(path, text):
     finally: os.close(fd)
 
 
+def journal_path(directory):
+    """Existing plain journals keep their format; new journals use gzip members."""
+    directory=Path(directory)
+    plain=directory/'history.jsonl'; compressed=directory/'history.jsonl.gz'
+    if plain.exists() and compressed.exists():
+        raise ValueError('Both plain and compressed journals exist; refusing an ambiguous history.')
+    return plain if plain.exists() else compressed
+
+
+def read_journal(path):
+    """Read a snapshot without repairing it; return records, bytes and torn-tail offset.
+
+    Each gzip member is one durable JSON record. CRC errors are corruption, not
+    interrupted writes. Only an incomplete final member may be recovered.
+    """
+    path=Path(path)
+    data=path.read_bytes() if path.exists() else b''
+    records=[];offset=0
+    if path.suffix!='.gz':
+        for line in data.splitlines(keepends=True):
+            try:
+                record=json.loads(line)
+                if not line.endswith(b'\n'): raise ValueError('Incomplete final journal line.')
+            except (ValueError,UnicodeDecodeError):
+                if offset+len(line)!=len(data):
+                    raise ValueError('Corrupt non-final history record; manual recovery is required.')
+                return records,data,offset
+            records.append(record);offset+=len(line)
+        return records,data,None
+    while offset<len(data):
+        start=offset;decoder=zlib.decompressobj(31);chunks=[]
+        while offset<len(data) and not decoder.eof:
+            chunk=data[offset:offset+65536]
+            try: chunks.append(decoder.decompress(chunk))
+            except zlib.error as error:
+                raise ValueError(f'Corrupt compressed history member at byte {start}.') from error
+            offset+=len(chunk)-len(decoder.unused_data)
+        if not decoder.eof: return records,data,start
+        payload=b''.join(chunks)
+        try:
+            if not payload.endswith(b'\n'): raise ValueError('Missing record terminator.')
+            record=json.loads(payload)
+        except (ValueError,UnicodeDecodeError) as error:
+            raise ValueError(f'Invalid JSON in complete history member at byte {start}.') from error
+        records.append(record)
+    return records,data,None
+
+
 class CampaignHistory:
     def __init__(self, directory):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
-        self.path = self.directory/'history.jsonl'
+        self.path = journal_path(self.directory)
 
     @contextmanager
     def locked(self):
@@ -41,22 +91,12 @@ class CampaignHistory:
             finally: fcntl.flock(stream, fcntl.LOCK_UN)
 
     def load(self):
-        records = []
-        if self.path.exists():
-            data = self.path.read_bytes(); offset = 0
-            for line in data.splitlines(keepends=True):
-                try:
-                    record = json.loads(line)
-                    if not line.endswith(b'\n'): raise ValueError('Incomplete final journal line.')
-                    records.append(record); offset += len(line)
-                except (ValueError, UnicodeDecodeError):
-                    if offset+len(line) != len(data):
-                        raise ValueError('Corrupt non-final history record; manual recovery is required.')
-                    # Sole append-only exception: preserve then remove a torn final write.
-                    stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
-                    (self.directory/f'history_torn_tail_{stamp}.bin').write_bytes(data[offset:])
-                    with self.path.open('r+b') as stream:
-                        stream.truncate(offset); stream.flush(); os.fsync(stream.fileno())
+        records,data,torn_offset=read_journal(self.path)
+        if torn_offset is not None:
+            stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
+            (self.directory/f'history_torn_tail_{stamp}.bin').write_bytes(data[torn_offset:])
+            with self.path.open('r+b') as stream:
+                stream.truncate(torn_offset); stream.flush(); os.fsync(stream.fileno())
         for record in records: verify_record(record)
         known = {r['evaluation_number']:r for r in records}
         orphans = []
@@ -80,8 +120,11 @@ class CampaignHistory:
         return records
 
     def _append(self, record):
-        with self.path.open('a') as stream:
-            stream.write(canonical_json(record)+'\n'); stream.flush(); os.fsync(stream.fileno())
+        payload=(canonical_json(record)+'\n').encode('utf-8')
+        if self.path.suffix=='.gz':
+            payload=gzip.compress(payload,compresslevel=6,mtime=0)
+        with self.path.open('ab') as stream:
+            stream.write(payload); stream.flush(); os.fsync(stream.fileno())
 
     def save(self, record):
         # One recovery slot, including cache hits: durable completion precedes
