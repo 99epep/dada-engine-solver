@@ -21,8 +21,8 @@ COMMON = {name: item for item in DesignParameter for name in ['common.'+item.val
 DERIVED_EXCHANGER = {'common.cold_ua', 'common.hot_ua', 'common.cold_heat_exchanger_volume',
     'common.hot_heat_exchanger_volume', 'common.large_to_hot_cda', 'common.small_to_cold_cda'}
 FOUR_BAR_FIELDS = {f.name for f in fields(SharedCrankRockerDesign) if 'branch' not in f.name}
-MICROTUBE_FIELDS = {'tube_length_m', 'inner_diameter_m', 'wall_thickness_m', 'pitch_m',
-                   'header_depth_m', 'additional_internal_volume_m3'}
+MICROTUBE_FIELDS = {'tube_length_m', 'inner_diameter_m', 'wall_thickness_m', 'pitch_m', 'pitch_ratio',
+                   'header_depth_m', 'collector_half_angle_deg', 'conduit_area_ratio', 'additional_internal_volume_m3'}
 
 
 def validate_ownership(names, families, free_settings):
@@ -61,6 +61,13 @@ def microtube_design(bank, inputs, valve_cda, physical, side):
                if name.startswith('microtube.'+side+'.')}
     if not set(updates) <= MICROTUBE_FIELDS:
         raise PreflightRejection('invalid_exchanger', 'Unknown or derived microtube coordinate.')
+    if 'collector_half_angle_deg' in updates:
+        if 'header_depth_m' in updates or 'pitch_m' in updates:
+            raise PreflightRejection('invalid_exchanger','Circular collectors replace pitch_m/header_depth_m.')
+        updates['header_depth_m']=None
+        updates.setdefault('pitch_ratio',bank.effective_pitch_m/bank.outer_diameter_m)
+    if 'pitch_ratio' in updates and 'pitch_m' not in updates:
+        updates['pitch_m'] = None
     try:
         design = MicrotubeExchanger(replace(bank, **updates), inputs, valve_cda)
         design.build()
@@ -79,6 +86,9 @@ class FamilyDesignAdapter:
     def build(self, physical):
         try:
             validate_ownership(physical, self.families, self.free_settings)
+            circular = self.hardware_bank is not None and (self.hardware_bank.circular_collectors or any(name.endswith('.collector_half_angle_deg') for name in physical))
+            if circular and any(name.startswith('common.') and name.endswith('_cda') for name in physical):
+                raise ValueError('Circular microtube geometry derives hydraulic areas; independent CdA coordinates are not supported.')
             updates = {COMMON[name]: value for name, value in physical.items() if name in COMMON}
             if 'operation.frequency_hz' in physical:
                 frequency = physical['operation.frequency_hz']

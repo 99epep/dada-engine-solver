@@ -34,11 +34,17 @@ def validate_search(search, space):
             if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value): raise ValueError('Region provenance requires SHA-256 IDs.')
         if not isinstance(region['center'],dict):
             raise ValueError('Region centers require named physical values.')
-        for parameter in space.parameters:
-            value=region['center'].get(parameter.name)
-            if not isinstance(parameter,ChoiceParameter) and (isinstance(value,bool) or not isinstance(value,(int,float))):
-                raise ValueError('Numeric region coordinates require finite physical numeric values.')
-        space.encode(region['center'])
+        try:
+            space.encode(region['center'])
+            for parameter in space.parameters:
+                value=region['center'][parameter.name]
+                if not isinstance(parameter,ChoiceParameter) and (isinstance(value,bool) or not isinstance(value,(int,float))):
+                    raise ValueError(f'{parameter.name}: expected a finite physical numeric value.')
+        except (ValueError, TypeError) as error:
+            raise ValueError(f"search.regions[{region['id']}].center: {error} "
+                             'Declare exactly the active parameters in each center; '
+                             'fixed parameters belong only in [[parameters]] with value.') from error
+
 
 
 def region_summary(records, scientific):

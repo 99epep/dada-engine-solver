@@ -44,18 +44,18 @@ Start with these few modules rather than a protocol/plugin hierarchy. A thin
 explicit six-bar branch at the campaign construction boundary is acceptable;
 no concrete family checks belong in thermodynamic integration code.
 
-The registered entry point should be `dada-research`, since the checkout has
+The registered entry point should be `research`, since the checkout has
 separate `dada-solver` and `dada-optimize` entry points and no `dada` dispatcher.
 Keep both historical commands compatible. Proposed usage:
 
 ```sh
-dada-research init sixbar-thermo5d --output study.toml
-dada-research validate study.toml
-dada-research run study.toml --directory outputs/research_rank01 --budget 2m --max-candidates 2
-dada-research status outputs/research_rank01
-dada-research resume outputs/research_rank01 --budget 2m --max-candidates 2
-dada-research resume outputs/research_rank01 --budget 5m --retry-incomplete
-dada-research report outputs/research_rank01 --html /tmp/rank01.html
+research init sixbar-thermo5d --output study.toml
+research validate study.toml
+research run study.toml --directory outputs/research_rank01 --budget 2m --max-candidates 2
+research status outputs/research_rank01
+research resume outputs/research_rank01 --budget 2m --max-candidates 2
+research resume outputs/research_rank01 --budget 5m --retry-incomplete
+research report outputs/research_rank01 --html /tmp/rank01.html
 ```
 
 `init` refuses to overwrite a study and bundles immutable reference inputs next

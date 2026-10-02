@@ -1,4 +1,4 @@
-"""Read-only comparisons with optional kinematic sampling; no thermodynamic replay."""
+"""Stored-result comparisons with optional, separately labelled report replays."""
 from collections import Counter
 import html
 import math
@@ -102,8 +102,12 @@ def select_records(data, selectors=()):
     if not selectors: return values
     selected = []
     for selector in selectors:
-        if selector == 'best':
-            matches = elite_records(values,1)
+        if selector in ('best','second'):
+            rank = 1 if selector=='best' else 2
+            ranked = elite_records(values,rank)
+            if len(ranked)<rank:
+                raise ValueError(f'Candidate selector {selector!r} requires at least {rank} ranked feasible candidate(s); found {len(ranked)}.')
+            matches = [ranked[rank-1]]
         else:
             matches = [r for r in values if r['candidate_id'].startswith(selector)]
         if len(matches) != 1:
@@ -112,34 +116,40 @@ def select_records(data, selectors=()):
     return selected
 
 
-def compare(paths, selectors=(), *, plots=None):
+def compare(paths, selectors=(), *, plots=None, cache_directory=None, notify=lambda message: None):
     studies = [inspect(path) for path in paths]
     records = []
-    if plots not in (None, 'volumes'): raise ValueError('Only volume plots are available; thermodynamic replay is not implemented.')
+    from .plot_data import plot_names, candidate_plots
+    requested = plot_names(plots)
     chosen = None
     if selectors:
         chosen = {r['candidate_id'] for r in select_records(
             {'records':[r for s in studies for r in s['records']]}, selectors)}
     for study in studies:
         selected = [r for r in select_records(study) if chosen is None or r['candidate_id'] in chosen]
-        if plots:
+        if requested:
             from .snapshots import stored_study
-            from .visualization import sample_report_volumes
-            with stored_study(study) as snapshot:
-                cache = {}
-                for row in selected:
-                    key = row['candidate_id']
-                    if key not in cache:
-                        cache[key] = sample_report_volumes(snapshot, row['physical'])
-                    row['plots'] = {'volumes': cache[key]}
+            # Default plot scope is the existing objective's two best candidates.
+            # Explicit selectors request those exact candidates, without a rerank.
+            targets = selected if selectors else elite_records(selected,2)
+            if not targets and len(selected)==1 and selected[0]["status"]=="feasible":
+                targets = selected  # A standalone legacy result needs no ranking.
+            if targets:
+                with stored_study(study) as snapshot:
+                    for row in targets:
+                        row['plots'] = candidate_plots(snapshot,row,requested,
+                            cache_directory=cache_directory,notify=notify)
+                        row['plots_runtime_compatible'] = study['runtime_compatible']
+        study['replay'] = 'derived_report_curves' if requested else 'not_requested'
         records.extend(selected)
     if len(studies) == 1:
         result = studies[0]
         result['selected'] = records
+        result['explicit_selection'] = bool(selectors)
         return result
     compatible = len({s['study_id'] for s in studies}) == 1
     result = dict(studies[0], name='Candidate comparison', records=records, selected=records,
-                  status_counts=dict(Counter(r['status'] for r in records)), comparison_compatible=compatible,
+                  status_counts=dict(Counter(r['status'] for r in records)), comparison_compatible=compatible, explicit_selection=bool(selectors),
                   cockpits=[s['cockpit'] for s in studies],
                   compared_sources=[dict(source=s['source'], study_id=s['study_id'], scientific=s['scientific']) for s in studies],
                   warnings=[w for s in studies for w in s['warnings']], best=elite_records(records,5) if compatible else [])
@@ -182,6 +192,11 @@ def render_html(data, destination):
     else:
         # Incompatible studies cannot share an objective ranking.
         chosen=list({r['candidate_id']:r for r in chosen if r['status']=='feasible'}.values())[:limit]
+    # Explicit comparison/plot requests remain visible even outside the detail cap.
+    included={r['candidate_id'] for r in chosen}
+    for record in data.get('selected',[]):
+        if (record.get('plots') or data.get('explicit_selection')) and record['candidate_id'] not in included:
+            chosen.append(record); included.add(record['candidate_id'])
     ranked=chosen[:2] if data.get('comparison_compatible',True) else []
     def brief(record):
         return {k:record.get(k) for k in ('candidate_id','objective','metrics')} if record else None
@@ -196,7 +211,7 @@ def render_html(data, destination):
         data['local_search']=dict(data['local_search'],regions=[dict(r,best=brief(r.get('best')))
             for r in data['local_search']['regions']])
     escaped_data = json.dumps(data, allow_nan=False).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
-    page = HTML.replace('TITLE_TEXT', html.escape(data['name'])).replace('EMBEDDED_DATA', escaped_data)
+    page = HTML.replace('REPORT_CURVES_SCRIPT', Path(__file__).with_name('report_curves.js').read_text()).replace('TITLE_TEXT', html.escape(data['name'])).replace('EMBEDDED_DATA', escaped_data)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(page)
     return destination
@@ -208,7 +223,7 @@ HTML = '''<!doctype html>
 <style>
 #candidateViewport{max-height:640px;overflow:auto;padding:0}#candidates td{height:24px;white-space:nowrap}#candidates th{position:sticky;top:0;z-index:1}#candidates tbody tr{cursor:pointer}#candidates tbody tr:hover{background:#edf6fa}#bounds{max-height:420px}#bounds th{position:sticky;top:0}#suggestions{max-height:440px}body{font:15px/1.5 system-ui,sans-serif;color:#182938;background:#f4f6f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{font-size:21px;margin-top:30px}.card{background:white;border:1px solid #d9e0e6;border-radius:8px;padding:18px;margin:16px 0;overflow:auto}.muted{color:#506475}.warning{border-left:4px solid #a65b00;background:#fff4df;padding:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid #d9e0e6;vertical-align:top}th{background:#edf2f5}code{overflow-wrap:anywhere}th button{font:inherit;font-weight:600;border:0;background:transparent;cursor:pointer;text-align:left;color:inherit}select,input{font:inherit;padding:7px;max-width:100%;margin:5px}label{display:inline-block;margin-right:15px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px}.plots{display:grid;grid-template-columns:1fr 1fr;gap:16px}svg{width:100%;height:auto}.near{background:#fff1cb;color:#775100}.good{color:#087660}.bad{color:#a33b35}a{color:#17658b}@media(max-width:750px){.plots{grid-template-columns:1fr}main{padding:12px}}
 </style><main><section class="card" id="localRegions" hidden><h2>Local regions</h2><div id="regionSummary"></div></section>
-<h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · no optimization or thermodynamic replay during rendering</p>
+<h1>TITLE_TEXT</h1><p class="muted">Dada-Engine Research · offline report · stored metrics unchanged · reconstructed curves labelled separately</p>
 <div id="warnings"></div><div class="card" id="summary"></div>
 <h2>Campaign funnel</h2><div class="card" id="funnel"></div>
 <h2>Pressure on parameter bounds</h2><div class="card" id="bounds"></div>
@@ -224,6 +239,7 @@ HTML = '''<!doctype html>
 <button id="clearInspection" type="button">Clear inspection filters</button><p id="inspectionContext" class="muted"></p>
 <p class="muted">All records remain available. Scroll for additional candidates; click a row to inspect it as Candidate A.</p>
 <div class="card" id="candidateViewport" tabindex="0" aria-label="Scrollable candidate table"><table id="candidates"></table></div>
+<div id="additionalPlots"></div><div id="mechanismPlots"></div>
 <section id="volumeSection" hidden><h2>Cylinder volumes</h2><p>One cycle in solver angle, with the operation convention applied once. Solid: small cylinder; dashed: large cylinder. No thermodynamic integration.</p><div class="card" id="volumes"></div></section>
 <h2>Compare selected candidates</h2><p>Values are absolute; the difference is B − A. Missing data stays unavailable.</p>
 <label>Candidate A <select id="left"></select></label><label>Candidate B <select id="right"></select></label>
@@ -244,7 +260,7 @@ byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>'
 const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=['maximize_cooling_cop','maximize_cooling_power'].includes(d.scientific.objective.type);
 const ykey=cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=cooling?'Cooling COP [1]':'Indicated efficiency [%]';
 byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Families: '+esc(d.scientific.kinematics?d.scientific.kinematics.small.family+' / '+d.scientific.kinematics.large.family:JSON.stringify(d.scientific.families))+'</p>';
-byId('summary').innerHTML+='<p>Detailed candidates: '+d.html_selection.retained+' / '+d.html_selection.limit+' maximum (best distinct feasible candidates; 10% of all attempts, rounded up). Global statistics and progress include all attempts. Complete records remain in the journal and JSON report.</p>';
+byId('summary').innerHTML+='<p>Detailed candidates: '+d.html_selection.retained+' (base limit '+d.html_selection.limit+': best distinct feasible 10%, rounded up; plot targets and explicit selections also retained). Global statistics and progress include all attempts. Complete records remain in the journal and JSON report.</p>';
 if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling power and COP use heat absorbed at the cold external-stream boundary and indicated mechanical input. External-loop hydraulics and pump/fan consumption are unmodelled. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
@@ -379,11 +395,11 @@ function volumePlots(){
  const plotted=rows.filter(r=>r.plots?.volumes);if(!plotted.length)return;
  byId('volumeSection').hidden=false;
  const w=1000,h=400,l=80,b=55,t=20,right=20,colors=['#17658b','#b74424','#087660','#773baa','#986700'];
- const ymax=Math.max(...plotted.flatMap(r=>[...r.plots.volumes.small,...r.plots.volumes.large]))*1.06;
+ const axis=niceAxis(0,Math.max(...plotted.flatMap(r=>[...r.plots.volumes.small,...r.plots.volumes.large]))*1000,true),ymax=axis.high/1000;
  const x=v=>l+v/360*(w-l-right),y=v=>h-b-v/ymax*(h-b-t);
  let svg='<svg role="img" aria-label="Small and large cylinder volumes over one cycle" viewBox="0 0 '+w+' '+h+'"><path d="M'+l+' '+t+' V'+(h-b)+' H'+(w-right)+'" fill="none" stroke="#526575"/>';
  for(let i=0;i<=6;i++)svg+='<text x="'+x(i*60)+'" y="'+(h-b+22)+'" text-anchor="middle" font-size="13">'+i*60+'</text>';
- for(let i=0;i<=4;i++){const v=ymax*i/4;svg+='<text x="'+(l-8)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="13">'+(v*1000).toPrecision(4)+'</text>';}
+ for(const v of axis.ticks)svg+='<text x="'+(l-8)+'" y="'+(y(v/1000)+4)+'" text-anchor="end" font-size="13">'+tickLabel(v,axis.step)+'</text>';
  for(const [i,row] of plotted.entries())for(const side of ['small','large']){
   const p=row.plots.volumes,color=colors[i%colors.length],points=p.angle.map((a,j)=>x(a)+','+y(p[side][j])).join(' ');
   svg+='<polyline data-candidate="'+esc(row.candidate_id)+'" data-side="'+side+'" points="'+points+'" fill="none" stroke="'+color+'" stroke-width="2"'+(side==='large'?' stroke-dasharray="7 4"':'')+'><title>'+esc(row.candidate_id+' · '+side)+'</title></polyline>';
@@ -400,6 +416,9 @@ function compare(){
  const ap=a.resolved_parameters||a.physical,bp=b.resolved_parameters||b.physical;
  for(const name of new Set([...Object.keys(ap),...Object.keys(bp)]))add(name+' ['+(a.parameter_units?.[name]||b.parameter_units?.[name]||'see definition')+']',ap[name],bp[name]);
  for(const [key,unit] of Object.entries({total_mass_kg:'kg',indicated_power_w:'W',indicated_thermal_efficiency:'1',heat_input_w:'W',cooling_power_w:'W',cooling_cop:'1',indicated_mechanical_input_power_w:'W',maximum_pressure_pa:'Pa',maximum_temperature_k:'K',maximum_absolute_mass_flow_kg_s:'kg/s',useful_mechanical_power_w:'W'}))add(key+' ['+unit+']',a.metrics[key],b.metrics[key]);
+ for(const side of ['heat_in','heat_out'])for(const key of ['geometry_model','bundle_diameter_m','bundle_face_area_m2','pitch_m','tube_flow_area_m2','conduit_area_m2','conduit_diameter_m','conduit_area_ratio','collector_half_angle_deg','collector_height_m','header_gas_volume_m3','tube_gas_volume_m3','additional_internal_volume_m3','working_gas_volume_m3','valve_model','valve_cda_m2','header_loss_coefficient','header_loss_model']){
+  const x=a.derived?.hardware?.[side]?.[key],y=b.derived?.hardware?.[side]?.[key];if(x!=null||y!=null)add(side+' '+key,x,y);
+ }
  for(const side of ['heat_in','heat_out'])add(side+' external / peak internal capacity rate [1]',a.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio,b.derived?.external_air_capacity_diagnostics?.[side]?.external_to_peak_internal_capacity_rate_ratio);
  for(const side of ['heat_in','heat_out'])for(const key of ['fluid','inlet_temperature_k','outlet_minimum_k','outlet_maximum_k','mass_flow_kg_s','cp_j_kg_k','capacity_rate_w_k','wall_conductance_w_k','heat_into_machine_per_cycle_j','mean_heat_into_machine_w','external_loop_losses'])add(side+' external '+key,a.derived?.external_streams?.[side]?.[key],b.derived?.external_streams?.[side]?.[key]);
  for(const port of ['small_to_cold','cold_to_large','large_to_hot','hot_to_small'])add(port+' minimum signed flow [kg/s]',a.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port],b.derived?.local_reflux?.minimum_signed_flows_kg_s?.[port]);
@@ -423,5 +442,6 @@ function compare(){
  table('comparison',['Quantity','A','B','B − A'],out);byId('detail').textContent=JSON.stringify({A:a,B:b},null,2);
 }
 byId('clearInspection').onclick=()=>{clearInspection();show();};byId('failureCategory').onchange=show;byId('violatedConstraint').onchange=show;
+REPORT_CURVES_SCRIPT
 cockpit();byId('sortBy').onchange=show;byId('sortDirection').onchange=show;volumePlots();byId('status').onchange=show;byId('validOnly').onchange=show;byId('left').onchange=compare;byId('right').onchange=compare;show();compare();
 </script></html>'''

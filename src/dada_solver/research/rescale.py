@@ -16,7 +16,7 @@ from .study_io import dumps
 
 def extensive(name):
     return name in ('volume.total_swept_m3', 'charge.total_mass_kg') or (
-        name.startswith('microtube.') and name.endswith('.tube_count')) or (
+        name.startswith('microtube.') and name.endswith(('.tube_count','.additional_internal_volume_m3'))) or (
         name.startswith('external_stream.') and name.rsplit('.', 1)[-1] in
         ('mass_flow_kg_s', 'wall_conductance_w_k')) or (
         name.startswith('thermal.') and name.endswith('.air_mass_flow_kg_s'))

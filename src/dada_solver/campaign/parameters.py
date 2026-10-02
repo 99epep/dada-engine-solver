@@ -129,6 +129,10 @@ class ParameterSpace:
         return {p.name: p.decode(x) for p, x in zip(self.parameters, coordinates)}
 
     def encode(self, physical):
-        if set(physical) != {p.name for p in self.parameters}:
-            raise ValueError('Physical parameter names do not match the space.')
+        expected = {p.name for p in self.parameters}
+        if set(physical) != expected:
+            missing = sorted(expected - set(physical))
+            unexpected = sorted(set(physical) - expected)
+            raise ValueError('Physical parameter names do not match the active parameter space. '
+                             f'Missing: {missing}; unexpected (not active): {unexpected}.')
         return tuple(p.encode(physical[p.name]) for p in self.parameters)

@@ -9,16 +9,23 @@ from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 class MicrotubeExchanger:
     bank: MicrotubeBank
     inputs: HardwareInputs
-    outlet_valve_cda_m2: float
+    outlet_valve_cda_m2: float | None = None
     valve_placement: str = 'downstream'
 
     def __post_init__(self):
+        if self.bank.circular_collectors:
+            object.__setattr__(self, "outlet_valve_cda_m2", self.bank.dimensions()["conduit_area_m2"])
         if self.valve_placement not in {'upstream', 'downstream'}:
             raise ValueError("Valve placement must be 'upstream' or 'downstream'.")
 
     def build(self) -> ExchangerComponents:
         thermal, report = build_exchanger(self.bank, self.inputs)
+        if self.bank.circular_collectors:
+            report.update(valve_model='ideal_diode_no_hydraulic_loss', valve_cda_m2=self.outlet_valve_cda_m2,
+                header_loss_coefficient=self.inputs.header_loss_coefficient,
+                header_loss_model='lumped_coefficient_based_on_total_tube_velocity; independent_of_frustum_geometry')
         def passage(valve=None):
+            if self.bank.circular_collectors: valve = None  # Ideal diode: direction is handled by the network.
             return TubeHalfLink(self.bank, self.inputs.gas_viscosity_pa_s,
                 self.inputs.core_loss_multiplier, self.inputs.header_loss_coefficient, valve,
                 self.inputs.gas_model)

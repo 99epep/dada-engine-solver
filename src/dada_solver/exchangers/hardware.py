@@ -180,9 +180,10 @@ def build_exchanger(bank: MicrotubeBank, inputs: HardwareInputs):
     inner = bank.inner_diameter_m
     outer = inner+2*bank.wall_thickness_m
     area_out = bank.tube_count*math.pi*outer*bank.tube_length_m
-    face = dimensions['core_width_m']*dimensions['core_height_m']
+    face = dimensions['bundle_face_area_m2'] if bank.circular_collectors else dimensions['core_width_m']*dimensions['core_height_m']
     free_area = face-bank.tube_count*math.pi*outer**2/4
-    wetted = bank.tube_count*math.pi*outer+2*(dimensions['core_width_m']+dimensions['core_height_m'])
+    perimeter = math.pi*dimensions['bundle_diameter_m'] if bank.circular_collectors else 2*(dimensions['core_width_m']+dimensions['core_height_m'])
+    wetted = bank.tube_count*math.pi*outer+perimeter
     air_diameter = 4*free_area/wetted
     gas_resistance = inner/(inputs.gas_nusselt*inputs.gas_conductivity_w_m_k*dimensions['tube_internal_area_m2'])
     air_resistance = air_diameter/(inputs.air_nusselt*inputs.air_conductivity_w_m_k*area_out)
