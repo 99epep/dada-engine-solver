@@ -1,4 +1,8 @@
-# Persistent optimization campaigns
+# Campaign internals
+
+For day-to-day work, use [Research](DADA_ENGINE_RESEARCH.md). This is the
+lower-level implementation reference, also used by the historical `dada-optimize`
+CLI. Research snapshots have their own filenames described in its reference.
 
 ## Scope
 
@@ -13,7 +17,7 @@ unknown useful mechanical output.
 
 New code lives in `dada_solver.campaign`:
 
-- `parameters`: immutable named continuous parameters and parameter spaces;
+- `parameters`: immutable continuous, integer and choice parameters and parameter spaces;
 - `candidate`: canonical JSON and SHA-256 candidate identities;
 - `adapters`: family-specific construction and parameter ownership;
 - `definition`: TOML loading, snapshots and runtime/model fingerprints;
@@ -28,7 +32,7 @@ There is no database, plugin discovery, distributed execution, Bayesian search
 or new external optimization dependency. The first strategy is Sobol, not
 SLSQP. Research V2/V3 additionally use `scheduled_search.ScheduledSobol` for
 explicit initial evaluations and center-first local regions; the original global
-Sobol path stays unchanged. See [Research local refinement](DADA_ENGINE_RESEARCH.md#local-refinement-and-explicit-initial-evaluations)
+Sobol path stays unchanged. See [Research local refinement](DADA_ENGINE_RESEARCH_REFERENCE.md#local-refinement-and-explicit-initial-evaluations)
 for normalization, round-robin allocation and resume semantics.
 
 ## Kinematics injection
@@ -69,10 +73,16 @@ linear: x = (1-u)*lower + u*upper
 log:    x = exp((1-u)*log(lower) + u*log(upper))
 ```
 
-The initial values are available as a reference but are not automatically
-inserted into or substituted for the Sobol sequence. If there is no feasible
-candidate at phase start, parameter-change reporting explicitly uses these
-unevaluated configured initial values; objective improvement is unavailable.
+Integer parameters use the shared encode/decode convention; choice parameters
+store explicit categories, not scientific numeric distances. Candidate physical
+values may therefore be strings.
+
+Old global studies without `evaluate_initial` retain the historical Sobol-only
+start. Research studies can explicitly evaluate their initial point first; local
+regions always evaluate their embedded centres before Sobol. Each local region
+has its own Sobol index and deterministic round-robin allocation. Search-origin
+metadata does not alter physical candidate identity. The study's search definition
+and durable schedule still participate in reproducible execution.
 
 Adapters avoid expanding the legacy enum:
 
@@ -85,8 +95,9 @@ Adapters avoid expanding the legacy enum:
 - `four_bar.<dimensionless field>` updates the shared-crank design while keeping
   discrete assembly branches fixed;
 - `microtube.heat_in.<geometry field>` and `microtube.heat_out.<geometry field>`
-  are owned by the separate microtube geometry adapter. Integer tube count is
-  fixed in this first continuous parameter representation.
+  are owned by the separate microtube geometry adapter. Tube count can be an integer
+  coordinate. Circular collectors derive pitch, header volume and diode section;
+  independent legacy UA/hold-up/CdA coordinates cannot override that geometry.
 
 Wrong-family or unknown names are rejected. Frequency and angular speed cannot
 both vary; neither can pressure and inventory, or clearance volume and ratio.
@@ -104,11 +115,11 @@ H_i and H_o wall energies. The wall convergence rule, correlations, valve
 equations and integration tolerances are unchanged.
 
 For wall cycles, indicated thermal efficiency is indicated gas work divided by
-external heat supplied through the incoming air stream. Wall-to-gas heat is a
+external heat supplied through the external stream. Wall-to-gas heat is a
 separate diagnostic. Useful shaft power remains unavailable and mechanical
 losses remain unknown. Peak tube Reynolds and Mach numbers use the actual
-candidate geometries; leaving the declared laminar/Mach domain prevents
-feasibility.
+candidate geometries; actual selected correlation-domain violations prevent
+feasibility; modeled transition is reported with its uncertainty.
 
 `WallCycleNumericalSettings` records the wall integration method, relative
 tolerance, fifteen-component absolute-tolerance vector, maximum angle step,
@@ -123,7 +134,7 @@ In wall-cycle diagnostics, `cold_heat_rate_extrema` and
 `hot_heat_rate_extrema` mean heat into the working gas from the H_i and H_o
 walls. They are evaluated with the actual wall states and exchanger `rates()`
 functions. Cycle efficiency continues to use heat delivered by the external
-source air. These are deliberately different thermodynamic boundaries.
+stream. These are deliberately different thermodynamic boundaries.
 
 The optional `wall_numerical.accelerate_walls` applies only the existing bounded
 Aitken update to a subsequent wall-energy initial guess. It cannot declare
@@ -143,7 +154,7 @@ snapshot and Python/NumPy/SciPy versions plus a digest of the package's Python
 sources. Resume refuses changed definitions or runtimes rather than silently
 mixing records or treating changed physics as cached evaluations. Move deliberate
 bounds, frozen-parameter, fidelity or model changes to a new campaign directory.
-Nearest-state transfer between compatible campaigns is a later feature.
+Compatible warm-start policies are explicit; they never bypass periodic convergence.
 
 Candidate identity includes normalized coordinates as well as decoded values.
 No approximate/geometric-equivalence cache is attempted. Exact duplicates reuse
@@ -177,6 +188,7 @@ Statuses distinguish:
 - `invalid_parameterization`;
 - `invalid_kinematics`;
 - `invalid_exchanger`;
+- `invalid_fluid_domain`;
 - `integration_failure`;
 - `periodic_non_convergence`;
 - `converged_infeasible`;
@@ -276,111 +288,15 @@ called comfortable engineering margins. Thresholds and evidence are exposed in
 the report. Bounds, assumptions, freezing and eventual local refinement remain
 human decisions. No evidence of global optimality is inferred from a small run.
 
-## Running the small physical example
 
-`examples/free_kinematics_campaign.toml` varies eight parameters simultaneously:
-two shape coordinates per cylinder, speed, charge pressure, large swept volume
-and small clearance volume. Each cylinder has six spline control points (four
-chart coordinates), with the remaining chart coordinates explicitly fixed.
-The small initial region uses the smooth independent laws from the existing
-free-motion integration example; this smoke seed does not impose a preferred
-shape on the free-kinematics family.
+## Verification and legacy entry points
 
-The example retains 25/325 deg C, roughly 1 L, and 2–2.2 Hz. It caps each
-physical evaluation at three complete cycles to keep the architecture smoke
-modest. The periodic tolerances are unchanged; failure to converge within this
-cap is recorded as non-convergence, not admitted as a feasible result. Increase
-the cycle cap in a new campaign definition for a substantive physical search. Its objective is
-the existing indicated thermal efficiency. The 1 W minimum motor-power
-constraint is only a smoke-test feasibility condition; it does not replace the
-project's approximately 100 W useful-output goal. UA/CdA values are legacy
-screening inputs, not the latest geometry-connected exchanger design.
+`tests/test_campaign.py` and the Research tests exercise identity, recovery,
+cache, interruption and deterministic local/global continuation. Old examples
+`examples/free_kinematics_campaign.toml` and `examples/microtube_free_campaign.toml`
+remain usable through `dada-optimize`; they are historical studies, not current
+generic presets. Use Research for new declarative multi-family studies.
 
-Installed command:
-
-```sh
-dada-optimize examples/free_kinematics_campaign.toml --directory outputs/free_campaign_final_smoke --budget 3m --max-candidates 1
-dada-optimize outputs/free_campaign_final_smoke --budget 3m --max-candidates 1
-```
-
-From a source checkout, replace `dada-optimize` with
-`PYTHONPATH=src python3 -m dada_solver.campaign.cli`. General budgets can be
-`30m`, `1h30m`, `45s`, or seconds. The example definition itself caps each run
-at two candidates unless `--max-candidates` overrides it. An uncapped production
-campaign can omit `maximum_candidates` in its definition.
-
-## Verification boundary and next steps
-
-Fast tests use a lightweight evaluator and simulated clock for transforms,
-hashing across processes, sequence continuation, cache hits, durable history,
-preflight rejection, feasibility archives, report deltas, bound pressure,
-budgets, crash recovery and changed-definition rejection. Injection tests cover
-both motion families in both directions. The physical example is a separate
-CLI smoke run, not a slow full campaign in the ordinary test suite.
-
-Next review: local refinement, robustness studies and optional frozen external
-reference warm starts. Local SLSQP is deliberately absent.
-Do not infer an optimal waveform or useful shaft efficiency from these tests.
-
-### Recorded fast-suite verification
-
-The complete suite passes: **287 tests**. The last full run took 46.44 seconds.
-The fixture budget tests use a simulated
-clock and do not sleep. Exact duplicate lookup, interrupted in-flight recovery,
-completed-file recovery after a torn append, feasible-best preservation and
-cross-process candidate hashing are covered explicitly. Added wall-campaign
-checks cover hardware snapshots, actual exchanger composition, deadline grace,
-retry semantics, last-complete-cycle retention, warm-start compatibility and
-wall-capacity rescaling, external-heat efficiency and report availability.
-
-### Recorded physical smoke verification
-
-The source CLI completed Sobol point 0 in
-`outputs/free_campaign_final_smoke`: 81.52 seconds of evaluation, three
-integrated cycles, and explicit `periodic_non_convergence`. The requested
-phase budget was 180 seconds. No objective or feasible optimum is claimed;
-the cycle cap did not relax any convergence tolerance. The completed record,
-candidate payload and first phase report are durable.
-
-A separate process resumed this directory and selected Sobol point 1 rather
-than repeating point 0. At this verification checkpoint it was still in flight
-after 738 seconds; its pending payload and advanced sequence index were
-persisted. Completed physical evaluation after resume is therefore not yet
-verified by this run. Automated continuation and interrupted-state recovery
-tests pass independently. Inspect `state.json` and the append-only history for
-the subsequent outcome; `reports/phase_0001.json` retains the completed first
-phase even if the latest report changes.
-
-This second point demonstrated substantial integration-time variability and
-motivated cooperative in-flight deadlines. The current runner interrupts at a
-progress boundary, discards the partial cycle and retains the preceding complete
-cycle. Numerical-cost diagnostics still deserve review before long physical
-exploration; no solver equation was changed to hide this limitation.
-
-### Dynamic-wall microtube smoke
-
-`examples/microtube_free_campaign.toml` composes independent free motion with
-the parallel 3708-tube hardware snapshot at 25/325 deg C. It varies two free
-coordinates, both exchanger lengths, speed, charge pressure and large swept
-volume. The base maximum of 100 periodic cycles is retained; wall-clock
-deadlines control interactive runtime.
-
-Two distinct Sobol candidates were evaluated across resumed processes in
-`outputs/microtube_free_campaign_correction_smoke`. Point 0 completed eight
-cycles in 31.19 s for 30 s requested with a 3 s grace. Its normalized periodic
-error fell from 464423.79 to 8159.15. Point 1 used point 0 as a compatible
-non-periodic initial guess at normalized distance 1.5255 and completed thirteen
-cycles in 42.50 s for 40 s requested with the same grace. Its error started at
-127870.87 and reached 4207.97 at cycle 10. The configured bounded Aitken update
-then changed the wall-energy guess: the next errors were 63529.05, 1939.03 and
-27.36. The ordinary cycle-13 error remains above the convergence threshold 1.
-Both statuses are `budget_exhausted`; neither is feasible or presented as an
-optimum. Their hashes are distinct, sequence indices are 0 and 1, and the next
-persisted Sobol index is 2.
-
-The established parallel-microtube regression was rerun from its saved state:
-37.6261105666 W indicated power, 353.5945084 W external heat input and
-0.1064103363 indicated thermal efficiency. This agrees with the recorded
-37.626110567 W result.
-
-Existing plain history.jsonl journals remain supported without migration. See the compressed-journal and HTML-retention section in [DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md) for recovery semantics.
+No test-count snapshot or old smoke performance is a guarantee for a changed
+property model. See [validation](validation.md) and
+[limit ownership](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) before interpreting old verdicts.

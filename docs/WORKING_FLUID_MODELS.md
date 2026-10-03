@@ -1,4 +1,4 @@
-# Working-fluid reconstruction and compiled tables — V3
+# Working fluids: thermodynamics, transport and compiled tables
 
 ## Thermodynamics and transport are separate
 
@@ -149,10 +149,10 @@ These are local observations, not universal performance claims. Full-cycle
 ideal/table comparison and periodic conservation are separately recorded in
 [the acceptance summary](../outputs/research_v3/validated/summary.json).
 
-Before a human-cell optimization: choose the actual external-loop scenarios,
+For each human-cell study: choose the actual external-loop scenarios,
 conductance evidence/uncertainty, desired motion, loads, and whether to maximize
 COP or cooling power under an indicated input bound; determine how measured
-shaft losses will be represented. None of those design choices was optimized.
+shaft losses will be represented. Those choices belong to the study, not the fluid interface.
 
 Before a cryogenic helium campaign: obtain a traceable single-phase EOS/caloric
 dataset; validate positive energy reference, inversion, interpolation error and
@@ -160,3 +160,35 @@ phase-domain masks; implement compatible hydraulic closures and their compiled
 kernels; supply cryogenic transport data and heat-transfer correlations; validate
 conservation and physical reference cases. V3 imports no helium database and
 makes no claim of cryogenic accuracy or two-phase capability.
+
+## Historical ideal-gas screening
+
+The early helium/argon comparison used calorically perfect constants, constant UA
+and ideal orifices, not the present complete microtube model. Approximate constants
+were He `R=2077.1`, `Cp=5193.0`, `Cv=3115.9` and Ar `R=208.13`, `Cp=520.33`,
+`Cv=312.20`, in J/(kg K). They are screening inputs, not a real-gas EOS.
+
+For two monatomic ideal gases at identical pressure, temperature, geometry, speed
+and UA, scaling orifice CdA by `sqrt(R_reference/R_target)` preserves the
+normalized first-level cycle because `Cv/R=3/2`. This does not preserve mass or
+prove similarity of real transport, leakage or manufactured components. The
+recorded one-bar, 250.15/310.15 K matched check gave He/Ar COP 1.49225/1.49229,
+with cooling 176.40/176.44 W; the small difference reflects rounded constants and
+tolerances. These historical figures do not certify a modern helium machine.
+
+Higher ideal-gas pressure can scale power at proportionally changed hardware;
+it is not by itself a COP improvement. Helium's transport advantages, stronger
+adiabatic excursions, containment and nonideality require separate assessment.
+Compare indicated cycle COP with a like-for-like thermal/work boundary, never
+directly with an appliance's annual electrical label. See the
+[domestic-appliance boundary](DOMESTIC_REFRIGERATOR.md).
+
+Retained primary references from the original screening:
+
+- [NIST helium gas properties](https://www.nist.gov/pml/sensor-science/fluid-metrology/database-thermophysical-properties-gases-used-semiconductor-9).
+- [NIST Technical Note 1334](https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf).
+- [NIST helium EOS](https://www.nist.gov/publications/equation-state-thermodynamic-properties-helium).
+- [NIST Chemistry WebBook: argon](https://webbook.nist.gov/cgi/cbook.cgi?ID=C7440371&Mask=5).
+
+Current transport formulas, oracle data and licensing are documented in the
+[microtube reference](MICROTUBE_GAS_MODEL.md); the numbers above do not override them.

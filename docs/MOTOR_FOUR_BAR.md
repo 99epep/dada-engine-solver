@@ -1,5 +1,8 @@
 # Four-bar motor demonstrator comparison
 
+> Historical matched-motion experiment. Results and validity verdicts belong to the original implementation; the pressure-equalization veto mentioned below is no longer active.
+> See the [documentation index](README.md) for current references.
+
 The user requested four-bar kinematics for the motor demonstrator. The existing
 `shared_crank_rocker` implementation is reused, including finite piston rods,
 a common crank pin and motor-direction reversal. No valve timing is prescribed:

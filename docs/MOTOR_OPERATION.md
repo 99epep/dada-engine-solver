@@ -1,23 +1,26 @@
-# Motor operation — version 0.2.0
+# Motor operation and sign conventions
 
 Reference: [English study, revision 1288](https://dada-engine.org/index.php?title=Thermodynamic_and_Mechanical_Study&oldid=1288),
 read on 2026-09-08; especially sections 1, 2.1, 3, 6.5 and 8.
 
-Version 0.2.1 uses `H_i`/`H_o` throughout current cycle plots, pressure and
+Plots and reports use `H_i`/`H_o` throughout current cycle plots, pressure and
 temperature reports, valve and flow labels, moisture displays and coupled
-exchanger reports. The current motor plot/report have been regenerated.
-Historical artifacts retain their original labels; Python and TOML retain
+exchanger reports. Historical artifacts retain their original labels; Python and TOML retain
 legacy identifiers so existing configurations remain usable.
 
 ## Scientific mapping
 
-The study now names the exchangers by physical function. Their graph and
+The study now names the exchangers by physical function. Their branch circulation and
 hardware are independent of which external reservoir is connected:
 
 | Study | Existing code and TOML branch name | Hydraulic path |
 |---|---|---|
 | Heat-in exchanger `H_i` | `C`, `cold_*` | `S <-> C -> L` |
 | Heat-out exchanger `H_o` | `H`, `hot_*` | `L <-> H -> S` |
+
+The table shows downstream placement; upstream placement moves the valve to
+the other half-link without changing branch circulation. Both placements are
+configurable independently in Research.
 
 Legacy branch identifiers remain usable throughout the state vector, geometry,
 UA, CdA, valves, validity and exchanger tools. They identify fixed hardware;
@@ -77,9 +80,16 @@ their own configured angular offsets, some slightly away from the exact large
 cylinder maximum. Changing those offsets with pressure-defined filling would
 also change inventory; this update deliberately retains that existing behavior.
 
+For the external-stream wall family, stream inlet conditions are declared on
+each exchanger in the basis; they are not automatically swapped by editing a
+reservoir TOML example. See [external streams](EXTERNAL_STREAM_THERMAL_MODEL.md).
+The reference-pressure filling policy is independent of the crank origin and
+uses maximum simultaneous total gas volume.
+
 ## Performance and sizing
 
-Heat is positive when received by the gas at each fixed exchanger. Successful
+Heat is positive into the machine at each thermal boundary. Reservoir models
+use heat into gas; wall models use external-stream heat for cycle performance. Successful
 motor operation requires the motor reservoir assignment and
 `Q_i > 0`, `Q_o < 0`, `W_cycle > 0`. Then:
 
@@ -142,12 +152,9 @@ On 2026-09-08, the reference run converged in five cycles:
 | Mass residual | -5.55e-17 kg |
 | First-law residual | 5.09e-11 J |
 
-The efficiency is below the 50% two-reservoir Carnot limit. The temperature excursion at `H_o` is 8.38%. Following the user decision,
-isothermality no longer fails core validity (the metric itself was removed on
-2026-09-30; this paragraph records historical measurements). Mach remains
-unavailable, giving an **indeterminate** verdict, and passive valve chronology
-remains non-nominal. Ideal chronology is still a design target; efficiency is
-the primary objective. No experimental motor performance is claimed.
+These are historical constant-reservoir measurements, not current microtube
+results or experimental performance. Mach was unavailable and event chronology
+was non-nominal in that record.
 
 Refinement and regularization sensitivity, with the same periodic tolerances:
 
@@ -162,14 +169,14 @@ changes power by about 0.011% and efficiency by about 0.022%; this is a finite
 sensitivity check, not proof of convergence to zero regularization or of exact
 valve chronology.
 
-The regression suite covers reversal and derivative signs for all five built-in
+The regression suite covers reversal and derivative signs for the supported
 kinematic configurations, reflected piecewise breakpoints, unchanged origin and
 inventory, unchanged unequal UA hardware and valve directions, signed power
-and efficiency, motor sizing, and periodic mass/energy closure. The original
-141 tests passed before this update.
+and efficiency, motor sizing, and periodic mass/energy closure.
 
 An additional diagnostic correction recognizes cyclic rotations of the nominal
 four-event valve sequence. Previously a different choice of angular origin
 could produce a false `non_nominal` verdict. Simultaneous, repeated, missing,
-or overlapping transitions still remain non-nominal. No valve event is imposed
+or overlapping transitions remain non-nominal when events were actually observed.
+An unavailable event sequence is not itself evidence of non-nominal operation. No valve event is imposed
 or suppressed by this classification.

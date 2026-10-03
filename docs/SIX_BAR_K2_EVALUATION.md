@@ -1,5 +1,8 @@
 # Independent six-bar K2 evaluation
 
+> Historical K2 comparison, before later transport/collector changes. These are stored results, not current-model predictions.
+> See the [documentation index](README.md) for current references.
+
 The selected S mechanism is Stage 2F restart 0, secondary branch +1 from
 `outputs/small_sixbar_stage2f_r4_freeH_tightaxis.json`. L is the global best from
 `outputs/large_sixbar_stageL1.json`, used without an additional mirror or phase.

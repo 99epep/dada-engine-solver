@@ -1,9 +1,13 @@
 # Constrained Sizing API
 
+This lower-level API remains useful to existing scripts. New persistent studies
+should normally start with [Research](DADA_ENGINE_RESEARCH.md). Its geometry-owned
+parameters must not be replaced by independently optimized derived UA/hold-up.
+
 The sizing layer evaluates immutable thermodynamic configurations. It does not
 define a preferred design objective or silently repair infeasible simulations.
 
-Version 0.2.0 also supports motor objectives `maximize_thermal_efficiency` and
+The API also supports motor objectives `maximize_thermal_efficiency` and
 `maximize_motor_power`, the `minimum_motor_power` constraint (`required_power`
 in W), and negative angular-speed bounds that stay strictly below zero.
 See [MOTOR_OPERATION.md](MOTOR_OPERATION.md) for reservoir and branch conventions.
@@ -59,13 +63,14 @@ constraints include:
 - maximum temperature;
 - maximum absolute mass flow;
 - maximum Mach number;
-- maximum pressure-equalization error;
 - periodic convergence;
 - maximum piston gas-side force for explicitly supplied piston areas.
 
 An unavailable quantity makes its constraint unavailable and therefore
-infeasible. In particular, a Mach constraint cannot be satisfied until real
-geometric flow areas are supplied by a future hydraulic model.
+infeasible. A Mach constraint needs an available geometric flow-area diagnostic;
+microtubes supply it, whereas a bare orifice CdA alone does not. Pressure inequality
+is diagnostic-only. Legacy pressure-equalization/isothermality constraint keys
+load as ignored compatibility inputs; neither is an active feasibility criterion.
 
 ## SLSQP adapter
 
@@ -113,8 +118,8 @@ command therefore does not silently loosen periodic tolerances or replace
 failed points with plausible thermodynamic results.
 
 The controlled example's initial point converges periodically but is
-infeasible: it does not provide positive required cooling power and exceeds its
-selected pressure-equalization limit. This is retained as a diagnostic example,
+infeasible when it does not provide the required positive cooling power.
+Its obsolete pressure-equalization limit is ignored. This is a diagnostic example,
 not tuned into a favorable design.
 
 ## Pareto comparison
@@ -164,7 +169,6 @@ friction, bearing reactions and structural stresses require a future
 ## Interchangeable model preparation
 
 See [PLUGGABLE_MODELS.md](PLUGGABLE_MODELS.md) for independent periodic free
-kinematics, exchanger construction and the family-specific campaign adapter
-plan. The legacy enum is preserved. Free-motion derivative violations return
+kinematics, exchanger construction and the family-specific campaign adapters. The legacy enum is preserved. Free-motion derivative violations return
 `invalid_kinematics` with separate diagnostic margins before integration.
 Swept-volume/clearance changes update free-motion ranges without changing shape.

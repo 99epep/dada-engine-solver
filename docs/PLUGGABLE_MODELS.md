@@ -19,7 +19,7 @@ framework. A family is selected explicitly at construction time, outside the
 integration loop. Family choice is fixed for an optimization campaign; compare
 different families in separate campaigns, not with a continuous family variable.
 
-The existing modules stay in place to preserve public imports. The new files
+The existing modules stay in place to preserve public imports. Core composition files
 are `free_kinematics.py`, `machine.py`, `exchangers/base.py` and
 `exchangers/microtube.py`. No large source tree was relocated for appearance.
 
@@ -93,7 +93,7 @@ its third derivative may jump and jerk constraints are deferred. See the
 
 Controls are canonicalized to zero mean and unit Euclidean norm, removing
 positive affine offset/amplitude equivalence. Already canonical serialized
-controls are preserved on reconstruction. For future optimization,
+controls are preserved on reconstruction. For optimization,
 `FreeMotionDefinition.from_shape_coordinates` maps N-2 unconstrained coordinates
 through a stereographic sphere chart and an orthonormal zero-mean basis to N
 controls. Thus six controls need **four shape coordinates per cylinder**, eight
@@ -129,7 +129,7 @@ No objective penalty hides this state.
 `ExchangerModel.build()` produces immutable `ExchangerComponents`:
 
 - gas hold-up volume;
-- inlet and outlet hydraulic closures (outlet includes the selected valve loss);
+- inlet and outlet hydraulic closures, with the declared valve placement/model;
 - either a static `HeatTransferModel` or optional `LumpedWallThermalModel`;
 - geometric/other metadata and explicit validity-domain descriptions.
 
@@ -150,8 +150,8 @@ conductance and air-side input fields are not required by this integration.
 The legacy `air_heat_w` key denotes external-source heat in this capability.
 
 A future family may supply other geometry, correlations or measured behaviour
-without sharing microtube input parameters. No new production exchanger family
-is implemented. Current integrators support two static exchangers or two
+without sharing microtube input parameters. The neutral external-stream family reuses the same wall-state capability with
+declared external conductance; it does not invent liquid correlations. Integrators support two static exchangers or two
 one-wall-energy exchangers; mixed storage or distributed multi-state exchanger
 models explicitly need another state-layout integrator. This limited capability
 is stated rather than forcing every future family into a microtube/one-wall
@@ -161,11 +161,13 @@ specialized utilities, not generic evaluator requirements.
 ## Derived quantities and sizing migration
 
 In a microtube candidate, geometry/material/correlation choices determine gas
-volume, conductances, hydraulic closures and wall capacity. They must not also
-be independent search variables. With `MachineDesign` exchanger designs,
+volume, internal conductance, hydraulic closures and wall capacity. Those derived
+quantities must not also be independent search variables. In the external-stream
+family, declared external conductance remains a separate scenario input. With `MachineDesign` exchanger designs,
 legacy UA, hold-up and passage closures in the thermodynamic configuration are
 superseded seeds, not additional campaign coordinates. Valve CdA remains an
-explicit component input of the current microtube outlet closure.
+explicit component input for legacy rectangular microtubes. Circular collectors
+derive a lossless-diode section from conduit geometry; see the microtube reference.
 
 Likewise, free physical volume ranges are separate from canonical shape; the
 four-bar's stroke and trajectories are derived from its mechanism and configured
@@ -174,7 +176,7 @@ linkage or mechanical loss model.
 
 `SizingProblem`, `DesignPoint`, objectives and explicit constraint margins are
 preserved. The legacy `DesignParameter` enum is not extended with spline or
-microtube internals. For the next campaign, use a family-specific parameter
+microtube internals. Campaigns use a family-specific parameter
 adapter from bounded coordinates to immutable `MachineDesign` inputs. Reuse
 legacy `DesignPoint` for its supported operating/volume parameters, then apply
 shape and exchanger-design coordinates in their own adapters. Reject attempts
@@ -182,61 +184,18 @@ to vary superseded derived exchanger quantities in that campaign adapter.
 Cache/persist the complete serialized candidate, fixed family choices, model
 assumptions and numerical settings, not only the legacy enum vector.
 
-This refactor does not implement a global optimizer, persistence controller,
-human review workflow, force/stress/friction/inertia model or speculative
-mechanisms. Those are not prerequisites to interchangeable evaluation.
+## Campaign and verification boundary
 
-## Verification and examples
+Research composes these production models with fixed/active continuous, integer
+and choice parameters, exact evaluation, local/global Sobol scheduling and
+compatible warm starts. See [Research families](DADA_ENGINE_RESEARCH_KINEMATICS.md)
+and [campaign internals](OPTIMIZATION_CAMPAIGN.md). Family-specific geometry
+belongs in adapters; conservative integration remains independent of those choices.
 
-Before refactoring, all 206 existing tests passed. Focused tests now cover
-periodicity, seam derivative continuity, true extrema, derivative bounds,
-independent laws, scalar/vector agreement, deterministic immutable definitions,
-serialization, sizing rejection, original four-bar trajectory equivalence and
-both thermodynamic backends. Exchanger tests cover the compatibility connector,
-original RHS equivalence, non-microtube static and nonlinear wall fixtures,
-conservation, and explicit unsupported mixed state layouts. An AST check guards
-against concrete kinematics imports in the generic integration modules.
-
-Run the suite from the checkout:
-
-```sh
-PYTHONPATH=src python3 -m pytest -q
-PYTHONPATH=src python3 examples/pluggable_kinematics_smoke.py
-```
-
-The smoke example saves `outputs/pluggable_kinematics_smoke.json`; it uses the
-legacy constant-UA/orifice closures to validate periodic evaluation, not the
-microtube hardware trial. Its powers must not be compared as hardware gains.
-The current microtube case is separately checked with an unaccelerated cycle
-from its saved converged state in
-`outputs/motor_parallel_architecture_regression_screening.json`.
-
-### Recorded verification results
-
-The full periodic smoke cases converge in 14 cycles for four-bar and
-37 cycles for free motion. The arbitrary free example consumes mechanical
-work; successful integration is not an efficiency or optimality claim. The
-standalone constant-UA smoke cases use different exchanger closures from the
-current hardware study.
-
-The saved hardware regression produces 37.626110567 W, compared with
-37.626110390 W in the previous tighter-tolerance verification cycle
-(difference 1.765e-07 W). Its scaled periodic error is
-0.119902, below one. This check supports backward
-compatibility, not independent exchanger calibration.
-
-Final full-suite verification: **232 tests passed** in 39.09 seconds, compared
-with 206 tests before the refactor (26 new focused tests). Both original
-four-bar public tests and historical sizing/exchanger tests remain included.
-
-## Persistent campaign layer
-
-The first orchestration layer is now implemented. See
-[OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md) for bounded family adapters,
-Sobol continuation, exact candidate caching, durable history, approximate time
-budgets, human reports and the physical free-motion smoke example. The next
-review will choose local refinement and compatible periodic-state warm starts.
-Dynamic-wall campaigns still require their own evaluator adapter.
+Tests cover spline extrema/derivatives, branch/closure validation, direct
+kinematics injection, exchanger ownership, conservation and original-model parity.
+`examples/pluggable_kinematics_smoke.py` is a historical constant-UA/orifice
+example, not a comparison against current microtube hardware.
 
 ## Independent six-bar integration
 
@@ -248,8 +207,7 @@ constraint equations provide analytic slider velocities. The two cylinders
 have independent geometry and stored phases in the common study-angle domain.
 There is no extra L reflection or phase adjustment. Injection through
 `MachineDesign(..., kinematics=motion)` or `build_model(..., kinematics=motion)`
-uses the existing single motor-direction transformation. No factory selector
-or thermodynamic equation was added.
+uses the existing single motor-direction transformation. Research selects this production family without changing thermodynamic equations.
 
 `load_six_bar_mechanism(path)` reads the global best from Stage 2F/L1 JSON;
 `restart=0, second_branch=1` explicitly selects the small-cylinder champion.
@@ -283,3 +241,6 @@ SHA-256 identities, explicit candidate selections, volume limits, configuration,
 wall settings, initial and last states, convergence history and diagnostics.
 Efficiency uses external-source heat, not wall-to-gas heat alone.
 See [SIX_BAR_K2_EVALUATION.md](SIX_BAR_K2_EVALUATION.md) for the recorded result.
+
+For new studies, use versioned Research mechanism artifacts rather than requiring
+the historical Stage 2F/L1 file layout. See the [artifact reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).

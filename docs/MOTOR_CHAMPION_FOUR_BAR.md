@@ -1,5 +1,8 @@
 # Motor champion four-bar validation
 
+> Historical K2 integration case. Preserve its exact source convention; use Research mechanism artifacts for new studies.
+> See the [documentation index](README.md) for current references.
+
 The compact mechanism synthesized by `dada-4bar-synthesis` is connected to the
 motor through `SharedCrankCouplerProjectionKinematics`.  Both cylinder mechanisms
 share the same crank angle.  Each coupler-point projection is normalized to a

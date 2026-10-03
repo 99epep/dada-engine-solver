@@ -1,9 +1,17 @@
 # Instantaneous single-phase gas model for microtube exchangers
 
-The current motion/hardware search using this closure is documented in
-[FOUR_STAGE_OPTIMIZATION.md](FOUR_STAGE_OPTIMIZATION.md). Its results must be
-kept separate from the earlier constant-property campaigns. The planned
-[temperature map](MOTOR_RESEARCH_OBJECTIVES.md) adapts the whole machine.
+Reference for geometry, internal transport, correlations, domains and diagnostics.
+For study setup see [Research kinematics and hardware](DADA_ENGINE_RESEARCH_KINEMATICS.md);
+for finite external streams see [the thermal boundary](EXTERNAL_STREAM_THERMAL_MODEL.md).
+Historical constant-property trials are summarized [separately](history/EXCHANGER_TRIALS.md).
+
+## Reading map
+
+- [Circular bundle and conical collectors](#circular-bundles-and-conical-collectors-circular_triangular_frustum_v1).
+- [Species-dependent transport](#species-dependent-dilute-transport-version-dilute_species_v2).
+- [Equation provenance](#equation-provenance-and-applicability-ledger).
+- [Transition closure](#gas-transition-endpoint-interpolation-2026-09-29).
+- [Diagnostics](#diagnostics-and-interpretation) and [rejected trials](#first-rejected-trial-state-diagnostics).
 
 ## Architecture and selection
 

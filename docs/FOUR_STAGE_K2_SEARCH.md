@@ -1,5 +1,8 @@
 # Historical first seven-variable four-stage search on K2
 
+> Historical search record. Numerical guards and bounds describe that search, not solver-wide requirements.
+> See the [documentation index](README.md) for current references.
+
 This is the historical first-phase record, using the constant-property legacy
 exchanger model and fixed K2 gas inventory. The campaign subsequently continued;
 its current output files no longer describe only the first 12 attempts.

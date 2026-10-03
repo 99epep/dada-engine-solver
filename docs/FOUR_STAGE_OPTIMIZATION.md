@@ -1,5 +1,8 @@
 # Four-stage motor optimization: evidence and current design direction
 
+> Historical September 2026 campaign record. “Production/current” below refers to that snapshot; later transport, validity and collector definitions differ. Use the current Research guide for new work.
+> See the [documentation index](README.md) for current references.
+
 ## Scope and evidence snapshot
 
 Updated 2026-09-17 after completion of the local production 9D search.
@@ -369,7 +372,7 @@ Temperature work has now started independently. No temperature campaign was
 launched, interrupted or modified by this documentation update.
 
 The durable exchanger lessons and remaining external-air uncertainty are in
-[EXCHANGER_NEXT_STEPS.md](EXCHANGER_NEXT_STEPS.md). The later path is selected
+[EXCHANGER_NEXT_STEPS.md](history/EXCHANGER_TRIALS.md). The later path is selected
 linear target -> C2 smoothing and limited thermodynamic readjustment -> six-bar
 synthesis -> evaluation of actual six-bar motion. Existing free-target six-bar
 work does not mean that this new four-stage-to-C2-to-mechanism sequence is done.
