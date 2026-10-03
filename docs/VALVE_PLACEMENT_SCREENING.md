@@ -1,5 +1,8 @@
 # Passive check-valve placement screening
 
+> Historical matched placement screen. All four placements are now configurable in Research, including active choice parameters; old study guards remain historical.
+> See the [documentation index](README.md) for current references.
+
 Completed 2026-09-21 on the frozen 300 K-difference motor champion. This is a
 four-case evaluation of one candidate, not an optimization.
 

@@ -1,6 +1,6 @@
 # Research cockpit and execution UX
 
-This pass changes presentation, execution defaults and durable storage only.
+This reference describes presentation, execution defaults and durable storage.
 Physical equations, numerical tolerances, scientific study inputs, candidate
 payload construction and Sobol generation are unchanged. Execution options do
 not enter the scientific study identity. The existing source/runtime identity
@@ -51,8 +51,10 @@ The snapshot contains phase/index, attempts/cap, elapsed/budget, converged and
 feasible counts, principal failure statuses and the best feasible objective.
 Refrigeration metrics include COP, cold power and indicated input when present.
 The best may come from an earlier phase; counters describe the current phase.
-TTY output updates with carriage return and clears the previous line; non-TTY
-output uses periodic complete lines. Completion emits one compact summary.
+Each completed evaluation produces one permanent line, with region/centre origin,
+status and useful metrics or rejection reasons. TTY progress refreshes a separate
+bottom status line in place; non-TTY output has no periodic status spam or ANSI
+sequences. Finish/interruption cleans the dynamic line and emits a compact summary.
 
 ## Native solver stderr
 

@@ -1,5 +1,8 @@
 # First kinematic initialization synthesis for DADA motor optimization
 
+> Dated initialization hypothesis from motor studies. Preserve confidence levels and evidence; it is not a validated universal rule for refrigeration or helium.
+> See the [documentation index](README.md) for current references.
+
 ## Status and purpose
 
 This note defines a **first practical initialization law** for future DADA motor optimizations.

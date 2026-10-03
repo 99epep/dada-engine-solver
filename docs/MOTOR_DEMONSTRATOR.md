@@ -1,12 +1,15 @@
 # Motor demonstrator design brief
 
+> Historical engineering brief. These numerical requirements apply to the demonstrator study only; generic Research does not impose them. Manufacturer/source observations below are dated evidence, not a current product recommendation.
+> See the [documentation index](README.md) for current references.
+
 Updated 2026-09-09. These are design requirements and screening rules, not a
 validated machine or a new exchanger closure. The intended machine is a small
 experimental demonstrator, not a commercial product. Commercial refers only to
 purchased exchanger candidates. The current reservoir difference is 300 K (25/325 deg C), temporarily raised
 from 150 K to guide dimensional optimization. Reduce it progressively after
 improving the design; it is not part of the demonstrator name. See
-[HIGHER_TEMPERATURE_TRIAL.md](HIGHER_TEMPERATURE_TRIAL.md).
+[HIGHER_TEMPERATURE_TRIAL.md](history/EXCHANGER_TRIALS.md).
 
 | Quantity | Requirement |
 | --- | --- |
@@ -138,13 +141,13 @@ Ordered long-term motion-law and design-map objectives are recorded in
 [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).
 
 The selected external-air boundary and geometry sizing foundation are described
-in [AIR_SOURCE_EXCHANGERS.md](AIR_SOURCE_EXCHANGERS.md).
+in [AIR_SOURCE_EXCHANGERS.md](history/EXCHANGER_TRIALS.md).
 
 The opt-in air/wall coupling, numerical results and continuation checkpoint
-are in [AIR_WALL_COUPLING.md](AIR_WALL_COUPLING.md).
+are in [AIR_WALL_COUPLING.md](history/EXCHANGER_TRIALS.md).
 
 The geometry-to-volume, resistance, wall-capacity, hydraulic and fan connection
-is now implemented; see [GEOMETRIC_MOTOR_COUPLING.md](GEOMETRIC_MOTOR_COUPLING.md).
+is now implemented; see [GEOMETRIC_MOTOR_COUPLING.md](history/EXCHANGER_TRIALS.md).
 
 Current doubled-exchanger and independent lower-Lambda trials, with external
-aerodynamic losses excluded, are in [DOUBLED_EXCHANGER_TRIAL.md](DOUBLED_EXCHANGER_TRIAL.md).
+aerodynamic losses excluded, are in [DOUBLED_EXCHANGER_TRIAL.md](history/EXCHANGER_TRIALS.md).

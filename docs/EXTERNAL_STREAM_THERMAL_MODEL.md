@@ -1,4 +1,4 @@
-# External streams and conservative wall storage — Research V3
+# External streams and conservative wall storage
 
 ## Physical boundary
 
@@ -71,11 +71,13 @@ shaft input. Mechanical losses and human mechanical efficiency remain unknown.
 
 ## Research configuration
 
+Use the shell helper in the [Research guide](DADA_ENGINE_RESEARCH.md).
+
 ```sh
-PYTHONPATH=src python3 -m dada_solver.research init external-stream-refrigeration --output outputs/my_cooling/study.toml
-PYTHONPATH=src python3 -m dada_solver.research validate outputs/my_cooling/study.toml
-PYTHONPATH=src python3 -m dada_solver.research evaluate outputs/my_cooling/study.toml --output outputs/my_cooling/reference.json --budget 2m
-PYTHONPATH=src python3 -m dada_solver.research report outputs/my_cooling/reference.json --html outputs/my_cooling/report.html
+research init external-stream-refrigeration --output outputs/my_cooling/study.toml
+research validate outputs/my_cooling/study.toml
+research evaluate outputs/my_cooling/study.toml --output outputs/my_cooling/reference.json --budget 2m
+research report outputs/my_cooling/reference.json --html outputs/my_cooling/report.html
 ```
 
 `external-stream-motor` is also available. Both presets accept V2 `--small` and
@@ -83,9 +85,9 @@ PYTHONPATH=src python3 -m dada_solver.research report outputs/my_cooling/referen
 boundary validation fixture, not a human-cell design. The harmonic refrigerator
 uses 0.2 Hz, 30% clearance ratios, 278.15/298.15 K streams, declared Cp 4180
 J/(kg K), 0.05 kg/s and 150 W/K on each side. The increased clearances keep the
-startup compression/expansion inside the existing gas-transport domain. The
-higher-compression preliminary fixture failed the 200 K transport limit; the
-limit was not relaxed.
+startup compression/expansion inside the existing gas-transport domain. The historical higher-compression preliminary fixture failed the then-active
+200 K transport limit. Current species-dependent domains are documented in the
+[microtube reference](MICROTUBE_GAS_MODEL.md); this fixture is not a domain definition.
 
 Schema 3 reuses schema 2 ownership, adapters, candidates, history, exact caches,
 Sobol and reporting. Its portable `.basis.json` defines exchangers with
@@ -126,12 +128,12 @@ Replace the corresponding fixed row; do not add a duplicate. The objectives
 `maximize_cooling_cop` [1] and `maximize_cooling_power` [W] both work with
 `maximum_mechanical_input_power` [W]. Neither fixes the human researcher's later
 choice of formulation. This limit bounds indicated input, not actual shaft
-power. No human-cell optimization was run.
+power. The fixture does not choose a human-cell objective or power budget.
 
 Reports show the scenario label, inlet/outlet range, mass flow, Cp, capacity
 rate, conductance, external cycle heat and average power. Refrigeration tables
 make cooling power, indicated input and COP visible. Constraint margins remain
-explicit. No next-experiment recommendation is generated.
+explicit. The cockpit separates stored scientific evidence from deterministic inspection/continuation actions.
 
 ## Compatibility and evidence
 

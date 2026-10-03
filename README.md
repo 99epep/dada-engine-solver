@@ -1,213 +1,70 @@
 # DADA Engine Solver
 
-This project implements a conservative thermodynamic simulation and sizing
-solver for the DADA thermal machine.
+DADA simulates a thermal machine with conservative gas balances, passive valves,
+prescribed piston motion and interchangeable exchangers. **Research** configures
+studies, evaluates candidates, runs resumable Sobol searches and compares results
+in standalone HTML reports. It supports motor and refrigeration studies,
+independent motion families, local multi-centre search and categorical valve
+placement.
 
-**Dada-Engine Research** provides a declarative CLI for the first fixed-pair
-six-bar validation study: configure five thermal/hardware parameters, evaluate
-exact configurations, run/resume a bounded search, and compare candidates in an
-offline HTML report. See the [getting-started guide](docs/DADA_ENGINE_RESEARCH.md).
-Physical evaluation parity is independent of reproducing historical search order.
+## Start here
 
-> [!WARNING]
-> The substantial initial implementation of this project was produced by an
-> artificial intelligence: **OpenAI Codex running on GPT-5.6 Sol
-> (`gpt-5.6-sol`)**, working interactively under human direction.
->
-> AI-generated scientific software can contain plausible but serious errors.
-> Passing tests and numerical convergence do not establish that a model is a
-> faithful representation of a physical machine. Every equation, convention,
-> assumption and result must be independently reviewed before experimental,
-> engineering, safety-critical or commercial use.
+From the local source checkout:
 
-## AI implementation record
+```sh
+research() { PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m dada_solver.research "$@"; }
+research --help
+```
 
-- AI system: OpenAI Codex
-- Model: GPT-5.6 Sol (`gpt-5.6-sol`)
-- Project version at initial implementation: `0.1.0`
-- Initial implementation session date: 2026-09-02
-- Human role: scientific direction, requirements, physical decisions and review
-- AI role: study analysis, architecture, implementation, tests and documentation
+- [Research guide](docs/DADA_ENGINE_RESEARCH.md): study setup, run/resume,
+  refine/rescale, reports, curves and mechanism animations.
+- [Documentation index](docs/README.md): physics, models, development and historical evidence.
+- [Current physical decisions](docs/PHYSICS_DECISIONS.md): conventions, validity,
+  model boundaries and deliberate omissions.
 
-This notice is deliberately prominent so that the provenance of the work is
-not lost when files are copied or the project is handed to another reviewer.
-See [`docs/PHYSICS_DECISIONS.md`](docs/PHYSICS_DECISIONS.md) before changing the
-thermodynamic model.
+The local study, portable basis, source version and result artifacts define a
+calculation. Historical examples are reproducibility cases, not universal design
+requirements. No useful shaft power is inferred from indicated gas work.
 
-The scientific source of truth is the published
-[Thermodynamic and Mechanical Study](https://dada-engine.org/Thermodynamic_and_Mechanical_Study).
-Version `0.2.0` follows English revision
-[1288](https://dada-engine.org/index.php?title=Thermodynamic_and_Mechanical_Study&oldid=1288),
-including motor operation. Negative `[operation].angular_speed` reverses the
-configured refrigeration kinematics and exchanges the external hot/cold
-reservoirs. The physical exchanger branches and check-valve directions stay
-fixed. See [`docs/MOTOR_OPERATION.md`](docs/MOTOR_OPERATION.md) for conventions,
-an executable example, efficiency, and numerical evidence.
-The first-level model uses four independent zero-dimensional control volumes
-and the conservative state vector
-`(m_S, U_S, m_L, U_L, m_i, U_i, m_o, U_o)`.
-Plots and reports use `H_i` (heat in) and `H_o` (heat out). Legacy Python/TOML
-branch names `C/cold_*` and `H/hot_*` remain readable for compatibility.
+## Install and verify
 
-Its internal flow is periodic, strongly pulsating and topology-varying. Flow is
-intermittent in check-valve branches and potentially reversible in
-bidirectional branches. This distinction is important when selecting hydraulic
-and heat-transfer correlations.
+Python 3.11 or newer is required. The runtime dependencies are NumPy and SciPy.
+From a virtual environment, install the checkout and optional test/compiled/plot
+support as needed:
 
-The project is under incremental development. Example inputs, when added, are
-illustrative numerical cases and must not be interpreted as validated DADA
-machine characteristics.
+```sh
+python3 -m pip install -e '.[test,numba,plot]'
+PYTHONPATH=src python3 -m pytest -q
+```
 
-The conservative simulation core is implemented and tested on controlled
-cases. The complete roadmap is not finished: constrained sizing, detailed
-mechanical interfaces, real-gas properties and experimental validation remain
-future work.
+Numba and plotting dependencies are optional. Research can also run with the
+source helper above. The installed command is `dada-research`; this documentation
+uses the shorter `research` helper. For a direct simulation TOML, use
+`dada-solver configuration.toml`; add `--integration-profile` for solver counters.
+The lower-level sizing and campaign interfaces remain available for existing
+scripts; see [architecture](docs/PLUGGABLE_MODELS.md).
+
+[Validation](docs/validation.md) separates analytical checks, numerical parity,
+correlation evidence and experimental limitations. Passing tests or reaching a
+periodic state does not establish that a physical machine is validated.
+
+## Scientific and implementation provenance
+
+The originating [Thermodynamic and Mechanical Study](https://dada-engine.org/Thermodynamic_and_Mechanical_Study)
+and its locally recorded revisions are discussed in the
+[decision ledger](docs/history/PHYSICS_DECISION_LEDGER.md). Current implementation
+choices and later user decisions are summarized in the current physics reference.
+
+> The substantial initial implementation was produced by OpenAI Codex running
+> GPT-5.6 Sol (`gpt-5.6-sol`), under human scientific direction, on 2026-09-02
+> (initial project version 0.1.0). Later work continues to require independent
+> review of equations, conventions, assumptions and results. AI-generated
+> scientific software can contain plausible but serious errors.
 
 ## License
 
 Copyright (C) 2026 DADA Engine Solver contributors.
-
-This project is free software licensed under the
-[GNU General Public License version 3 or later](https://www.gnu.org/licenses/gpl-3.0.html)
-(`GPL-3.0-or-later`). See [`LICENSE`](LICENSE). You may redistribute and modify
-it under the terms of that license. There is no warranty, to the extent
-permitted by law. Third-party dependencies and externally sourced materials
-remain subject to their respective terms.
-
-## Development
-
-Run the test suite from the repository root:
-
-```console
-PYTHONPATH=src python3 -m pytest
-```
-
-Detailed solver-cost counters can be included in a simulation report with:
-
-```console
-dada-solver configuration.toml --integration-profile
-```
-
-The current analytical and numerical evidence is recorded in
-[`docs/validation.md`](docs/validation.md).
-
-The initial constrained-sizing and thermodynamic mechanical-boundary APIs are
-described in [`docs/SIZING.md`](docs/SIZING.md).
-
-The audit and reuse boundary for the earlier DADA four-bar optimizer are
-recorded in [`docs/FOUR_BAR_AUDIT.md`](docs/FOUR_BAR_AUDIT.md).
-
-The first configurable shared-crank search result is provided in
-`examples/cooling_cell_mechanical_candidate_001.toml`. It is an exploratory
-thermodynamic candidate rather than a validated mechanical optimum: its large
-implied piston diameters and pressure forces show why subsequent searches must
-constrain physical stroke, piston area and load.
-
-The selected doubled-capacity human-powered reference is
-`examples/cooling_cell_x2_reference.toml`. It targets the ideal 20-minute load
-at one bar filling pressure while reserving 0.8 litre per exchanger for a more
-manufacturable core and collectors.
-
-The human-powered one-kilogram water-freezing reference is documented in
-[`docs/COOLING_CELL.md`](docs/COOLING_CELL.md).
-
-The separate domestic-refrigerator comparison boundary and its required full
-redesign are documented in
-[`docs/DOMESTIC_REFRIGERATOR.md`](docs/DOMESTIC_REFRIGERATOR.md).
-
-Candidate industrial working fluids and the initial helium screening are
-documented in [`docs/WORKING_FLUIDS.md`](docs/WORKING_FLUIDS.md).
-
-Geometry-based heat-exchanger screening is documented in
-[`docs/HEAT_EXCHANGERS.md`](docs/HEAT_EXCHANGERS.md). The initial implementation
-supports straight rectangular channels in parallel and deliberately reports
-unsupported correlation regimes as `unavailable`.
-
-Motor priorities, the intermittent unidirectional flow duty export, and the
-first plate-fin / parallel-microtube literature comparison are recorded in
-[`docs/EXCHANGER_LITERATURE.md`](docs/EXCHANGER_LITERATURE.md).
-
-Ambient-air cases may optionally supply an initial relative humidity. The
-solver then reports possible condensation or frost onset as a dry-gas validity
-boundary; it does not yet model condensed water or latent heat.
-
-The experimental cycle/exchanger fixed-point command is:
-
-```console
-dada-exchanger-coupled examples/exchanger_coupled_example.toml
-```
-
-It iterates exchanger `UA` and gas volume with the periodic cycle and can inject
-explicit quasi-steady geometric port resistances. The published compressible-
-orifice closure remains the default reference model. See the exchanger
-documentation for the low-Mach and hydraulic-inertia validity limits.
-
-The current motor design brief targets approximately 100 W useful mechanical
-output, 2–10 Hz, reservoirs at 25/325 degrees Celsius, and a large-cylinder
-maximum enclosed volume of 66 litres. See [the motor demonstrator design
-brief](docs/MOTOR_DEMONSTRATOR.md) for power boundaries and evidence requirements.
-
-## Current motor design exploration
-
-The [four-stage optimization record](docs/FOUR_STAGE_OPTIMIZATION.md) traces
-shared and independent timing tests, exchanger saturation/physical sizing,
-phase diagnostics and the current local motion-plus-hardware search. It
-separates historical constant-property results from the production
-[variable-property microtube model](docs/MICROTUBE_GAS_MODEL.md). Output JSON
-reports, not earlier summary prose, are the numerical authority. The production
-local 9D run is complete; its best-found result is not a final or globally optimal
-machine. The separate temperature study has begun.
-
-The [whole-machine temperature-study plan](docs/MOTOR_RESEARCH_OBJECTIVES.md)
-fixes total swept volume and atmospheric filling while adapting hardware,
-cylinder ratio and then motion. The subsequent
-[motion-to-mechanism path](docs/MOTION_OPTIMALITY.md) is linear target, C2
-smoothing/readjustment, six-bar synthesis and evaluation of actual mechanism
-kinematics. Piecewise-linear velocity jumps have no mechanical-loss penalty and
-are not mechanically realizable as written.
-
-The [solver-acceleration implementation](docs/SOLVER_ACCELERATION_IMPLEMENTATION.md)
-records the completed Python cleanup, exact replay checks and measured gains.
-It follows the [Stage-1 evidence](docs/SOLVER_ACCELERATION_STAGE1.md) and
-[Stage-2 review](docs/SOLVER_ACCELERATION_STAGE2.md). Adaptive wall initial guesses
-are a separate experimental opt-in with mixed results at tighter accuracy;
-no compiled backend or language migration is enabled by default. The separate
-[Stage-3 Numba prototype](docs/SOLVER_ACCELERATION_STAGE3.md) measures a compiled
-wall RHS on frozen workloads, with explicit accuracy and adoption gates.
-The [Stage-4 production integration](docs/SOLVER_ACCELERATION_STAGE4.md) provides
-an optional explicit Numba backend, shared numerical physics, opt-in disk cache,
-equivalence tests and residual-cost measurements. Python remains the default.
-A separate [periodic-map diagnostic](docs/PERIODIC_MAP_DIAGNOSTIC.md) measures the
-two slow thermal modes and tests exact repeated-angle reuse without compiling
-kinematics or changing production convergence.
-[Stage 5](docs/SOLVER_ACCELERATION_STAGE5.md) enables exact candidate-local angle
-reuse and shared final-trajectory diagnostic replay. Its smooth interpolation
-experiment remains outside production after failing the full reporting gate.
-The bounded [Anderson experiment](docs/PERIODIC_ANDERSON_EXPERIMENT.md) retains
-a direct opt-in solver path but fails the adoption gate: the existing fixed-wall
-policy remains faster on the frozen cold and smooth four-bar workloads.
-
-## Interchangeable models
-
-The thermodynamic solver accepts interchangeable kinematics, including four-bar,
-independent periodic free motion, six-bar and the four-stage design probe.
-Exchanger families are assembled through an explicit protocol; microtubes are
-one implementation. See [architecture and validation](docs/PLUGGABLE_MODELS.md)
-and the [free-motion example](examples/motor_free_kinematics.toml).
-
-## Persistent exploration campaigns
-
-The first Sobol campaign layer supports bounded linear/log parameters, durable
-history, exact-cache resume, feasible archives and human phase reports. See
-[campaign documentation](docs/OPTIMIZATION_CAMPAIGN.md) and the
-[small free-motion campaign](examples/free_kinematics_campaign.toml).
-Run `dada-optimize campaign.toml --budget 30m`, or resume using the campaign
-directory as the first argument.
-
-The dynamic-wall composition example is
-[`examples/microtube_free_campaign.toml`](examples/microtube_free_campaign.toml).
-Use `--retry-incomplete` with a larger budget to deliberately revisit the most
-recent deadline-interrupted candidate. Interrupted records are reusable initial
-guesses, not periodic solutions or cached feasibility verdicts.
-
-Transport formula adaptations are attributed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); DADA remains GPL-3.0-or-later.
+Licensed under **GPL-3.0-or-later**; see [LICENSE](LICENSE). There is no warranty,
+to the extent permitted by law. Adapted transport formulas and coefficients are
+attributed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Third-party
+materials retain their respective terms.

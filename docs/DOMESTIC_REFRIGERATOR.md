@@ -1,5 +1,8 @@
 # Domestic Refrigerator Comparison Boundary
 
+> Historical comparison framework and sensitivity results. Standards/product references were recorded during the original study and must be reviewed for a new compliance or appliance comparison. These results are not current optimized human-cell predictions.
+> See the [documentation index](README.md) for current references.
+
 ## Purpose
 
 A domestic appliance comparison is a separate sizing problem, not a reuse of

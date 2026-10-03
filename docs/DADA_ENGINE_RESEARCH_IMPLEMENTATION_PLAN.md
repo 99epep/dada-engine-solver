@@ -1,5 +1,8 @@
 # Dada-Engine Research — first implementation proposal
 
+> Implementation chronology, retained for provenance. Dated pending steps and test counts are not the current product status; start with the Research guide.
+> See the [documentation index](README.md) for current references.
+
 Status: steps 1–5 authorized by the user and implemented for the reduced
 fixed-pair validation study. The [user guide](DADA_ENGINE_RESEARCH.md) describes
 the executable interface; the proposal below remains the design record.

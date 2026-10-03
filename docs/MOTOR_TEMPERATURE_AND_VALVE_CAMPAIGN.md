@@ -1,5 +1,8 @@
 # Motor temperature and passive-valve topology campaign
 
+> Historical temperature/topology campaign. Retain its measurements and scope; do not transfer inherited numerical guards or filling conventions into new studies automatically.
+> See the [documentation index](README.md) for current references.
+
 ## Purpose
 
 This note records the main lessons from the temperature-map and passive-valve-placement campaigns performed on the DADA engine solver in September 2026.

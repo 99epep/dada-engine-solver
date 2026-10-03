@@ -19,7 +19,7 @@ new physical coefficients is performed.
 Analytic tests cover the incompressible limit, signed flow symmetry, equality
 with the old arithmetic-mean-density Poiseuille closure at constant properties,
 half-tube length, the laminar asymptote, thermal-entry behavior, turbulent Darcy
-inversion and the reuse of Gnielinski. Domain tests cover Reynolds gaps,
+inversion and the reuse of Gnielinski. Domain tests cover laminar/transition/turbulent boundaries,
 compressibility, rarefaction, temperature bounds, missing accommodation and
 incompatible mean-free-path conventions. Variable-film tests poison the legacy
 UA to prove it is not being used, retain heat at rest, and verify wall energy
@@ -35,6 +35,11 @@ explicit HS sensitivity test demonstrates that alternative declared A1/A2
 change hydraulic flow without assigning a metal TMAC or a thermal-jump model.
 
 ## Doty absolute hydraulic comparison
+
+The numerical table below is the original 2026-09-16 transport comparison.
+Helium now uses dilute Arp/Hands-Arp rather than the old table interpolation;
+see [current transport and oracle evidence](MICROTUBE_GAS_MODEL.md#species-dependent-dilute-transport-version-dilute_species_v2).
+Do not present these saved predictions as a fresh rerun.
 
 Source: [Doty et al. 1991](https://dotynmr.com/download/pubs/1991_HTE_Doty_HeatExchanger.pdf),
 Eq.7 and Tables 1–2; SI measurements and reported uncertainties remain in

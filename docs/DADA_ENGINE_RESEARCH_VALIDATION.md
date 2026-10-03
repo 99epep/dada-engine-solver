@@ -1,5 +1,8 @@
 # Dada-Engine Research validation
 
+> Historical validation ledger by feature/version. Stored parity results are source-specific. The current complete-suite record and known failures are in validation.md.
+> See the [documentation index](README.md) for current references.
+
 V2 validation is recorded below under [V2 kinematics and mechanism validation](#v2-kinematics-and-mechanism-validation). The first sections preserve the V1 review record.
 
 Validation date: 27 September 2026. Steps 1–5 of the
