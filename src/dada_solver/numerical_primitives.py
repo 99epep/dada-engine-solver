@@ -86,6 +86,60 @@ def hausen(graetz):
     return 3.66+.0668*graetz/(1+.04*graetz**(2/3))
 
 
+def turbulent_darcy(reynolds, relative_roughness=0.):
+    """Existing Haaland closure, shared with the public exchanger model."""
+    return (-1.8*math.log10((relative_roughness/3.7)**1.11+6.9/reynolds))**-2
+
+
+def turbulent_nusselt(reynolds, prandtl, friction):
+    numerator=(friction/8.0)*(reynolds-1000.0)*prandtl
+    denominator=1.0+12.7*math.sqrt(friction/8.0)*(prandtl**(2.0/3.0)-1.0)
+    return numerator/denominator
+
+
+def transition_friction(reynolds, slip_factor=1.):
+    low=64/(2300*slip_factor)
+    return low+(turbulent_darcy(4000)-low)*(reynolds-2300)/1700
+
+
+def transition_heat(reynolds, prandtl, diameter_over_length, thermal_entry=True):
+    low=hausen(2300*prandtl*diameter_over_length) if thermal_entry else 3.66
+    high=turbulent_nusselt(4000,prandtl,turbulent_darcy(4000))
+    return low+(high-low)*(reynolds-2300)/1700
+
+
+def tube_network_residual(flow, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp):
+    reynolds=flow*diameter/(area*mu)
+    if reynolds<2300:
+        loss=linear*flow
+    else:
+        friction=transition_friction(reynolds) if reynolds<4000 else turbulent_darcy(reynolds)
+        loss=multiplier*friction*length/diameter*flow*flow/(2*rho*area*area)
+    return loss+quadratic*flow*flow-dp
+
+
+def continuum_network_flow(upper, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp):
+    """Bracketed solve of the existing no-slip network, no domain extrapolation.
+
+    The public reference uses scipy.brentq with xtol=1e-15 and its default
+    rtol=4*epsilon. Bisection resolves the bracket to floating-point precision; failure
+    returns to Python for the authoritative domain exception. Laminar flow
+    never enters this iterative path.
+    """
+    high=min(upper,5e6*area*mu/diameter)
+    if tube_network_residual(high,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp)<0:
+        return False,0.
+    low=0.
+    for _ in range(100):
+        middle=(low+high)/2
+        residual=tube_network_residual(middle,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp)
+        if residual==0 or middle==low or middle==high:
+            return True,middle
+        if residual<0: low=middle
+        else: high=middle
+    return False,0.
+
+
 def minor_loss_coefficient(header,rho,area,cda):
     quadratic=header/(4*rho*area**2)
     if cda>0: quadratic+=1/(2*rho*cda**2)
@@ -179,6 +233,22 @@ def laminar_diagnostics(flow,p1,p2,t,d,length,area,maximum_mach,maximum_drop,the
     return valid,nu
 
 
+def continuum_diagnostics(flow,p1,p2,t,d,length,area,maximum_mach,maximum_drop,thermal_entry,species):
+    """Available no-slip regimes only; invalid states retain Python diagnostics."""
+    mu=viscosity(t,species);k=conductivity(t,species);cp=transport_cp(t,species)
+    r=gas_constant(species)
+    rho,u,re,pr,speed,ma,gz,ratio,drop=flow_numbers(flow,p1,p2,t,d,length,area,r,mu,k,cp)
+    kn=mean_free_path(mu,min(p1,p2),r,t)/d
+    if domain_flags(re,pr,ma,kn,drop,length,d,maximum_mach,maximum_drop)!=0:
+        return False,0.
+    kind=thermal_kind(re,pr)
+    if kind==0: nu=hausen(gz) if thermal_entry else 3.66
+    elif kind==3: nu=transition_heat(re,pr,d/length,thermal_entry)
+    elif kind==1: nu=turbulent_nusselt(re,pr,turbulent_darcy(re))
+    else: return False,0.
+    return True,nu
+
+
 def directed_flow(pin,pout,t,p,r,gamma):
     # p: diameter, length, count, area, multiplier, header K, valve CdA,
     # maximum Mach, maximum pressure drop, thermal-entry flag, Tmin, Tmax.
@@ -198,9 +268,12 @@ def directed_flow(pin,pout,t,p,r,gamma):
     quadratic=minor_loss_coefficient(header,rho,area,cda)
     dp=pin-pout
     flow=laminar_network_flow(dp,linear,quadratic)
-    # Conservative compiled domain: fall back even for unsupported report-only
-    # states. Python owns transition/turbulent/slip treatment and failure strings.
-    valid,_=laminar_diagnostics(flow,pin,pout,t,d,length,area,p[7],p[8],p[9],species)
+    if flow*d/(area*mu)>=2300:
+        ok,flow=continuum_network_flow(flow,d,area,mu,linear,quadratic,multiplier,length/2,rho,dp)
+        if not ok: return False,0.
+    # All domain failures (including report-only states) still use the public
+    # Python path; no guard or authoritative rejection message is bypassed.
+    valid,_=continuum_diagnostics(flow,pin,pout,t,d,length,area,p[7],p[8],p[9],species)
     if not valid:
         return False,0.
     cap_area=min(area,cda) if cda>0 else area
@@ -256,7 +329,7 @@ def wall_balance_kernel(values,volume_rates,gas,links,walls,sources,destinations
             a,b=sources[link],destinations[link]
             p1,p2=pressures[a],pressures[b]
             if flows[link]==0: p1,p2=pressures[j],pressures[j]
-            ok,nu=laminar_diagnostics(flows[link],p1,p2,t[j],w[5],w[6],w[7],w[8],w[9],w[10],species)
+            ok,nu=continuum_diagnostics(flows[link],p1,p2,t[j],w[5],w[6],w[7],w[8],w[9],w[10],species)
             if not ok: return False,result
             conductance+=film_port_conductance(w[4],nu,k,w[5])
         overall=series_conductance(conductance,w[3])

@@ -99,9 +99,10 @@ def transition_nusselt(reynolds, prandtl, diameter_over_length, thermal_entry=Tr
     """
     if not 2300 <= reynolds <= 4000 or not .5 <= prandtl <= 2000:
         raise MicrotubeDomainError('Transition interpolation outside declared Re/Pr domain.')
-    low = laminar_entry_nusselt(2300*prandtl*diameter_over_length) if thermal_entry else 3.66
-    high = gnielinski(4000, prandtl)
-    return low + (high-low)*(reynolds-2300)/1700
+    graetz = 2300*prandtl*diameter_over_length
+    if thermal_entry and (not math.isfinite(graetz) or graetz < 0):
+        raise ValueError('Graetz must be nonnegative.')
+    return numeric.transition_heat(reynolds, prandtl, diameter_over_length, thermal_entry)
 
 
 def transition_darcy(reynolds, laminar_slip_factor=1.):
@@ -112,8 +113,7 @@ def transition_darcy(reynolds, laminar_slip_factor=1.):
     """
     if not 2300 <= reynolds <= 4000:
         raise MicrotubeDomainError('Transition friction outside 2300-4000.')
-    low = 64/(2300*laminar_slip_factor)
-    return low + (darcy_smooth(4000)-low)*(reynolds-2300)/1700
+    return numeric.transition_friction(reynolds, laminar_slip_factor)
 
 
 @dataclass(frozen=True)

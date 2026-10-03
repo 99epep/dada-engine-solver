@@ -271,11 +271,16 @@ not the sum. Heat is allocated by the existing instantaneous half-film conductan
 weights. Zero total absolute heat gives null heat fractions. These are sampled,
 trapezoidal physical-time diagnostics, not exact event-duration measurements.
 
-The specialized compiled kernel remains laminar-only. Shared domain flags now
-recognize transition, but `thermal_kind == 0` still gates the compiled fast path.
-Transition/turbulent states explicitly fall back to the Python RHS at the same
-state. Backend statistics retain `fallback_calls` and `unsupported_state`.
-No Python-only acceptance or silently divergent compiled correlation is used.
+The compiled kernel supports no-slip laminar, transition and turbulent states
+using the same friction and Nusselt formulas as Python. Above the laminar branch,
+a bracketed bisection solves the existing pressure-loss balance inside Numba to
+floating-point precision (the Python reference uses Brent with `xtol=1e-15`).
+The ideal and tabulated validation kernels share these primitives. Unsupported
+or out-of-domain states still fall back to the authoritative Python path at the
+same state, preserving rejection messages and diagnostics. Backend statistics
+retain `fallback_calls` and `unsupported_state`. No physical threshold, transition
+uncertainty classification or periodic convergence setting changes. See
+[the execution benchmark](SOLVER_PERFORMANCE.md#compiled-transition-benchmark).
 
 This remains a quasi-steady approximation in a pulsed machine. Transition onset,
 intermittency, inlet disturbances, hysteresis and micro/mini-channel surface effects

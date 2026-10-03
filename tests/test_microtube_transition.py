@@ -1,4 +1,4 @@
-"""Explicit transition closure, unchanged guards, and backend fallback parity."""
+"""Explicit transition closure, unchanged guards, and compiled backend parity."""
 from dataclasses import replace
 import math
 from types import SimpleNamespace
@@ -73,7 +73,7 @@ def test_other_guards_remain():
     with pytest.raises(MicrotubeDomainError): MODEL.require(diagnostic(3000,p1=1.5e6))
     assert numeric.thermal_kind(3000,.7) == 3
     assert not numeric.laminar_diagnostics(3000*BANK.tube_flow_area_m2*MODEL.transport.viscosity(350)/BANK.inner_diameter_m,1e6,1e6,350,.00077,.8,
-        BANK.tube_flow_area_m2,.3,.2,True,0)[0]  # Nonlaminar stays out of compiled fast path.
+        BANK.tube_flow_area_m2,.3,.2,True,0)[0]  # The legacy laminar-only diagnostic remains available.
 
 
 def test_cycle_transition_weights():
@@ -95,7 +95,7 @@ def test_cycle_transition_weights():
     assert p['domains']['flow_regime']['turbulent']['time_fraction'] == .25
 
 
-def test_transition_rhs_python_numba_fallback():
+def test_transition_rhs_python_numba_without_fallback():
     pytest.importorskip('numba')
     from tests.test_solver_acceleration import variable_wrapper
     from tests.test_wall_backend import values
@@ -117,7 +117,7 @@ def test_transition_rhs_python_numba_fallback():
         if any(d.transition_model_used for d in diagnostics):
             expected = w.derivative(0.,x)
             np.testing.assert_allclose(rhs(0.,x),expected,rtol=2e-11,atol=1e-11)
-            assert rhs.snapshot()['fallback_calls'] == 1
-            assert rhs.snapshot()['fallback_reason'] == 'unsupported_state'
+            assert rhs.snapshot()['fallback_calls'] == 0
+            assert rhs.snapshot()['fallback_reason'] is None
             break
     else: pytest.fail('Fixture never entered transition')

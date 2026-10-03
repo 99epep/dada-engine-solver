@@ -12,6 +12,7 @@ from enum import Enum
 import math
 
 from dada_solver.fluids import CaloricallyPerfectGas
+from dada_solver import numerical_primitives as numeric
 
 
 def _positive(name: str, value: float) -> None:
@@ -301,10 +302,7 @@ def _darcy_friction_factor(
         )
         return poiseuille / reynolds
     if regime is CorrelationRegime.TURBULENT:
-        return (
-            -1.8
-            * math.log10((relative_roughness / 3.7) ** 1.11 + 6.9 / reynolds)
-        ) ** -2
+        return numeric.turbulent_darcy(reynolds, relative_roughness)
     return None
 
 
@@ -322,10 +320,5 @@ def _nusselt_number(
         )
     if regime is CorrelationRegime.TURBULENT:
         assert friction_factor is not None
-        friction = friction_factor
-        numerator = (friction / 8.0) * (reynolds - 1000.0) * prandtl
-        denominator = 1.0 + 12.7 * math.sqrt(friction / 8.0) * (
-            prandtl ** (2.0 / 3.0) - 1.0
-        )
-        return numerator / denominator
+        return numeric.turbulent_nusselt(reynolds, prandtl, friction_factor)
     return None

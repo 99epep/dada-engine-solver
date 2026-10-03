@@ -41,9 +41,11 @@ in the result, not merely the requested setting, when interpreting timings.
 
 The compiled path receives prepared primitive arrays, uses float64 without
 fastmath and calls no Python property library for a supported state. Unsupported
-families/states use explicit authoritative Python fallback. Transition/turbulent
-microtube states currently use that fallback; they are not relabelled laminar or
-silently rejected to keep a benchmark fast. Both valve placements are supported
+families/states use explicit authoritative Python fallback. Valid no-slip
+microtube states use the compiled laminar, transition and turbulent closures.
+The existing transition endpoint interpolation is shared with Python; a bracketed
+flow solve runs inside Numba. No regime is relabelled or silently rejected to
+keep a benchmark fast. Both valve placements are supported
 by the prepared source/destination and one-way flags. The ideal and tabulated
 validation backends are separate dispatch paths.
 
@@ -152,3 +154,24 @@ periodic iterations, diagnostics, persistence, JIT and fallback costs separately
 Current targeted tests include `test_wall_backend.py`, `test_diagnostic_replay.py`,
 `test_kinematics_cache.py` and the periodic-map/Anderson tests. The
 [validation map](validation.md) gives the complete-suite command.
+
+## Compiled transition benchmark
+
+The October 2026 DD10 investigation found substantial Python fallback cost,
+not repeated collector geometry calculation. A saved evaluation spent 46.98 s
+in integration with 47,126 fallbacks out of 120,736 RHS calls. Different geometry
+can change flow regimes and periodic convergence, so cross-campaign durations
+alone do not isolate a geometry implementation regression.
+
+The no-slip transition/turbulent hydraulic solve and thermal correlations now run
+inside Numba, sharing formulas with the Python reference. The laminar algebraic
+path remains unchanged. Invalid states retain authoritative Python diagnostics;
+no Mach, pressure-drop, entry, transport or slip guard is relaxed.
+
+A matched 128-state DD10 benchmark measured 45.19 ms for the previous kernel
+versus 11.02 ms for the new one (median of three warmed repetitions, **4.10x**).
+Fallbacks fell from 168/384 to zero. Python-only took 83.01 ms. RHS parity passed
+`atol=1e-11, rtol=2e-11`; a separate single-cycle comparison remained within the
+existing trajectory tolerance. These local timings are not universal campaign
+speed claims. [Frozen inputs, results and reproduction command](../outputs/research_compiled_transition/README.md)
+use `tools/benchmark_microtube_transition_backend.py`, without starting a search.
