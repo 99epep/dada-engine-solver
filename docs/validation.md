@@ -21,7 +21,7 @@ use frozen CoolProp oracle data and do not require CoolProp at runtime.
 |---|---|
 | Conservative equations | Ideal-state reconstruction, closed adiabatic `P V^gamma`, donor outflow relation, internal mass/enthalpy cancellation, integrated mass/energy residuals |
 | Integration and valves | Event-state continuity, passive directionality, hysteresis where supported, periodic endpoints, refinement and interruption |
-| Kinematics/mechanisms | Dense-grid volumes/derivatives, branch/closure diagnostics, family parity and scale conventions; [Research evidence](DADA_ENGINE_RESEARCH_VALIDATION.md) |
+| Kinematics/mechanisms | Dense-grid volumes/derivatives, branch/closure diagnostics, family parity and scale conventions; [historical Research extraction evidence](history/RESEARCH_VALIDATION_LEDGER.md) |
 | Microtube geometry | Derived pitch/sections, circular-frustum hold-up, legacy compatibility, no double-counting; `tests/test_microtube_circular.py`, `tests/test_microtube_geometry.py` |
 | Transport/correlations | Temperature domains, frozen oracle, transition boundaries, Mach/pressure-drop/Kn guards; [microtube evidence](EXCHANGER_VALIDATION.md) |
 | External thermal boundary | Signed wall/stream balance, refrigeration performance and legacy air parity; `tests/test_external_stream_v3.py` |

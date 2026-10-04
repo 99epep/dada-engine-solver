@@ -494,7 +494,7 @@ For other concerns, use:
 - [microtube model](MICROTUBE_GAS_MODEL.md): exchanger geometry and correlations;
 - [external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md): external thermal boundaries;
 - [working-fluid models](WORKING_FLUID_MODELS.md): thermodynamic property contracts;
-- [validation record](DADA_ENGINE_RESEARCH_VALIDATION.md): solver and historical parity evidence;
+- [validation and evidence](validation.md): current status and evidence boundaries;
 - [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md): implementation lineage.
 
 Thermodynamic equations, hardware physics, campaign persistence internals and

@@ -14,7 +14,8 @@ benchmark is not a default for a new study.
 | Families, mechanism artifacts and mechanical constraints | [Kinematics](DADA_ENGINE_RESEARCH_KINEMATICS.md) |
 | Interpret candidate evidence, margins and reports | [Cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md) |
 | Change machine capacity | [Capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md) |
-| Historical parity and extraction status | [Validation](DADA_ENGINE_RESEARCH_VALIDATION.md), [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) |
+| Current validation | [Validation and evidence](validation.md) |
+| Historical Research parity and extraction | [historical Research ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) |
 
 ## Understand the physical model
 

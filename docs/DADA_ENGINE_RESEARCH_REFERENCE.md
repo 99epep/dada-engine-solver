@@ -451,9 +451,9 @@ may omit or choose another ceiling. Isothermality diagnostics are no longer comp
 
 ## Acceptance and the next review
 
-See the [validation record](DADA_ENGINE_RESEARCH_VALIDATION.md) for measured
-results and the ready-to-open first-study artifacts in
-[`outputs/research_first_study/`](../outputs/research_first_study/).
+See [current validation and evidence](validation.md) for present status and
+limitations, and the [historical Research ledger](history/RESEARCH_VALIDATION_LEDGER.md)
+for extraction and acceptance methods.
 
 The reference and two changed configurations are compared with the original
 evaluator under matching inputs, warm states and numerical settings. The

@@ -189,7 +189,7 @@ changed definition.
 ## Further reading and future mechanism synthesis
 
 - [Reference and historical details](DADA_ENGINE_RESEARCH_REFERENCE.md)
-- [Validation and measured limitations](DADA_ENGINE_RESEARCH_VALIDATION.md)
+- [Validation and measured limitations](validation.md)
 - [Cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md)
 - [Limit ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md)
 - [Historical migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)

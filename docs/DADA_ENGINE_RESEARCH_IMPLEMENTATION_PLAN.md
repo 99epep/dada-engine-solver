@@ -249,7 +249,7 @@ The initiating audit's section 10 explicitly says: “Stop for human review befo
 writing the new implementation or cleaning the repository.” That review was
 completed: the user authorized steps 1–5 above, with physical evaluation parity
 and a real researcher usability review before expanding to other campaigns.
-The [validation record](DADA_ENGINE_RESEARCH_VALIDATION.md) records the delivered
+The [validation record](history/RESEARCH_VALIDATION_LEDGER.md) records the delivered
 fixed-pair thermo-5D CLI and offline reports. This authorization does not cover
 deleting examples, changing physical equations, reproducing a full local search
 campaign, or treating the historical 25 W indicated floor as the demonstrator's
