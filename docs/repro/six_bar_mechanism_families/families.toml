@@ -1,0 +1,204 @@
+schema_version = 1
+
+description = """
+Four retained paired six-bar mechanism lineages. Each family contains an
+independently adapted SMALL and LARGE mechanism. Absolute lengths are normalized
+by crank radius. The identifiers describe lineage and mechanical character,
+not optimizer rank.
+"""
+
+length_unit = "crank_radius"
+angle_unit = "rad"
+
+family_order = [
+    "compact_balanced",
+    "compact_offset",
+    "long_ground",
+    "long_coupler_short_rocker",
+]
+
+
+[families.compact_balanced]
+description = """
+Compact lineage with relatively balanced primary-link proportions. Its final
+LARGE mechanism approaches the retained H-lateral-span design limit.
+"""
+primary_seed_family = "compact_balanced"
+
+[families.compact_balanced.small]
+primary_ground = 1.6171985844849184
+primary_coupler = 1.6765405732452336
+primary_rocker = 1.4940534144524262
+primary_e_along = 1.7620505705681857
+primary_e_normal = -0.23467031715929387
+primary_phase = -2.999365297436869
+second_pivot_x = 3.6458014551883484
+second_pivot_y = 5.1664246985975595
+link_ef = 1.224201629607174
+link_gf = 4.3871796968248935
+h_along_over_ef = 1.9652666253936457
+h_normal_over_ef = -0.31584172009160305
+piston_rod = 12.222402682411229
+slider_axis_offset = 0.4593862231964493
+slider_axis_angle = 2.638295047337218
+primary_branch = 1
+second_branch = -1
+
+[families.compact_balanced.large]
+primary_ground = 1.5454944961507613
+primary_coupler = 1.6587597730797896
+primary_rocker = 1.473334388543617
+primary_e_along = 1.7750866747352638
+primary_e_normal = 0.3242491737057719
+primary_phase = -0.43294421947456385
+second_pivot_x = 4.252421025926528
+second_pivot_y = -4.31808204541679
+link_ef = 1.1899405401590448
+link_gf = 4.128862385872142
+h_along_over_ef = 2.045669719009629
+h_normal_over_ef = 0.12716722449829665
+piston_rod = 11.838247226318321
+slider_axis_offset = -0.35430346777924043
+slider_axis_angle = -2.5597254981575346
+primary_branch = -1
+second_branch = 1
+
+
+[families.compact_offset]
+description = """
+Compact high-stroke lineage. Both transmission stages of the final pair lie
+close to the retained 0.30 transmission-sine floor.
+"""
+primary_seed_family = "compact_offset"
+
+[families.compact_offset.small]
+primary_ground = 1.788104778055184
+primary_coupler = 2.4577751201859366
+primary_rocker = 2.074103828107461
+primary_e_along = 2.378854820675956
+primary_e_normal = -1.023122786829593
+primary_phase = -3.0355108505116584
+second_pivot_x = 4.902442164280183
+second_pivot_y = 2.26327316321411
+link_ef = 1.3821086313642963
+link_gf = 2.528781398179559
+h_along_over_ef = 2.06054456915688
+h_normal_over_ef = 0.25521436596777447
+piston_rod = 6.215058044024271
+slider_axis_offset = -2.301688410699665
+slider_axis_angle = 2.371003621311952
+primary_branch = 1
+second_branch = -1
+
+[families.compact_offset.large]
+primary_ground = 1.7476757733095762
+primary_coupler = 2.343788683857289
+primary_rocker = 1.9884849048658877
+primary_e_along = 2.406882286326203
+primary_e_normal = 1.2192157682663012
+primary_phase = -0.3385334195172218
+second_pivot_x = 4.994620640761387
+second_pivot_y = -1.9028052842474676
+link_ef = 1.5033623712897515
+link_gf = 2.2215240539908905
+h_along_over_ef = 1.9910786568663292
+h_normal_over_ef = -0.3856856860555522
+piston_rod = 6.379183252611455
+slider_axis_offset = 2.2732415012127296
+slider_axis_angle = -2.4369547434870737
+primary_branch = -1
+second_branch = 1
+
+
+[families.long_ground]
+description = """
+Long-ground / long-dyad lineage. The SMALL mechanism approaches the retained
+rod-angle and H-lateral-span limits; the LARGE primary approaches the retained
+transmission floor.
+"""
+primary_seed_family = "long_ground"
+
+[families.long_ground.small]
+primary_ground = 3.4106710427341365
+primary_coupler = 2.461702290663191
+primary_rocker = 2.106069044930043
+primary_e_along = 3.91646638503869
+primary_e_normal = -1.0901317950188472
+primary_phase = -0.28881632689031234
+second_pivot_x = 6.908484590279605
+second_pivot_y = -0.004320118467788348
+link_ef = 6.241298210364114
+link_gf = 1.883153359392025
+h_along_over_ef = 0.591559382814792
+h_normal_over_ef = 0.28231342871649207
+piston_rod = 8.671128855660843
+slider_axis_offset = 7.435944155410741
+slider_axis_angle = -1.8172809505848797
+primary_branch = -1
+second_branch = -1
+
+[families.long_ground.large]
+primary_ground = 3.655982758827857
+primary_coupler = 2.493001630498334
+primary_rocker = 2.2174826230828883
+primary_e_along = 4.295814510601568
+primary_e_normal = 1.2414036346213155
+primary_phase = 3.132932234212161
+second_pivot_x = 6.354985999669247
+second_pivot_y = 0.024209397217521036
+link_ef = 5.617216794197625
+link_gf = 2.0421054406936823
+h_along_over_ef = 0.7413973364533405
+h_normal_over_ef = -0.24573062132452173
+piston_rod = 9.075494110707655
+slider_axis_offset = -7.163890757546471
+slider_axis_angle = 1.6946980196217405
+primary_branch = 1
+second_branch = 1
+
+
+[families.long_coupler_short_rocker]
+description = """
+Long-link lineage with long ground/coupler geometry and a short primary rocker.
+It retains comparatively large nominal transmission and clearance margins,
+while the SMALL stroke lies relatively near the retained upper stroke limit.
+"""
+primary_seed_family = "long_coupler_short_rocker"
+
+[families.long_coupler_short_rocker.small]
+primary_ground = 4.9061676140744925
+primary_coupler = 4.863312784309846
+primary_rocker = 1.1499037927570088
+primary_e_along = 4.199153543439323
+primary_e_normal = 4.585414960730857
+primary_phase = -0.2527574109808164
+second_pivot_x = 9.198575716093478
+second_pivot_y = -5.704989086895788
+link_ef = 2.042563559806904
+link_gf = 9.446423385858957
+h_along_over_ef = 1.6280006242024543
+h_normal_over_ef = 1.3410904741203442
+piston_rod = 8.47415709252064
+slider_axis_offset = 0.4622889810122414
+slider_axis_angle = 0.6187866477701451
+primary_branch = -1
+second_branch = 1
+
+[families.long_coupler_short_rocker.large]
+primary_ground = 5.077061602972012
+primary_coupler = 4.9937004519960375
+primary_rocker = 1.1535746642225986
+primary_e_along = 3.9710692256530806
+primary_e_normal = -4.242849154935205
+primary_phase = -3.083369538283518
+second_pivot_x = 8.871255865753962
+second_pivot_y = 6.087378746619002
+link_ef = 1.8372432626865616
+link_gf = 9.769509440556504
+h_along_over_ef = 1.3350664116989646
+h_normal_over_ef = -1.209046718460149
+piston_rod = 7.33863136302276
+slider_axis_offset = -0.8390693283373697
+slider_axis_angle = -0.7039872416510051
+primary_branch = 1
+second_branch = -1

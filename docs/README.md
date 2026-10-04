@@ -40,7 +40,7 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
   failed proxies, hierarchical stages and saturation versus exploitation.
 - [Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md) and
   [six-bar families](SIX_BAR_MECHANISM_FAMILIES.md): retained geometry, conventions,
-  artifacts and robustness evidence.
+  reproducible data and nominal mechanical margins.
 - [Compact finite-rod synthesis](COMPACT_KINEMATIC_SYNTHESIS.md) and
   [earlier optimizer audit](FOUR_BAR_AUDIT.md): implementation lessons.
 - [Motion optimality](MOTION_OPTIMALITY.md): best-found evidence versus proof.

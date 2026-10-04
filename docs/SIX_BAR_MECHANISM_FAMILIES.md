@@ -1,14 +1,37 @@
-# Paired six-bar mechanism families from the candidate-3952 synthesis
+# Paired six-bar mechanism families
 
 ## Purpose
 
-This document is a mechanism catalogue, separate from the thermodynamic machine description.
+This document catalogues four mechanically distinct paired SMALL/LARGE six-bar
+mechanism lineages retained from the DADA mechanism-synthesis work.
 
-It records the four paired SMALL/LARGE six-bar families carried to the end of the candidate-3952 campaign, using the final geometry obtained after simultaneous 30-dimensional thermo-mechanical adaptation.
+The catalogue is deliberately independent of one thermodynamic machine,
+optimizer run or historical ranking.
 
-The subsequent five-dimensional thermodynamic re-tuning changed only the cylinder swept-volume ratio and exchanger dimensions. **It did not change the six-bar geometry.**
+Each family contains two independently adapted mechanisms:
 
-The historical family identifiers `1`, `4`, `12` and `50` are retained for reproducibility. They should eventually be replaced or supplemented by stable descriptive family names.
+- one for the SMALL cylinder;
+- one for the LARGE cylinder.
+
+The exact normalized coordinates are stored in
+[`repro/six_bar_mechanism_families/families.toml`](repro/six_bar_mechanism_families/families.toml).
+
+The four retained lineages are:
+
+- `compact_balanced`;
+- `compact_offset`;
+- `long_ground`;
+- `long_coupler_short_rocker`.
+
+These identifiers describe the primary lineage and mechanical character.
+They do not imply that the final primary four-bar geometry is unchanged from
+the corresponding seed in
+[`PRIMARY_FOUR_BAR_FAMILIES.md`](PRIMARY_FOUR_BAR_FAMILIES.md).
+
+The mechanisms were allowed to deform during complete six-bar adaptation.
+
+Search methodology belongs in
+[`MECHANISM_SYNTHESIS_SEARCH.md`](MECHANISM_SYNTHESIS_SEARCH.md).
 
 ---
 
@@ -22,67 +45,73 @@ coupler point:     E fixed on BC
 secondary dyad:    E-F-G
 output point:      H fixed on EF
 piston rod:        H-P
-slider:            P constrained to a straight axis
+slider:           P constrained to a straight axis
 ```
 
-All lengths are in **crank-radius units**, with
+All absolute lengths are expressed in crank-radius units:
 
 \[
-AB = 1.
+AB=1.
 \]
 
-The fixed primary pivots are:
+The fixed primary pivots are
 
 \[
-A=(0,0),\qquad D=(AD,0).
+A=(0,0),
+\qquad
+D=(AD,0).
 \]
 
 The crank point is
 
 \[
-B=(\cos(\theta+\phi),\sin(\theta+\phi)).
+B=
+(\cos(\theta+\phi),\sin(\theta+\phi)).
 \]
 
-Point `C` is obtained from the primary four-bar closure using the stored primary branch.
+Point `C` follows from primary four-bar closure using the stored assembly
+branch.
 
-Point `E` is a rigid coupler point:
+Point `E` is rigidly attached to the coupler:
 
 \[
-E =
-B
+E=
+B+
+\frac{E_{\parallel}}{BC}(C-B)
 +
-\frac{E_{along}}{BC}(C-B)
-+
-\frac{E_{normal}}{BC}R_{90}(C-B).
+\frac{E_{\perp}}{BC}R_{90}(C-B).
 \]
 
-The second fixed pivot is
+The secondary fixed pivot is
 
 \[
 G=(G_x,G_y).
 \]
 
-Point `F` is obtained from the `E-F-G` RR closure using the stored secondary branch.
+Point `F` follows from the `E-F-G` RR closure using the stored secondary
+branch.
 
-Point `H` is a rigid point in the `EF` frame:
+Point `H` is rigidly attached to the `EF` frame:
 
 \[
-H =
-E
+H=
+E+
+h_{\parallel}(F-E)
 +
-h_{along}(F-E)
-+
-h_{normal}R_{90}(F-E),
+h_{\perp}R_{90}(F-E),
 \]
 
-where the stored `H_along / EF` and `H_normal / EF` are dimensionless fractions of the vector `EF`.
+where `h_along_over_ef` and `h_normal_over_ef` are dimensionless fractions.
 
-The piston rod connects `H` to the positive slider solution used by the solver. The slider axis is defined by:
+The piston rod joins `H` to the positive slider solution used by the solver.
+
+The slider axis is defined by:
 
 - `slider_axis_angle`;
 - `slider_axis_offset`.
 
-The exact implementation is in `src/dada_solver/six_bar.py`.
+The production implementation is
+`dada_solver.six_bar.SixBarCylinderMechanism`.
 
 ---
 
@@ -90,659 +119,440 @@ The exact implementation is in `src/dada_solver/six_bar.py`.
 
 The catalogue geometry is dimensionless.
 
-If a physical crank radius `R` is chosen:
+For a chosen physical crank radius \(R\), multiply by \(R\):
 
-- multiply `AD`, `BC`, `CD`, `E_along`, `E_normal`, `G_x`, `G_y`, `EF`, `GF`, piston-rod length and slider-axis offset by `R`;
-- leave `H_along / EF`, `H_normal / EF`, phases, axis angles and branch signs unchanged;
-- physical piston stroke is
+- `AD`;
+- `BC`;
+- `CD`;
+- `E_along`;
+- `E_normal`;
+- `G_x`;
+- `G_y`;
+- `EF`;
+- `GF`;
+- piston-rod length;
+- slider-axis offset.
+
+Do not scale:
+
+- `H_along / EF`;
+- `H_normal / EF`;
+- phases;
+- slider-axis angles;
+- assembly branches.
+
+Physical piston stroke is
 
 \[
-stroke = (stroke/crank)\,R.
+stroke
+=
+(stroke/crank)\,R.
 \]
 
-Cylinder bore is then chosen from the required swept volume and physical stroke. The normalized linkage itself does not determine bore.
+Cylinder bore is then determined from the required swept volume and physical
+stroke.
 
-This makes each family reusable across different physical machine sizes.
+The normalized linkage does not itself determine cylinder bore or machine
+power.
 
 ---
 
-## 3. Reference machine and final performance
+## 3. Mechanical diagnostics
 
-The abstract reference is candidate 3952 at ΔT = 260 K:
-
-- indicated efficiency: **23.5081%**;
-- indicated power: **40.719 W**.
-
-After the full mechanism search, the paired six-bars were first evaluated with the **unchanged candidate-3952 thermodynamic machine**. They were then frozen and given a 192-evaluation five-dimensional thermodynamic re-tuning over:
-
-\[
-V_S/V_L,\quad n_i,\quad L_i,\quad n_o,\quad L_o.
-\]
-
-Final comparison:
-
-| Family | Working description | Pair RMS vs 3952 after 30D | Efficiency with 3952 thermo | Power with 3952 thermo | Efficiency after thermo 5D | Final power |
-|---|---|---:|---:|---:|---:|---:|
-| 1 | High-efficiency compact | 1.292% | 23.1552% | 41.383 W | **23.2553%** | **41.434 W** |
-| 50 | Robust long-link | 3.133% | 22.5328% | 41.142 W | **22.6516%** | **44.204 W** |
-| 4 | Compact high-stroke | 2.434% | 22.2229% | 40.793 W | **22.4499%** | **42.695 W** |
-| 12 | Alternate long-dyad | 4.777% | 21.2072% | 40.871 W | **21.6567%** | **45.347 W** |
-
-The final thermodynamic ranking remained:
-
-\[
-1 > 50 > 4 > 12.
-\]
-
-Family 1 retains approximately **98.9% of the indicated efficiency** of abstract candidate 3952 while producing slightly greater indicated power.
-
----
-
-## 4. Family 1 — high-efficiency compact pair
-
-Family 1 is the strongest result of the campaign.
-
-It descended from the compact balanced primary family and remained relatively close to the 3952 motion while allowing enough thermo-mechanical deformation to increase power.
-
-### SMALL mechanism
-
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 1.617198584 |
-| `BC` | 1.676540573 |
-| `CD` | 1.494053414 |
-| `E_along` | 1.762050571 |
-| `E_normal` | -0.234670317 |
-| primary phase | -2.999365297 rad (-171.851°) |
-| primary branch | +1 |
-| `G_x` | 3.645801455 |
-| `G_y` | 5.166424699 |
-| `EF` | 1.224201630 |
-| `GF` | 4.387179697 |
-| `H_along / EF` | 1.965266625 |
-| `H_normal / EF` | -0.315841720 |
-| piston rod | 12.222402682 |
-| slider-axis offset | 0.459386223 |
-| slider-axis angle | 2.638295047 rad (151.163°) |
-| secondary branch | -1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 1.369% |
-| stroke / crank | 2.5409 |
-| min primary transmission sine | 0.3660 |
-| min secondary transmission sine | 0.3501 |
-| min rod/axis cosine | 0.9625 |
-| H lateral RMS / stroke | 0.1397 |
-| H lateral span / stroke | 0.4723 |
-| crank-axis clearance / crank | 0.7776 |
-
-### LARGE mechanism
-
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 1.545494496 |
-| `BC` | 1.658759773 |
-| `CD` | 1.473334389 |
-| `E_along` | 1.775086675 |
-| `E_normal` | 0.324249174 |
-| primary phase | -0.432944219 rad (-24.806°) |
-| primary branch | -1 |
-| `G_x` | 4.252421026 |
-| `G_y` | -4.318082045 |
-| `EF` | 1.189940540 |
-| `GF` | 4.128862386 |
-| `H_along / EF` | 2.045669719 |
-| `H_normal / EF` | 0.127167224 |
-| piston rod | 11.838247226 |
-| slider-axis offset | -0.354303468 |
-| slider-axis angle | -2.559725498 rad (-146.661°) |
-| secondary branch | +1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 1.211% |
-| stroke / crank | 2.3885 |
-| min primary transmission sine | 0.3237 |
-| min secondary transmission sine | 0.3614 |
-| min rod/axis cosine | 0.9621 |
-| H lateral RMS / stroke | 0.2013 |
-| H lateral span / stroke | 0.6500 |
-| crank-axis clearance / crank | 0.8045 |
-
-### Thermodynamic re-tuning
+The catalogue uses the production diagnostic implementation:
 
 ```text
-V_S / V_L = 0.877401425
-n_i       = 4029
-L_i       = 38.337 mm
-n_o       = 4555
-L_o       = 23.608 mm
+dada_solver.mechanism_diagnostics.six_bar_metrics
 ```
 
-Final result:
+The reported full-cycle indicators are:
 
-- efficiency: **23.2553%**;
-- indicated power: **41.434 W**.
+- `stroke_over_crank`;
+- `minimum_primary_transmission_sine`;
+- `minimum_secondary_transmission_sine`;
+- `minimum_rod_axis_cosine`;
+- `EH_over_crank`;
+- `H_axis_lateral_rms_over_stroke`;
+- `H_axis_lateral_span_over_stroke`;
+- `crank_axis_to_EFH_clearance_over_crank`;
+- `zero_crossing_count`.
 
-The LARGE H lateral span is essentially at the retained `0.65 stroke` ceiling, while the relaxed H-lateral RMS remains below 0.25. This family therefore deserves a tolerance / robustness study before being selected as the demonstrator.
+The documentary verifier evaluates the standard 1440-sample screen and repeats
+it on a denser 5760-sample grid.
 
----
+This is a deterministic numerical screen of the nominal geometry.
 
-## 5. Family 4 — compact high-stroke pair
+It is not a certified continuous-angle proof and not a manufacturing-tolerance
+probability.
 
-This family is visually compact and produces nearly three crank radii of piston stroke on both sides.
-
-Its main limitation is mechanical margin: both primary and secondary transmission sines sit almost exactly on the retained `0.30` floor.
-
-### SMALL mechanism
-
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 1.788104778 |
-| `BC` | 2.457775120 |
-| `CD` | 2.074103828 |
-| `E_along` | 2.378854821 |
-| `E_normal` | -1.023122787 |
-| primary phase | -3.035510851 rad (-173.922°) |
-| primary branch | +1 |
-| `G_x` | 4.902442164 |
-| `G_y` | 2.263273163 |
-| `EF` | 1.382108631 |
-| `GF` | 2.528781398 |
-| `H_along / EF` | 2.060544569 |
-| `H_normal / EF` | 0.255214366 |
-| piston rod | 6.215058044 |
-| slider-axis offset | -2.301688411 |
-| slider-axis angle | 2.371003621 rad (135.849°) |
-| secondary branch | -1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 1.658% |
-| stroke / crank | 2.9793 |
-| min primary transmission sine | 0.3013 |
-| min secondary transmission sine | 0.3001 |
-| min rod/axis cosine | 0.9600 |
-| H lateral RMS / stroke | 0.1672 |
-| H lateral span / stroke | 0.6238 |
-| crank-axis clearance / crank | 1.5895 |
-
-### LARGE mechanism
-
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 1.747675773 |
-| `BC` | 2.343788684 |
-| `CD` | 1.988484905 |
-| `E_along` | 2.406882286 |
-| `E_normal` | 1.219215768 |
-| primary phase | -0.338533420 rad (-19.397°) |
-| primary branch | -1 |
-| `G_x` | 4.994620641 |
-| `G_y` | -1.902805284 |
-| `EF` | 1.503362371 |
-| `GF` | 2.221524054 |
-| `H_along / EF` | 1.991078657 |
-| `H_normal / EF` | -0.385685686 |
-| piston rod | 6.379183253 |
-| slider-axis offset | 2.273241501 |
-| slider-axis angle | -2.436954743 rad (-139.627°) |
-| secondary branch | +1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 3.017% |
-| stroke / crank | 2.9630 |
-| min primary transmission sine | 0.3012 |
-| min secondary transmission sine | 0.3003 |
-| min rod/axis cosine | 0.9547 |
-| H lateral RMS / stroke | 0.1634 |
-| H lateral span / stroke | 0.6377 |
-| crank-axis clearance / crank | 1.6981 |
-
-### Thermodynamic re-tuning
-
-```text
-V_S / V_L = 0.888562498
-n_i       = 4669
-L_i       = 38.288 mm
-n_o       = 4417
-L_o       = 26.227 mm
-```
-
-Final result:
-
-- efficiency: **22.4499%**;
-- indicated power: **42.695 W**.
-
-The family gained thermodynamically when the exchanger dimensions were re-tuned, but the geometry is already close to several mechanical limits. It is therefore a useful compactness benchmark rather than an obvious prototype choice.
+Stroke uses the production mechanism's velocity-root extrema, bracketed on its
+1440-interval construction scan; increasing the diagnostic grid does not change
+that root search. `EH_over_crank` is a direct geometric length. The other
+full-cycle indicators use the stated diagnostic sampling grid.
 
 ---
 
-## 6. Family 12 — alternate long-dyad pair
+## 4. Retained design screen
 
-Family 12 is the most geometrically different of the four retained mechanisms.
+The current catalogue screen is:
 
-The SMALL side uses a very long `EF` link and a relatively short piston stroke. During thermo-mechanical adaptation it moved much farther from the candidate-3952 motion than the other families.
-
-This family was especially useful for identifying an artificial geometric restriction: relaxing `H lateral RMS / stroke` from 0.20 to 0.25 produced a substantial efficiency gain. The continuation then encountered more direct mechanical limits instead.
-
-### SMALL mechanism
-
-| Parameter | Value |
+| Metric | Requirement |
 |---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 3.410671043 |
-| `BC` | 2.461702291 |
-| `CD` | 2.106069045 |
-| `E_along` | 3.916466385 |
-| `E_normal` | -1.090131795 |
-| primary phase | -0.288816327 rad (-16.548°) |
-| primary branch | -1 |
-| `G_x` | 6.908484590 |
-| `G_y` | -0.004320118 |
-| `EF` | 6.241298210 |
-| `GF` | 1.883153359 |
-| `H_along / EF` | 0.591559383 |
-| `H_normal / EF` | 0.282313429 |
-| piston rod | 8.671128856 |
-| slider-axis offset | 7.435944155 |
-| slider-axis angle | -1.817280951 rad (-104.123°) |
-| secondary branch | -1 |
+| `stroke_over_crank` | 1.0 .. 3.0 |
+| `minimum_primary_transmission_sine` | ≥ 0.30 |
+| `minimum_secondary_transmission_sine` | ≥ 0.30 |
+| `minimum_rod_axis_cosine` | ≥ 0.95 |
+| `EH_over_crank` | ≤ 7.0 |
+| `crank_axis_to_EFH_clearance_over_crank` | ≥ 0.5 |
+| `H_axis_lateral_rms_over_stroke` | ≤ 0.25 |
+| `H_axis_lateral_span_over_stroke` | ≤ 0.65 |
+| `zero_crossing_count` | = 2 |
 
-Mechanical indicators:
+These are retained design constraints, not literal material-failure thresholds.
 
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 5.579% |
-| stroke / crank | 1.2387 |
-| min primary transmission sine | 0.5035 |
-| min secondary transmission sine | 0.5309 |
-| min rod/axis cosine | 0.9505 |
-| H lateral RMS / stroke | 0.2275 |
-| H lateral span / stroke | 0.6498 |
-| crank-axis clearance / crank | 3.0654 |
+In particular, stroke windows and H-lateral limits include packaging and design
+judgement.
 
-### LARGE mechanism
+The machine-readable definition is stored in
+[`repro/six_bar_mechanism_families/design_screen.toml`](repro/six_bar_mechanism_families/design_screen.toml).
 
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 3.655982759 |
-| `BC` | 2.493001630 |
-| `CD` | 2.217482623 |
-| `E_along` | 4.295814511 |
-| `E_normal` | 1.241403635 |
-| primary phase | 3.132932234 rad (179.504°) |
-| primary branch | +1 |
-| `G_x` | 6.354986000 |
-| `G_y` | 0.024209397 |
-| `EF` | 5.617216794 |
-| `GF` | 2.042105441 |
-| `H_along / EF` | 0.741397336 |
-| `H_normal / EF` | -0.245730621 |
-| piston rod | 9.075494111 |
-| slider-axis offset | -7.163890758 |
-| slider-axis angle | 1.694698020 rad (97.099°) |
-| secondary branch | +1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 3.810% |
-| stroke / crank | 1.9004 |
-| min primary transmission sine | 0.3004 |
-| min secondary transmission sine | 0.3174 |
-| min rod/axis cosine | 0.9816 |
-| H lateral RMS / stroke | 0.1845 |
-| H lateral span / stroke | 0.5497 |
-| crank-axis clearance / crank | 3.4716 |
-
-### Thermodynamic re-tuning
-
-```text
-V_S / V_L = 0.947951242
-n_i       = 5039
-L_i       = 41.990 mm
-n_o       = 4889
-L_o       = 26.007 mm
-```
-
-Final result:
-
-- efficiency: **21.6567%**;
-- indicated power: **45.347 W**.
-
-The SMALL side is almost on both the rod-angle and H-span limits, while the LARGE primary transmission is almost on the `0.30` floor. The mechanism therefore appears genuinely constrained rather than merely under-optimized.
+All eight exact mechanisms pass all ten constraints at both resolutions. No
+pass/fail result changes on the dense grid. Tables below show canonical metric
+values and individual signed margins at both resolutions. Equality is reported
+as pass/fail rather than as a continuous safety margin.
 
 ---
 
-## 7. Family 50 — robust long-link pair
+## 5. `compact_balanced`
 
-Family 50 descends from the older successful six-bar lineage.
+This lineage retains relatively compact primary geometry with ground, coupler
+and rocker lengths of similar order.
 
-It is much larger geometrically than family 1 but retains substantially better transmission margins and large crank-axis clearances.
+The SMALL and LARGE mechanisms are independent final mechanisms, not exact
+mirrors.
 
-It finished second in thermodynamic efficiency after the final re-tuning.
+The final LARGE geometry lies very close to the retained
+`H_axis_lateral_span_over_stroke <= 0.65` limit.
 
-### SMALL mechanism
+That small nominal margin immediately shows that packaging or local mechanism
+re-optimization should be revisited before freezing a physical design.
 
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 4.906167614 |
-| `BC` | 4.863312784 |
-| `CD` | 1.149903793 |
-| `E_along` | 4.199153543 |
-| `E_normal` | 4.585414961 |
-| primary phase | -0.252757411 rad (-14.482°) |
-| primary branch | -1 |
-| `G_x` | 9.198575716 |
-| `G_y` | -5.704989087 |
-| `EF` | 2.042563560 |
-| `GF` | 9.446423386 |
-| `H_along / EF` | 1.628000624 |
-| `H_normal / EF` | 1.341090474 |
-| piston rod | 8.474157093 |
-| slider-axis offset | 0.462288981 |
-| slider-axis angle | 0.618786648 rad (35.454°) |
-| secondary branch | +1 |
+| Metric | SMALL | LARGE |
+|---|---:|---:|
+| `stroke_over_crank` | 2.540934 | 2.388543 |
+| `minimum_primary_transmission_sine` | 0.366020 | 0.323713 |
+| `minimum_secondary_transmission_sine` | 0.350129 | 0.361433 |
+| `minimum_rod_axis_cosine` | 0.962550 | 0.962112 |
+| `EH_over_crank` | 2.436754 | 2.438924 |
+| `H_axis_lateral_rms_over_stroke` | 0.139669 | 0.201255 |
+| `H_axis_lateral_span_over_stroke` | 0.472256 | 0.649979 |
+| `crank_axis_to_EFH_clearance_over_crank` | 0.777609 | 0.804459 |
+| `zero_crossing_count` | 2 | 2 |
 
-Mechanical indicators:
+Signed margins (canonical / dense); equality rows report pass/fail.
 
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 3.530% |
-| stroke / crank | 2.9731 |
-| min primary transmission sine | 0.4638 |
-| min secondary transmission sine | 0.3634 |
-| min rod/axis cosine | 0.9766 |
-| H lateral RMS / stroke | 0.1590 |
-| H lateral span / stroke | 0.5595 |
-| crank-axis clearance / crank | 5.2176 |
-
-### LARGE mechanism
-
-| Parameter | Value |
-|---|---:|
-| `AB` | 1.000000000 |
-| `AD` | 5.077061603 |
-| `BC` | 4.993700452 |
-| `CD` | 1.153574664 |
-| `E_along` | 3.971069226 |
-| `E_normal` | -4.242849155 |
-| primary phase | -3.083369538 rad (-176.664°) |
-| primary branch | +1 |
-| `G_x` | 8.871255866 |
-| `G_y` | 6.087378747 |
-| `EF` | 1.837243263 |
-| `GF` | 9.769509441 |
-| `H_along / EF` | 1.335066412 |
-| `H_normal / EF` | -1.209046718 |
-| piston rod | 7.338631363 |
-| slider-axis offset | -0.839069328 |
-| slider-axis angle | -0.703987242 rad (-40.335°) |
-| secondary branch | -1 |
-
-Mechanical indicators:
-
-| Indicator | Value |
-|---|---:|
-| piston position RMS vs 3952 | 2.680% |
-| stroke / crank | 2.5596 |
-| min primary transmission sine | 0.3787 |
-| min secondary transmission sine | 0.3741 |
-| min rod/axis cosine | 0.9586 |
-| H lateral RMS / stroke | 0.1314 |
-| H lateral span / stroke | 0.4997 |
-| crank-axis clearance / crank | 4.8113 |
-
-### Thermodynamic re-tuning
-
-```text
-V_S / V_L = 0.889357327
-n_i       = 4403
-L_i       = 44.708 mm
-n_o       = 4622
-L_o       = 27.030 mm
-```
-
-Final result:
-
-- efficiency: **22.6516%**;
-- indicated power: **44.204 W**.
-
-This family is a particularly useful counterexample to ranking mechanisms by primary cadence score alone. Its original primary proxy score was poor, yet the complete six-bar remained mechanically robust and thermodynamically competitive.
+| Constraint | Unit | SMALL margin | LARGE margin |
+|---|---|---:|---:|
+| `stroke_over_crank` ≥ 1.0 | crank_radius | +1.54093433 / +1.54093433 | +1.38854271 / +1.38854271 |
+| `stroke_over_crank` ≤ 3.0 | crank_radius | +0.45906567 / +0.45906567 | +0.611457286 / +0.611457286 |
+| `minimum_primary_transmission_sine` ≥ 0.3 | 1 | +0.0660202985 / +0.0660178938 | +0.0237131698 / +0.0237123031 |
+| `minimum_secondary_transmission_sine` ≥ 0.3 | 1 | +0.0501289688 / +0.0501282358 | +0.0614329434 / +0.061430797 |
+| `minimum_rod_axis_cosine` ≥ 0.95 | 1 | +0.0125497585 / +0.0125497415 | +0.0121117859 / +0.0121117859 |
+| `EH_over_crank` ≤ 7.0 | crank_radius | +4.56324552 / +4.56324552 | +4.56107582 / +4.56107582 |
+| `crank_axis_to_EFH_clearance_over_crank` ≥ 0.5 | crank_radius | +0.277608863 / +0.27760861 | +0.304459114 / +0.304458452 |
+| `H_axis_lateral_rms_over_stroke` ≤ 0.25 | 1 | +0.110330541 / +0.110330541 | +0.0487454353 / +0.0487454353 |
+| `H_axis_lateral_span_over_stroke` ≤ 0.65 | 1 | +0.177743998 / +0.17774224 | +2.09422996e-05 / +1.34657081e-05 |
+| `zero_crossing_count` = 2 | 1 | pass / pass | pass / pass |
 
 ---
 
-## 8. Evolution from kinematic fit to thermo-mechanical optimum
+## 6. `compact_offset`
 
-Before direct thermo-mechanical optimization, the mirrored and polished pairs had combined position RMS errors approximately:
+This lineage remains compact but uses a larger and more strongly offset
+primary geometry than `compact_balanced`.
 
-| Family | Combined RMS after mirror + local polish |
-|---|---:|
-| 1 | **0.984%** |
-| 4 | 2.389% |
-| 12 | 2.596% |
-| 50 | 1.930% |
+It achieves a large stroke relative to crank radius.
 
-After simultaneous 30-D optimization against the fixed 3952 thermodynamics:
+Its main nominal weakness is clear from the production diagnostics: primary
+and secondary transmission minima approach the retained `0.30` floor.
 
-| Family | Combined RMS after thermo-mechanical adaptation |
-|---|---:|
-| 1 | 1.292% |
-| 4 | 2.434% |
-| 12 | 4.777% |
-| 50 | 3.133% |
+The family is therefore useful as a compact/high-stroke reference but should
+not be interpreted as having large toggle margin.
 
-The thermodynamic search was explicitly allowed to move away from the target motion.
+| Metric | SMALL | LARGE |
+|---|---:|---:|
+| `stroke_over_crank` | 2.979288 | 2.962992 |
+| `minimum_primary_transmission_sine` | 0.301339 | 0.301172 |
+| `minimum_secondary_transmission_sine` | 0.300053 | 0.300339 |
+| `minimum_rod_axis_cosine` | 0.959982 | 0.954711 |
+| `EH_over_crank` | 2.869658 | 3.048954 |
+| `H_axis_lateral_rms_over_stroke` | 0.167176 | 0.163360 |
+| `H_axis_lateral_span_over_stroke` | 0.623755 | 0.637737 |
+| `crank_axis_to_EFH_clearance_over_crank` | 1.589543 | 1.698068 |
+| `zero_crossing_count` | 2 | 2 |
 
-This is why family 12 could become thermodynamically better while its geometric RMS became much worse.
+Signed margins (canonical / dense); equality rows report pass/fail.
 
-The result supports the intended hierarchy:
-
-\[
-\text{position fit} \rightarrow \text{synthesis guide},
-\]
-
-then
-
-\[
-\text{periodic thermodynamic efficiency} \rightarrow \text{machine objective}.
-\]
+| Constraint | Unit | SMALL margin | LARGE margin |
+|---|---|---:|---:|
+| `stroke_over_crank` ≥ 1.0 | crank_radius | +1.97928755 / +1.97928755 | +1.96299157 / +1.96299157 |
+| `stroke_over_crank` ≤ 3.0 | crank_radius | +0.0207124537 / +0.0207124537 | +0.0370084324 / +0.0370084324 |
+| `minimum_primary_transmission_sine` ≥ 0.3 | 1 | +0.00133854775 / +0.00133755901 | +0.00117206401 / +0.00117021208 |
+| `minimum_secondary_transmission_sine` ≥ 0.3 | 1 | +5.32269021e-05 / +5.23019036e-05 | +0.000339283642 / +0.000337987292 |
+| `minimum_rod_axis_cosine` ≥ 0.95 | 1 | +0.00998206916 / +0.00998200884 | +0.00471078097 / +0.00471078097 |
+| `EH_over_crank` ≤ 7.0 | crank_radius | +4.13034229 / +4.13034229 | +3.95104632 / +3.95104632 |
+| `crank_axis_to_EFH_clearance_over_crank` ≥ 0.5 | crank_radius | +1.08954259 / +1.08954259 | +1.19806785 / +1.19806776 |
+| `H_axis_lateral_rms_over_stroke` ≤ 0.25 | 1 | +0.0828237161 / +0.0828237161 | +0.0866400476 / +0.0866400476 |
+| `H_axis_lateral_span_over_stroke` ≤ 0.65 | 1 | +0.0262453272 / +0.0262405458 | +0.0122626274 / +0.0122626274 |
+| `zero_crossing_count` = 2 | 1 | pass / pass | pass / pass |
 
 ---
 
-## 9. Comparison of mechanical character
+## 7. `long_ground`
 
-The four families occupy noticeably different regions of mechanical design space.
+This lineage occupies a substantially different region of design space.
 
-| Family | Main strength | Main weakness / active margin |
+Its primary ground distance is larger and its downstream geometry contains long
+links.
+
+The final pair illustrates that mechanical constraints may become active in
+different places on the two cylinder mechanisms:
+
+- the SMALL mechanism approaches its rod-angle and H-lateral-span limits;
+- the LARGE primary approaches the transmission-sine floor.
+
+This family is therefore useful for separating the effect of primary topology
+from downstream transformability.
+
+| Metric | SMALL | LARGE |
+|---|---:|---:|
+| `stroke_over_crank` | 1.238708 | 1.900432 |
+| `minimum_primary_transmission_sine` | 0.503546 | 0.300351 |
+| `minimum_secondary_transmission_sine` | 0.530886 | 0.317379 |
+| `minimum_rod_axis_cosine` | 0.950473 | 0.981588 |
+| `EH_over_crank` | 4.090995 | 4.387379 |
+| `H_axis_lateral_rms_over_stroke` | 0.227536 | 0.184521 |
+| `H_axis_lateral_span_over_stroke` | 0.649800 | 0.549655 |
+| `crank_axis_to_EFH_clearance_over_crank` | 3.065353 | 3.471589 |
+| `zero_crossing_count` | 2 | 2 |
+
+Signed margins (canonical / dense); equality rows report pass/fail.
+
+| Constraint | Unit | SMALL margin | LARGE margin |
+|---|---|---:|---:|
+| `stroke_over_crank` ≥ 1.0 | crank_radius | +0.238708358 / +0.238708358 | +0.900431971 / +0.900431971 |
+| `stroke_over_crank` ≤ 3.0 | crank_radius | +1.76129164 / +1.76129164 | +1.09956803 / +1.09956803 |
+| `minimum_primary_transmission_sine` ≥ 0.3 | 1 | +0.203546456 / +0.203546097 | +0.000350926379 / +0.000350926379 |
+| `minimum_secondary_transmission_sine` ≥ 0.3 | 1 | +0.230885521 / +0.230885521 | +0.0173793481 / +0.0173786398 |
+| `minimum_rod_axis_cosine` ≥ 0.95 | 1 | +0.000473174532 / +0.000473174532 | +0.0315877154 / +0.0315877154 |
+| `EH_over_crank` ≤ 7.0 | crank_radius | +2.90900458 / +2.90900458 | +2.61262088 / +2.61262088 |
+| `crank_axis_to_EFH_clearance_over_crank` ≥ 0.5 | crank_radius | +2.56535316 / +2.56535316 | +2.97158922 / +2.97158869 |
+| `H_axis_lateral_rms_over_stroke` ≤ 0.25 | 1 | +0.0224643057 / +0.0224643057 | +0.0654791609 / +0.0654791609 |
+| `H_axis_lateral_span_over_stroke` ≤ 0.65 | 1 | +0.000199848105 / +0.000199589066 | +0.100345171 / +0.100343222 |
+| `zero_crossing_count` = 2 | 1 | pass / pass | pass / pass |
+
+---
+
+## 8. `long_coupler_short_rocker`
+
+This lineage combines:
+
+- a long primary ground;
+- a long coupler;
+- a short rocker;
+- large downstream link distances.
+
+It retains comparatively large nominal transmission and crank-clearance
+margins.
+
+The SMALL mechanism instead lies relatively near the retained upper
+`stroke_over_crank` limit.
+
+The family is an important counterexample to the idea that compact primary
+geometry is automatically preferable.
+
+| Metric | SMALL | LARGE |
+|---|---:|---:|
+| `stroke_over_crank` | 2.973136 | 2.559605 |
+| `minimum_primary_transmission_sine` | 0.463840 | 0.378746 |
+| `minimum_secondary_transmission_sine` | 0.363427 | 0.374122 |
+| `minimum_rod_axis_cosine` | 0.976569 | 0.958564 |
+| `EH_over_crank` | 4.308265 | 3.309179 |
+| `H_axis_lateral_rms_over_stroke` | 0.158978 | 0.131434 |
+| `H_axis_lateral_span_over_stroke` | 0.559453 | 0.499738 |
+| `crank_axis_to_EFH_clearance_over_crank` | 5.217632 | 4.811296 |
+| `zero_crossing_count` | 2 | 2 |
+
+Signed margins (canonical / dense); equality rows report pass/fail.
+
+| Constraint | Unit | SMALL margin | LARGE margin |
+|---|---|---:|---:|
+| `stroke_over_crank` ≥ 1.0 | crank_radius | +1.97313568 / +1.97313568 | +1.55960466 / +1.55960466 |
+| `stroke_over_crank` ≤ 3.0 | crank_radius | +0.026864317 / +0.026864317 | +0.440395339 / +0.440395339 |
+| `minimum_primary_transmission_sine` ≥ 0.3 | 1 | +0.16383969 / +0.16383969 | +0.0787464849 / +0.0787442425 |
+| `minimum_secondary_transmission_sine` ≥ 0.3 | 1 | +0.063426948 / +0.0634267648 | +0.0741223422 / +0.0741223422 |
+| `minimum_rod_axis_cosine` ≥ 0.95 | 1 | +0.0265685166 / +0.0265685166 | +0.00856356692 / +0.00856316931 |
+| `EH_over_crank` ≤ 7.0 | crank_radius | +2.69173534 / +2.69173534 | +3.69082126 / +3.69082126 |
+| `crank_axis_to_EFH_clearance_over_crank` ≥ 0.5 | crank_radius | +4.71763157 / +4.71762996 | +4.31129598 / +4.31129598 |
+| `H_axis_lateral_rms_over_stroke` ≤ 0.25 | 1 | +0.0910218379 / +0.0910218379 | +0.118566189 / +0.118566189 |
+| `H_axis_lateral_span_over_stroke` ≤ 0.65 | 1 | +0.090546661 / +0.0905456162 | +0.150262294 / +0.150257715 |
+| `zero_crossing_count` = 2 | 1 | pass / pass | pass / pass |
+
+---
+
+## 9. Mechanical comparison
+
+The four lineages should not be ranked by one scalar mechanical score.
+
+They span different trade-offs.
+
+| Family | Mechanical character | Main nominal concern |
 |---|---|---|
-| 1 | highest efficiency, compact, excellent target reproduction | LARGE H lateral span near 0.65 |
-| 4 | compact, very large stroke/crank | both transmission stages near 0.30 |
-| 12 | radically different topology, demonstrates thermo adaptability | SMALL rod angle + H span, LARGE primary transmission |
-| 50 | robust transmissions, large clearances, strong power | larger overall linkage geometry |
+| `compact_balanced` | compact, balanced proportions | LARGE H-lateral-span margin |
+| `compact_offset` | compact, high stroke | primary/secondary transmission margins |
+| `long_ground` | long-ground / long-dyad topology | SMALL rod/H span and LARGE primary transmission |
+| `long_coupler_short_rocker` | long-link geometry with large clearances | SMALL upper stroke margin |
 
-This table is descriptive, not a prototype selection.
-
-Prototype choice should also include:
-
-- dimensional-tolerance sensitivity;
-- bearing loads and inertial forces;
-- collision and axial-layering layout;
-- manufacturability;
-- friction and useful shaft efficiency.
+The useful comparison is the vector of mechanical margins, not a single
+ranking.
 
 ---
 
-## 10. Completed robustness campaign
+## 10. Mechanical margin versus manufacturing robustness
 
-The four final pairs were subjected to the same manufacturing-tolerance experiment.
+A nominal mechanism can be characterized deterministically by its distance from
+declared mechanical limits.
 
-For every family and each relative tolerance level (**±0.1%, ±0.5%, ±1%**):
+For a minimum constraint,
 
-- 2048 scrambled-Sobol 30-D perturbations were generated;
-- normalized perturbation coordinates were identical across families;
-- dimension-like variables received bounded independent uniform errors;
-- phase and slider-axis angles reached **±0.5° at the ±1% level**;
-- crank radius and assembly branches remained fixed;
-- the perturbed mechanism was **not re-optimized**;
-- mechanically accepted variants were replayed with that family's final 5-D thermodynamic machine.
+\[
+m=x-x_{\min}.
+\]
 
-The mechanical-screen survival fractions were:
+For a maximum constraint,
 
-| Family | ±0.1% | ±0.5% | ±1% |
-|---|---:|---:|---:|
-| 1 | **50.3%** | **36.8%** | **17.4%** |
-| 4 | **24.7%** | **9.3%** | **3.8%** |
-| 12 | **26.0%** | **19.6%** | **12.6%** |
-| 50 | **69.5%** | **37.6%** | **28.9%** |
+\[
+m=x_{\max}-x.
+\]
 
-The main rejection mechanisms were consistent with the nominal active margins:
+Positive margin means that the nominal mechanism passes the declared screen.
 
-- **family 1:** LARGE `H` lateral span first, then secondary transmission;
-- **family 4:** both transmission stages and stroke limits;
-- **family 12:** SMALL `H` span / rod angle and LARGE primary transmission;
-- **family 50:** SMALL stroke at tight tolerance, then closure / transmission at larger perturbations.
+Small positive margin identifies an active or nearly active design constraint.
 
-These are failures of the retained **design screen**, not necessarily physical breakages. In particular, `H`-span and stroke-window limits are partly packaging/design choices.
+Margins retain their individual units and meanings. They are not summed or
+ranked across unlike metrics. Both stroke bounds are reported separately.
 
-### 10.1 Thermodynamic robustness after the mechanical screen
+This is useful engineering information, but it must not be confused with a
+manufacturing-tolerance proof.
 
-Every selected thermodynamic replay converged and remained feasible.
+A true bounded tolerance certification would require proving the constraints
+over an entire multidimensional perturbation domain, not testing an arbitrary
+finite set of random or quasi-random samples.
 
-Mean loss of indicated efficiency, in percentage points relative to the nominal family:
+The old stochastic perturbation study is therefore not part of this clean
+catalogue.
 
-| Family | ±0.1% | ±0.5% | ±1% |
-|---|---:|---:|---:|
-| 1 | **0.017 pp** | 0.104 pp | 0.306 pp |
-| 4 | 0.054 pp | 0.238 pp | 0.427 pp |
-| 12 | **0.016 pp** | **0.047 pp** | **0.085 pp** |
-| 50 | 0.034 pp | 0.168 pp | 0.562 pp |
-
-Fraction remaining within **0.1 percentage point** of nominal efficiency:
-
-| Family | ±0.1% | ±0.5% | ±1% |
-|---|---:|---:|---:|
-| 1 | **100%** | 55.5% | 15.6% |
-| 4 | 97.7% | 14.1% | 3.9% |
-| 12 | **100%** | **92.2%** | **62.5%** |
-| 50 | 96.1% | 37.5% | 7.8% |
-
-The experiment separates two notions that were previously conflated:
-
-- **mechanical survival:** staying inside the retained closure, transmission, rod-angle, stroke and packaging margins;
-- **thermodynamic survival:** retaining efficiency once the perturbed mechanism is mechanically acceptable.
-
-Family 50 is the strongest mechanical survivor under this screen, but family 12 is the least thermodynamically sensitive among the surviving variants at ±0.5% and ±1%.
-
-Family 1 remains the nominal efficiency champion. Its main weakness in this robustness test is not thermodynamic fragility at small error, but the fact that the optimized LARGE mechanism sits almost directly on the `H` lateral-span ceiling.
-
-Family 4 is confirmed as the most tolerance-critical of the four because both transmission stages were already optimized close to the 0.30 floor.
-
-### 10.2 Implication for the demonstrator
-
-The robustness test does not produce a single automatic winner.
-
-For the demonstrator, the next engineering step is to decide which active limits are real hardware requirements and which can be relaxed through packaging, bearing layout or modest mechanism re-optimization.
-
-The current data suggest that a small nominal-efficiency sacrifice could buy substantial manufacturing margin, but that trade should be made only after replacing the present normalized screening limits by actual dimensional tolerances and component constraints.
-
-Source artifacts:
-
-```text
-examples/test_sixbar_robustness_3952.py
-outputs/sixbar_robustness_3952/definition.json
-outputs/sixbar_robustness_3952/report.json
-```
+If certified manufacturing robustness becomes necessary, it should be added as
+a generic solver/research capability rather than embedded as historical
+documentation data.
 
 ---
 
-## 11. How to create a scaled demonstrator
+## 11. How these families should be reused
 
-Once a family and a crank radius `R` are chosen:
+These families are starting structures, not immutable mechanisms.
 
-1. scale every absolute mechanism length by `R`;
-2. compute physical S/L strokes from the stored stroke/crank values;
-3. use the selected thermodynamic swept volumes to compute piston areas and bores;
-4. place the cylinders along the stored slider axes;
-5. design bearings, shafts, link thickness and axial layering from the actual forces;
-6. verify collision clearances with physical component thickness;
-7. generate the final animation from the scaled geometry.
+For a new machine:
 
-The mechanism catalogue should remain dimensionless; the wiki demonstrator can then present one specific physical instantiation.
+1. choose several mechanically different lineages;
+2. preserve their discrete branches initially;
+3. adapt the continuous geometry to the new piston motion;
+4. inspect the mechanical margins with the production diagnostics;
+5. allow both cylinder mechanisms to adapt independently;
+6. compare the resulting machines using the actual thermodynamic objective.
+
+Do not assume that:
+
+- the most compact family is best;
+- the family with the largest nominal transmission margin is best;
+- the lineage that once performed best for another machine remains best;
+- the original seed coordinates should remain fixed.
 
 ---
 
-## 12. Source artifacts
+## 12. Scaling toward a demonstrator
 
-Paired kinematic synthesis:
+After selecting a family and a crank radius \(R\):
 
-```text
-outputs/sixbar_pairs_3952/mirror_family_summary.json
-outputs/sixbar_pairs_3952/rank_01_small.json
-outputs/sixbar_pairs_3952/rank_01_large.json
-outputs/sixbar_pairs_3952/rank_04_small.json
-outputs/sixbar_pairs_3952/rank_04_large.json
-outputs/sixbar_pairs_3952/rank_12_small.json
-outputs/sixbar_pairs_3952/rank_12_large.json
-outputs/sixbar_pairs_3952/rank_50_small.json
-outputs/sixbar_pairs_3952/rank_50_large.json
-```
+1. scale every absolute linkage length by \(R\);
+2. compute physical SMALL/LARGE strokes from `stroke_over_crank`;
+3. choose bore from required swept volume;
+4. design bearings and pivots from real force and friction requirements;
+5. verify physical clearances in the actual packaging;
+6. revisit any nearly active normalized design margins;
+7. evaluate manufacturing tolerance using a proper bounded analysis if needed.
 
-Final simultaneous thermo-mechanical geometry:
+The catalogue should remain normalized.
 
-```text
-outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_01/best_pair.json
-outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_04/best_pair.json
-outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_12/best_pair.json
-outputs/sixbar_thermo_coupled_3952_fine_hlat25/rank_50/best_pair.json
-```
+A particular demonstrator geometry is a separate engineering instantiation.
 
-Final thermodynamic re-tuning:
+---
 
-```text
-outputs/sixbar_thermo5d_3952/report.json
-```
+## 13. What should not be inferred
 
-Robustness:
+This catalogue does not establish that:
 
-```text
-examples/test_sixbar_robustness_3952.py
-outputs/sixbar_robustness_3952/definition.json
-outputs/sixbar_robustness_3952/report.json
-```
+- only four useful six-bar families exist;
+- one of these lineages is globally optimal;
+- nominal mechanical margin alone predicts thermodynamic performance;
+- a 0.30 transmission sine is a universal hardware limit;
+- the H-lateral limits are universal packaging requirements;
+- the deterministic nominal screen is a manufacturing-tolerance proof;
+- a family should remain geometrically unchanged when reused.
 
-Mechanism implementation:
+The catalogue records useful normalized mechanisms and their present
+mechanical design margins.
+
+---
+
+## 14. Reproducing the catalogue
+
+The reproducible material is:
 
 ```text
-src/dada_solver/six_bar.py
+docs/repro/six_bar_mechanism_families/families.toml
+docs/repro/six_bar_mechanism_families/design_screen.toml
+docs/repro/six_bar_mechanism_families/verify.py
 ```
 
-Search methodology:
+Run:
 
-```text
-docs/MECHANISM_SYNTHESIS_SEARCH.md
+```bash
+PYTHONPATH=src python docs/repro/six_bar_mechanism_families/verify.py
 ```
 
-Primary four-bar catalogue:
+Regression-style check:
 
-```text
-docs/PRIMARY_FOUR_BAR_FAMILIES.md
+```bash
+PYTHONPATH=src python docs/repro/six_bar_mechanism_families/verify.py --check
 ```
+
+Generate the diagnostic Markdown tables:
+
+```bash
+PYTHONPATH=src python docs/repro/six_bar_mechanism_families/verify.py --markdown
+```
+
+The verifier:
+
+1. loads the eight exact normalized mechanisms;
+2. constructs production `SixBarCylinderMechanism` objects;
+3. computes diagnostics through production `six_bar_metrics()`;
+4. applies the declared standard mechanical screen at 1440 samples;
+5. repeats the screen at 5760 samples;
+6. reports individual constraint margins;
+7. depends on neither historical scripts nor campaign artifacts.
+
+A failure prints both grid values and their verdicts and returns a nonzero exit
+status. All mechanisms are evaluated before reporting screen failures; neither
+geometry nor limits are adjusted to obtain a pass.
