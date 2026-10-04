@@ -27,7 +27,7 @@ Old test counts are dated records, not the present test status.
 | [Compact synthesis](../COMPACT_KINEMATIC_SYNTHESIS.md) | Finite rods, output frames, compactness and branch lessons |
 | [Primary families](../PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar families](../SIX_BAR_MECHANISM_FAMILIES.md) | Exact geometry, discrete branches, source artifacts and robustness tradeoffs |
 
-The [synthesis theory](../MECHANISM_SYNTHESIS_SEARCH_THEORY.md) remains a primary
+The [synthesis method](../MECHANISM_SYNTHESIS_SEARCH.md) remains a primary
 methodological reference, not discarded chronology. Its rejected proxies and
 hierarchical search evidence matter for future human-cell mechanisms.
 

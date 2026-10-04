@@ -46,7 +46,7 @@ Shared-crank mechanisms retain their explicit coupling and discrete branches.
 Normalized laws do not imply a physical stroke or piston area without scale.
 Piecewise-linear laws are design probes, not realizable optima. Mechanism
 closure is intrinsic; transmission-quality requirements belong to a study.
-Use the [established synthesis method](MECHANISM_SYNTHESIS_SEARCH_THEORY.md).
+Use the [established synthesis method](MECHANISM_SYNTHESIS_SEARCH.md).
 
 ## Heat, work and performance
 

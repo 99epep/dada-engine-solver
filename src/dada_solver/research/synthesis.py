@@ -1,6 +1,6 @@
 """Declarative synthesis handoff, not a new optimizer or a generic curve fitter.
 
-See MECHANISM_SYNTHESIS_SEARCH_THEORY.md. Thermodynamic releases execute through
+See MECHANISM_SYNTHESIS_SEARCH.md. Thermodynamic releases execute through
 OptimizationCampaign; geometric fitting and fresh-island saturation are deferred.
 """
 from dataclasses import dataclass

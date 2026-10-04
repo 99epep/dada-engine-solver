@@ -18,7 +18,7 @@ downstream fitting → full local mechanism adaptation → paired thermodynamic
 replay/optimization → hardware retuning. Preserve several mechanical tradeoffs,
 not only the lowest curve-fit error. Position is the primary motion reference;
 velocity describes cadence/topology; do not blindly fit sharp acceleration.
-See [synthesis theory](MECHANISM_SYNTHESIS_SEARCH_THEORY.md),
+See [synthesis method](MECHANISM_SYNTHESIS_SEARCH.md),
 [family catalogs](SIX_BAR_MECHANISM_FAMILIES.md) and
 [Research family interfaces](DADA_ENGINE_RESEARCH_KINEMATICS.md).
 

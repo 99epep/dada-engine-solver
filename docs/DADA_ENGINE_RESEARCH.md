@@ -200,6 +200,6 @@ knowledge remains the starting point: primary-family discovery, downstream dyad,
 local mechanism polish, opposite-side adaptation, then paired thermodynamic
 optimization. Preserve several useful families and judge final machines through
 thermodynamic replay; do not make acceleration matching the universal objective.
-See [synthesis theory](MECHANISM_SYNTHESIS_SEARCH_THEORY.md),
+See [synthesis method](MECHANISM_SYNTHESIS_SEARCH.md),
 [primary families](PRIMARY_FOUR_BAR_FAMILIES.md) and
 [six-bar families](SIX_BAR_MECHANISM_FAMILIES.md).

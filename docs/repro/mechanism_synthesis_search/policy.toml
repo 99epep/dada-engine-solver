@@ -1,0 +1,107 @@
+schema_version = 1
+
+description = """
+Reference primary four-bar cadence-search policy retained from the mechanism-
+synthesis study. This is a search proxy used to discover useful primary
+mechanism families; it is not a thermodynamic objective and not an intrinsic
+quality metric for a complete mechanism.
+"""
+
+reference_motion_id = "structured_c2_260k_reference_motor_motion"
+
+length_unit = "crank_radius"
+phase_unit = "rad"
+cadence_angle_unit = "deg"
+
+[primary_geometry]
+crank = 1.0
+branches = [-1, 1]
+parameter_names = [
+    "ground",
+    "coupler",
+    "rocker",
+    "e_along",
+    "e_normal",
+    "phase_rad",
+]
+
+[primary_geometry.bounds]
+ground = [0.50, 12.0]
+coupler = [0.50, 12.0]
+rocker = [0.35, 6.0]
+e_along = [-12.0, 18.0]
+e_normal = [-15.0, 15.0]
+phase_rad = [-3.141592653589793, 3.141592653589793]
+
+[reference_target]
+high_position_turnaround_deg = 358.812
+low_position_turnaround_deg = 154.144
+short_branch_span_deg = 155.332
+long_branch_span_deg = 204.668
+short_branch_fast_slow_split_deg = 38.062
+fast_slow_mean_speed_ratio = 5.027
+fast_displacement_fraction = 0.5763
+
+[analysis_grid]
+coarse_step_deg = 1.0
+dense_step_deg = 0.25
+target_smoothing_deg = 12.0
+primary_smoothing_deg = 8.0
+
+[guards]
+turnaround_guard_deg = 8.0
+turnaround_sign_guard_deg = 3.0
+transition_guard_deg = 6.0
+minimum_short_subphase_deg = 25.0
+long_branch_symmetry_points = 64
+
+[hard_constraints]
+full_revolution_closure = true
+minimum_primary_transmission_sine = 0.30
+minimum_e_span_over_crank = 0.75
+
+[soft_preferences]
+preferred_primary_transmission_sine = 0.35
+preferred_axis_variance_fraction = 0.70
+
+[score_weights]
+monotonicity = 2.0
+endpoint_zero = 0.40
+turnaround = 0.65
+turnaround_scale_deg = 15.0
+extra_crossing = 0.50
+fast_slow_speed_ratio = 0.55
+fast_displacement_fraction = 0.80
+long_branch_mirror_asymmetry = 0.45
+transmission_preference = 0.12
+axis_preference = 0.03
+
+[long_branch]
+criterion = "mirror_symmetry"
+uses_raw_projected_velocity = true
+smoothness_penalty = false
+curvature_penalty = false
+local_extrema_penalty = false
+target_profile_matching = false
+
+[fresh_island_saturation]
+optimizer = "scipy.optimize.differential_evolution"
+generations = 260
+population_size = 16
+initialization = "latinhypercube"
+polish = true
+tolerance = 1e-8
+historical_seeds = 0
+branch_policy = "strict_alternation"
+expected_initial_population_per_island = 96
+
+[family_clustering]
+distance = "normalized_coordinate_rms"
+branches_are_separate = true
+phase_is_cyclic = true
+non_phase_coordinates_normalized_by_bound_width = true
+phase_distance_normalized_by_pi = true
+connected_components = true
+edge_rule = "distance_strictly_less_than_threshold"
+reported_thresholds = [0.03, 0.04, 0.05]
+reference_threshold = 0.04

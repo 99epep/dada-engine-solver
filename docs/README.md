@@ -36,7 +36,7 @@ polish → opposite-piston adaptation → paired thermodynamic evaluation → ha
 retuning**. Do not replace it with an acceleration-only fit or a blind global
 15-dimensional search.
 
-- [Mechanism synthesis theory](MECHANISM_SYNTHESIS_SEARCH_THEORY.md): methodology,
+- [Mechanism synthesis search](MECHANISM_SYNTHESIS_SEARCH.md): methodology,
   failed proxies, hierarchical stages and saturation versus exploitation.
 - [Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md) and
   [six-bar families](SIX_BAR_MECHANISM_FAMILIES.md): retained geometry, conventions,

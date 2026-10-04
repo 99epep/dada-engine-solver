@@ -356,7 +356,7 @@ Historical artifact constraints remain inherited. See
 ## Established synthesis workflow and current boundary
 
 The authoritative methodology remains
-[Mechanism synthesis search theory](MECHANISM_SYNTHESIS_SEARCH_THEORY.md),
+[Mechanism synthesis search](MECHANISM_SYNTHESIS_SEARCH.md),
 [Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md),
 [Six-bar mechanism families](SIX_BAR_MECHANISM_FAMILIES.md), and
 [Compact kinematic synthesis](COMPACT_KINEMATIC_SYNTHESIS.md).

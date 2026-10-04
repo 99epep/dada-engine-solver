@@ -738,7 +738,7 @@ src/dada_solver/six_bar.py
 Search methodology:
 
 ```text
-docs/MECHANISM_SYNTHESIS_SEARCH_THEORY.md
+docs/MECHANISM_SYNTHESIS_SEARCH.md
 ```
 
 Primary four-bar catalogue:
