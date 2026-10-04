@@ -1,572 +1,148 @@
-# Research reference and historical notes
+# Research technical reference
 
-Research V3 adds declared external thermal streams, motor/refrigerator wall
-cycles and an ideal-generated compiled fluid-table validation path. It reuses
-the V2 campaign and mechanism layer.
+## Purpose and scope
 
-Research V2 selects kinematic families independently for the small and large
-cylinders, with fixed or active coordinates in the existing campaign engine.
-The V1 fixed six-bar / five-parameter study remains available as a regression
-preset. Exact identities, Sobol continuation, deadlines and recovery are retained;
-production thermodynamic physics is unchanged.
+This is the current contract for study schema, scientific identity, parameter ownership,
+policies, search scheduling, persistence and compatibility. Production loaders and
+campaign APIs are authoritative. For everyday commands, start with the [Research
+guide](DADA_ENGINE_RESEARCH.md).
 
-## Limit ownership and migration
+This reference does not define thermodynamic equations, mechanism families or report
+layout. Their canonical references are listed at the end.
 
-Generic V2/V3 presets impose no inherited 25 W minimum power, 1.2 MPa pressure,
-850 K temperature, 0.08 kg/s internal-flow or 66 L volume ceiling. These are
-optional explicit study requirements, not universal physical limits. The named
-V1 historical-parity preset keeps its original requirements. Model domains,
-study requirements, search bounds and numerical settings have distinct owners;
-see [the audit and migration notes](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+## Supported schemas and presets
 
-Pressure equalization is diagnostic-only; isothermality fields/criteria are
-removed. Old validity keys load but are ignored. Microtube Mach validity comes
-from each exchanger's gas model, while `maximum_mach_number` remains an optional
-study constraint. New mechanism seed quality limits live in editable
-`[[mechanical_constraints]]`, outside seed artifacts. Existing embedded artifact
-constraints remain enforced.
+| Schema | Role today |
+|---|---|
+| Schema 1 | Historical `fixed_pair_thermo5d` regression protocol; loadable and evaluable, resumable when runtime-compatible |
+| Schema 2 | Generic `machine_design` studies with configurable kinematics, machine parameters, policies and wall/reservoir models |
+| Schema 3 | `machine_design` extension for external-stream wall models and compiled-fluid support |
 
-Existing results are not reclassified or overwritten. After this implementation
-change, regenerate the intended study and use a new campaign directory; runtime
-compatibility prevents silently resuming the old scientific computation.
-`refine`/`rescale` preserve explicit source constraints, including historical caps.
+Schemas 2 and 3 share the fixed/active parameter and campaign layer. Schema 3 extends
+the machine representation, not the campaign semantics. The study and portable basis
+must have matching schema versions. Schema 1 is compatibility support, not the
+recommended starting point for new research.
 
-## Daily cockpit workflow
+Current generic initialization entry points are `init kinematics`, `init
+external-stream-refrigeration` and `init external-stream-motor`. The named regression
+presets are described under legacy compatibility below.
 
-```sh
-research report outputs/my_study/campaign
-research resume outputs/my_study/campaign --budget 30m
-```
+## Schema 2/3 study anatomy
 
-Reports default to `CAMPAIGN/report.html` and may overwrite derived HTML.
-Terminal output is compact; use `--list-candidates` or `--json` explicitly.
-Generated/rescaled studies default to 512 new attempts per invocation, with
-`--max-candidates` available for a deliberate override.
+| Group | Ownership |
+|---|---|
+| `schema_version` | Selects the accepted study/basis generation |
+| `study` | Nonempty `name`, `protocol = "machine_design"`, `purpose`; optional `parent_candidate_id` |
+| `sources` | Portable machine basis at `sources.machine.path`, verified by `sha256` |
+| `kinematics` | Family, coupling and settings for SMALL/LARGE |
+| `parameters` | Explicit fixed/active coordinate declarations |
+| `policies` | Physical and derivation conventions |
+| `objective` | Ranking objective and unit |
+| `constraints` | Thermodynamic/design requirements |
+| `mechanical_constraints` | Side-scoped mechanical requirements |
+| `screening` | Mechanical sampling and optional declared volume screen |
+| `search` | Global or local Sobol definition |
+| `numerical` | Candidate evaluation settings |
+| `warm_start` | Initial-state policy |
+| `execution` | Default/per-invocation scheduling controls |
+| `charge_reference` | Required only with reference-pressure inventory |
 
-On an interactive terminal, each completed evaluation gets exactly one permanent
-line: its campaign evaluation number (one-based), region and center/Sobol origin,
-status, and either principal performance metrics or rejection evidence. `BEST`
-marks an improved feasible champion; `(cached)` identifies exact cache reuse.
-A separate bottom line refreshes in place about every ten seconds during solver
-progress checks and immediately after each completed evaluation. It shows phase
-counts, elapsed time/budget and the champion, without repeated error counters.
-Its width follows the output terminal and preserves progress, feasibility and
-COP/objective ahead of secondary metrics. `Pin` is indicated mechanical input;
-`Pgas` is indicated gas power, never an assumed useful shaft output.
+The display name and source filesystem location are not scientific physics. Verified
+basis content is. Machine coordinates omitted from explicit declarations retain basis
+defaults; family coordinates must be supplied by declarations or mechanism artifacts.
+Unknown keys and invalid ownership are rejected.
 
-Redirected/non-TTY output contains the start line, one line per completed
-evaluation and a final `Finished` summary. It contains no periodic status spam,
-carriage returns or terminal escape sequences. Normal completion, Ctrl-C and
-exceptions terminate/clear the interactive status before returning control.
-Detailed evidence stays in the journal; presentation neither recalculates reports
-nor changes scheduling, candidate identity construction or durable resume.
-The existing source/runtime compatibility checks still apply after code updates.
+`numerical` contains `maximum_cycles`, `backend`, `candidate_budget_seconds` and
+`domain_error_retry`; other integration inputs come from the basis. `execution` contains
+`default_budget`, `default_max_candidates`, `initial_evaluation_seconds` and
+`deadline_grace_seconds`. Execution controls do not define scientific study identity.
+Invocation budgets and candidate caps control how much work is attempted, not the
+physical acceptance criteria.
 
-The HTML shows the
-campaign funnel, bound pressure, factual review actions and copyable commands
-that follow the selected candidates. Diagnostic suggestions filter the exact
-failure category or violated constraint and open matching stored records; bound
-actions show bound evidence. Only report regeneration gets a regeneration command.
-The retained candidate details remain in a scrollable table (about 15 visible rows),
-with a Basin column and sticky sortable headers. Comparison opens on the best
-two candidates under the existing objective ranking; selectors remain editable.
-Constraint evidence prioritizes violated/near-boundary limits with actual values,
-signed/relative margins and candidate/passage context. Missing model boundaries
-are not guessed. Native solver stderr is captured around
-solver calls while original Python exceptions remain visible.
+## Parameter ownership and parameter types
 
-New evaluations use a single `recovery.json` followed by durable journal/state
-commits; old per-candidate files remain readable and recoverable. See the
-[cockpit and persistence reference](DADA_ENGINE_RESEARCH_COCKPIT.md) for exact
-thresholds, crash ordering, compatibility and fd 2 scope.
+One declaration owns a coordinate. Active coordinates form one vector in declaration
+order; fixed and active ownership cannot overlap. Names, units, family ownership, types,
+bounds and initial values are validated.
 
-## External streams and refrigeration (V3)
-
-```sh
-PYTHONPATH=src python3 -m dada_solver.research init external-stream-refrigeration --output outputs/my_cooling/study.toml
-PYTHONPATH=src python3 -m dada_solver.research validate outputs/my_cooling/study.toml
-PYTHONPATH=src python3 -m dada_solver.research evaluate outputs/my_cooling/study.toml --output outputs/my_cooling/reference.json --budget 2m
-PYTHONPATH=src python3 -m dada_solver.research report outputs/my_cooling/reference.json --html outputs/my_cooling/reference.html
-```
-
-The preset is a bounded validation fixture, not an optimized cooling cell.
-`external-stream-motor` selects the motor direction. Add
-`--small structured_c2_15p --large structured_c2_15p` to configure the existing
-structured family; changing family is a new study and does not guarantee a
-valid refrigeration cycle. Individual stream, inventory, frequency, exchanger
-and motion parameters use the same fixed/active declaration as V2. Nothing is
-active by default. Choose `maximize_cooling_cop` [1] or
-`maximize_cooling_power` [W], with an optional indicated-input bound.
-
-See [external stream equations, units and configuration](EXTERNAL_STREAM_THERMAL_MODEL.md)
-and [working-fluid interfaces, compiled tables and limitations](WORKING_FLUID_MODELS.md).
-The external fluid label implies no liquid hydraulic correlation or pump power.
-The fluid table proves compiled reconstruction using analytic ideal-gas data;
-it is not a cryogenic helium model. Old V1/V2 inputs and offline inspection are
-retained; source/runtime changes still require a fresh execution directory.
-
-The [bounded candidate report](../outputs/research_v3/validated/candidate_comparison.html)
-contains two Sobol candidates and a persisted resume. The
-[cross-boundary report](../outputs/research_v3/validated/cross_boundary_report.html)
-shows the refrigerator, its table replay and an air motor side by side, with
-explicit differing-study warnings. It is not a fair optimization ranking.
-
-## Select a motion family (V2)
-
-```sh
-PYTHONPATH=src python3 -m dada_solver.research init kinematics --small slider_crank --large harmonic --output outputs/my_motion/study.toml
-PYTHONPATH=src python3 -m dada_solver.research validate outputs/my_motion/study.toml
-PYTHONPATH=src python3 -m dada_solver.research evaluate outputs/my_motion/study.toml --output outputs/my_motion/reference.json --budget 3m
-PYTHONPATH=src python3 -m dada_solver.research report outputs/my_motion/reference.json --html outputs/my_motion/reference.html
-```
-
-Templates start with fixed values. Replace a parameter's `value` with
-`initial`, `lower`, `upper`, `kind = "continuous"`, and `transform = "linear"`
-to activate it, retaining its name and unit. A study with no active coordinates
-uses `evaluate`; a study with active coordinates can also `run` and `resume`.
-Thermal, hardware and kinematic coordinates use the same declaration and vector.
-
-Available families are harmonic, centered/offset slider-crank, four-bar, six-bar,
-periodic free spline, Fourier C2, structured C2 15p, ideal piecewise, shared-origin
-four-stage, independent four-stage laws, and the nine-coordinate `hybrid_compact` law. `--small` and `--large` accept mixed
-families. `init structured-c2-3952` creates the original structured historical
-candidate with its own thermal basis and warm state.
-
-The [kinematics and mechanism reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
-contains executable examples, exact names/units, artifact conventions, screening
-constraints, and the boundary between available thermo-mechanical search and
-future hierarchical synthesis. The [bounded demonstration](../outputs/research_kinematics_v2/comparison.html)
-compares recorded family evaluations; it is not a fair optimization ranking.
-
-Every reported constraint now exposes current value, limit, absolute margin,
-relative margin where meaningful, and satisfied/violated/unavailable state.
-Amber highlights satisfied limits within 5%; it is not a safety factor.
-Research provides evidence without automatic scientific recommendations.
-
-## Rescale and inspect an existing candidate
-
-`rescale SOURCE --candidate ID --mode capacity --factor 5 --output study.toml`
-creates a new portable V2/V3 study and basis centered on that candidate. It
-scales inventory, cylinder capacity, parallel tubes, CdA and extensive thermal
-inputs together, including basis-owned inputs. Active extensive bounds follow
-the same factor; intensive inputs and all constraints stay unchanged. It never
-integrates, overwrites an existing study, or modifies source histories.
-
-Reports now provide clickable column sorting and a **Sort by** control for
-metrics, active coordinates and constraint margins. Topology availability,
-reflux detection and worst signed flow are visible in the main table.
-`report SOURCE --candidate ID --plots volumes --html comparison.html` adds
-both cylinder volume curves without thermodynamic integration. Repeat
-`--candidate` to compare candidates; HTML remains standalone and offline.
-
-See [capacity scaling, exact rules and examples](DADA_ENGINE_RESEARCH_CAPACITY.md)
-for limitations, valve-event availability and the measured Human Cell ×5 checks.
-
-## Local refinement and explicit initial evaluations
-
-`run` starts a campaign from a study; `resume` continues its saved schedule.
-`rescale` changes machine capacity and its extensive inputs. `refine` instead
-creates a new portable study with unchanged physical inputs, objective,
-constraints, global parameter bounds and transforms. It does not run an
-optimization or import a source result as an already evaluated center.
-
-```sh
-research refine outputs/source/campaign --candidate abc123 --radius 0.20 --output outputs/local/study.toml
-research validate outputs/local/study.toml
-research run outputs/local/study.toml --budget 3m --max-candidates 32
-research resume outputs/local/campaign --budget 3m --max-candidates 32
-research report outputs/local/campaign
-```
-
-Use a full ID, a unique prefix, or `best`. Repeat `--candidate` for several
-basins in one source campaign. Several standalone `research_evaluation_v1`
-artifacts can supply centers implicitly:
-
-```sh
-research refine replay_A.json replay_B.json replay_C.json --radius 0.20 --output outputs/multi/study.toml
-```
-
-Sources must have the **same scientific study identity**; runtime/source-code
-fingerprints may differ. This deliberately strict compatibility check refuses
-mixing different physical definitions, bounds or policies. Candidate IDs and
-source study IDs are embedded provenance, never external dependencies. The
-new study includes a copied basis and any required mechanism artifacts.
-Existing files are never overwritten. Creation defaults to 512 new attempts
-per invocation; validation runs should explicitly use a small limit.
-
-The generated V2/V3 TOML contains the following search structure (the real
-center table contains every active coordinate in physical units):
+A fixed input:
 
 ```toml
-[search]
-type = "sobol"
-domain = "local_regions_v1"
-seed = 29092026
-scramble = true
-radius_fraction = 0.20
-allocation = "round_robin"
-evaluate_centers = true
-
-[[search.regions]]
-id = "basin_1"
-source_candidate_id = "<full SHA-256 candidate ID>"
-source_study_id = "<full SHA-256 study ID>"
-
-[search.regions.center]
-"volume.swept_ratio" = 1.5
-# All other active physical values follow.
+[[parameters]]
+name = "operation.frequency_hz"
+unit = "Hz"
+value = 2.8
 ```
 
-For global normalized coordinate `z`, the interval is
-`[max(0, z-radius), min(1, z+radius)]`. Radius is finite and in `(0, 1]`;
-0.20 means **±20% of the original global normalized width**, not ±20% of the
-physical value. Log transforms keep their existing meaning. Near a global
-bound the interval becomes asymmetric. Sobol points are mapped into this
-interval and decoded using the existing parameter implementation. Integer
-counts keep nearest-even decoding: rounding can move the encoded integer by
-up to half a bin beyond the continuous local interval, never beyond the global
-integer bounds. Exact center values are preserved without an encode/decode
-round trip. Branches and unordered categories remain fixed scientific inputs;
-they are not assigned a numeric distance or made active by refinement.
-
-Every distinct center is evaluated before any local Sobol point. The first
-center also becomes the standalone `evaluate` initial. Each region then has
-its own Sobol index, using the same seed/scramble pattern. Allocation is fixed
-round-robin in declared region order, with no adaptive basin selection. Equal
-centers are evaluated once and credited to their associated regions. Overlapping
-regions reuse exact candidate results, including identical decoded integer
-points. Region origin lives in `search_origin` outside the candidate payload.
-Identical physical points **within the same study/runtime definition** therefore
-share candidate IDs, regardless of origin. A new refinement study does have a
-new study/definition ID: its centers and search protocol participate in that
-identity, so IDs are not promised to match the source study.
-
-The existing journal/recovery/state protocol persists the in-flight candidate,
-center progress, next region and each region's Sobol index. An interrupted local
-evaluation remains pending, including a deadline-limited center, and is retried
-before the schedule advances on resume. Completed centers are never inserted
-again. Reports count evaluation attempts (including retries and cache hits);
-shared centers can contribute to more than one region's summary. `status` and
-the offline cockpit show per-region attempts, convergence, feasibility, best
-objective/COP and rejection evidence, with exact center values in HTML details.
-
-Global V2/V3 studies can explicitly opt into one initial evaluation:
+A `continuous` input:
 
 ```toml
-[search]
-type = "sobol"
-domain = "fixed_global_bounds"
-seed = 29092026
-scramble = true
-evaluate_initial = true
+[[parameters]]
+name = "operation.frequency_hz"
+unit = "Hz"
+kind = "continuous"
+initial = 2.8
+lower = 1.0
+upper = 4.0
+transform = "linear"
 ```
 
-Absent this field, historical behavior is unchanged: the campaign starts at
-Sobol index zero and does not insert the initial. Existing snapshots are never
-amended on resume. Adding the flag changes study identity and requires a new
-campaign. Current presets retain their historical setting; local studies always
-evaluate their centers. V1 remains unchanged.
+`ContinuousParameter` supports `linear` and `log`. Bounds must be finite, ordered and
+contain the initial value; logarithmic bounds must be positive. Normalized coordinates
+lie in `[0, 1]`.
 
-There is no adaptive allocation, local gradient optimizer or cross-study cache.
-Capacity scaling of an already local study is explicitly refused, because its
-embedded centers would also need a scientifically consistent transformation;
-rescale the global source first, then refine the resulting evaluation. No
-thermodynamic equation, correlation, validity threshold or constraint is changed
-by this search layer.
+`IntegerParameter` uses `kind = "integer"` and `encoding = "nearest_even_v1"` instead of
+`transform`. Bounds are inclusive, positive, ordered true integers, as is `initial`;
+floating counts and booleans are rejected. Decoding rounds to nearest even, with the
+supported range bounded by exact integer representability in the encoding.
 
-The [bounded Human Cell check](../outputs/human_cell_stage2c/README.md)
-reproduces the atmospheric center exactly (COP 1.1220429906193439) and records
-one additional feasible local Sobol point. Its 6-minute budget stopped after
-7 attempts; 32 was a cap, not an achieved sample count. The small observed
-feasibility rate is evidence of local sampling, not a convergence claim.
+`ChoiceParameter` uses `kind = "choice"`, a nonempty ordered `choices` list of distinct
+finite scalar values, and an `initial` belonging to that list. Choices occupy equal
+normalized bins. Their order is an encoding, not physical distance. Candidate
+construction canonicalizes a choice to its selected bin centre.
 
-## V1 fixed-pair validation study
+Family-defined fixed categories, including mechanism branches, must remain fixed.
+Declaring a number or a `choice` does not bypass a family's ownership rules.
 
-The following walkthrough remains valid for `sixbar-thermo5d` (schema 1).
-Use the linked kinematics reference to configure other families or different ownership.
+## Objectives and constraints
 
-## Historical V1 walkthrough
+The objective contains `type` and `unit`:
 
-Use the shell helper at the top of the [Research guide](DADA_ENGINE_RESEARCH.md).
-This walkthrough documents the historical V1 regression preset.
+| Type | Unit | Operating direction |
+|---|---|---|
+| `maximize_thermal_efficiency` | `1` | Motor |
+| `maximize_cooling_cop` | `1` | Refrigeration |
+| `maximize_motor_power` | `W` | Motor |
+| `maximize_cooling_power` | `W` | Refrigeration |
 
-## Configure the first experiment
+The objective must agree with the basis operating direction. Motor power and mechanical
+input are indicated quantities, not useful shaft power. Mechanical losses remain unknown
+unless a separate physical model supplies them.
 
-Edit the five `[[parameters]]` tables in `study.toml`:
+`PHYSICAL_CONSTRAINTS` in `research.margins` defines the accepted vocabulary:
 
-| TOML parameter | Meaning | Unit | Short name for `evaluate --set` |
-| --- | --- | --- | --- |
-| `volume.swept_ratio` | Small / large swept-volume ratio, at fixed total swept volume | 1 | `swept_ratio` |
-| `microtube.heat_in.tube_count` | H_i parallel tubes | integer count | `n_i` |
-| `microtube.heat_in.tube_length_m` | H_i tube length | m | `length_i_m` |
-| `microtube.heat_out.tube_count` | H_o parallel tubes | integer count | `n_o` |
-| `microtube.heat_out.tube_length_m` | H_o tube length | m | `length_o_m` |
+| Constraint `type` | Numeric field | Unit |
+|---|---|---|
+| `minimum_motor_power` | `required_power` | `W` |
+| `minimum_cooling_power` | `required_power` | `W` |
+| `maximum_mechanical_input_power` | `limit` | `W` |
+| `maximum_pressure` | `limit` | `Pa` |
+| `maximum_temperature` | `limit` | `K` |
+| `maximum_absolute_mass_flow` | `limit` | `kg/s` |
+| `maximum_mach_number` | `limit` | `1` |
+| `valid_thermodynamic_model` | None | `1` |
+| `periodic_convergence` | None | `1` |
 
-`lower` and `upper` bound the search; `initial` defines the default standalone
-evaluation and the unevaluated initial reference in campaign reports. Sobol
-does not insert that initial point. Counts must be integers, not `4029.0`.
-The integer decoder uses nearest-even rounding, with inclusive bounds and
-half-width endpoint bins; it is not a uniform categorical sampler.
+Each declaration includes `type` and `unit`; numeric fields must be positive and finite.
+Duplicates are rejected. Generic studies require an explicit `valid_thermodynamic_model`
+constraint. Historical power, pressure, temperature and absolute-flow guards are not
+universal defaults.
 
-The pair, gas inventory, source temperatures, frequency, total swept volume,
-clearance ratios, transport model and finite external-air flow are fixed in
-this protocol. Those assumptions are visible under `[fixed]` and `[policies]`.
-Changing them requires a new explicit basis/study rather than editing a label
-while retaining incompatible physics. The adapter changes exchanger hold-up,
-wall capacity, heat transfer and losses through geometry and scales valve CdA
-with tube count. Those derived quantities are not independent parameters.
+Model applicability/domain, study requirements, search bounds and numerical settings
+have distinct owners. A stricter study Mach limit does not redefine the exchanger's
+correlation domain. See the [limit-ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
 
-The V1 parity preset retains five explicit historical study constraints. Their thresholds are configurable;
-units and meanings are validated. After changing bounds, constraints or physical
-inputs, start a **new campaign directory**. `resume` reads its stored definition,
-not edits to the original TOML. Presentation names, input path relocation and
-per-invocation time/count budgets do not change the scientific study identity.
-
-## Evaluate a configuration without optimization
-
-```sh
-research evaluate outputs/my_research/study.toml --reference --output outputs/my_research/reference.json
-research evaluate outputs/my_research/study.toml --reference --set n_i=4100 --output outputs/my_research/trial.json
-research compare outputs/my_research/reference.json outputs/my_research/trial.json --html outputs/my_research/comparison.html
-```
-
-Open `comparison.html` in a browser. `--reference` uses the stored historical
-champion's five coordinates. Without it, evaluation starts from TOML initials.
-Repeated `--set` accepts either short names or full parameter names. Requested
-physical floats are preserved exactly; normalization is used for identity and
-distance, not to perturb the requested configuration through a decode roundtrip.
-An existing evaluation output is never overwritten.
-
-Standalone evaluations are immutable JSON artifacts, not Sobol journal entries.
-They retain the complete scientific definition, candidate identity, source
-lineage, physical values, statuses, constraints and numerical diagnostics.
-They can be inspected with `status`, `report` and `compare`. Their default time
-limit is 180 s; override with `--budget` if needed. A stopped standalone
-evaluation must be requested again. A deadline result is never labelled feasible.
-
-**Physical reproduction means the same configuration gives the same physical
-results within the declared numerical tolerance.** No agreement with the old
-optimization order, incumbent updates, shrinking radii or final best candidate
-is claimed or required. Historical candidate IDs remain lineage references;
-new campaign IDs also cover normalized coordinates, definition and runtime.
-
-## Run, stop and resume a small search
-
-```sh
-research run outputs/my_research/study.toml --budget 2m --max-candidates 1
-research resume outputs/my_research/campaign --budget 2m --max-candidates 1
-research status outputs/my_research/campaign
-research report outputs/my_research/campaign --html outputs/my_research/campaign.html
-```
-
-`run STUDY.toml` creates `campaign/` beside the study by default. Use
-`--directory PATH` to choose another location. A nonempty campaign directory is
-never overwritten. `resume STUDY.toml` resolves the sibling `campaign/` directory;
-`resume CAMPAIGN` still accepts an explicit directory. Resume reads the stored
-campaign snapshots, not edits made to the input TOML. A missing campaign is an
-explicit error, never an implicit new search.
-
-```sh
-research resume outputs/my_research/study.toml --budget 30m
-```
-
-`--max-candidates` is a cap for this invocation, not a lifetime total. Both the
-wall-clock budget and that cap apply. The initial evaluation estimate defaults
-to 30 s, so a smaller budget can legitimately start no candidate. Subsequent
-estimates use the existing robust integration-time history.
-
-Ctrl-C leaves the campaign's pending candidate recoverable. Budget interruption
-retains the last complete cycle as an initial guess where available; partial
-cycles cannot establish convergence. Use a larger budget to deliberately retry
-the latest deadline-interrupted evaluation:
-
-```sh
-research resume outputs/my_research/campaign --budget 5m --retry-incomplete
-```
-
-Stopping is cooperative at solver progress boundaries. A per-candidate deadline
-and a campaign deadline apply together. At most one explicitly recorded safe
-initial-state retry follows a microtube-domain error. Its gas state is rebuilt
-at fixed inventory and its wall temperatures retained; it does not change
-states during a cycle or weaken periodic convergence.
-
-The existing exact cache remains unchanged: normalized coordinates are part of
-candidate identity. Different Sobol coordinates that decode to the same tube
-count are not silently merged. Unexpected exceptions leave pending work for
-recovery rather than producing a feasible synthetic result.
-
-## Compare and inspect
-
-The offline HTML contains status and constraint filters, efficiency versus
-indicated-power and progress plots, and two candidate selectors. The comparison
-table gives values and B − A differences for parameters, metrics and constraint
-margins. It also shows achieved external/internal peak capacity-rate ratios and
-minimum signed port flows. Negative local flow remains visible. The recorded
-reflux flag uses a declared 1e-8 kg/s threshold; raw extrema are retained.
-
-Candidate detail exposes cycle count, normalized periodic error history, warm
-source, retry, backend and phase timings. The physical boundary is always
-external-stream heat input. Missing metrics display as unavailable. A failed
-solver or unavailable constraint cannot enter the feasible ranking. Saved
-configuration and source digests remain inspectable in the provenance section.
-
-To select two candidates explicitly, copy IDs from `status` and use full IDs
-or unambiguous prefixes:
-
-```sh
-research report outputs/my_research/campaign --candidate best --candidate CANDIDATE_ID --html outputs/my_research/selected.html
-```
-
-`report --plots none` and `compare` without plots only inspect stored results.
-Requested thermodynamic plots perform a separately announced one-cycle replay;
-see the [current report guide](DADA_ENGINE_RESEARCH.md#reports-curves-and-animations).
-Inspection reads completed orphan records and
-ignore a torn final append for inspection without repairing or writing to the
-journal; execution resume performs the existing recovery. Runtime/source changes
-are labelled while inspection stays available. Execution resume requires the
-recorded compatible runtime and code. If scientific study identities differ,
-cross-study values are labelled and no combined ranking is assigned.
-
-A graphical editor and automatic target-to-mechanism synthesis remain deferred.
-Local refinement, report curves and optional SVG animations are available.
-No renderer silently replays missing data.
-
-## Scope of this reference machine
-
-The validation preset is historical: **298.15/558.15 K**, 2 Hz, fixed gas mass
-0.0012027347024506055 kg, and a 25 W indicated-power floor. It is separate from
-the current 298.15/598.15 K demonstrator research envelope and approximately
-100 W useful-output goal. The raw base configuration still contains a 598.15 K
-reservoir seed; the actual injected wall source uses 558.15 K inlet air. Reports
-use the actual exchanger inputs. No metadata normalization changes the model.
-
-Mechanical losses remain unknown, useful output unavailable, and external-air
-aerodynamic losses/fan power excluded from the balance rather than physically
-zero. Finite air flow, thermal-film resistance, pause heat transfer, wall
-storage and signed local reflux remain active. The large-cylinder maximum
-enclosed volume, including clearance, is checked against the 0.066 m³ ceiling.
-Mechanism lengths are in crank-radius units; no physical stroke or manufacturing
-scale is inferred. This ceiling belongs to the V1 study; generic V2/V3 studies
-may omit or choose another ceiling. Isothermality diagnostics are no longer computed.
-
-## Acceptance and the next review
-
-See [current validation and evidence](validation.md) for present status and
-limitations, and the [historical Research ledger](history/RESEARCH_VALIDATION_LEDGER.md)
-for extraction and acceptance methods.
-
-The reference and two changed configurations are compared with the original
-evaluator under matching inputs, warm states and numerical settings. The
-wrapper tolerance uses the existing backend-equivalence scale (relative 2e-11,
-absolute 1e-11), not a physical-model accuracy claim. Pure persistence tests
-separately verify split-run order, exact cache and pending-candidate recovery.
-Real Sobol serialization is covered in addition to mocked runner tests.
-
-Run the checks from the source checkout:
-
-```sh
-PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONPATH=src python3 -m pytest -q
-```
-
-Before adding other campaigns, the user must try this first study and assess:
-
-1. Can the five variables and units be located and changed without Python?
-2. Do validation errors make an invalid bound or count easy to correct?
-3. Are exact evaluation, search, stopping and resume clearly distinguished?
-4. Does comparing two candidates explain the efficiency/power change and the
-   constraints or numerical failures that matter?
-
-Record that feedback before broadening the module. Automated and agent-operated
-smoke checks are not a substitute for this real researcher usability review.
-
-## Filling at a reference pressure and maximum total gas volume
-
-V2/V3 retain `charge = "explicit_inventory"` unchanged. To derive inventory from
-each candidate's final geometry instead, remove every `charge.total_mass_kg`
-parameter declaration and use:
-
-```toml
-[policies]
-charge = "reference_pressure_at_maximum_total_volume_v1"
-# Keep the study's other policies unchanged.
-
-[charge_reference]
-pressure_pa = 100000.0
-temperature_k = 293.15
-volume_state = "maximum_total_gas_volume"
-
-[warm_start]
-initial_source = "uniform"
-```
-
-Pressure is absolute. This policy currently requires the calorically perfect
-working gas; it does not apply an ideal filling approximation to real-gas tables.
-It derives `m = p_ref * max_theta(V_total(theta)) / (R * T_ref)` after construction
-of the candidate kinematics and connection of both actual exchanger designs.
-Both cylinders use the **same angle**. The production model's four gas volumes
-already include its clearances, exchanger gas, headers and additional hold-up;
-configuration HX seeds are replaced, not added a second time.
-
-The basis inventory remains historical input metadata and is overwritten before
-integration. The uniform initial gas temperature is `T_ref`; at the solver's
-starting angle zero the filling pressure can differ from `p_ref`. The reference
-pressure applies at the maximum-volume position, not at every shaft position.
-Reservoir/external temperatures and all periodic-convergence criteria are unchanged.
-`source_exact` is rejected. Ordinary nearby candidate guesses are rescaled to the
-new inventory (gas mass and energy together), retaining specific internal energies
-and, for wall models, wall temperatures.
-
-The versioned numerical method uses 8192 equal angular intervals, declared
-kinematic breakpoints, bracketed roots of the total-volume derivative and local
-bounded refinement of sampled peaks. It is independent of `screening.samples`.
-All families share this method, including harmonic laws whose analytic maximum
-is used as a test oracle. It is a deterministic numerical search, not a proof of
-the global maximum for arbitrarily narrow/pathological motion features. Roots
-and local refinements use a 1e-13 rad absolute target; maxima within 2e-14 relative
-volume are tied by the lowest solver angle. The reported volume is evaluated at
-that reported angle. Flat total-volume laws choose angle zero. Changing this
-algorithm requires a deliberate policy/method version change.
-
-`derived.charge` records `policy`, `reference_pressure_pa`,
-`reference_temperature_k`, `reference_total_gas_volume_m3`, `reference_angle_rad`,
-`derived_total_mass_kg` and `reference_volume_method`. The angle is the solver
-angle after the existing operation-direction transform. The mass appears in
-`metrics.total_mass_kg` and the HTML inventory column even when subsequent
-integration fails; it is not evidence of a converged cycle. Earlier geometry
-rejections cannot have a computed reference volume.
-
-The policy and reference settings participate in scientific study/candidate
-identity. Existing explicit-inventory studies retain their scientific identity;
-normal source/runtime compatibility guards still apply. Capacity rescaling keeps
-the reference pressure/temperature and derives mass again from the scaled final
-geometry, rather than introducing an independent mass parameter.
-
-### Explicit design limits in new studies
-
-A stricter Mach requirement is optional and distinct from the selected
-exchanger's correlation domain:
-
-```toml
-# Example study requirement, not a generic model limit.
-[[constraints]]
-type = "maximum_mach_number"
-limit = 0.20
-unit = "1"
-```
-
-The screen only needs its numerical resolution. Declare an enclosed-volume
-ceiling only if the study requires one:
-
-```toml
-[screening]
-samples = 1440
-# Optional study requirement; values above 0.066 m^3 are allowed.
-# maximum_large_enclosed_volume_m3 = 0.100
-```
-
-New six-bar presets expose engineering defaults directly in the study, for
-example the following existing row can be edited or removed without regenerating
-the mechanism artifact (do not add a duplicate row):
+Mechanical requirements use separate side-scoped declarations:
 
 ```toml
 [[mechanical_constraints]]
@@ -577,26 +153,212 @@ limit = 0.30
 unit = "1"
 ```
 
-A bound on a searched coordinate belongs in that parameter's declaration;
-it does not automatically create a feasibility constraint.
+Metric availability, units and relations are family-specific; see the [kinematics
+reference](DADA_ENGINE_RESEARCH_KINEMATICS.md). Screening normally uses 1440 samples,
+with a minimum of 360. `maximum_large_enclosed_volume_m3` is an optional explicit
+screening ceiling. Sampled screens are not continuous proofs or manufacturing
+certification; some individual metrics have stronger analytic implementations.
 
-### Rejected trials versus final-cycle boundaries
+## Policies
 
-`diagnostics.first_microtube_failure` preserves the first rejected trial even
-when a safe uniform retry later succeeds. The Constraints / boundary tables
-use final-cycle evidence for recovered results; the earlier snapshot is shown
-separately under **Rejected trial history**, with retry use and final status.
-It also remains intact in detailed JSON diagnostics. An earlier trial is not
-a measurement of the final periodic cycle or necessarily the last failed retry.
-For a final `invalid_exchanger` rejection, the first snapshot remains rejection
-evidence when its criterion matches the recorded final cause (legacy records
-without a reason retain their rejection evidence). Other final outcomes or a
-different final cause do not inherit that earlier violation. This distinction
-changes presentation only, not validity, solver behavior or stored records.
+Schema 2 base policies are explicit declarations:
 
-### Categorical valve placements
+| Key | Supported convention |
+|---|---|
+| `volume_partition` | `total_swept_and_clearance_ratios` |
+| `mechanical_losses` | `unknown` |
+| `useful_power` | `unavailable` |
+| `local_reflux` | `retain_signed_flows` |
+| `external_air_aerodynamic_losses` | `excluded_from_balance` |
+| `fan_consumption` | `excluded_from_balance` |
 
-V2/V3 studies can mix continuous, integer and categorical coordinates:
+`charge` accepts `explicit_inventory` or
+`reference_pressure_at_maximum_total_volume_v1`. `outlet_valve_cda` accepts
+`source_cda_times_count_ratio_v1`, `fixed_source_cda` or `geometry_conduit_area_v1`.
+These select existing derivation conventions; the [microtube
+reference](MICROTUBE_GAS_MODEL.md) owns their geometry rules and compatibility
+requirements.
+
+Schema 3 replaces the two external-air/fan keys with:
+
+| Key | Convention |
+|---|---|
+| `external_loop_hydraulics` | `unmodelled` |
+| `external_pump_fan_consumption` | `excluded_from_balance` |
+
+An external fluid label does not provide a pump or hydraulic model. Excluded losses are
+not asserted to be physically zero. `POLICIES` and `POLICIES_V3` in `research.schema_v2`
+define the supported base policy sets.
+
+## Warm starts and domain retry
+
+Schema 2/3 `warm_start.initial_source` accepts `uniform` or `source_exact`.
+`source_exact` requires a stored compatible source state and its original fixed
+inventory. It is incompatible with geometry-derived reference-pressure charge. A warm
+state is an initial guess, not proof of periodic convergence.
+
+`numerical.domain_error_retry` accepts `none` or
+`once_safe_uniform_state_with_source_wall_temperatures`. A safe retry changes
+initialization, not the physical model or validity limits. Earlier rejected trial
+evidence must remain distinct from final periodic-cycle constraint evidence;
+presentation belongs in the [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md).
+
+## Scientific identity
+
+### `study_id`
+
+This is the hash of canonical scientific study content. For schema 2/3 it includes basis
+content, fixed/active ownership, parameter bounds/transforms/ encodings, kinematic and
+mechanism scientific content, policies, objective, constraints, mechanical constraints,
+screening, search definition, numerical settings and warm-start policy. Reference-charge
+settings are included too.
+
+It excludes `study.name`, the machine source path, mechanism artifact path locations and
+`[execution]`. Other retained study metadata, including purpose and parent lineage when
+present, remain in the canonical content. Basis hashes are verified; moving a portable
+study with unchanged contents does not redefine the science. Re-serializing a basis can
+change its recorded hash, so portability means preserving verified contents, not
+arbitrary reformatting.
+
+Changing the search definition changes study identity, even when the underlying
+thermodynamic machine is unchanged.
+
+### `definition_id`
+
+The executable definition adds current runtime identity to the scientific study.
+`runtime_identity()` includes the production Python-source digest and Python, NumPy and
+SciPy versions. Backend identity is also recorded. Schema 3 adds fluid/kernel execution
+identity where applicable.
+
+A source/runtime change can make execution resume incompatible even when the scientific
+study is unchanged. Documentation-only edits do not alter the production source digest.
+
+### `candidate_id`
+
+The canonical candidate payload includes `definition_id`, normalized active coordinates,
+physical active values, selected families and numerical settings. Fixed inputs are
+represented through the definition. Choice coordinates are canonicalized. Exact
+configured/centre values are retained by physical-point construction rather than
+replaced by a floating round trip.
+
+Local-region origin is provenance outside the candidate payload. Two regions can
+therefore produce the same candidate ID within a definition. This does not create a
+cache across different studies/definitions. Historical IDs must not be reused as current
+cache identities. Cache equality is exact payload equality, not approximate geometric or
+numerical similarity.
+
+## Validation and exact evaluation
+
+`research validate STUDY` parses declarations, verifies hashes, constructs production
+geometry/machine objects and performs preflight checks. It does not integrate
+thermodynamics and does not establish cycle feasibility.
+
+`research evaluate STUDY --output RESULT` evaluates one exact configured point, using
+active `initial` values unless overridden with `--set NAME=VALUE`. Overrides must
+address declared active coordinates within their domains. It does not run a search and
+never overwrites an existing result.
+
+For schema 1 only, `--reference` selects the legacy regression point. Schema 2/3 uses
+configured fixed/initial values and rejects `--reference`.
+
+## Global Sobol search
+
+```toml
+[search]
+type = "sobol"
+domain = "fixed_global_bounds"
+seed = 29092026
+scramble = true
+```
+
+Optional `evaluate_initial = true` schedules the exact initial physical point first. If
+absent or false, global search starts at Sobol index zero without inserting that point.
+An unevaluated initial value is not an incumbent. This option participates in study
+identity; old studies without it retain their scheduling behaviour.
+
+## Local refinement and explicit initial evaluations
+
+`research refine SOURCE --candidate ID --radius 0.20 --output outputs/local/study.toml`
+accepts schema-2/3 sources with an active parameter space. Multiple sources must have
+the same `study_id`. Campaign sources require selectors; standalone single-evaluation
+artifacts may supply their sole record implicitly.
+
+Refinement creates a new portable study, copying the basis and required mechanism
+artifacts without changing thermodynamic physics or global bounds. It never overwrites
+destination files and does not import source evaluations as already completed results.
+The new search definition makes this a new study.
+
+The local search fields are `domain = "local_regions_v1"`, `radius_fraction` in `(0,
+1]`, `allocation = "round_robin"` and `evaluate_centers = true`. Each region embeds
+`id`, `source_candidate_id`, `source_study_id` and `center`. Its centre contains exactly
+the active parameters in physical units; source IDs are provenance, not external file
+dependencies.
+
+For a globally normalized centre coordinate `z` and radius `r`, the local interval is
+`[max(0, z-r), min(1, z+r)]`. Thus `r = 0.20` means ±20% of the global normalized search
+width, not ±20% of the physical value. Log transforms retain their normal
+interpretation; clipping near a global bound creates asymmetry.
+
+Exact distinct centres are scheduled before any Sobol draw. Duplicate centres are
+evaluated once and credited to all associated regions. Each region then has its own
+Sobol index, with deterministic round-robin allocation and the same seed/scramble
+policy. Normal integer and choice encodings remain in force; scheduled physical points
+are canonically re-encoded. Region provenance is recorded separately as `search_origin`.
+
+Resume preserves centres, region ordering, indices and pending work. There is no
+adaptive basin selection, local gradient optimizer or cross-study cache.
+
+## Capacity rescale
+
+`research rescale` accepts schema-2/3 stored candidates and creates a new portable
+study/basis, with parent/provenance and preserved constraints. It never integrates,
+changes source histories or silently relaxes constraints. Local-region sources are
+rejected: rescale the global source first, then refine. Detailed extensive/intensive
+rules belong in [capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md).
+
+## Filling at a reference pressure and maximum total gas volume
+
+The production policy is `reference_pressure_at_maximum_total_volume_v1`:
+
+```toml
+[policies]
+charge = "reference_pressure_at_maximum_total_volume_v1"
+
+[charge_reference]
+pressure_pa = 100000.0
+temperature_k = 293.15
+volume_state = "maximum_total_gas_volume"
+
+[warm_start]
+initial_source = "uniform"
+```
+
+Under this policy `charge.total_mass_kg` must not be declared. Pressure is absolute;
+pressure and temperature must be positive and finite. The current implementation
+requires `CaloricallyPerfectGas`; it does not silently apply an ideal filling
+approximation to a real-gas table.
+
+Both cylinders are evaluated at the same solver angle. The final connected production
+volumes include actual exchanger hold-up without summing independent piston maxima or
+adding exchanger volumes twice. Inventory is `m = p Vmax / (R T)`. `source_exact` is
+rejected; ordinary compatible warm guesses may be inventory-rescaled. Reference settings
+participate in scientific identity.
+
+The method identifier is
+`periodic_total_volume_grid8192_breakpoints_derivative_roots_local_refinement_v1`. It
+uses 8192 periodic intervals, declared kinematic breakpoints, derivative-root bracketing
+and local refinement of sampled peaks. Near-equal maxima use a deterministic first-angle
+tie rule; the recorded volume belongs to that angle. This is a deterministic numerical
+maximum search, not an analytic global proof for arbitrary pathological motion laws. It
+is independent of `screening.samples`.
+
+`derived.charge` records policy, reference pressure/temperature, total gas volume,
+reference angle, derived mass and method. The normal total-mass observable reflects that
+derived inventory.
+
+## Categorical parameters
+
+For a supported machine coordinate:
 
 ```toml
 [[parameters]]
@@ -607,55 +369,99 @@ initial = "downstream"
 choices = ["downstream", "upstream"]
 ```
 
-Use `valve.heat_out.placement` independently for the other exchanger. Omitted
-placements retain the machine basis values; fixed declarations use `value`.
-These parameters select existing valve configurations without changing their physics.
-The global Sobol search can explore DD, UD, DU and UU in one campaign.
+Bins are equal-width in declared order; encoding returns the selected bin centre.
+Categorical Sobol draws canonicalize to that category. Local radius operates on these
+bins, not on a physical category distance: a binary centre with radius 0.20 stays in its
+own bin; a sufficiently large radius can reach another bin. Reports exclude categories
+from numerical bound-pressure interpretation. Mechanism assembly branches remain fixed
+unless their family interface explicitly supports another ownership contract.
 
-Choices occupy equal bins in their declared order. Encoding uses bin centers
-(0.25 and 0.75 for two choices); 1 decodes to the last choice. Candidate identity
-canonicalizes choice coordinates to those centers, so repeated draws of the
-same categorical value do not create different identities. Existing numerical
-coordinates and historical study identities are unchanged.
+## Run, resume and persistence
 
-`refine` embeds categorical center values like other physical coordinates.
-Its normalized radius acts on the declared bins, not a physical distance between
-categories: radius 0.20 retains each binary center's choice; a larger radius can
-cross a bin boundary. Multiple regions can retain different valve topologies.
-Reports display the selected strings and exclude categories from numerical
-bound-pressure diagnostics.
+`run` requires at least one active coordinate, creates a campaign directory and refuses
+a nonempty destination. The default directory is `campaign` beside the study TOML;
+`--directory` overrides it. `resume` accepts a campaign directory or a TOML path whose
+sibling `campaign` is selected. A missing campaign never silently starts a new search.
 
-### Compressed journals and bounded HTML reports
+Research snapshots `definition.json`, `study.toml`, `basis.json` and `study.json`, plus
+required mechanism artifacts. Edits to the original external TOML do not mutate that
+stored campaign definition.
 
-New campaigns write `history.jsonl.gz`: one independent gzip member per completed
-record, containing its complete canonical JSON and newline. This is a standard
-concatenated gzip stream (`gzip -dc history.jsonl.gz` reads the JSONL). No metric,
-float precision, diagnostic, candidate identity or search origin is discarded.
-Independent members allow durable append without rewriting earlier results.
-Compression is lossless, level 6, with a deterministic zero gzip timestamp.
+New campaigns use `history.jsonl.gz`, `recovery.json` and `state.json`. The compressed
+journal is lossless and append-only: one complete canonical JSON record per independent
+gzip member, with deterministic gzip timestamp. `recovery.json` is a temporary durable
+completion slot, not a second history.
 
-The existing recovery sequence is unchanged: atomic `recovery.json`, journal
-append and fsync, durable `state.json`, then recovery acknowledgment. Resume
-preserves/truncates only an incomplete last member and recovers the completed
-result from the recovery slot. CRC corruption is an error, never silently ignored.
-Inspection reads a snapshot without repairing files. Existing plain
-`history.jsonl` campaigns remain readable and append in their original format;
-legacy `candidates/*.json` recovery remains supported. No automatic migration or
-rewriting occurs. Two journal formats in one directory are rejected as ambiguous.
-Normal runtime/source compatibility checks still govern execution resume.
+Legacy `history.jsonl` and `candidates/*.json` remain readable/recoverable. An existing
+plain journal continues in plain format; simultaneous plain and compressed journals are
+rejected as ambiguous. No automatic history migration or deletion of legacy result files
+occurs.
 
-HTML reports retain detailed records only for the best **distinct feasible**
-candidates, using the existing objective ranking, up to `ceil(attempts/10)`:
-410 detailed candidates for 4096 journal attempts. Fewer feasible candidates means
-fewer details; none means an empty candidate table. Default plot targets and explicitly requested candidates remain visible even
-when they exceed this detail cap. Cross-study comparisons with incompatible
-objectives retain feasible candidates in selection order, without a combined
-ranking. JSON inspection and journals retain every complete record.
+After evaluation, completion is written atomically to recovery and synchronized, then
+appended/synchronized to the journal; state is published durably before recovery is
+removed. See the [cockpit contract](DADA_ENGINE_RESEARCH_COCKPIT.md) for crash-order
+details and presentation.
 
-Funnel, rejection counts, bounds evidence, basin summaries and progression still
-cover the full report population. Lightweight progress records cover every attempt;
-per-basin best results remain summaries rather than extra full candidate records.
-The page states its retention policy and remains standalone, uncompressed and
-offline. The top two retained candidates are selected for comparison when available.
-Failure details omitted from HTML can be inspected with `research report
-CAMPAIGN --plots none --json`. HTML filtering does not make omitted candidates available.
+## Cache, recovery and compatibility
+
+Exact candidate identity drives cache reuse, with cache hits persisted as attempts. It
+is not approximate physical-value deduplication. Pending candidates are saved before
+evaluation, allowing interruption or power-loss recovery. `--retry-incomplete`
+explicitly retries unresolved deadline-limited work; scheduled searches also preserve
+interrupted pending work for continuation.
+
+An incomplete final journal tail is recoverable under the journal contract. Non-final
+corruption is an error; compressed CRC/decode corruption and invalid JSON in a complete
+gzip member are also errors, not silently skipped records.
+
+Execution resume reconstructs the definition from stored snapshots and requires the
+recorded `definition_id`. Source/runtime incompatibility prevents execution resume.
+Offline inspection can remain available when execution is incompatible; inspection does
+not authorize continuing under a silently changed definition.
+
+## Inspection and reporting boundary
+
+`status`, `report` and `compare` inspect stored campaigns/evaluations without changing
+scientific identity. Requested derived curves may be reconstructed using current
+production code; thermodynamic curves can require an explicit report replay. Runtime
+mismatch remains visible. Cross-study reports do not invent a combined ranking for
+incompatible studies.
+
+Command use belongs in the [guide](DADA_ENGINE_RESEARCH.md); report controls and
+evidence presentation belong in the [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md).
+
+## Legacy compatibility
+
+Schema 1 remains the loadable `fixed_pair_thermo5d` protocol. `init sixbar-thermo5d`
+creates its regression input, and `evaluate --reference` is schema-1-only. Old campaigns
+remain inspectable; execution resume still requires strict runtime/source matching.
+
+`init structured-c2-3952` is a named historical schema-2 regression seed/preset. Neither
+legacy preset defines generic defaults for new studies. `refine` and `rescale` require
+schema 2 or 3.
+
+Historical extraction details belong in the [validation
+ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration
+matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and [implementation
+plan](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
+
+## Related references
+
+| Subject | Canonical documentation |
+|---|---|
+| Everyday commands | [Research guide](DADA_ENGINE_RESEARCH.md) |
+| Study schema, identity, policies, search and compatibility | This file |
+| Kinematic families, mechanisms and mechanical metrics | [Kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) |
+| Reports, persistence UX and evidence presentation | [Cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md) |
+| Capacity transformation | [Capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md) |
+| Microtube physics | [Microtube model](MICROTUBE_GAS_MODEL.md) |
+| External streams | [External-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md) |
+| Working fluids | [Fluid models](WORKING_FLUID_MODELS.md) |
+| Current validation status | [Validation](validation.md) |
+| Historical Research extraction evidence | [Historical ledger](history/RESEARCH_VALIDATION_LEDGER.md) |
+| Limit ownership history | [Ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) |
+
+For retained geometry and synthesis methodology, use the [primary
+catalogue](PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar
+catalogue](SIX_BAR_MECHANISM_FAMILIES.md) and [synthesis
+method](MECHANISM_SYNTHESIS_SEARCH.md).

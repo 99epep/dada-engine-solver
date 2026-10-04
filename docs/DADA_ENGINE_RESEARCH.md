@@ -145,8 +145,8 @@ See [kinematics, mechanisms and ownership](DADA_ENGINE_RESEARCH_KINEMATICS.md),
 [external streams](EXTERNAL_STREAM_THERMAL_MODEL.md),
 [microtube models, circular collectors and triangular pitch](MICROTUBE_GAS_MODEL.md), and
 [working-fluid models](WORKING_FLUID_MODELS.md).
-The [reference](DADA_ENGINE_RESEARCH_REFERENCE.md) details atmospheric filling,
-explicit constraints, valve choices, compatibility and historical presets.
+The [reference](DADA_ENGINE_RESEARCH_REFERENCE.md) details schema, scientific
+identity, policies, parameter types, search scheduling, persistence and compatibility.
 
 ## Refine locally or change capacity
 
@@ -188,7 +188,7 @@ changed definition.
 
 ## Further reading and future mechanism synthesis
 
-- [Reference and historical details](DADA_ENGINE_RESEARCH_REFERENCE.md)
+- [Research technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md)
 - [Validation and measured limitations](validation.md)
 - [Cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md)
 - [Limit ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md)
