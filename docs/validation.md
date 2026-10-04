@@ -36,19 +36,26 @@ constraint evidence.
 
 ## Current check record
 
-The full suite immediately before this documentation-only consolidation ran on
-2026-10-03: **1044 passed, 2 failed, no warnings** (358.04 s). Both failures had
-already been reproduced before the circular-collector change:
+The complete suite after Bennett/Shah entry and continuous-transition integration
+on 2026-10-04 reports **1190 passed, 2 failed, no warnings** (503.98 s).
+The focused exchanger/Research/backend check reports **218 passed**.
+The two failing test names already failed before this physical revision:
 
 - `test_external_stream_v3.py::test_pre_v3_source_trajectory_and_neutral_roundtrip`:
-  the pre-V3 frozen RHS differs (largest absolute discrepancy 0.52822965).
+  the pre-V3 frozen RHS uses historical physics; current maximum absolute
+  discrepancy is 1.09678032.
 - `test_hybrid_compact_kinematics.py::test_historical_champion_thermodynamic_parity`:
-  current evaluation converges in 3 cycles versus 7 in the historical fixture.
+  current evaluation converges in 12 cycles versus seven in the old fixture
+  (the pre-entry revision already differed, at three cycles).
 
-Do not describe this as a completely green suite. The transport model has changed
-since historical fixtures were generated; versioned reference review is required
-rather than weakening tolerances or rewriting saved outputs automatically.
-This record is dated evidence, not a promise about subsequent checkouts.
+Do not describe this as a completely green suite. Historical fixtures remain
+unchanged. Four explicit current-physics thermal regression cases are versioned
+separately in `tests/data/developing_entry_thermal_reference.json`; tolerances
+are unchanged. Bennett has 50 independent HeatLib/Octave reference points;
+Shah has Eq.192, Darcy-asymptote, axial-additivity and reverse-flow checks.
+Continuity/monotonicity and compiled pointwise tests cover the revised
+2300–4000 bridge. Bounded DD13 replay evidence is under
+`outputs/research_microtube_developing_entry/continuous_transition_v1/`.
 
 ## Physical limits of the evidence
 

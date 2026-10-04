@@ -44,7 +44,10 @@ fastmath and calls no Python property library for a supported state. Unsupported
 families/states use explicit authoritative Python fallback. Valid no-slip
 microtube states use the compiled laminar, transition and turbulent closures.
 The existing transition endpoint interpolation is shared with Python; a bracketed
-flow solve runs inside Numba. No regime is relabelled or silently rejected to
+flow solve runs inside Numba. Bennett heat transfer and cumulative Shah
+entrance loss also run in the shared compiled primitives; laminar flow now
+needs a scalar root solve instead of only the former analytic quadratic.
+No regime is relabelled or silently rejected to
 keep a benchmark fast. Both valve placements are supported
 by the prepared source/destination and one-way flags. The ideal and tabulated
 validation backends are separate dispatch paths.
@@ -175,3 +178,14 @@ Fallbacks fell from 168/384 to zero. Python-only took 83.01 ms. RHS parity passe
 existing trajectory tolerance. These local timings are not universal campaign
 speed claims. [Frozen inputs, results and reproduction command](../outputs/research_compiled_transition/README.md)
 use `tools/benchmark_microtube_transition_backend.py`, without starting a search.
+
+
+The 2026-10-04 developing-entry review found that retaining the old transition
+endpoint beside the new laminar entrance loss caused numerical switching.
+The authorized revision matches the complete laminar endpoints to the turbulent
+endpoints over 2300–4000, without relaxing integration tolerances. Both branches
+and the interpolation execute inside Numba. Bounded DD13 evidence, including
+superseded diagnostic attempts and final converged replays, is kept under
+`outputs/research_microtube_developing_entry/`; final results use its
+`continuous_transition_v1/` subdirectory. Historical timings above are not a
+benchmark of this changed physical model.

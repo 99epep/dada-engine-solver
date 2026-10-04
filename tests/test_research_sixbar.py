@@ -31,9 +31,9 @@ def test_stored_reference_physical_metrics(definition):
         pytest.skip('Stored reference uses Numba; the independent legacy parity checks still exercise the available backend.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,values(definition)))
     json.dumps(result, allow_nan=False)
-    # Historical stored metrics retain the former transport law. This reference
-    # uses the same machine with the explicitly changed dilute transport v2.
-    case=json.loads((ROOT/'tests/data/transport_v2_thermal_reference.json').read_text())['cases']['six_bar']
+    # Historical stored metrics retain the former laws. This separate reference
+    # uses the same machine with Bennett/Shah laminar entry physics.
+    case=json.loads((ROOT/'tests/data/developing_entry_thermal_reference.json').read_text())['cases']['six_bar']
     reference=dict(case['metrics'],cycles_completed=case['cycles'])
     assert result['status']=='feasible'
     # Same-backend wrapper parity: the existing RHS equivalence tolerance is

@@ -226,7 +226,7 @@ class CompiledWallRHS:
                 raise TypeError('Transport species does not match thermodynamic gas.')
             links.append((b.inner_diameter_m,b.tube_length_m,b.tube_count,b.tube_flow_area_m2,
                 link.core_loss_multiplier,link.header_loss_coefficient,link.valve_cda_m2 or 0.,
-                g.maximum_mach,g.maximum_relative_pressure_drop,float(g.thermal_entry),tr.minimum_temperature,tr.maximum_temperature,numeric.SPECIES.index(tr.species)))
+                g.maximum_mach,g.maximum_relative_pressure_drop,float(g.thermal_entry),tr.minimum_temperature,tr.maximum_temperature,numeric.SPECIES.index(tr.species),link.axial_half))
         walls=[]
         for wall in (wrapper.heat_in,wrapper.heat_out):
             if type(wall) not in (AirWallExchanger, ExternalStreamWallExchanger) or type(wall.gas_film) is not MicrotubeGasFilm:

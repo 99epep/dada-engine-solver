@@ -103,12 +103,24 @@ Lemmon/Jacobsen, He dilute Arp/Hands-Arp; CoolProp is an offline oracle only.
 Property availability is not phase or nonideality validity. No condensation,
 two-phase working gas or validated cryogenic real-gas cycle is claimed.
 
-Microtube heat transfer retains Hausen below Re 2300, an explicit endpoint
-interpolation for 2300–4000 and Gnielinski in its turbulent domain. Transition
-usage and its lower confidence are reported. Do not reject solely for entering
-that modeled interval, nor weaken Mach, relative pressure drop, entry,
-Knudsen/slip or transport guards. Pulsating use remains quasi-steady; no empirical
-pulse multiplier or automatic metal accommodation is assumed.
+Microtube laminar heat transfer uses Bennett (2020a), average constant-wall-
+temperature combined entry, with the full physical tube length. Shah & London
+(1978), Eq.192 p.98, supplies only the cumulative entrance excess over the
+existing compressible Poiseuille term. The two physical half-segments take
+successive differences of that excess, mirrored on reversal, never a new
+entrance at the gas-storage node. The excess alone uses arithmetic mean
+pressure density at upstream temperature; header losses remain separate.
+Exact equations and domains: [microtube ledger](MICROTUBE_GAS_MODEL.md#combined-laminar-entry-2026-10-04).
+
+Supported laminar hydrodynamic development is informational, not a rejection.
+The user subsequently authorized a continuous transition over all of
+Re=2300–4000: Bennett Nu and the complete Shah-corrected segment friction
+at 2300 are linearly joined to the existing turbulent endpoints at 4000.
+There is no overlap of validated Reynolds domains; this engineering bridge
+retains explicit transition uncertainty and the previous entry guards.
+It is not a validated developing-transition correlation. Do not weaken Mach, relative
+pressure drop, Knudsen/slip or transport guards. Pulsating use remains
+quasi-steady; no empirical pulse multiplier or axial transient field is added.
 
 ## Limits: four different owners
 

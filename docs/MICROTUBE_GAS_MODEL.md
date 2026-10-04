@@ -149,8 +149,9 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   `delta_p_header=K*m_dot^2/(4*rho*A^2)` per half link;
   `delta_p_valve=m_dot^2/(2*rho*CdA^2)` on the outlet. These are the existing
   project component assumptions, not Graur measurements. The compressible
-  orifice cap remains. Axial acceleration, hydrodynamic entrance pressure
-  losses, roughness and nonisothermal axial fields are unresolved.
+  orifice cap remains. Continuum laminar entrance pressure losses now use the
+  cumulative Shah correction below. Axial acceleration, roughness and
+  nonisothermal axial fields remain unresolved.
 
 ### GAS-KNUDSEN-HS and GAS-SLIP-SECOND-ORDER
 
@@ -181,25 +182,25 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   and temperature jump remain unavailable; merely supplying thermal accommodation
   does not silently enable a thermal correction.
 
-### GAS-NU-HAUSEN
+### GAS-NU-BENNETT-COMBINED-ENTRY
 
-- Equation: `Nu_bar=3.66+0.0668*Gz/(1+0.04*Gz^(2/3))`,
-  `Gz=Re*Pr*D/L`; `h=Nu_bar*k(T)/D`.
-- Meaning: mean thermally developing laminar coefficient for a circular tube
-  with constant wall temperature and a developed velocity profile.
-- Source: Hausen approximation to the Graetz problem; equation reproduced in
-  [Rastan et al. research manuscript](https://repository.up.ac.za/bitstream/2263/80636/1/Rastan_Heat_2020.pdf),
-  Eq.18 (not its modified heat-flux Eq.19). The constant 3.66 is the
-  fully developed asymptote, not a universal microtube value.
-- Fluid/ranges: conventional single-phase continuum; Re < 2300; code guard
-  0.5 <= Pr <= 2000; low Ma/relative pressure drop as above, Kn < 0.001,
-  properties in 200–1000 K scope. These code guards do not assert experimental
-  validation across that full parameter box.
-- Type: steady analytical-solution approximation, applied quasi-steadily.
-  Implementation: `gas_correlations.laminar_entry_nusselt`, `gas_film.MicrotubeGasFilm`.
-- Limits: `L<0.05*Re*Pr*D` is diagnosed, not rejected solely for thermal entry.
-  Hydrodynamic entry (`L<0.05*Re*D`) remains an explicit unsupported-domain flag.
-  No axial gas/metal field, thermal-jump correction or pulsed h multiplier.
+Production continuum laminar heat transfer uses Bennett (2020a), average
+constant-wall-temperature circular-tube closure, throughout the supported
+laminar range. The exact equations, source oracle and applicability are in
+[Combined laminar entry](#combined-laminar-entry-2026-10-04) below. Thermal
+conductance always uses the **full physical tube length**. The storage node
+at the tube midpoint is not a fresh entrance.
+
+`hydrodynamic_developing` means `L < 0.0565 Re D`; it is informational in the
+supported laminar regime. `thermal_developing` retains `L < 0.05 Re Pr D`.
+Neither condition alone invalidates a supported laminar state.
+
+Hausen remains a public reference function and the **historical** transition
+endpoint (replaced by Bennett in the continuous revision below):
+`Nu_bar=3.66+0.0668*Gz/(1+0.04*Gz^(2/3))`, `Gz=Re Pr D/L`.
+It assumes a developed velocity profile and constant wall temperature.
+It is no longer the production laminar closure. No thermal-jump correction,
+axial transient field or empirical pulse multiplier is introduced.
 
 ### GAS-TURBULENT-HAALAND-GNIELINSKI
 
@@ -224,15 +225,16 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   input, not the DADA lumped-wall boundary. No quantitative Yang enhancement
   was implemented from the abstract. Rough-tube extensions remain unavailable.
 
-### GAS-TRANSITION-ENDPOINT-INTERPOLATION (2026-09-29)
+### GAS-TRANSITION-ENDPOINT-INTERPOLATION (revised 2026-10-04)
 
 The user-authorized transition closure removes the unavailable-correlation gap,
 not the laminar Reynolds limit. For `2300 <= Re < 4000`, use
 `w=(Re-2300)/1700` and
-`Nu=(1-w)*Nu_Hausen(2300,Pr,D/L)+w*Nu_Gnielinski(4000,Pr)`.
+`Nu=(1-w)*Nu_Bennett(2300,Pr,D/L)+w*Nu_Gnielinski(4000,Pr)`.
 When thermal entry is explicitly disabled, the laminar endpoint remains 3.66.
-Outside this interval the existing Hausen and smooth Gnielinski laws are unchanged.
-`correlation_id=gnielinski_transition_interpolation` identifies the bridge.
+Below this interval Bennett now replaces Hausen; above it smooth Gnielinski is unchanged.
+The original transition entry guards are retained.
+`correlation_id=bennett_gnielinski_transition_interpolation` identifies the revised bridge.
 
 New primary source: V. Gnielinski, *On heat transfer in tubes*, International
 Journal of Heat and Mass Transfer **63** (2013), 134–140,
@@ -243,19 +245,34 @@ endpoint equations; this is not an implementation of every endpoint correction
 in that paper. The earlier local 1976 reference alone did not document this
 transition construction.
 
-Hydraulics promotes the existing linear Darcy bridge to an explicit engineering
-closure: `f=(1-w)*(64/2300)+w*f_Haaland(4000)`. Pressure-squared Poiseuille is
-algebraically identical to Darcy with `64/Re` at the same mean density, so
-pressure drop and solved flow join continuously. If explicitly configured,
-the existing laminar slip factor divides the low endpoint; slip and thermal
-validity guards still apply. This friction interpolation is a project modelling
-assumption anchored to the existing closures, not a new measured microtube law.
-It is continuous and monotone but need not have continuous endpoint slopes.
-No Churchill replacement or change to turbulent friction is introduced.
+The hydraulic engineering bridge includes the **complete axial segment**
+laminar endpoint. For segment `[x1,x2]` with `ell=x2-x1` and core multiplier M:
+
+```
+Delta_K_2300 = K_entry(x2/(D*2300)) - K_entry(x1/(D*2300))
+f_low = 64/2300 + Delta_K_2300 * D/(M*ell)
+f_transition = (1-w)*f_low + w*f_Haaland(4000)
+Delta_p_segment = M * f_transition * ell/D * mdot^2/(2*rho_mean*A_flow^2)
+```
+
+Header/legacy-valve terms are added separately. Including M in the denominator
+of the entrance part keeps that correction independent of the core multiplier,
+just as in the laminar closure. The segment excesses still telescope, including
+inside transition. The no-slip production path matches both endpoint pressure
+losses continuously. The separately retained legacy slip bridge is not evidence
+for developing slip flow; thermal slip still rejects such states.
+
+This is an explicit engineering interpolation, not a measured developing-
+transition correlation. The full 2300–4000 interval is used. The supported
+laminar and turbulent ranges have **no overlap**; Bennett and Shah are evaluated
+only at the laminar endpoint, never extrapolated through transition. Continuity
+is C0; endpoint derivatives need not match. No unsupported C1/experimental
+smoothness claim or empirical pulse correction is made.
 
 Both thermal endpoints must be available: the transition retains the laminar
 endpoint's developed-velocity requirement `L/D >= 0.05*2300` and the turbulent
-endpoint's `L/D >= 10`, plus the existing Pr guard. Mach, relative pressure drop,
+endpoint's `L/D >= 10`. Both thermal endpoints require `0.5 <= Pr <= 500`
+(the intersection with Bennett's supported Pr range). Mach, relative pressure drop,
 Knudsen/slip and transport-temperature limits are unchanged. Transition is not
 an excuse to accept a pressure drop above the configured limit.
 
@@ -601,3 +618,103 @@ header volumes and finite-CdA hydraulic behavior. Selecting the circular model
 changes geometry and valve physics, hence scientific identity; use a new study/
 campaign. Exact reconstruction of historical inputs is still possible, subject
 to the existing runtime compatibility checks.
+
+## Combined laminar entry (2026-10-04)
+
+Scientific inputs authorized for this revision: Bennett (2020a), DOI
+[10.1115/1.4047834](https://doi.org/10.1115/1.4047834), average constant-wall-temperature
+branch; [author HeatLib](https://sites.me.ucsb.edu/~bennett/heatlib/conv/index.html),
+`LamPipeEntryNuT`, `LamEntryNuL`, `GrtzNuL`, `LevNuL`, `mLevNuL`, `InvGz`.
+The official [EES PipeFlow_Laminar documentation](https://fchartsoftware.com/ees/heat_transfer_library/internal_flow/hs1024.htm)
+identifies Bennett (2020a) and Shah & London Eq.192 p.98 explicitly. No fitted DADA coefficients or runtime external library are used.
+
+Exact scalar transcription for a circular tube (Darcy fully developed fRe=64):
+
+```
+Z = L / (D Re Pr)
+A = 0.40377
+O = (3.66 - 6.54) / 4.35
+n = (3.66 + 41.0) / 13.3
+g = 1.10 * (1 + 0.140 / Pr^(2/3))^(3/4)
+Nu_Lev = A * (64/Z)^(1/3)
+Nu_G = (Nu_Lev^n + (3.66-O)^n)^(1/n) + O
+fLRe = 5.312 / (g * sqrt(Pr*Z))
+Nu_mLev = A * (fLRe/Z)^(1/3)
+F = (Nu_Lev/Nu_mLev) * (1 + 0.565*(Pr*Z)^(1/3))
+Nu_mean = Nu_G / tanh(F)
+```
+
+Use physical full-tube L, not a half-link length. Re<2300, Z>1e-6;
+production retains the pre-existing lower Pr guard 0.5 and caps Pr at 500
+(the reported benchmark range). EES states about 2.5% accuracy above Pr=0.5;
+the extended Pr>0.1 range with errors up to about 10% is not enabled here.
+At Re=0 the existing stagnant Nu=3.66 screening remains. Explicit
+`thermal_entry=false` retains the existing 3.66 screening option.
+
+Shah & London (1978), *Laminar Flow Forced Convection in Ducts*, Eq.192 p.98:
+
+```
+xplus = x / (D Re)
+f_F Re = 3.44/sqrt(xplus)
+       + (1.25/(4*xplus) + 16 - 3.44/sqrt(xplus))
+         / (1 + 0.00021/xplus^2)
+f_D = 4*f_F
+K_entry(xplus) = 4*xplus*(f_F Re) - 64*xplus
+              = [1.25*xplus^2
+                 + 0.00021*(13.76*sqrt(xplus)-64*xplus)]
+                / (xplus^2+0.00021)
+K_entry(0) = 0
+Delta_p_entry[x1,x2] = [K_entry(x2/(D Re))-K_entry(x1/(D Re))]
+                      * mdot^2/(2*rho_mean*A_flow^2)
+```
+
+The second K expression avoids subtracting large fully developed contributions.
+The correction alone uses local mean ideal density `(p1+p2)/(2 R T_upstream)`;
+the pressure-squared Poiseuille term is preserved. Header K and diode/legacy
+valve terms remain separate. Header K describes manifold/contraction/exit losses,
+not the velocity-profile development already counted by Shah. No new multiplier
+is introduced. This incompressible correction is used only within the existing
+low-Mach/low-relative-pressure-drop continuum assumptions, not as a new
+compressible entrance solution.
+
+
+Each `TubeHalfLink` stores its physical axial half (0 or 1). Forward flow uses
+`[0,L/2]` and `[L/2,L]`; reverse flow mirrors these coordinates. Their excess
+coefficients telescope to the full-tube coefficient for the same flow and
+properties. The lumped storage model can have different instantaneous port
+flows and temperatures: each segment uses its own local values, without
+introducing another entrance or an axial transient state. Shah tends to
+`f_D=64/Re` as `xplus` grows; the finite cumulative excess tends to 1.25 and
+becomes negligible relative to the length-proportional Poiseuille loss.
+The existing slip-flow hydraulic branch is retained; developing slip flow
+is not validated by this no-slip correction and thermal slip remains rejected.
+
+### Regime boundaries and remaining limitations
+
+The user explicitly authorized revising transition to join the new laminar
+endpoints continuously, after a bounded DD13 replay exposed switching between
+the discontinuous old/new branches. The boundaries remain 2300 and 4000, and
+all existing entry/Mach/pressure-drop/slip/transport guards remain. There is no
+superposition of validated Reynolds domains: the bridge is marked as transition
+uncertainty, with its time/heat fractions retained in reports.
+
+Transition retains `L < 0.05*2300*D` rejection and transition/turbulent flows
+retain `L < 10*D` rejection. Bennett is never extrapolated into either regime.
+Laminar Pr outside 0.5–500 or inverse Graetz <=1e-6 is unsupported. Mach,
+pressure-drop, Knudsen/slip, transport and compressibility guards are unchanged.
+The equations are steady constant-property correlations evaluated with local
+variable gas properties. They do **not** resolve pulse history or transient
+axial velocity/temperature fields. Collector losses remain an independent,
+uncalibrated coefficient; any future calibration must exclude the profile
+entrance loss now explicitly represented.
+
+Both backends call the same pure numerical primitives. The compiled path
+supports the new laminar closure directly; fallback remains reserved for
+unsupported states. Exchanger metadata records thermal/hydraulic correlation
+IDs, density convention, axial segmentation and header-loss scope.
+
+`tests/data/bennett_heatlib_reference.json` contains 50 independent Octave
+outputs from the author's HeatLib at Pr=0.5, 0.7, 1, 10 and 500 over short/long
+tubes, with source hashes and the documented unused-branch syntax repair.
+HeatLib is not a runtime dependency. Shah tests evaluate Eq.192 independently,
+check the Darcy limit, segment additivity and forward/reverse ownership.

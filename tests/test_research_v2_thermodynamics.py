@@ -32,8 +32,8 @@ def test_historical_thermal_machine_and_initial_state(tmp_path,family):
         pytest.skip('Stored historical case uses the optional Numba backend.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
     if family in ('fourier_c2','free_spline'):
-        # Keep historical artifacts; separately freeze the new property-law replay.
-        updated=json.loads((Path(__file__).parent/'data/transport_v2_thermal_reference.json').read_text())['cases'][family]
+        # Keep historical artifacts; separately freeze the Bennett/Shah replay.
+        updated=json.loads((Path(__file__).parent/'data/developing_entry_thermal_reference.json').read_text())['cases'][family]
         case=dict(case,metrics=updated['metrics'],cycles=updated['cycles'])
     expected_status='feasible' if case['metrics']['indicated_power_w']>=25 else 'converged_infeasible'
     assert result['status']==expected_status,result['reason']
@@ -59,7 +59,7 @@ def test_packaged_historical_reference(tmp_path,family):
     definition=compile_study(load_study(path))
     if not definition.numerical_settings['wall_backend'].get('numba_available'):pytest.skip('Stored reference uses Numba.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
-    case=json.loads((Path(__file__).parent/'data/transport_v2_thermal_reference.json').read_text())['cases'][family]
+    case=json.loads((Path(__file__).parent/'data/developing_entry_thermal_reference.json').read_text())['cases'][family]
     ref=dict(case['metrics'],cycles_completed=case['cycles'])
     assert result['status']=='feasible',result['reason']
     for key in METRICS:assert result['metrics'][key]==pytest.approx(ref[key],rel=2e-11,abs=1e-11)

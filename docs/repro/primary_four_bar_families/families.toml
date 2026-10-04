@@ -1,0 +1,56 @@
+schema_version = 1
+length_unit = "crank_radius"
+angle_unit = "rad"
+description = "Retained primary four-bar seed geometries for the 260 K structured-C2 reference motor motion."
+
+[[family]]
+id = "compact_balanced"
+description = "Compact primary with ground, coupler and rocker lengths of comparable magnitude."
+branch = -1
+ground = 1.5686370636769897
+coupler = 1.6141885536834497
+rocker = 1.4134772459870386
+e_along = 1.903278626297082
+e_normal = 0.415508230471785
+phase_rad = -0.3667126717471028
+expected_minimum_transmission_sine = 0.3467196579165793
+expected_be_over_bc = 1.2068639075775633
+
+[[family]]
+id = "compact_offset"
+description = "Compact primary with a larger coupler/rocker pair and a strongly offset coupler point."
+branch = -1
+ground = 1.7485068597340436
+coupler = 2.2329552025656665
+rocker = 1.9475848503782416
+e_along = 2.292976503079503
+e_normal = 1.392213452139754
+phase_rad = -0.31473275596968764
+expected_minimum_transmission_sine = 0.3272199783392132
+expected_be_over_bc = 1.2013389362373357
+
+[[family]]
+id = "long_ground"
+description = "Primary with a long fixed ground and a coupler point extending well beyond the nominal coupler length."
+branch = 1
+ground = 3.6328286001741485
+coupler = 2.4470776578988787
+rocker = 2.2606296831214947
+e_along = 4.570318452550781
+e_normal = 1.3393726868150564
+phase_rad = 3.1130278120640913
+expected_minimum_transmission_sine = 0.3499066810806444
+expected_be_over_bc = 1.946212850645989
+
+[[family]]
+id = "long_coupler_short_rocker"
+description = "Primary with long ground and coupler links, a short rocker, and a strongly offset coupler point."
+branch = 1
+ground = 5.387159727434038
+coupler = 5.295485951378163
+rocker = 1.2125073838008247
+e_along = 4.146499489519417
+e_normal = -3.9329553646483455
+phase_rad = -3.056968382358626
+expected_minimum_transmission_sine = 0.4774428938536702
+expected_be_over_bc = 1.0792271953045134

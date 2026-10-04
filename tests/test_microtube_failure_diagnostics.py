@@ -131,7 +131,9 @@ def test_real_first_cycle_callback_rejections(backend, diameter, criterion):
     assert snapshot['inner_diameter_m'] == diameter
     assert snapshot['tube_length_m'] == .8
     if diameter == .00077:
-        assert 2300 < snapshot['reynolds'] < 4000
+        # Bennett/Shah plus the continuous bridge moves the first rejection
+        # to Re ~2178.68; the pressure-drop guard is unchanged.
+        assert 2150 < snapshot['reynolds'] < 2200
         assert snapshot['relative_pressure_drop'] > .2
     for key in ('mass_flow_kg_s', 'reynolds', 'prandtl', 'mach', 'knudsen',
                 'pressure_ratio', 'relative_pressure_drop', 'p1_pa', 'p2_pa', 'temperature_k'):

@@ -86,6 +86,43 @@ def hausen(graetz):
     return 3.66+.0668*graetz/(1+.04*graetz**(2/3))
 
 
+def bennett_mean_nusselt(reynolds, prandtl, diameter_over_length):
+    """Author HeatLib constant-T average branch; domain checked by the caller.
+
+    Bennett (2020a), DOI 10.1115/1.4047834. Equations and applicability are
+    transcribed in docs/MICROTUBE_GAS_MODEL.md; no external runtime dependency.
+    """
+    if reynolds == 0: return 3.66
+    z=1/(reynolds*prandtl*diameter_over_length)
+    offset=(3.66-6.54)/4.35
+    exponent=(3.66+41.0)/13.3
+    leveque=.40377*(64/z)**(1/3)
+    graetz=(leveque**exponent+(3.66-offset)**exponent)**(1/exponent)+offset
+    g=1.10*(1+.140/prandtl**(2/3))**(3/4)
+    modified=.40377*(5.312/(g*math.sqrt(prandtl*z)*z))**(1/3)
+    return graetz/math.tanh(leveque/modified*(1+.565*(prandtl*z)**(1/3)))
+
+
+def shah_entry_excess(xplus):
+    """Cumulative excess over Poiseuille; Shah-London Eq.192 (Fanning)."""
+    if xplus == 0: return 0.
+    # Algebraically equivalent form, stable at both zero and large xplus.
+    if xplus <= 1:
+        return (1.25*xplus*xplus+.00021*(13.76*math.sqrt(xplus)-64*xplus))/(xplus*xplus+.00021)
+    return (1.25+.00021*(13.76/xplus**1.5-64/xplus))/(1+.00021/xplus**2)
+
+
+def shah_apparent_darcy(reynolds, xplus):
+    return (64+shah_entry_excess(xplus)/xplus)/reynolds
+
+
+def shah_segment_pressure_loss(flow, diameter, area, mu, rho, x1, x2):
+    if flow == 0: return 0.
+    reynolds=abs(flow)*diameter/(area*mu)
+    excess=shah_entry_excess(x2/(diameter*reynolds))-shah_entry_excess(x1/(diameter*reynolds))
+    return excess*flow*flow/(2*rho*area*area)
+
+
 def turbulent_darcy(reynolds, relative_roughness=0.):
     """Existing Haaland closure, shared with the public exchanger model."""
     return (-1.8*math.log10((relative_roughness/3.7)**1.11+6.9/reynolds))**-2
@@ -97,42 +134,58 @@ def turbulent_nusselt(reynolds, prandtl, friction):
     return numerator/denominator
 
 
-def transition_friction(reynolds, slip_factor=1.):
-    low=64/(2300*slip_factor)
+def transition_friction(reynolds, slip_factor=1., entrance_darcy=0.):
+    low=64/(2300*slip_factor)+entrance_darcy
     return low+(turbulent_darcy(4000)-low)*(reynolds-2300)/1700
 
 
 def transition_heat(reynolds, prandtl, diameter_over_length, thermal_entry=True):
-    low=hausen(2300*prandtl*diameter_over_length) if thermal_entry else 3.66
+    low=bennett_mean_nusselt(2300,prandtl,diameter_over_length) if thermal_entry else 3.66
     high=turbulent_nusselt(4000,prandtl,turbulent_darcy(4000))
     return low+(high-low)*(reynolds-2300)/1700
 
 
-def tube_network_residual(flow, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp):
+def tube_network_residual(flow, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp, axial_start=0., entrance=False):
     reynolds=flow*diameter/(area*mu)
     if reynolds<2300:
         loss=linear*flow
+        if entrance:
+            loss+=shah_segment_pressure_loss(flow,diameter,area,mu,rho,axial_start,axial_start+length)
     else:
-        friction=transition_friction(reynolds) if reynolds<4000 else turbulent_darcy(reynolds)
+        if reynolds<4000:
+            entrance_darcy=0.
+            if entrance:
+                # Match the cumulative laminar segment excess at the endpoint;
+                # never evaluate Shah at a transitional Reynolds number.
+                excess=shah_entry_excess((axial_start+length)/(diameter*2300))-shah_entry_excess(axial_start/(diameter*2300))
+                entrance_darcy=excess*diameter/(multiplier*length)
+            friction=transition_friction(reynolds,1.,entrance_darcy)
+        else:
+            friction=turbulent_darcy(reynolds)
         loss=multiplier*friction*length/diameter*flow*flow/(2*rho*area*area)
     return loss+quadratic*flow*flow-dp
 
 
-def continuum_network_flow(upper, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp):
+def continuum_network_flow(upper, diameter, area, mu, linear, quadratic, multiplier, length, rho, dp, axial_start=0., entrance=False):
     """Bracketed solve of the existing no-slip network, no domain extrapolation.
 
     The public reference uses scipy.brentq with xtol=1e-15 and its default
     rtol=4*epsilon. Bisection resolves the bracket to floating-point precision; failure
-    returns to Python for the authoritative domain exception. Laminar flow
-    never enters this iterative path.
+    returns to Python for the authoritative domain exception. Transition matches
+    the complete laminar segment endpoint, including entrance excess.
     """
     high=min(upper,5e6*area*mu/diameter)
-    if tube_network_residual(high,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp)<0:
-        return False,0.
     low=0.
+    # The analytic upper bound can undershoot by one rounding unit at
+    # nearly equal pressures, where the entrance correction is negligible.
+    upper_residual=tube_network_residual(high,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp,axial_start,entrance)
+    if abs(upper_residual)<=8*2.220446049250313e-16*dp:
+        return True,high
+    if tube_network_residual(high,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp,axial_start,entrance)<0:
+        return False,0.
     for _ in range(100):
         middle=(low+high)/2
-        residual=tube_network_residual(middle,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp)
+        residual=tube_network_residual(middle,diameter,area,mu,linear,quadratic,multiplier,length,rho,dp,axial_start,entrance)
         if residual==0 or middle==low or middle==high:
             return True,middle
         if residual<0: low=middle
@@ -184,7 +237,9 @@ def domain_flags(re,pr,ma,kn,drop,length,d,max_ma,max_drop):
     if drop>max_drop: flags|=8
     if not .5<=pr<=2000: flags|=16
     kind=thermal_kind(re,pr)
-    if kind==0 and length<.05*re*d: flags|=32
+    if kind in (0,3) and pr>500: flags|=16
+    if kind==0 and re>0:
+        if length/(d*re*pr)<=1e-6: flags|=256
     # Transition interpolates endpoint closures; retain both entry guards.
     if kind==3 and length<.05*2300*d: flags|=32
     if kind in (1,3) and length<10*d: flags|=64
@@ -229,7 +284,7 @@ def laminar_diagnostics(flow,p1,p2,t,d,length,area,maximum_mach,maximum_drop,the
     rho,u,re,pr,speed,ma,gz,ratio,drop=flow_numbers(flow,p1,p2,t,d,length,area,r,mu,k,cp)
     kn=mean_free_path(mu,min(p1,p2),r,t)/d
     valid=domain_flags(re,pr,ma,kn,drop,length,d,maximum_mach,maximum_drop)==0 and thermal_kind(re,pr)==0
-    nu=hausen(gz) if thermal_entry else 3.66
+    nu=bennett_mean_nusselt(re,pr,d/length) if thermal_entry else 3.66
     return valid,nu
 
 
@@ -242,14 +297,14 @@ def continuum_diagnostics(flow,p1,p2,t,d,length,area,maximum_mach,maximum_drop,t
     if domain_flags(re,pr,ma,kn,drop,length,d,maximum_mach,maximum_drop)!=0:
         return False,0.
     kind=thermal_kind(re,pr)
-    if kind==0: nu=hausen(gz) if thermal_entry else 3.66
+    if kind==0: nu=bennett_mean_nusselt(re,pr,d/length) if thermal_entry else 3.66
     elif kind==3: nu=transition_heat(re,pr,d/length,thermal_entry)
     elif kind==1: nu=turbulent_nusselt(re,pr,turbulent_darcy(re))
     else: return False,0.
     return True,nu
 
 
-def directed_flow(pin,pout,t,p,r,gamma):
+def directed_flow(pin,pout,t,p,r,gamma,reverse=False):
     # p: diameter, length, count, area, multiplier, header K, valve CdA,
     # maximum Mach, maximum pressure drop, thermal-entry flag, Tmin, Tmax.
     if pout>=pin:
@@ -268,8 +323,10 @@ def directed_flow(pin,pout,t,p,r,gamma):
     quadratic=minor_loss_coefficient(header,rho,area,cda)
     dp=pin-pout
     flow=laminar_network_flow(dp,linear,quadratic)
-    if flow*d/(area*mu)>=2300:
-        ok,flow=continuum_network_flow(flow,d,area,mu,linear,quadratic,multiplier,length/2,rho,dp)
+    half=int(p[13]) if len(p)>13 else 0
+    if reverse: half=1-half
+    if flow>0:
+        ok,flow=continuum_network_flow(flow,d,area,mu,linear,quadratic,multiplier,length/2,rho,dp,half*length/2,True)
         if not ok: return False,0.
     # All domain failures (including report-only states) still use the public
     # Python path; no guard or authoritative rejection message is bypassed.
@@ -310,7 +367,7 @@ def wall_balance_kernel(values,volume_rates,gas,links,walls,sources,destinations
             flows[link]=0.
             continue
         if reverse: a,b=b,a
-        ok,flow=directed_flow(pressures[a],pressures[b],t[a],links[link],r,gamma)
+        ok,flow=directed_flow(pressures[a],pressures[b],t[a],links[link],r,gamma,reverse)
         if not ok: return False,result
         flows[link]=-flow if reverse else flow
         accumulate_transfer(mass,energy,a,b,flow,enthalpy(cp,t[a]) if enthalpies is None else enthalpies[a])

@@ -30,12 +30,15 @@ def test_compressible_poiseuille_forward_reverse_symmetry():
     assert compressible_poiseuille(2e5,2e5,*args)==0
 
 
-def test_legacy_mean_density_is_exact_pressure_squared_identity():
+def test_legacy_poiseuille_identity_and_separate_entrance_loss():
     tr=DiluteGasTransport();gas=CaloricallyPerfectGas(tr.gas_constant,1005,1005-tr.gas_constant)
     legacy=TubeHalfLink(BANK,tr.viscosity(350),1,0)
     modern=replace(legacy,gas_model=MicrotubeGasModel(tr))
     for p in (200001,200100,201000):
-        assert modern.directed_flow(p,2e5,350,gas).mass_flow_rate==pytest.approx(legacy.directed_flow(p,2e5,350,gas).mass_flow_rate,rel=1e-12)
+        old=legacy.directed_flow(p,2e5,350,gas).mass_flow_rate
+        exact=compressible_poiseuille(p,2e5,350,tr.viscosity(350),BANK.tube_length_m/2,BANK.inner_diameter_m,BANK.tube_count,tr.gas_constant)
+        assert old==pytest.approx(exact,rel=1e-12)
+        assert 0 < modern.directed_flow(p,2e5,350,gas).mass_flow_rate < old
 
 
 @pytest.mark.parametrize('kn,regime',[(0,'continuum'),(.0009,'continuum'),(.001,'slip_onset'),(.01,'slip'),(.1,'slip'),(.101,'beyond_continuum_model')])

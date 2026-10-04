@@ -94,10 +94,10 @@ def gnielinski(reynolds,prandtl):
 def transition_nusselt(reynolds, prandtl, diameter_over_length, thermal_entry=True):
     """Gnielinski (2013) interpolation principle using the production endpoints.
 
-    Hausen at 2300 and existing smooth Gnielinski at 4000; no new pulse factor.
+    Bennett at 2300 and existing smooth Gnielinski at 4000; no new pulse factor.
     DOI: 10.1016/j.ijheatmasstransfer.2013.04.015.
     """
-    if not 2300 <= reynolds <= 4000 or not .5 <= prandtl <= 2000:
+    if not 2300 <= reynolds <= 4000 or not .5 <= prandtl <= 500:
         raise MicrotubeDomainError('Transition interpolation outside declared Re/Pr domain.')
     graetz = 2300*prandtl*diameter_over_length
     if thermal_entry and (not math.isfinite(graetz) or graetz < 0):
@@ -148,7 +148,7 @@ class MicrotubeFlowDiagnostics:
 
     @property
     def transition_model_used(self):
-        return self.correlation_id == 'gnielinski_transition_interpolation'
+        return self.correlation_id == 'bennett_gnielinski_transition_interpolation'
 
 
 @dataclass(frozen=True)
@@ -199,22 +199,22 @@ class MicrotubeGasModel:
                                    self.maximum_mach,self.maximum_relative_pressure_drop)
         issue_names=('high_mach','thermal_slip_not_implemented','beyond_continuum_model',
             'large_relative_pressure_drop','prandtl_outside_domain','hydrodynamic_entry_unresolved',
-            'turbulent_entry_unresolved','reynolds_outside_correlation_domain')
+            'turbulent_entry_unresolved','reynolds_outside_correlation_domain','inverse_graetz_outside_domain')
         issues=[name for bit,name in enumerate(issue_names) if flags & (1<<bit)]
         if re<2300:
-            nu=laminar_entry_nusselt(gz) if self.thermal_entry else 3.66
-            correlation='hausen_constant_wall' if self.thermal_entry else 'fully_developed_3_66_screening'
+            nu=(numeric.bennett_mean_nusselt(re,pr,d/length) if self.thermal_entry else 3.66) if not (flags & (16|256)) else None
+            correlation='bennett_2020_combined_entry_constant_wall' if self.thermal_entry else 'fully_developed_3_66_screening'
             if re==0: correlation='stagnant_radial_screening'
-        elif 2300<=re<4000 and .5<=pr<=2000:
+        elif 2300<=re<4000 and .5<=pr<=500:
             nu=transition_nusselt(re,pr,d/length,self.thermal_entry)
-            correlation='gnielinski_transition_interpolation'
+            correlation='bennett_gnielinski_transition_interpolation'
         elif re>=4000 and re<=5e6 and .5<=pr<=2000:
             nu=gnielinski(re,pr);correlation='gnielinski_smooth'
         else:
             nu=None;correlation='unavailable_out_of_range'
         viscous=(d/2)**2*rho/mu;thermal=viscous*pr
         return MicrotubeFlowDiagnostics(re,pr,ma,kn,knm,gz,ratio,compressibility,
-            length<.05*re*pr*d,length<.05*re*d,knudsen_regime(kn),
+            length<.05*re*pr*d,length<.0565*re*d,knudsen_regime(kn),
             'negligible' if knm<.001 else 'second_order' if self.slip else 'unknown_accommodation',
             ma>self.maximum_mach or compressibility>self.maximum_relative_pressure_drop,
             correlation,nu,math.sqrt(2*math.pi*frequency*viscous),

@@ -55,8 +55,10 @@ class TubeHalfLink:
     header_loss_coefficient: float
     valve_cda_m2: float | None = None
     gas_model: MicrotubeGasModel | None = None
+    axial_half: int = 0
 
     def __post_init__(self):
+        if self.axial_half not in (0,1): raise ValueError('Axial half must be 0 (inlet) or 1 (outlet).')
         for value in (self.viscosity_pa_s, self.core_loss_multiplier):
             if not math.isfinite(value) or value <= 0:
                 raise ValueError('Viscosity and loss multiplier must be positive.')
@@ -67,7 +69,7 @@ class TubeHalfLink:
         area = self.bank.tube_flow_area_m2
         object.__setattr__(self, '_flow_cap', CompressibleOrifice(min(area, self.valve_cda_m2 or area)))
 
-    def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas):
+    def directed_flow(self, upstream_pressure, downstream_pressure, upstream_temperature, gas, *, reverse=False):
         from dada_solver.fluids import require_ideal_hydraulics
         gas = require_ideal_hydraulics(gas)
         if any(not math.isfinite(v) or v <= 0 for v in (upstream_pressure, downstream_pressure, upstream_temperature)):
@@ -75,7 +77,7 @@ class TubeHalfLink:
         if downstream_pressure >= upstream_pressure:
             return FlowResult(0, False)
         if self.gas_model is not None:
-            return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas)
+            return self._gas_flow(upstream_pressure, downstream_pressure, upstream_temperature, gas, reverse=reverse)
         rho = (upstream_pressure+downstream_pressure)/(2*gas.gas_constant*upstream_temperature)
         area = self.bank.tube_flow_area_m2
         linear = self.core_loss_multiplier*64*self.viscosity_pa_s*self.bank.tube_length_m/(rho*self.bank.tube_count*math.pi*self.bank.inner_diameter_m**4)
@@ -89,10 +91,14 @@ class TubeHalfLink:
             upstream_pressure, downstream_pressure, upstream_temperature, gas)
         return FlowResult(min(flow, cap.mass_flow_rate), flow >= cap.mass_flow_rate and cap.is_choked)
 
-    def _gas_flow(self, pin, pout, temperature, gas):
+    def _gas_flow(self, pin, pout, temperature, gas, *, reverse=False):
         """Isothermal pressure-squared Poiseuille; unchanged header/valve network.
 
-        Each link owns L/2 and half the total header K. The minor-loss terms
+        Each link owns its physical axial half and half the total header K.
+        Shah entrance excess uses the local mean density, once per tube, and
+        is not multiplied by the historical core-loss multiplier. Slip retains
+        its existing fully developed hydraulic closure (thermal slip unsupported).
+        The minor-loss terms
         remain mean-density closures, explicitly separate from tube friction.
         """
         from scipy.optimize import brentq
@@ -112,7 +118,13 @@ class TubeHalfLink:
         dp = pin-pout
         flow = numeric.laminar_network_flow(dp,linear,quadratic)
         re = flow*diameter/(area*mu)
-        if re >= 2300:
+        if factor == 1.:
+            half=1-self.axial_half if reverse else self.axial_half
+            ok,flow=numeric.continuum_network_flow(flow,diameter,area,mu,linear,quadratic,
+                self.core_loss_multiplier,length,rho,dp,half*length,True)
+            if not ok: raise MicrotubeDomainError('Required flow exceeds turbulent domain.')
+            re=flow*diameter/(area*mu)
+        elif re >= 2300:
             # Continuous explicit transition bridge; uncertainty is diagnosed.
             def residual(m):
                 reynolds = m*diameter/(area*mu)
@@ -136,7 +148,7 @@ class TubeHalfLink:
     def bidirectional_flow(self, first_pressure, second_pressure, first_temperature, second_temperature, gas):
         if first_pressure >= second_pressure:
             return self.directed_flow(first_pressure, second_pressure, first_temperature, gas)
-        result = self.directed_flow(second_pressure, first_pressure, second_temperature, gas)
+        result = self.directed_flow(second_pressure, first_pressure, second_temperature, gas, reverse=True)
         return FlowResult(-result.mass_flow_rate, result.is_choked)
 
 

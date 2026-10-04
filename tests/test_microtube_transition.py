@@ -31,12 +31,12 @@ def test_regimes_and_domain(re, regime):
     assert 'reynolds_outside_correlation_domain' not in d.issues
     MODEL.require(d)
     assert d.transition_model_used == (regime == 'transition')
-    if regime == 'transition': assert d.correlation_id == 'gnielinski_transition_interpolation'
+    if regime == 'transition': assert d.correlation_id == 'bennett_gnielinski_transition_interpolation'
 
 
 def test_thermal_endpoints():
     pr = .7
-    low = laminar_entry_nusselt(2300*pr*BANK.inner_diameter_m/BANK.tube_length_m)
+    low = numeric.bennett_mean_nusselt(2300,pr,BANK.inner_diameter_m/BANK.tube_length_m)
     assert transition_nusselt(2300,pr,BANK.inner_diameter_m/BANK.tube_length_m) == low
     assert transition_nusselt(4000,pr,BANK.inner_diameter_m/BANK.tube_length_m) == pytest.approx(gnielinski(4000,pr))
     for edge in (2300,4000):
@@ -50,7 +50,12 @@ def test_hydraulic_flow_and_friction_continuity(re):
     mu = MODEL.transport.viscosity(350)
     flow = re*BANK.tube_flow_area_m2*mu/BANK.inner_diameter_m
     f = 64/re if re<2300 else transition_darcy(re) if re<4000 else darcy_smooth(re)
-    # Invert the existing mean-density Darcy expression, without headers/valves.
+    # Include entrance loss and its continuous transition endpoint.
+    if re<2300:
+        f += numeric.shah_entry_excess(BANK.tube_length_m/(2*BANK.inner_diameter_m*re))*BANK.inner_diameter_m/(BANK.tube_length_m/2)
+    elif re<4000:
+        extra=numeric.shah_entry_excess(BANK.tube_length_m/(2*BANK.inner_diameter_m*2300))*BANK.inner_diameter_m/(BANK.tube_length_m/2)
+        f=numeric.transition_friction(re,1.,extra)
     pout = 1e6
     c = f*(BANK.tube_length_m/2)/BANK.inner_diameter_m * flow**2 * gas.gas_constant*350/BANK.tube_flow_area_m2**2
     pin = math.sqrt(pout*pout+c)

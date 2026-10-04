@@ -54,10 +54,10 @@ class ExternalStreamMicrotubeExchanger:
         capacity = dimensions['wall_material_volume_m3']*inputs.metal_density_kg_m3*inputs.metal_cp_j_kg_k+inputs.extra_wall_capacity_j_k
         film = MicrotubeGasFilm(bank, inputs.gas_model, metal_resistance/2) if inputs.gas_model else None
         thermal = ExternalStreamWallExchanger(1/(gas_resistance+metal_resistance/2), capacity, inputs.external_stream, film)
-        def passage(valve=None):
+        def passage(half,valve=None):
             if self.bank.circular_collectors: valve = None  # Ideal diode: direction is handled by the network.
             return TubeHalfLink(bank, inputs.gas_viscosity_pa_s, inputs.core_loss_multiplier,
-                inputs.header_loss_coefficient, valve, inputs.gas_model)
+                inputs.header_loss_coefficient, valve, inputs.gas_model, half)
         report = dict(dimensions, gas_film_resistance_k_w=gas_resistance,
             metal_resistance_k_w=metal_resistance, wall_capacity_j_k=capacity,
             external_stream=asdict(inputs.external_stream), external_loop_losses='excluded; no hydraulic or pump/fan model')
@@ -65,9 +65,18 @@ class ExternalStreamMicrotubeExchanger:
             report.update(valve_model='ideal_diode_no_hydraulic_loss', valve_cda_m2=self.outlet_valve_cda_m2,
                 header_loss_coefficient=inputs.header_loss_coefficient,
                 header_loss_model='lumped_coefficient_based_on_total_tube_velocity; independent_of_frustum_geometry')
+        if inputs.gas_model is not None:
+            report.update(laminar_thermal_correlation=('bennett_2020_combined_entry_constant_wall'
+                if inputs.gas_model.thermal_entry else 'fully_developed_3_66_screening'),
+                laminar_hydraulic_correlation='compressible_poiseuille_plus_shah_london_1978_eq192',
+                transition_thermal_correlation='bennett_gnielinski_transition_interpolation',
+                transition_hydraulic_correlation='linear_darcy_complete_segment_endpoints_2300_4000',
+                entrance_density='arithmetic_mean_pressure_at_upstream_temperature',
+                entrance_segmentation='physical_halves; mirrored_on_reverse; no_midpoint_restart',
+                header_loss_scope='manifold_contraction_exit; excludes_tube_profile_development')
         return ExchangerComponents(dimensions['working_gas_volume_m3'],
-            passage(self.outlet_valve_cda_m2 if self.valve_placement=='upstream' else None),
-            passage(self.outlet_valve_cda_m2 if self.valve_placement=='downstream' else None),
+            passage(0,self.outlet_valve_cda_m2 if self.valve_placement=='upstream' else None),
+            passage(1,self.outlet_valve_cda_m2 if self.valve_placement=='downstream' else None),
             wall_thermal=thermal, metadata=tuple(report.items()),
             validity_domain=('declared_external_conductance', 'finite_capacity_stream',
                 'variable_internal_transport' if film else 'constant_internal_properties',

@@ -32,6 +32,11 @@ def flow_case(re, species='air', cda_ratio=0., header=0.):
     t = 350.; area = bank.tube_flow_area_m2; d = bank.inner_diameter_m
     mu = tr.viscosity(t); flow = re*area*mu/d
     f = 64/re if re<2300 else numeric.transition_friction(re) if re<4000 else numeric.turbulent_darcy(re)
+    if re<2300:
+        f += numeric.shah_entry_excess(bank.tube_length_m/(2*d*re))*d/(bank.tube_length_m/2)
+    elif re<4000:
+        extra=numeric.shah_entry_excess(bank.tube_length_m/(2*d*2300))*d/(bank.tube_length_m/2)
+        f=numeric.transition_friction(re,1.,extra)
     cda = area*cda_ratio
     # Invert tube + header + optional legacy valve losses at mean ideal density.
     coefficient = f*(bank.tube_length_m/2)/d/(2*area**2) + header/(4*area**2)
