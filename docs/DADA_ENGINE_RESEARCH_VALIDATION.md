@@ -111,7 +111,7 @@ original matching source version. No saved campaign or identity was rewritten.
 ## V2 kinematics and mechanism validation
 
 The user authorized this extension after validating the first hands-on V1 tests.
-The [V2 reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) describes the implemented
+The [kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) describes the implemented
 schema, fixed/active ownership, families, artifacts, screening and deferred work.
 No large optimization, primary-family saturation or mechanism-fitting campaign
 was run. Thermodynamic physics and the existing campaign engine are retained.
@@ -234,7 +234,7 @@ engine with the reservoir model. At the V2 milestone, the air-wall microtube wra
 required motor operation. V3 removes that restriction through the separately
 validated external-stream model described below. The human-powered cell was not optimized. Automatic mechanism fitting,
 local polish, primary-family discovery and saturation remain deferred contracts;
-see the [architecture boundary](DADA_ENGINE_RESEARCH_KINEMATICS.md#established-synthesis-workflow-and-current-boundary).
+see the [architecture boundary](DADA_ENGINE_RESEARCH_KINEMATICS.md#11-synthesis-handoff).
 At the V2 milestone, the two older compact hybrid laws remained example-only.
 The nine-coordinate `HybridCompactKinematics` has since been extracted as
 `hybrid_compact`; the distinct 11p fitting law remains example-only. Further human review should focus on

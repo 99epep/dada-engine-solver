@@ -1,31 +1,67 @@
-# Research V2 — kinematics and mechanism reference
+# Research kinematics and mechanism reference
 
-Research can now select a family independently for each cylinder, declare fixed
-or active coordinates, and evaluate them through the existing campaign engine.
-Schema 2 adds construction and ownership; it does not replace the solver,
-optimizer, history, exact cache, warm starts or Sobol continuation.
-The [user guide](DADA_ENGINE_RESEARCH.md) introduces the commands.
+## 1. Purpose and scope
 
-## First configuration
+This reference describes the current kinematic/mechanism layer used by schema-2
+and schema-3 Research studies. Each study selects cylinder laws, declares their
+fixed and active coordinates, and builds a production `KinematicsModel` for the
+existing solver and campaign engine.
 
-From the checkout:
+The authoritative registry and ownership rules live in
+`dada_solver.research.families`: `FAMILIES`, `PHYSICAL_FAMILIES` and
+`parameter_specs(settings, side)`. Search protocols do not define new families.
+
+Thermal and hardware coordinates share the same fixed/active declaration and
+candidate vector. Their physical meaning belongs in the
+[configuration reference](DADA_ENGINE_RESEARCH_REFERENCE.md),
+[microtube model](MICROTUBE_GAS_MODEL.md),
+[external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md) and
+[limit-ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+
+## 2. Quick start
+
+From a source checkout:
 
 ```sh
-research() { PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m dada_solver.research "$@"; }
-research init kinematics --small slider_crank --large harmonic --output outputs/my_motion/study.toml
+research() {
+    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m dada_solver.research "$@"
+}
+
+research init kinematics \
+    --small slider_crank \
+    --large harmonic \
+    --output outputs/my_motion/study.toml
+
 research validate outputs/my_motion/study.toml
-research evaluate outputs/my_motion/study.toml --output outputs/my_motion/reference.json --budget 3m
-research report outputs/my_motion/reference.json --html outputs/my_motion/reference.html
+
+research evaluate \
+    outputs/my_motion/study.toml \
+    --output outputs/my_motion/reference.json \
+    --budget 3m
 ```
 
-Each template is entirely fixed initially. It is an executable reference, not an
-optimized family or a scientifically recommended machine. The `.basis.json`
-contains portable machine inputs; physical families also get a mechanism JSON
-per cylinder. Neither source `examples/` nor old `outputs/` are runtime inputs.
-A preset refuses to overwrite files. `validate` builds and screens geometry but
-does not integrate thermodynamics.
+These paths are user-created destinations, not dependencies on committed
+historical results. The generated template starts with fixed coordinates and
+portable machine inputs; physical families also receive mechanism artifacts.
+It is a starting configuration, not an optimized or recommended machine.
 
-To search a phase, replace its fixed table, rather than adding a duplicate:
+Use `evaluate` while all coordinates remain fixed. Replace selected `value`
+fields with bounded active declarations before `run`. `validate` constructs and
+screens geometry but does not integrate thermodynamics. Command and campaign
+usage belongs in the [Research guide](DADA_ENGINE_RESEARCH.md).
+
+## 3. Fixed and active coordinate ownership
+
+A fixed coordinate is declared as:
+
+```toml
+[[parameters]]
+name = "kinematics.small.phase_rad"
+unit = "rad"
+value = 4.345
+```
+
+To release it, replace that table with:
 
 ```toml
 [[parameters]]
@@ -38,453 +74,428 @@ upper = 4.40
 transform = "linear"
 ```
 
-The fixed equivalent is:
+Active continuous declarations require `kind`, `initial`, `lower`, `upper`,
+`unit` and `transform` (`linear` or `log`), in addition to `name`. Integer
+coordinates use `kind = "integer"` and `encoding = "nearest_even_v1"` instead
+of a continuous transform.
+
+Kinematic assembly branches, direction signs, orientation booleans,
+representation sizes and family selection remain fixed scientific categories.
+This restriction does not prohibit explicitly supported categorical parameters
+elsewhere in a machine study.
+
+All family coordinates must be supplied by declarations or a mechanism artifact.
+An active declaration removes its coordinate from the fixed set. Unknown,
+duplicate, wrong-family and wrongly typed declarations are rejected, including
+incorrect units. There is one active candidate vector in declaration order.
+Search bounds describe the explored region, not an intrinsic physical domain.
+
+## 4. Family registry
+
+`FAMILIES` currently contains exactly these eleven representations:
+
+| Family | Representation | Physical mechanism |
+|---|---|---|
+| `harmonic` | Cosine volume law | No |
+| `slider_crank` | Centered or offset finite-rod slider crank | Yes |
+| `four_bar` | Four-bar loop and finite output rod | Yes |
+| `six_bar` | Primary loop, secondary dyad and finite piston rod | Yes |
+| `free_spline` | Periodic cubic spline | No |
+| `fourier_c2` | Normalized Fourier motion | No |
+| `structured_c2_15p` | Structured C2 motion | No |
+| `ideal_piecewise` | Ideal piecewise-linear chronology | No |
+| `four_stage` | Four-stage piecewise-linear motion | No |
+| `independent_four_stage` | Independently timed piecewise-linear motion | No |
+| `hybrid_compact` | Compact hybrid motion with rounded and kinked branches | No |
+
+`PHYSICAL_FAMILIES` is exactly `slider_crank`, `four_bar`, `six_bar`.
+An abstract volume law does not establish linkage realizability.
+
+## 5. Family-specific conventions
+
+Coordinates below are local names, prefixed with `kinematics.small.` or
+`kinematics.large.` in parameter declarations unless shared-crank ownership is
+explicitly selected. Settings belong in `[kinematics.small]` or
+`[kinematics.large]` and remain fixed.
+
+### 5.1 `harmonic`
+
+The production cosine volume law owns `phase_rad` in radians. Research uses the
+production small-side phase convention independently for either cylinder.
+
+### 5.2 `slider_crank`
+
+The centered/offset finite crank slider uses the production positive-root closure.
+
+| Coordinate | Unit / type |
+|---|---|
+| `rod_over_crank` | `crank_radius`, positive |
+| `offset_over_crank` | `crank_radius` |
+| `phase_rad` | `rad` |
+| `volume_increases_with_coordinate` | Boolean, fixed; declaration unit `1` |
+
+The orientation boolean determines the volume direction; it is not an additional
+operation-direction transform. Closure is checked by the production mechanism.
+
+### 5.3 `four_bar`
+
+The production loop drives a finite output rod. The fixed setting
+`output = "rocker"` or `output = "coupler"` selects the output-point frame.
+
+| Continuous coordinates | Unit |
+|---|---|
+| `coupler`, `rocker`, `ground_x`, `ground_y` | `crank_radius` |
+| `output_along`, `output_normal`, `rod_length` | `crank_radius` |
+| `slider_origin_x`, `slider_origin_y` | `crank_radius` |
+| `axis_angle`, `phase_rad` | `rad` |
+
+`coupler`, `rocker` and `rod_length` must be positive. `loop_branch`,
+`slider_branch` and `crank_direction` are fixed integer signs (`-1` or `+1`).
+`volume_increases_with_coordinate` is a fixed boolean; all four categories use
+unit `1` in declarations.
+
+`envelope_frame_angle_rad` is optional screening-frame metadata. It defines the
+frame used for the envelope proxy, not a reconstructed shaft layout.
+
+### 5.4 `six_bar`
+
+The topology is:
+
+```text
+A-B-C-D primary loop
+E on BC
+E-F-G secondary dyad
+H on EF
+finite H-P piston rod
+P on slider axis
+```
+
+The production dataclass owns exactly 15 continuous coordinates, exposed as
+`SIXBAR_CONTINUOUS`. `PRIMARY_COORDINATES` contains the first six and
+`DOWNSTREAM_COORDINATES` the remaining nine.
+
+| Group | Coordinates | Unit |
+|---|---|---|
+| Primary | `primary_ground`, `primary_coupler`, `primary_rocker` | `crank_radius` |
+| Primary | `primary_e_along`, `primary_e_normal` | `crank_radius` |
+| Primary | `primary_phase` | `rad` |
+| Downstream | `second_pivot_x`, `second_pivot_y`, `link_ef`, `link_gf` | `crank_radius` |
+| Downstream | `h_along_over_ef`, `h_normal_over_ef` | `1` |
+| Downstream | `piston_rod`, `slider_axis_offset` | `crank_radius` |
+| Downstream | `slider_axis_angle` | `rad` |
+
+`primary_e_along` and `primary_e_normal` are lengths, not fractions of the
+coupler. The two H coordinates are dimensionless fractions of EF.
+`primary_branch` and `second_branch` are fixed integer signs with unit `1`.
+
+See the [primary seed catalogue](PRIMARY_FOUR_BAR_FAMILIES.md),
+[paired six-bar catalogue](SIX_BAR_MECHANISM_FAMILIES.md) and
+[synthesis method](MECHANISM_SYNTHESIS_SEARCH.md) for geometry and methodology.
+
+### 5.5 `free_spline`
+
+A periodic cubic spline requires integer `count = N >= 4` and
+`representation = "controls"` or `"shape_coordinates"`.
+
+- `controls`: `control_0` through `control_(N-1)` are fixed continuous values.
+- `shape_coordinates`: `shape_0` through `shape_(N-3)` provide `N-2`
+  nonredundant coordinates, each fixed or active.
+- Both representations own an independent `phase_rad` in radians.
+
+Control and shape coordinates use unit `1`. The shape chart removes affine
+control offset/amplitude, not phase. Spline extrema and derivative diagnostics
+use the production spline implementation.
+
+### 5.6 `fourier_c2`
+
+The setting `harmonics = H >= 1` is a fixed integer. The family owns
+`coefficient_0` through `coefficient_(2H-1)`, all with unit `1`.
+
+Coefficients alternate cosine then sine for successive harmonics: indices
+`2(k-1)` and `2(k-1)+1` multiply `cos(2πkt)` and `sin(2πkt)` respectively,
+for `k = 1 ... H`. The production convention is
+`t = (-theta / (2π)) mod 1`, followed by full-stroke normalization.
+No separate phase coordinate is owned; phase is represented by coefficients.
+The coefficient vector must describe nondegenerate motion.
+
+### 5.7 `structured_c2_15p`
+
+This structured C2 law owns 15 coordinates across the pair:
+
+| SMALL (8) | LARGE (7) |
+|---|---|
+| `small_max_deg` | `large_down_duration_deg` |
+| `small_down_duration_deg` | `large_max_curvature` |
+| `small_max_curvature` | `large_min_curvature` |
+| `small_min_curvature` | `large_down_bp_mid_q` |
+| `small_up_bp_mid_q` | `large_up_kink_u` |
+| `small_down_kink_u` | `large_up_kink_q` |
+| `small_down_kink_q` | `large_up_kink_width_rel` |
+| `small_down_kink_width_rel` | |
+
+Coordinates ending in `*_deg` use degrees; the others use unit `1`.
+Curvatures are normalized-position second derivatives with respect to normalized
+motion time, not physical acceleration. Each side owns only its listed inputs.
+
+### 5.8 `hybrid_compact`
+
+This compact hybrid law owns nine coordinates across the pair:
+
+| SMALL (5) | LARGE (4) |
+|---|---|
+| `small_max_deg` | `large_down_duration_deg` |
+| `small_down_duration_deg` | `large_down_rounding` |
+| `small_up_rounding` | `large_up_kink_u` |
+| `small_down_kink_u` | `large_up_kink_q` |
+| `small_down_kink_q` | |
+
+The `*_deg` coordinates use degrees; rounding and kink coordinates use unit `1`.
+Its name does not imply that every branch has an available second derivative:
+use the metric availability contract below.
+
+### 5.9 `ideal_piecewise`
+
+This abstract chronology law owns `small_lambda_target`, `large_lambda_target`
+and `adiabatic_sector_fraction`, all with unit `1`, on each selected side.
+It does not describe a physical mechanism. Piecewise-linear derivative jumps
+remain real jumps.
+
+### 5.10 `four_stage`
+
+Each side owns shared-origin stage timings and its own level coordinates:
+
+- SMALL: `t1`, `t2`, `t3`, `a_s`, `b_s`;
+- LARGE: `t1`, `t2`, `t3`, `a_l`, `b_l`.
+
+All use unit `1`; timings are normalized cycle fractions. In independent
+coupling these are separate declarations on each side, not hidden synchronization
+between cylinders. Piecewise-linear derivative jumps remain real jumps.
+
+### 5.11 `independent_four_stage`
+
+The independently timed piecewise-linear law owns:
+
+- SMALL: `t0_s`, `t1_s`, `t2_s`, `t3_s`, `a_s`, `b_s`;
+- LARGE: `t1_l`, `t2_l`, `t3_l`, `a_l`, `b_l`.
+
+All use unit `1`, with timings in normalized cycle fractions. Piecewise-linear
+derivative jumps remain real jumps; no acceleration smoothing is implied.
+
+## 6. Independent and shared-crank coupling
 
 ```toml
-[[parameters]]
-name = "kinematics.small.phase_rad"
-unit = "rad"
-value = 4.345
+[kinematics]
+coupling = "independent"
 ```
 
-Then run and resume two bounded phases:
+This is the normal generic mode and permits any valid SMALL/LARGE family
+combination. It does not impose mirror symmetry.
 
-```sh
-research run outputs/my_motion/study.toml --directory outputs/my_motion/run --budget 3m --max-candidates 1
-research resume outputs/my_motion/run --budget 3m --max-candidates 1
-research report outputs/my_motion/run --html outputs/my_motion/candidates.html
-research compare outputs/my_motion/reference.json outputs/my_motion/run --html outputs/my_motion/comparison.html
+`coupling = "shared_crank"` is the explicit common-shaft four-bar mode. Both
+assemblies must already use a common physical frame and the same physical crank
+radius if supplied. Research does not rotate arbitrary mechanisms into a common
+shaft layout.
+
+The per-side phase and direction coordinates are replaced by:
+
+- `kinematics.shared.phase_rad`: fixed or active continuous, unit `rad`;
+- `kinematics.shared.crank_direction`: fixed integer sign, unit `1`.
+
+A shared direction remains categorical even when the phase is active.
+
+## 7. Physical scale
+
+For `slider_crank`, `four_bar` and `six_bar`, positive `crank_radius_m` is optional
+family metadata. Without it, normalized geometry remains valid, but physical
+stroke is unavailable. With it:
+
+```text
+physical_stroke = stroke_over_crank * crank_radius_m
 ```
 
-`initial` controls standalone evaluation, not the first Sobol point. `--set`
-overrides only declared active parameters, within their bounds. To change a fixed
-coordinate, edit the study and start a new result/campaign. A fully fixed study
-supports `evaluate`; `run` explains that at least one active coordinate is needed.
+This does not determine bore. Abstract families do not acquire a physical crank
+scale merely by specifying a swept volume.
 
-The same declaration works for geometry, thermal inputs, exchanger dimensions,
-frequency, inventory and sizing. Active continuous coordinates require `kind`,
-`initial`, `lower`, `upper`, `unit`, and `transform` (`linear` or `log`). Integer
-counts require `kind = "integer"` and `encoding = "nearest_even_v1"` instead of
-`transform`. Integer rounding preserves the existing inclusive-bound semantics.
-Assembly branches, direction signs, orientation booleans, family selection and
-representation sizes are **fixed scientific categories**, not Sobol floats.
-Compare their alternatives in separate studies; categorical enumeration is deferred.
+## 8. Mechanism artifacts and libraries
 
-All family coordinates must be supplied by declarations or an artifact. Machine
-coordinates omitted from TOML retain explicit basis defaults, included in the
-scientific identity and resolved report. Active declarations remove a coordinate
-from the fixed set. Unknown, duplicate, wrong-family and incorrectly typed inputs
-are rejected. There is one candidate vector, in declaration order.
+`dada_solver.research.artifacts` provides `MechanismArtifact` and
+`MechanismLibrary`. Artifacts are restricted to the three physical families.
 
-## Families and mathematical conventions
+- `MechanismArtifact.create(...)` validates complete family geometry, settings
+  and mechanical-constraint declarations, and constructs production closure.
+- `MechanismArtifact.from_data(...)` validates serialized schema and content hash.
+- `MechanismArtifact.load(...)` loads an artifact, optionally checking an expected hash.
+- `MechanismArtifact.reconstruct()` reconstructs the production geometry object.
 
-`[kinematics] coupling = "independent"` permits any valid small/large combination.
-The family lives in `[kinematics.small]` / `[kinematics.large]`. Below, motion
-parameters have prefix `kinematics.<side>.`. Angles passed to the production
-model are **study angles**, before the factory applies its one motor-direction
-transform. Historical motor-fraction laws retain `t = -theta/(2*pi) mod 1`.
-This is part of their definition, not an extra Research direction correction.
+An artifact contains its schema, settings, complete geometry, length and angle
+conventions, mechanical constraints, content hash and provenance. Its hash
+covers canonical scientific content; provenance is deliberately outside the
+scientific mechanism hash. Changing geometry or settings changes identity.
+Presentation/drawing layout is not scientific mechanism identity.
 
-| Family | Reused mathematical representation | Owned coordinates and units |
-| --- | --- | --- |
-| `harmonic` | Production cosine volume law | `phase_rad` [rad], independently on each side; large phase 0 reproduces the original reference origin |
-| `slider_crank` | Finite centered/offset crank-slider, positive-root closure | `rod_over_crank`, `offset_over_crank` [crank_radius], `phase_rad` [rad], `volume_increases_with_coordinate` [boolean, unit 1] |
-| `four_bar` | Production four-bar closure with finite output rod; `output = "rocker"` or `"coupler"` | See geometry table below |
-| `six_bar` | Existing primary four-bar, downstream dyad, finite piston rod | The established 15 continuous coordinates plus two fixed branches |
-| `free_spline` | Production periodic cubic spline, canonical normalization and stereographic chart | `count`, `representation` settings; fixed `control_0…N-1` or active/fixed `shape_0…N-3` [1]; `phase_rad` [rad] |
-| `fourier_c2` | Smooth periodic Fourier law with refined extrema normalization | `harmonics = H`; `coefficient_0…2H-1` [1] per side, alternating cosine and sine coefficients |
-| `structured_c2_15p` | Historical piecewise quintic C2 law, scalar PPoly fast path | Three timing/extremum parameters, four curvature magnitudes, two BP bowing coordinates, two three-coordinate HP kinks |
-| `ideal_piecewise` | Existing ideal chronology law, including pauses | `small_lambda_target`, `large_lambda_target`, `adiabatic_sector_fraction` [1] per selected law |
-| `four_stage` | Existing four-segment linear law with fixed global origin | `t1,t2,t3` and that side's `a_s,b_s` or `a_l,b_l` [1] |
-| `hybrid_compact` | Compact C2 rounded-linear / two-quintic law | Nine coordinates across both pistons; see below |
-| `independent_four_stage` | Existing independent four-segment law | Small: `t0_s,t1_s,t2_s,t3_s,a_s,b_s`; large: `t1_l,t2_l,t3_l,a_l,b_l` [1] |
-
-The four-stage presets reproduce the historical shared seven-coordinate law
-when both sides have the same stage times. V2 can release each cylinder's stage
-times independently. No hidden equality ties them; if synchronized active stage
-times are required, an explicit shared abstract-timing declaration is future
-work. The independent representation additionally releases the small cyclic
-origin. Unused other-side helper parameters never enter a candidate vector.
-Derivative jumps in piecewise linear laws remain jumps; no smooth acceleration
-is invented at their knots.
-
-Fourier coefficients retain the historical ordering and normalization, including
-its 2049-point bracketing followed by bounded scalar extremum refinement. This
-is not an analytic global-extremum certificate for arbitrary unbounded harmonic
-counts. Full-cycle screens remain explicit. Coefficient scale redundancy is
-historical; no undocumented coordinate canonicalization changes stored laws.
-
-Free-spline controls are canonicalized by `FreeMotionDefinition`. Fixed stored
-controls plus an active phase reproduce the historical phase wrapper. Shape
-search uses its non-redundant stereographic coordinates (`N-2`, not `N` controls);
-the phase can independently be fixed or active. The chart removes affine
-control offset/amplitude, not the continuous phase of the spline knot grid.
-First/second derivative limits use the production spline extrema diagnostics,
-not a noisy finite difference. Sharp extrema of a spline are not linkage targets
-that must be copied mechanically.
-
-### Compact hybrid C2 (11th family)
-
-`hybrid_compact` reuses `HybridCompactKinematics` from
-`dada_solver.hybrid_compact_kinematics`. It is the historical nine-coordinate
-law, not the structured 15p law or the remaining example-only 11p fitting law.
-The BP branches (small up / large down) are rounded linear C2 ramps. The other
-branches use two quintics joined at a mobile normalized point, with the shared
-slope given by the historical harmonic-mean rule.
-
-Each coordinate can be fixed or active independently:
-
-| Side | Coordinates | Units / retained admissible domain |
-|---|---|---|
-| Small | `small_max_deg` | deg, periodic phase |
-| Small | `small_down_duration_deg` | deg, [35, 325] |
-| Small | `small_up_rounding` | 1, [0.008, 0.48] |
-| Small | `small_down_kink_u`, `small_down_kink_q` | 1, [0.04, 0.96] |
-| Large | `large_down_duration_deg` | deg, [35, 325] |
-| Large | `large_down_rounding` | 1, [0.008, 0.48] |
-| Large | `large_up_kink_u`, `large_up_kink_q` | 1, [0.04, 0.96] |
-
-Names have the usual `kinematics.small.` / `kinematics.large.` prefix. There are
-five small-side and four large-side coordinates, with no imposed mirror
-symmetry. The large maximum fixes motor angle zero. The backend maps study
-angle to motor angle as `phi = -theta`; the existing factory still applies
-operation direction once. Scalar and vector paths are preserved. No physical
-stroke is inferred. The original 129-point quintic monotonicity screen is
-retained, together with Research's sampled reversal screen; neither is a new
-continuous monotonicity proof. Analytic second derivatives were not exposed by
-the historical class and remain unavailable; Research does not advertise an
-acceleration constraint for this family.
-
-```sh
-research init kinematics --small hybrid_compact --large hybrid_compact --output outputs/compact/study.toml
-research evaluate outputs/compact/study.toml --output outputs/compact/champion.json --budget 2m
-```
-
-The paired preset packages the historical candidate 501 parameters, thermal
-machine and exact preceding warm state. It reproduces 40.55530421135 W indicated
-power, efficiency 0.2252554030794 and 7 periodic cycles. Mixed-family presets
-are also accepted, as are V3 external-stream studies; those combinations are
-new studies and do not inherit a claim of historical thermal parity.
-The historical optimizer imports the production class/helpers; its search and
-fitting protocols stay in `examples`. Frozen pre-extraction scalar/vector
-trajectories and the original champion record live in
-`tests/fixtures/hybrid_compact/`.
-
-### Structured C2 15p
-
-The owned names are:
-
-- Small: `small_max_deg`, `small_down_duration_deg`, `small_max_curvature`,
-  `small_min_curvature`, `small_up_bp_mid_q`, `small_down_kink_u`,
-  `small_down_kink_q`, `small_down_kink_width_rel`.
-- Large: `large_down_duration_deg`, `large_max_curvature`,
-  `large_min_curvature`, `large_down_bp_mid_q`, `large_up_kink_u`,
-  `large_up_kink_q`, `large_up_kink_width_rel`.
-
-Names are retained verbatim from the fitting lineage, e.g.
-`kinematics.small.small_max_deg`. `_deg` uses degrees; the other coordinates use
-unit `1`. Curvatures are magnitudes of normalized-position second derivatives
-with respect to normalized motor time, **not radians or physical acceleration**.
-The global large maximum fixes the time origin. Durations are strictly between
-0 and 360 degrees; curvatures positive; kink positions and bowing values strictly
-between 0 and 1; relative kink widths between 0 and 2. The template also explicitly
-screens for two reversals and valid volume range. No shape clipping is performed.
-
-```sh
-research init structured-c2-3952 --output outputs/c2_reference/study.toml
-research evaluate outputs/c2_reference/study.toml --output outputs/c2_reference/result.json --budget 3m
-```
-
-This preset uses **candidate 3952**, its original hardware and predecessor warm
-state. It is not the separate candidate 3335 named best in the final search
-report. The reference returns 40.719090181447584 W indicated and efficiency
-0.23508063005202154 after three cycles on the recorded Numba backend.
-
-### Four-bar geometry
-
-Crank radius is the length datum, 1. Geometry coordinates are `coupler`, `rocker`,
-`ground_x`, `ground_y`, `output_along`, `output_normal`, `rod_length`,
-`slider_origin_x`, `slider_origin_y` [crank_radius], and `axis_angle`, `phase_rad`
-[rad]. `loop_branch`, `slider_branch`, `crank_direction` are signed integers
--1/+1; `volume_increases_with_coordinate` is boolean. Output-point coordinates
-retain the selected rocker/coupler frame semantics of `four_bar.py`.
-
-`coupling = "shared_crank"` currently requires two four-bar assemblies already
-expressed in a common frame. The phase and direction then have names
-`kinematics.shared.phase_rad` and `kinematics.shared.crank_direction`, and a
-single physical radius applies to both. Research never silently rotates an
-arbitrary mechanism into a guessed shaft layout. The compact historical seed
-is already reconstructed in the common frame. Its `envelope_frame_angle_rad`
-preserves the original local bounding-box screen: an axis-aligned bounding-box
-diagonal is not rotation invariant. This scientific screening frame is distinct
-from a drawing offset.
-
-### Six-bar geometry
-
-Topology: A–B–C–D primary loop, E attached to BC, E–F–G secondary dyad, H
-attached to EF, finite rod H–P, with P constrained to its slider axis.
-
-| Stage | Exact coordinate names | Units |
-| --- | --- | --- |
-| Primary (6) | `primary_ground`, `primary_coupler`, `primary_rocker`, `primary_e_along`, `primary_e_normal`, `primary_phase` | First five crank_radius; phase rad |
-| Downstream (9) | `second_pivot_x`, `second_pivot_y`, `link_ef`, `link_gf`, `h_along_over_ef`, `h_normal_over_ef`, `piston_rod`, `slider_axis_offset`, `slider_axis_angle` | Lengths crank_radius; H fractions 1; angle rad |
-| Fixed branches | `primary_branch`, `second_branch` | Signed integer -1/+1, unit 1 |
-
-`E_along` / `E_normal` are lengths in crank radii. H coordinates are fractions
-of EF. Do not interchange those conventions. The volume law keeps
-`q = 1 - (slider - minimum) / stroke` and the production refined extrema.
-
-For all physical families, `crank_radius_m` is optional family metadata. Without
-it, physical stroke stays unavailable; dimensionless mechanism geometry does
-not determine cylinder stroke in metres. Supplying it scales the geometry's
-stroke, without changing the normalized volume law or assuming a bore.
-
-## Machine and hardware ownership
-
-| Coordinates | Units / interpretation |
-| --- | --- |
-| `volume.swept_ratio`, `volume.total_swept_m3` | Small/large swept ratio [1], total swept volume [m^3] |
-| `volume.small_clearance_ratio`, `volume.large_clearance_ratio` | Minimum enclosed / swept volume [1] |
-| `operation.frequency_hz`, `charge.total_mass_kg` | Positive Hz, kg; operation sign comes from the basis |
-| `microtube.heat_in.*`, `microtube.heat_out.*` | Integer `tube_count` [1]; `tube_length_m`, `inner_diameter_m`, `wall_thickness_m`, `header_depth_m` [m]; triangular `pitch_ratio` [1], or legacy square `pitch_m` [m] |
-| `thermal.heat_in.*`, `thermal.heat_out.*` | `air_inlet_temperature_k` [K], `air_mass_flow_kg_s` [kg/s], `metal_conductivity_w_m_k` [W/(m*K)], `metal_density_kg_m3` [kg/m^3], `metal_cp_j_kg_k` [J/(kg*K)] |
-
-Heat transfer, hold-up, film resistance, wall capacity and losses are derived
-from production hardware. UA is not an independent coordinate. Valve outlet CdA
-uses the explicit `source_cda_times_count_ratio_v1` or `fixed_source_cda` policy.
-Working-gas properties, numerical physics, valve placement and reservoir inputs
-remain portable basis configuration, not an invented universal parameter list.
-V2 currently requires explicit gas inventory; a pressure-charge study must first
-resolve that inventory explicitly, as the Fourier parity fixture does.
-
-For a refrigerator, the basis selects positive angular speed, the objective
-`maximize_cooling_cop`, and constraints such as `minimum_cooling_power` and
-`maximum_mechanical_input_power` [W]. The latter limits **indicated** input, not
-human shaft power. Shaft losses remain unknown. V2 validated refrigeration with
-the reservoir branch. V3 also validates the conservative wall/external-stream
-branch in refrigeration; see [external thermal streams](EXTERNAL_STREAM_THERMAL_MODEL.md).
-Both use the same kinematic and campaign interfaces. No calibrated human-power
-model or cooling-cell optimization is
-supplied. Generic kinematic constructors contain no motor-efficiency objective. The historical motor-time laws retain their angle
-orientation; selecting refrigeration does not silently redesign their chronology.
-
-## Artifacts, scientific identity and reconstruction
-
-`MechanismArtifact.create(family, geometry, settings=..., constraints=...,
-provenance=...)` produces a versioned scientific payload and canonical content
-hash. `save`, `load`, `from_data` verify complete geometry, family, units and
-branches. Artifacts record scale convention, phase/orientation, slider geometry,
-constraints and provenance. Presentation layout is not scientific identity;
-artifact provenance is excluded from the mechanism hash.
-
-A minimal fixed input is:
+A minimal reference is:
 
 ```toml
 [kinematics.small]
 family = "six_bar"
 artifact = "small.mechanism.json"
-sha256 = "<canonical content hash from the artifact>"
+sha256 = "<canonical mechanism content hash>"
 ```
 
-This hash identifies canonical scientific content, not the pretty-printed file
-bytes. The machine basis separately uses a byte SHA-256. A declaration can
-release or override a geometry coordinate from an artifact; resolved fixed
-values and the source artifact both remain in the study identity. Scale/output
-settings cannot be silently relabelled: create a new artifact to change them.
-`reconstruct()` returns the production geometry object. `families.build_side`
-combines the artifact's geometry/settings with cylinder limits and a selected
-side to build its exact `CylinderLaw` and `KinematicsModel` backend.
+A declaration can release or override a geometry coordinate while the source
+artifact remains part of study identity. Artifact settings cannot be relabelled:
+changed scale or output settings require a corresponding artifact. Embedded
+constraints remain applicable; configurable study design limits belong in
+`mechanical_constraints`.
 
-`MechanismLibrary` retains a set of named family entries and member mechanisms
-plus metadata. It imposes no winner and never replaces primary-family diversity
-with the primary search score. The documented ranks 1, 4, 12 and 50 are covered
-by geometry/diagnostic round-trip tests; rank is a source identifier, not a new
-taxonomy of mechanism families.
+`MechanismLibrary` retains several named mechanism families and imposes no
+winner. The [primary catalogue](PRIMARY_FOUR_BAR_FAMILIES.md) and
+[six-bar catalogue](SIX_BAR_MECHANISM_FAMILIES.md) illustrate distinct lineages,
+without defining an optimizer ranking.
 
-Study identity includes fixed/active ownership, families, artifact scientific
-content, basis, numerical settings, constraints and policies. Candidate identity
-also includes normalized and decoded active values through the existing engine.
-Cache keys remain exact. Source paths, study display name and wall-clock phase
-budget do not define physics. Changing scientific input starts a new campaign.
-The campaign snapshots mechanisms beside its existing definition and history;
-there is no second history format or implicit mutation of old records.
+## 9. Mechanical diagnostics and constraints
 
-Schema 1 `init sixbar-thermo5d` still works. Existing histories and reports remain
-readable offline. As before, source edits change the strict runtime fingerprint;
-execution resume of a pre-V2 campaign requires its original matching source
-version. There is no automatic conversion or identity rewrite.
+`side_metrics()` computes diagnostics from the production kinematic object.
+`available_metrics(family)` declares what can legally be constrained for that
+family; its exact availability is authoritative.
 
-## Feasibility and constraint evidence
+| Scope | Current metrics |
+|---|---|
+| All families | `zero_crossing_count`, `maximum_absolute_first_derivative` |
+| Families with second derivative support | `maximum_absolute_second_derivative` |
+| Physical families | `stroke_over_crank`, `minimum_rod_axis_cosine` |
+| Slider crank | `closure_margin` |
+| Four-/six-bar | `minimum_primary_transmission_sine` |
+| Four-bar | `stroke_over_envelope` |
+| Six-bar | `minimum_secondary_transmission_sine`, `EH_over_crank`, `H_axis_lateral_rms_over_stroke`, `H_axis_lateral_span_over_stroke`, `crank_axis_to_EFH_clearance_over_crank` |
 
-Construction uses the original production closure/branch checks, then cheap
-family-specific screens before integration. `[[mechanical_constraints]]`
-contains `side`, `metric`, `relation` (`minimum`, `maximum`, `equal`), `limit`,
-and `unit`. Artifact constraints are inherited; duplicate declarations are
-rejected. A study can define both a lower and upper stroke bound.
-
-| Family / metric | Meaning and evidence |
-| --- | --- |
-| All: `zero_crossing_count` [1] | Signed velocity reversals on the stated cyclic sample grid; no smoothing or unsigned-speed substitution |
-| All: `maximum_absolute_first_derivative` [m^3/rad] | Volume derivative; spline uses analytic extrema, others a sampled bound |
-| Smooth abstract / slider: `maximum_absolute_second_derivative` [m^3/rad^2] | Available analytic derivative sampled over cycle; spline uses exact polynomial extrema |
-| Physical: `stroke_over_crank` [crank_radius], `minimum_rod_axis_cosine` [1] | Stroke / finite-rod alignment; slider-crank has analytic full-cycle bounds |
-| Slider: `closure_margin` [crank_radius] | rod/crank − 1 − absolute offset/crank; must already be strictly positive for construction |
-| Four/six: `minimum_primary_transmission_sine` [1] | Production primary closure transmission margin |
-| Four: `stroke_over_envelope` [1] | Historical local envelope proxy, not a packaged machine size |
-| Six: `minimum_secondary_transmission_sine`, `H_axis_lateral_rms_over_stroke`, `H_axis_lateral_span_over_stroke` [1] | Downstream transmission and transverse motion relative to piston stroke |
-| Six: `EH_over_crank`, `crank_axis_to_EFH_clearance_over_crank` [crank_radius] | Output reach and crank-axis clearance to rigid EFH triangle |
-
-Available metrics, including unconstrained ones, are retained in each result's
-`derived.kinematic_metrics`. Constraint records contain current value, relation,
-limit, unit, signed absolute margin, relative margin where meaningful, and
-`satisfied` / `violated` / `unavailable`. Near-active satisfied constraints are
-amber within 5% of a nonzero limit. This is a reading aid, not a safety factor.
-A preflight rejection keeps its geometric evidence and unavailable thermal
-constraints. Categorical verdicts have no relative SI margin. Legacy categorical
-margins retain their original convention in read-only inspection.
-
-The default mechanical grid has 1440 angles (minimum configurable 360). Sampled
-screens are **not continuous proofs**; increasing samples cannot establish one.
-Historical six-bar thresholds are explicit preset inputs, not universal defaults
-for all machines. The maximum large-cylinder enclosed volume is separately
-screened only when `screening.maximum_large_enclosed_volume_m3` is declared;
-there is no universal 0.066 m^3 restriction. New artifacts omit synthesis-quality
-constraints: presets put them in editable study `mechanical_constraints` rows.
-Historical artifact constraints remain inherited. See
-[limit ownership](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
-
-## Established synthesis workflow and current boundary
-
-The authoritative methodology remains
-[Mechanism synthesis search](MECHANISM_SYNTHESIS_SEARCH.md),
-[Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md),
-[Six-bar mechanism families](SIX_BAR_MECHANISM_FAMILIES.md), and
-[Compact kinematic synthesis](COMPACT_KINEMATIC_SYNTHESIS.md).
-This interface carries those decisions; it does not replace those documents.
-
-`research.synthesis.release_coordinates(stage, sides)` identifies the six-bar
-coordinates to release. Fixed/active declarations and independent artifacts
-represent primary-only 6-D, downstream-only 9-D, full local 15-D, opposite-side
-15-D and paired 30-D studies. Branches remain fixed. Hardware retuning freezes
-both artifacts and activates the relevant machine coordinates. An initialization
-from the opposite mechanism becomes a new independent artifact; mirror symmetry
-is not a persistent constraint. Family libraries preserve multiple basins.
-
-`SynthesisRequest` records target scientific study identity, physical family,
-ordered stages, mechanical constraints and retained family IDs. Position remains
-the main reference, acceleration diagnostic-only, mirroring initialization-only,
-and the paired objective the study's actual thermodynamic objective.
-`FreshIslandPolicy` separately records fixed bounds, independent deterministic
-seeds, a fixed named search policy and both primary branches. Saturation requests
-reject retained seeds; design requests reject a saturation policy.
-
-**Executable now:** construct, screen, evaluate, and Sobol-search declared
-thermo-mechanical coordinates through `OptimizationCampaign`; retain artifacts
-and compare real thermodynamic results. A researcher can create successive
-studies with the appropriate coordinates fixed/released.
-
-**Deferred:** automatic primary-family discovery/clustering, target-position
-cadence fitting, downstream-dyad fitting, local numerical polish, mirror/adaptation
-operators, automatic stage scheduling, and fresh-island saturation execution.
-The request/policy objects are handoff contracts, not hidden optimizers. The
-six-bar `release_coordinates` helper must not be interpreted as a four-bar
-parameter mapping. No generic least-squares/acceleration fitter was introduced.
-No physical reversal is removed by segmentation, and no PCA trajectory is
-silently substituted for the final finite-rod slider motion.
-
-## Visualization and validation
-
-`research.visualization.sample_motion(study, active_values, samples=361)` exports
-normalized position, study-angle velocity and available acceleration, physical
-volume, optional stroke/scale, and physical joint coordinates/connectivity for
-slider, four-bar and six-bar families. It constructs the same production objects
-as evaluation and never integrates thermodynamics. Time derivatives require the
-chosen angular speed; acceleration is not supplied where the backend lacks it.
-Full animation and browser motion replay are deferred. Display layouts must
-remain separate from these scientific frames.
-
-See [validation](DADA_ENGINE_RESEARCH_VALIDATION.md) for measured tolerances and
-bounded demonstrations, and [migration status](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
-for the distinction between mathematical families and historical protocols.
-
-For new triangular microtube studies replace each `microtube.<side>.pitch_m`
-parameter with `microtube.<side>.pitch_ratio` (unit `1`). It may be fixed or
-continuous/active, with all bounds strictly above one. Explicit ratio ownership
-also works with a legacy basis: the adapter replaces its absolute pitch. A basis
-may instead store `pitch_ratio` directly, omitting `pitch_m`. Legacy presets and
-bases retain absolute pitch until explicitly migrated; historical physics is
-not silently changed. See [tube-bank geometry](MICROTUBE_GAS_MODEL.md#triangular-tube-banks-and-internal-header-volume).
+Currently the second-derivative constraint is available for `harmonic`,
+`slider_crank`, `free_spline`, `fourier_c2` and `structured_c2_15p`. Do not assume
+it exists for other families. First and second volume derivatives use
+`m^3/rad` and `m^3/rad^2`, not time derivatives.
 
 ```toml
-[[parameters]]
-name = "microtube.heat_in.pitch_ratio"
+[[mechanical_constraints]]
+side = "small"
+metric = "minimum_primary_transmission_sine"
+relation = "minimum"
+limit = 0.30
 unit = "1"
-kind = "continuous"
-initial = 1.2
-lower = 1.01
-upper = 1.5
-transform = "linear"
 ```
 
-DD5 was migrated to fixed ratios preserving each initial centre pitch of
-0.225 mm, retaining its 16 active coordinates. Its `legacy_square/` directory
-preserves the original study and basis. The derived atmospheric inventory can
-change because triangular headers have different gas volume.
+`validate_mechanical_constraint()` in `dada_solver.research.margins` checks metric
+availability, unit, relation and a finite nonnegative limit, including an integer
+reversal count where applicable. These declared design limits are distinct from
+intrinsic requirements such as real closure and valid branches.
 
-### Circular microtube collectors and ideal diodes
+The normal screening grid is 1440 samples; configurable grids require at least
+360. Mechanical preflight precedes thermodynamic integration. A sampled screen
+is not a continuous proof. Some diagnostics use stronger production methods,
+such as analytic spline extrema; consult the recorded method rather than
+assuming all metrics share the same guarantee.
 
-For the circular geometry, replace `microtube.<side>.pitch_m` and
-`microtube.<side>.header_depth_m` declarations with `pitch_ratio` and
-`collector_half_angle_deg`. Use unit `1` for `pitch_ratio` and
-`conduit_area_ratio`, `deg` for the cone half-angle, and `m^3` for
-`additional_internal_volume_m3`. All eight geometry coordinates may be fixed or
-active (tube count remains integer); coordinate bounds must respect the geometry
-requirements. The coupled condition `conduit_diameter < bundle_diameter` is
-checked during preflight.
+## 10. Constraint margins
 
-For example, on **each** side, with illustrative values rather than a universal
-engineering recommendation:
+`margin_record()` exposes value, limit, relation, unit, availability, satisfaction,
+absolute and relative margin, and presentation flags.
 
-```toml
-[[parameters]]
-name = "microtube.heat_in.pitch_ratio"
-unit = "1"
-value = 1.3
-
-[[parameters]]
-name = "microtube.heat_in.collector_half_angle_deg"
-unit = "deg"
-value = 30.0
-
-[[parameters]]
-name = "microtube.heat_in.conduit_area_ratio"
-unit = "1"
-value = 1.0
-
-[[parameters]]
-name = "microtube.heat_in.additional_internal_volume_m3"
-unit = "m^3"
-value = 0.0
+```text
+minimum: margin = value - limit
+maximum: margin = limit - value
+equal:   margin = -abs(value - limit)
 ```
 
-Keep the existing tube count/length/diameter/wall declarations. Remove old
-absolute-pitch and header-depth declarations and any corresponding local-region
-center coordinates. Add new active coordinates to each center if applicable.
-The existing basis may remain a legacy seed: declared circular coordinates
-replace its legacy geometry in the adapter. Alternatively, serialize the new
-bank directly with `pitch_ratio`, `collector_half_angle_deg` and
-`conduit_area_ratio`, omitting the legacy pitch and depth.
+A nonnegative margin means satisfied when the value is available. Unavailable
+values are reported as unavailable, not as evidence of satisfaction. Relative
+margin is `margin / abs(limit)` for a nonzero numeric limit and a non-equality
+relation; otherwise it is unavailable.
 
-Use `outlet_valve_cda = "geometry_conduit_area_v1"` under `[policies]` when both
-exchangers use circular collectors. Old `fixed_source_cda` and count-scaled CdA
-policies remain readable, but apply only to legacy geometries: circular
-exchangers always derive the area and use lossless diodes. No independent valve
-CdA is a Research coordinate for this model. The stored basis CdA, if any, cannot
-throttle it. This does not remove generic hydraulic CdA interfaces for other
-models or historical studies.
+`near_active` flags a satisfied non-equality constraint within 5% of a nonzero
+limit. It is a reading aid, not a safety factor and not a manufacturing tolerance
+certificate. Margins retain their individual units and meanings; no universal
+mechanical robustness score is implied.
 
-The adapter includes the two collectors in actual exchanger gas hold-up once;
-reference-pressure charge therefore uses the new volume automatically. This is
-a new scientific definition, not a resume of an old geometry. Existing presets
-remain historical seeds until explicitly migrated. See
-[circular geometry and limitations](MICROTUBE_GAS_MODEL.md#circular-bundles-and-conical-collectors-circular_triangular_frustum_v1).
+## 11. Synthesis handoff
+
+`dada_solver.research.synthesis` exposes the ordered `STAGES`, coordinate-group
+helper `release_coordinates()`, and declarative contracts `SynthesisRequest`
+and `FreshIslandPolicy`.
+
+| Stage | Six-bar continuous coordinates released |
+|---|---:|
+| `primary_discovery` | 6 per selected side |
+| `downstream_fit` | 9 per selected side |
+| `full_local_polish` | 15 per selected side |
+| `mirror_initialization` | None |
+| `opposite_local_adaptation` | 15 per selected side |
+| `paired_thermodynamic` | 30, requiring SMALL and LARGE |
+| `hardware_retuning` | No mechanism coordinates |
+
+Branches stay fixed. `release_coordinates()` is a grouping helper, not an
+optimizer. The scientific handoff preserves:
+
+- position as the primary synthesis reference;
+- acceleration as diagnostic only;
+- mirroring as initialization only;
+- the actual study thermodynamic objective after paired release;
+- fresh-island saturation separate from seeded design exploitation.
+
+`FreshIslandPolicy` declares fixed bounds, distinct deterministic seeds, an
+explicit search policy and both primary branches. `SynthesisRequest` validates
+the ordered stages and separates the two protocols; it does not execute them.
+
+Current Research can construct, screen, evaluate and Sobol-search declared
+thermo-mechanical coordinates, persist/resume campaigns and compare actual
+thermodynamic results.
+
+It does not yet generically execute automatic primary-family discovery,
+clustering, target-position cadence fitting, downstream-dyad fitting, local
+polish, mirror/adaptation operators, synthesis-stage scheduling or fresh-island
+saturation. Declared stages do not imply implemented synthesis operators.
+
+See the [synthesis method](MECHANISM_SYNTHESIS_SEARCH.md) for the methodological
+contract and why primary discovery, complete-mechanism fitting and thermodynamic
+assessment are different tasks.
+
+## 12. Kinematic visualization
+
+`sample_motion()` in `dada_solver.research.visualization` compiles the study and
+builds the same production kinematics used by evaluation, without integrating
+thermodynamics. It samples study angle and returns:
+
+- SMALL/LARGE physical volumes;
+- normalized position and velocity per radian;
+- normalized acceleration per radian squared when supported, otherwise unavailable;
+- physical stroke when scale exists;
+- joint positions and linkage connectivity for physical families.
+
+Its angle domain is `study_angle_before_operation_transform`. Derivatives are
+with respect to study angle, not time. Joint coordinates use stored local
+mechanism frames in crank-radius units. No drawing offset or common physical
+shaft layout is inferred.
+
+`sample_report_volumes(...)` instead samples current production volumes in
+solver-cycle angle, applying the operation transform exactly once. Its angle
+output is in degrees and volume output in cubic metres; it also requires no ODE
+integration. Report rendering and thermodynamic replay options belong in the
+[cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md).
+
+## 13. Scope boundary and related references
+
+This document owns kinematic family selection, coordinate ownership, physical
+mechanism geometry, artifacts, mechanical diagnostics and constraint evidence,
+synthesis handoff and kinematic visualization.
+
+For other concerns, use:
+
+- [Research guide](DADA_ENGINE_RESEARCH.md): commands and workflow;
+- [configuration reference](DADA_ENGINE_RESEARCH_REFERENCE.md): machine inputs and campaign settings;
+- [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md): report presentation and plots;
+- [microtube model](MICROTUBE_GAS_MODEL.md): exchanger geometry and correlations;
+- [external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md): external thermal boundaries;
+- [working-fluid models](WORKING_FLUID_MODELS.md): thermodynamic property contracts;
+- [validation record](DADA_ENGINE_RESEARCH_VALIDATION.md): solver and historical parity evidence;
+- [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md): implementation lineage.
+
+Thermodynamic equations, hardware physics, campaign persistence internals and
+historical parity reports are outside this kinematics reference.

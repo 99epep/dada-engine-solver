@@ -14,7 +14,7 @@ the eleventh Research family; unrelated local work is outside that update.
 The explicit [reviewed status map](research_audit/kinematics_v2_migrations.json)
 is applied by the inventory generator. It distinguishes extracted representation,
 existing production reuse and retained search/plotting code. AST imports alone
-never mark a script as parity-verified. The [V2 reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
+never mark a script as parity-verified. The [kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
 documents the parameter schema and available execution boundary.
 
 | Historical lineage | Mathematical representation | V2 status / protocol distinction |

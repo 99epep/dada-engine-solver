@@ -283,7 +283,7 @@ feasibility rate is evidence of local sampling, not a convergence claim.
 ## V1 fixed-pair validation study
 
 The following walkthrough remains valid for `sixbar-thermo5d` (schema 1).
-Use the linked V2 reference to configure other families or different ownership.
+Use the linked kinematics reference to configure other families or different ownership.
 
 ## Historical V1 walkthrough
 
