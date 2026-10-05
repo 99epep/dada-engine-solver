@@ -1,6 +1,5 @@
-"""Narrative Research archives stay separate from current references."""
+"""Consumed Research migration material stays removed."""
 from pathlib import Path
-import re
 
 DOCS = Path(__file__).resolve().parents[1] / 'docs'
 RESEARCH_ARCHIVES = tuple(f'DADA_ENGINE_RESEARCH_{part}.md' for part in (
@@ -9,19 +8,14 @@ RESEARCH_ARCHIVES = tuple(f'DADA_ENGINE_RESEARCH_{part}.md' for part in (
 NAMES = RESEARCH_ARCHIVES + ('RESEARCH_LIMIT_OWNERSHIP_AUDIT.md',)
 
 
-def test_archives_live_in_history_and_are_indexed():
-    index = (DOCS / 'history/README.md').read_text()
-    for name in NAMES:
+def test_consumed_research_archives_are_removed():
+    names = NAMES + ('RESEARCH_VALIDATION_LEDGER.md',)
+    for name in names:
         assert not (DOCS / name).exists()
-        assert (DOCS / 'history' / name).is_file()
-        assert f']({name})' in index
-    assert '](RESEARCH_VALIDATION_LEDGER.md)' in index
-
-
-def test_root_document_links_use_history_paths():
-    for path in DOCS.glob('*.md'):
-        targets = re.findall(r'\]\(([^)]+)\)', path.read_text())
-        assert not set(NAMES).intersection(targets), path
+        assert not (DOCS / 'history' / name).exists()
+    for path in DOCS.rglob('*.md'):
+        text = path.read_text()
+        assert not any(name in text for name in names), path
 
 
 def test_intermediate_audit_material_is_removed():
@@ -39,5 +33,3 @@ def test_current_ownership_authority():
         text = (DOCS / name).read_text()
         assert '[current ownership rule](PHYSICS_DECISIONS.md)' in text
         assert '](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md)' not in text
-    audit = (DOCS / 'history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md').read_text()
-    assert '](../PHYSICS_DECISIONS.md)' in audit

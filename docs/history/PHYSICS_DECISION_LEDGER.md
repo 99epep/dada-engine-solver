@@ -1671,8 +1671,7 @@ Mach domain; a stricter design Mach constraint belongs in the study.
 New mechanism seeds expose synthesis-quality limits in study-level mechanical
 constraints; intrinsic closure/branch validity remains in the model. Historical
 artifacts/results retain their content and interpretation as historical evidence.
-See [the audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) for compatibility, inventory and
-remaining legacy limits. No exchanger correlation or numerical tolerance changes.
+No exchanger correlation or numerical tolerance changes.
 
 
 ## 2026-10-01 — Species-dependent dilute transport

@@ -495,7 +495,6 @@ For other concerns, use:
 - [external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md): external thermal boundaries;
 - [working-fluid models](WORKING_FLUID_MODELS.md): thermodynamic property contracts;
 - [validation and evidence](validation.md): current status and evidence boundaries;
-- [migration matrix](history/DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md): implementation lineage.
 
 Thermodynamic equations, hardware physics, campaign persistence internals and
 historical parity reports are outside this kinematics reference.

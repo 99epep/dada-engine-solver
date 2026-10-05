@@ -440,11 +440,6 @@ remain inspectable; execution resume still requires strict runtime/source matchi
 legacy preset defines generic defaults for new studies. `refine` and `rescale` require
 schema 2 or 3.
 
-Historical extraction details belong in the [validation
-ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration
-matrix](history/DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and [implementation
-plan](history/DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
-
 ## Related references
 
 | Subject | Canonical documentation |
@@ -458,8 +453,6 @@ plan](history/DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
 | External streams | [External-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md) |
 | Working fluids | [Fluid models](WORKING_FLUID_MODELS.md) |
 | Current validation status | [Validation](validation.md) |
-| Historical Research extraction evidence | [Historical ledger](history/RESEARCH_VALIDATION_LEDGER.md) |
-| Limit ownership history | [Historical ownership audit](history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) |
 
 For retained geometry and synthesis methodology, use the [primary
 catalogue](PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar
