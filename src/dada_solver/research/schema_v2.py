@@ -23,6 +23,18 @@ from .machine_basis import load_machine_basis, machine_parameters, build_machine
 from .margins import PHYSICAL_CONSTRAINTS, validate_mechanical_constraint, margin_record
 from .schema import keys, positive
 
+OBJECTIVE_UNITS = {
+    'maximize_thermal_efficiency': '1',
+    'maximize_cooling_cop': '1',
+    'maximize_motor_power': 'W',
+    'maximize_cooling_power': 'W',
+    'maximize_cooling_power_per_total_microtube': 'W/microtube',
+}
+COOLING_OBJECTIVES = frozenset((
+    'maximize_cooling_cop', 'maximize_cooling_power',
+    'maximize_cooling_power_per_total_microtube',
+))
+
 POLICIES=dict(volume_partition='total_swept_and_clearance_ratios',charge='explicit_inventory',
     outlet_valve_cda='source_cda_times_count_ratio_v1',mechanical_losses='unknown',
     useful_power='unavailable',external_air_aerodynamic_losses='excluded_from_balance',
@@ -156,9 +168,9 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
         if field: positive(row[field],kind)
     if 'valid_thermodynamic_model' not in names: raise ValueError('An explicit model-validity constraint is required.')
     objective=raw['objective']; keys(objective,('type','unit'),'objective')
-    if objective['type'] not in ('maximize_thermal_efficiency','maximize_cooling_cop','maximize_motor_power','maximize_cooling_power') or objective['unit']!=('W' if objective['type'] in ('maximize_motor_power','maximize_cooling_power') else '1'):
+    if objective['type'] not in OBJECTIVE_UNITS or objective['unit'] != OBJECTIVE_UNITS[objective['type']]:
         raise ValueError('Unsupported objective or unit.')
-    if basis.configuration.motor_operation != (objective['type'] not in ('maximize_cooling_cop','maximize_cooling_power')):
+    if basis.configuration.motor_operation != (objective['type'] not in COOLING_OBJECTIVES):
         raise ValueError('The objective must match the basis operating direction.')
     signatures=set()
     for row in mechanical:
@@ -250,7 +262,10 @@ class ResearchDefinitionV2(CampaignDefinition):
         self.adapter=V2Adapter(study,self.configuration)
         self.families={side:study.settings[side]['family'] for side in ('small','large')}
         self.families.update(kinematics='composed',exchanger='microtube' if study.basis.heat_in is not None else 'reservoir')
-        self.objective=_load_objective({'type':raw['objective']['type']})
+        from dada_solver.campaign.objectives import MaximizeCoolingPowerPerTotalMicrotube
+        self.objective=(MaximizeCoolingPowerPerTotalMicrotube()
+            if raw['objective']['type']=='maximize_cooling_power_per_total_microtube'
+            else _load_objective({'type':raw['objective']['type']}))
         self.constraints=tuple(MaximumMechanicalInputPower(row['limit']) if row['type']=='maximum_mechanical_input_power' else _load_constraint({k:v for k,v in row.items() if k!='unit'},None) for row in raw['constraints'])
         self.wall_numerical_settings=WallCycleNumericalSettings(**study.basis.data['wall_settings']) if study.basis.heat_in is not None else None
         self.wall_backend=WallBackendSettings(raw['numerical']['backend']); self.adaptive_wall_acceleration=None

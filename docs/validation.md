@@ -82,8 +82,7 @@ hardware. A dilute transport temperature domain does not certify phase or EOS
 validity. The ideal-generated property table proves compiled reconstruction,
 not real-helium thermodynamics/hydraulics.
 
-Historical timings, refinements and abandoned numerical experiments are condensed
-in [numerical execution](SOLVER_PERFORMANCE.md). Historical application results
-remain in [the study index](history/README.md), with their original constraints
-and source artifacts. Old test counts and intermediate profiler dumps are not
-maintained as current status in the user guides.
+Current evidence is documented in the references above and in
+[numerical execution](SOLVER_PERFORMANCE.md). Earlier application results and
+artifacts may remain in Git history, `outputs/`, `examples/` or their original
+sources; they do not define current validation status.

@@ -80,3 +80,10 @@ def test_user_guide_describes_reference_as_current():
     content = text(GUIDE)
     assert "Reference and historical details" not in content
     assert "historical presets" not in content
+
+
+def test_microtube_productivity_objective_contract():
+    content = text()
+    assert '| `maximize_cooling_power_per_total_microtube` | `W/microtube` | Refrigeration |' in content
+    assert 'cooling_power_per_total_microtube_w' in content
+    assert 'microtube.heat_in.tube_count + microtube.heat_out.tube_count' in content

@@ -76,6 +76,8 @@ def test_external_boundary_refrigeration_and_margins(refrigerator):
     assert r['status']=='feasible'
     m=r['metrics'];assert m['operating_mode']=='refrigeration'
     assert m['cooling_power_w']>0 and m['heating_power_w']>0 and m['indicated_mechanical_input_power_w']>0
+    assert r['derived']['total_microtube_count'] == (r['derived']['heat_in_microtube_count'] + r['derived']['heat_out_microtube_count'])
+    assert m['cooling_power_per_total_microtube_w'] == pytest.approx(m['cooling_power_w']/r['derived']['total_microtube_count'])
     assert m['cooling_cop']==pytest.approx(m['cooling_power_w']/m['indicated_mechanical_input_power_w'])
     assert m['heating_cop']==pytest.approx(m['cooling_cop']+1,abs=1e-5)
     assert abs(m['conservation']['absolute_energy_residual'])<1e-7

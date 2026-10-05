@@ -187,6 +187,13 @@ class MachineEvaluator:
             heat_out_gas_volume_m3=model.machine_volumes.hot_heat_exchanger,
             small_physical_stroke_m=model.kinematics.small_physical_stroke,
             large_physical_stroke_m=model.kinematics.large_physical_stroke)
+        if isinstance(built, AirWallMotor):
+            from dada_solver.exchangers.microtube_geometry import MicrotubeBank
+            banks = [getattr(x, 'bank', None) for x in (design.heat_in, design.heat_out)]
+            if all(isinstance(bank, MicrotubeBank) for bank in banks):
+                derived.update(heat_in_microtube_count=int(banks[0].tube_count),
+                    heat_out_microtube_count=int(banks[1].tube_count),
+                    total_microtube_count=int(sum(bank.tube_count for bank in banks)))
         if getattr(design,'charge_diagnostics',None) is not None:
             derived['charge'] = design.charge_diagnostics
         direction = 'motor' if design.configuration.motor_operation else 'receiver'
@@ -202,6 +209,8 @@ class MachineEvaluator:
             result=self._reservoir(candidate, design, built, derived, direction, control)
         if getattr(design,'charge_diagnostics',None) is not None:
             result['metrics'].setdefault('total_mass_kg',design.configuration.charge.total_mass)
+        if 'total_microtube_count' in derived:
+            result['metrics'].setdefault('cooling_power_per_total_microtube_w', None)
         if mechanical: result['constraints']=list(mechanical)+result['constraints']
         return result
 
@@ -475,7 +484,12 @@ class MachineEvaluator:
         return float(max_re), float(max_mach)
 
     def _assessment(self, evaluation, derived, source, distance, convergence, guess, extra=()):
-        objective = self.definition.objective.evaluate(evaluation)
+        from .objectives import MaximizeCoolingPowerPerTotalMicrotube, cooling_power_per_total_microtube
+        context = {key: derived.get(key) for key in
+                   ('heat_in_microtube_count', 'heat_out_microtube_count')}
+        objective = (self.definition.objective.evaluate(evaluation, **context)
+            if isinstance(self.definition.objective, MaximizeCoolingPowerPerTotalMicrotube)
+            else self.definition.objective.evaluate(evaluation))
         constraints = [asdict(c.evaluate(evaluation)) for c in self.definition.constraints] + list(extra)
         objective_valid = objective.available and objective.value is not None and np.isfinite(objective.value)
         feasible = evaluation.usable and objective_valid and all(c['available'] and c['satisfied'] for c in constraints)
@@ -490,9 +504,17 @@ class MachineEvaluator:
                 useful_mechanical_power_w=None, mechanical_losses='unknown', conservation=asdict(p.conservation),
                 validity=json_values(asdict(evaluation.validity)))
             if getattr(self.definition,'identity',{}).get('definition_kind') in ('research_v2','research_v3'):
-                cooling=self.definition.objective.name in ('maximize_cooling_cop','maximize_cooling_power')
+                from dada_solver.research.schema_v2 import COOLING_OBJECTIVES
+                cooling=self.definition.objective.name in COOLING_OBJECTIVES
                 metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,
                                indicated_mechanical_input_power_w=p.mechanical_input_power if cooling else None)
+        if all(value is not None for value in context.values()):
+            from dada_solver.performance import OperatingMode
+            performance = evaluation.performance
+            power = (performance.cooling_power if performance is not None
+                and performance.operating_mode is OperatingMode.REFRIGERATION else None)
+            metrics['cooling_power_per_total_microtube_w'] = cooling_power_per_total_microtube(
+                power, **context)
         reasons = [c['name']+(': unavailable' if not c['available'] else ': violated') for c in constraints if not c['available'] or not c['satisfied']]
         if not objective_valid: reasons.append('objective unavailable or nonfinite')
         return dict(status=status, integrated=True, converged=evaluation.usable,

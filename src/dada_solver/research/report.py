@@ -74,6 +74,7 @@ def inspect(path):
         record['failure_category']=reason_category(record,scientific) if record['status']!='feasible' else None
         record['limiting_evidence']=limiting_evidence(record,scientific)
         record['resolved_parameters']=dict(scientific.get('fixed_parameters',{}),**record['physical'])
+        _add_microtube_productivity(record)
         record['parameter_units']={p['name']:p['unit'] for p in scientific['parameters']}
         record['kinematic_families']=record.get('families',{})
         record['report_source'] = str(path)
@@ -93,6 +94,29 @@ def inspect(path):
                 scientific=scientific, runtime_compatible=compatible, warnings=warnings,
                 status_counts=dict(Counter(r['status'] for r in records)), records=records,
                 best=elite_records(records,5), source=str(path), replay='not_requested')
+
+
+def _add_microtube_productivity(record):
+    """Derive missing productivity for offline inspection, never rewriting storage."""
+    from dada_solver.campaign.objectives import cooling_power_per_total_microtube
+    metrics = record.setdefault('metrics', {})
+    if 'cooling_power_per_total_microtube_w' in metrics:
+        return
+    physical = record.get('resolved_parameters', {})
+    derived = record.setdefault('derived', {})
+    counts = [derived.get(f'{side}_microtube_count',
+                          physical.get(f'microtube.{side}.tube_count'))
+              for side in ('heat_in', 'heat_out')]
+    if not all(type(n) is int and n > 0 for n in counts):
+        return
+    derived.update(heat_in_microtube_count=counts[0], heat_out_microtube_count=counts[1],
+                   total_microtube_count=sum(counts))
+    # Legacy refrigeration records may omit operating_mode, but expose cooling COP.
+    refrigeration = (metrics.get('operating_mode') == 'refrigeration'
+        or (metrics.get('operating_mode') is None and metrics.get('cooling_cop') is not None))
+    metrics['cooling_power_per_total_microtube_w'] = cooling_power_per_total_microtube(
+        metrics.get('cooling_power_w') if refrigeration else None, *counts)
+    derived['microtube_productivity_source'] = 'offline_stored_values'
 
 
 def select_records(data, selectors=()):
@@ -170,6 +194,8 @@ def text_report(data, *, list_candidates=False):
             performance=f"cooling={m.get('cooling_power_w')} W; COP={m.get('cooling_cop')}; indicated input={m.get('indicated_mechanical_input_power_w')} W"
         else:
             performance=f"power={m.get('indicated_power_w')} W; efficiency={m.get('indicated_thermal_efficiency')}"
+        if m.get('cooling_power_per_total_microtube_w') is not None:
+            performance += f"; Qcold/microtube={m['cooling_power_per_total_microtube_w']} W/microtube"
         lines.append(f"{row['candidate_id']} {row['status']}: {performance}")
     local=data.get('local_search')
     if local:
@@ -200,13 +226,15 @@ def render_html(data, destination):
     ranked=chosen[:2] if data.get('comparison_compatible',True) else []
     def brief(record):
         return {k:record.get(k) for k in ('candidate_id','objective','metrics')} if record else None
-    data=dict(data,selected=chosen,comparison_default_ids=[r['candidate_id'] for r in ranked],
+    from .schema_v2 import COOLING_OBJECTIVES
+    data=dict(data,cooling_objective=data['scientific']['objective']['type'] in COOLING_OBJECTIVES,
+        selected=chosen,comparison_default_ids=[r['candidate_id'] for r in ranked],
         html_selection=dict(policy='best_distinct_feasible_tenth_v1',attempts=attempts,
                             limit=limit,retained=len(chosen)),
         best=[brief(r) for r in data.get('best',[])],
         records=[dict(candidate_id=r['candidate_id'],status=r['status'],
                       duration_seconds=r.get('duration_seconds'),metrics={k:r.get('metrics',{}).get(k)
-                      for k in ('cooling_cop','indicated_thermal_efficiency')}) for r in data['records']])
+                      for k in ('cooling_cop','indicated_thermal_efficiency','cooling_power_per_total_microtube_w')}) for r in data['records']])
     if data.get('local_search'):
         data['local_search']=dict(data['local_search'],regions=[dict(r,best=brief(r.get('best')))
             for r in data['local_search']['regions']])
@@ -257,11 +285,12 @@ const fmt=v=>v===null||v===undefined?'unavailable':typeof v==='number'?Number(v.
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rows=[...new Map((d.selected||d.records).map(r=>[r.candidate_id,r])).values()];
 byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>').join('');
-const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=['maximize_cooling_cop','maximize_cooling_power'].includes(d.scientific.objective.type);
-const ykey=cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=cooling?'Cooling COP [1]':'Indicated efficiency [%]';
+const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=d.cooling_objective;
+const productivity=d.scientific.objective.type==='maximize_cooling_power_per_total_microtube';
+const ykey=productivity?'cooling_power_per_total_microtube_w':cooling?'cooling_cop':'indicated_thermal_efficiency',yscale=cooling?1:100,ylabel=productivity?'Cooling power per microtube [W/microtube]':cooling?'Cooling COP [1]':'Indicated efficiency [%]';
 byId('summary').innerHTML='<b>Study</b> <code>'+esc(d.study_id)+'</code><p>'+d.records.length+' attempts · '+esc(JSON.stringify(d.status_counts))+'</p><p>Families: '+esc(d.scientific.kinematics?d.scientific.kinematics.small.family+' / '+d.scientific.kinematics.large.family:JSON.stringify(d.scientific.families))+'</p>';
 byId('summary').innerHTML+='<p>Detailed candidates: '+d.html_selection.retained+' (base limit '+d.html_selection.limit+': best distinct feasible 10%, rounded up; plot targets and explicit selections also retained). Global statistics and progress include all attempts. Complete records remain in the journal and JSON report.</p>';
-if(cooling){byId('performanceTitle').textContent='Indicated power and cooling COP';byId('boundary').textContent='Cooling power and COP use heat absorbed at the cold external-stream boundary and indicated mechanical input. External-loop hydraulics and pump/fan consumption are unmodelled. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
+if(cooling){byId('performanceTitle').textContent=productivity?'Cooling power per microtube':'Indicated power and cooling COP';byId('boundary').textContent='Cooling power and COP use heat absorbed at the cold external-stream boundary and indicated mechanical input. External-loop hydraulics and pump/fan consumption are unmodelled. Shaft losses and useful human input remain uncalibrated; no mechanical efficiency is assumed.';}
 byId('provenance').textContent=JSON.stringify(d.compared_sources||d.scientific,null,2);
 for(const status of Object.keys(d.status_counts)){const o=new Option(status,status);byId('status').add(o);}
 for(const [i,r] of rows.entries())for(const id of ['left','right'])byId(id).add(new Option(r.candidate_id.slice(0,12)+' · '+r.status,String(i)));
@@ -336,6 +365,7 @@ const columns=[
  ['power','Indicated gas power [W]',r=>r.metrics.indicated_power_w],
  ['mass','Gas inventory [kg]',r=>r.metrics.total_mass_kg],
  ['cooling','Cooling power [W]',r=>r.metrics.cooling_power_w],
+ ['microtube','Cooling power per microtube [W/microtube]',r=>r.metrics.cooling_power_per_total_microtube_w],
  ['cop','Cooling COP [1]',r=>r.metrics.cooling_cop],
  ['efficiency','Efficiency [1]',r=>r.metrics.indicated_thermal_efficiency],
  ['topology','Topology',r=>r.topology_display?.classification],

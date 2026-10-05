@@ -62,7 +62,6 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
   dated standards/product references require review for a new comparison.
 - [Motor demonstrator](MOTOR_DEMONSTRATOR.md): application-specific design brief,
   not global solver limits.
-- [Evidence index](history/README.md): retained numerical evidence and mechanism references.
 
 Saved `outputs/`, examples, audit JSON/CSV, fixtures and source artifacts are not
 edited by documentation maintenance. Some large output directories are local-only

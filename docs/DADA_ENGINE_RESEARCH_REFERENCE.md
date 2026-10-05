@@ -114,6 +114,14 @@ The objective contains `type` and `unit`:
 | `maximize_cooling_cop` | `1` | Refrigeration |
 | `maximize_motor_power` | `W` | Motor |
 | `maximize_cooling_power` | `W` | Refrigeration |
+| `maximize_cooling_power_per_total_microtube` | `W/microtube` | Refrigeration |
+
+`maximize_cooling_power_per_total_microtube` maximizes
+`cooling_power_w / (microtube.heat_in.tube_count + microtube.heat_out.tube_count)`.
+The denominator counts all physical microtubes in both exchangers, not hydraulic
+half-links. The corresponding metric is `cooling_power_per_total_microtube_w`.
+This manufacturing productivity metric imposes no minimum COP or cooling power
+by itself.
 
 The objective must agree with the basis operating direction. Motor power and mechanical
 input are indicated quantities, not useful shaft power. Mechanical losses remain unknown
