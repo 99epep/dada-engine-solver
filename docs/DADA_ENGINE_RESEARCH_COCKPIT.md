@@ -1,137 +1,178 @@
 # Research cockpit and execution UX
 
-This reference describes presentation, execution defaults and durable storage.
-Physical equations, numerical tolerances, scientific study inputs, candidate
-payload construction and Sobol generation are unchanged. Execution options do
-not enter the scientific study identity. The existing source/runtime identity
-check still applies to resume; incompatible source versions are not silently
-accepted or rewritten.
+This is the current reference for terminal progress, stored-result inspection,
+derived reports and interruption recovery. For everyday setup and commands, use
+the [user guide](DADA_ENGINE_RESEARCH.md). Study schema, scientific identity,
+parameter ownership and search semantics belong to the
+[technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md).
 
-## Short commands
+## Commands and candidate inspection
 
 ```sh
+research status outputs/my_study/campaign
 research report outputs/my_study/campaign
+research report outputs/my_study/campaign --candidate best
+research report outputs/my_study/campaign --plots none
+research compare outputs/a/campaign outputs/b/campaign
 research resume outputs/my_study/campaign --budget 30m
-research report outputs/my_study/campaign --candidate a16ed2c7 --plots volumes
 ```
 
-`report CAMPAIGN` writes `CAMPAIGN/report.html`. For a standalone evaluation
-JSON it writes the sibling `.html`. `--html PATH` overrides the destination.
-The default curves are positions, gas-to-wall heat, pressures and temperatures
-for the two best feasible candidates. Thermal curves replay one saved-state
-cycle, announced on stderr and cached beside the HTML. `--plots none` skips
-reconstruction; see the [current guide](DADA_ENGINE_RESEARCH.md#reports-curves-and-animations).
-HTML is a derived artifact and may be regenerated in place; studies, bases,
-evaluation JSON and histories retain their existing protection rules.
+`research` is the source-checkout shorthand defined in the guide; the installed
+entry is `dada-research`. These paths are illustrative destinations.
 
-Normal report/status output contains the campaign summary and one best feasible
-result, not every candidate. Report output also identifies the HTML path.
-`--list-candidates` explicitly lists selected candidates; `--json` prints the
-complete inspection dataset as valid JSON. A candidate selector accepts `best`, `second`,
-a full ID or an unambiguous prefix. Comparison resolves prefixes across the
-supplied sources. Unknown or ambiguous prefixes fail explicitly.
+`status` inspects stored evidence without thermodynamic integration. Terminal
+inspection normally shows a summary and the best feasible result rather than
+every candidate. `--list-candidates` expands the selected candidate listing;
+`--json` returns the complete structured inspection dataset, without the HTML
+detail cap. Use `--plots none` with `report` to avoid curve reconstruction.
 
-Generated and capacity-rescaled Research studies now set
-`execution.default_max_candidates = 512`. Tests and smoke studies may explicitly
-set a different cap. The CLI interprets the historical default of 16 as 512
-without editing existing snapshots. `--max-candidates 16` remains an explicit
-16-attempt override. Other explicitly configured caps remain effective. The cap
-limits new attempts in this invocation, not total campaign size. Budget and
-per-candidate deadlines remain unchanged.
+Selectors accept `best`, `second`, a complete ID or an unambiguous prefix;
+repeat `--candidate` for multiple selections. Unknown or ambiguous selectors
+fail explicitly. Comparison resolves selection across the supplied sources but
+does not invent a common objective ranking for incompatible studies.
 
-## Lightweight progress
+## Terminal progress
 
-The runner emits a side-channel snapshot at start, about every ten seconds or
-ten completed attempts, on objective improvement, and at finish. Solver progress
-boundaries also allow updates while a candidate is still integrating. There is
-no timer thread and no report recomputation. An uncooperative long native call
-cannot refresh until it returns to a progress boundary.
+Each completed evaluation produces one permanent line with status, search origin,
+useful metrics or rejection reasons, and `BEST` when the feasible objective
+improves. Cached attempts are labelled. Metrics distinguish motor indicated gas
+power from refrigeration cooling power and indicated input.
 
-The snapshot contains phase/index, attempts/cap, elapsed/budget, converged and
-feasible counts, principal failure statuses and the best feasible objective.
-Refrigeration metrics include COP, cold power and indicated input when present.
-The best may come from an earlier phase; counters describe the current phase.
-Each completed evaluation produces one permanent line, with region/centre origin,
-status and useful metrics or rejection reasons. TTY progress refreshes a separate
-bottom status line in place; non-TTY output has no periodic status spam or ANSI
-sequences. Finish/interruption cleans the dynamic line and emits a compact summary.
+On a TTY, a separate transient status line displays attempts, elapsed time,
+feasibility and best-result information. It is cleared before permanent lines
+and cleaned on completion or interruption. Non-TTY output retains permanent
+lines and start/finish summaries without ANSI refresh sequences or periodic
+status spam.
 
-## Native solver stderr
+The runner sends progress snapshots at start and finish, for completed evaluations,
+and at solver progress boundaries. Ordinary periodic notifications are throttled:
+within ten seconds of the previous notification they require at least ten more
+attempts. Evaluation notifications are not subject to that throttle.
+An evaluation that returns to solver progress boundaries can therefore report
+progress before finishing; an uninterrupted native call cannot.
+This is synchronous reporting, not a monitoring thread or parallel scheduler.
 
-`solver_output.capture_native_stderr` duplicates POSIX fd 2 and redirects it to
-a temporary file immediately around each `solve_ivp` call. Python and C buffers
-are flushed before redirection/restoration. The saved descriptor is restored
-and closed in `finally`, including callback exceptions and `KeyboardInterrupt`.
-A file avoids bounded-pipe deadlocks. The solver receives identical arguments,
-and the original Python exception object/type/message is re-raised.
+## Reports, curves and replay
 
-Captured text is attached as `native_solver_stderr` to a failing exception or a
-solver result. Wall-evaluation failures can retain it in `technical_diagnostics`;
-the scientific failure status and reason remain unchanged. It does not suppress
-Python exception reporting after the descriptor is restored. The generic gas
-and external-wall integration paths share this wrapper. No tolerance, validity
-rule, retry policy or solver algorithm is changed.
+`report` regenerates `CAMPAIGN/report.html` by default. For a standalone evaluation,
+the default is a sibling `.html`; `--html PATH` overrides it. `compare` only writes
+HTML when requested with `--html`. Reports are standalone/offline artifacts with
+no server or network dependency. Regeneration does not change stored scientific
+verdicts or metrics.
 
-Descriptor replacement is process-wide, so these solver calls are serialized
-with a reentrant lock. Research already evaluates sequentially. Unrelated
-threads must not write to fd 2 during a solve. This is a POSIX facility, matching
-the existing filesystem locking contract.
+Default report curves are positions, gas-to-wall heat exchange, pressures and
+temperatures for the two best feasible candidates. Explicit selectors change the
+targets; `--plots` chooses curves or supported mechanism animations, and
+`--plots none` omits them. Comparison does not request curves by default.
+See the [guide examples](DADA_ENGINE_RESEARCH.md#reports-curves-and-animations).
 
-## Cockpit evidence
+Thermodynamic curves can require a separately announced one-cycle replay from the
+saved periodic endpoint. This does not restart optimization or full periodic
+convergence. Missing state or replay failure makes the curve unavailable, with an
+explanation, without changing the historical result.
 
-The HTML adds:
+The derived `.research-plot-cache` beside the HTML avoids identical thermal
+reconstructions. Its identity includes the saved state and current runtime.
+A reconstruction under another checkout/runtime is new derived evidence, not the
+exact historical trajectory. Runtime compatibility and replay metadata remain
+visible. Kinematic sampling and local mechanism-frame conventions are documented
+in the [kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).
 
-- A funnel of attempted, integrated, converged and feasible stored outcomes,
-  cache hits and distinct candidates. Counts describe records, including cache
-  outcomes; they do not imply a new integration was performed on cache hits.
-- Stable rejection categories, with exact original reasons retained in records.
-  Transport temperature failures use the declared transport domain to classify
-  below/above-domain cases. When that evidence is unavailable, the category
-  remains `transport_temperature_outside_domain`; no cutoff is guessed.
-- For each active parameter and each bound, the number/percentage of distinct
-  candidate coordinates within the outer 5% of the normalized interval, plus
-  elite counts. This includes rejected coordinates and honors log transforms.
-  The latest record per candidate ID is used. Elites are up to five distinct
-  feasible candidates ranked by the existing minimized objective.
-- Deterministic factual review actions and copyable commands. At least three
-  elites with 60% near a bound marks pressure and takes precedence over a
-  continuation prompt. Otherwise fewer than 512 distinct points or five elites
-  exposes a continuation action. These are presentation thresholds, not search
-  saturation or scientific convergence criteria. Dominant domains and violated
-  constraints are surfaced without proposing relaxed limits.
+## Deliberate HTML detail limit
 
-Scientific domains and bounds are never edited automatically. Selected-candidate
-volume commands update when either comparison selector changes. IDs use a short
-prefix checked against the whole source campaign. Paths and arguments use POSIX
-shell quoting. Copy uses the clipboard API with a selection-copy fallback. The
-standalone HTML executes no shell command and needs no server or network.
-Cross-study reports retain separate funnels, bounds and commands per source.
-Existing sorting, filters, margins, topology/reflux and volume graphs remain.
+The presentation policy `best_distinct_feasible_tenth_v1` retains detailed records
+for the best distinct feasible candidates up to `ceil(0.10 * attempts)` for
+compatible comparisons. Required plot targets and explicit selections remain
+included even outside that base. In incompatible comparisons the renderer retains
+feasible distinct selections up to the cap without imposing a joint ranking.
+
+Global statistics, the funnel and progression still cover all attempts. Complete
+scientific records remain in the journal and structured JSON inspection. This is
+a presentation policy, not deletion of scientific data or search sampling.
+HTML filters operate on the embedded selection: an empty filtered table does not
+prove that the full journal contains no matching candidate.
+
+## Cockpit evidence and review actions
+
+The cockpit presents an attempts/integrated/converged/feasible funnel, cache-hit
+and distinct-candidate counts, failure categories and violated constraints.
+These are stored-outcome counts; a cached outcome does not imply fresh integration.
+Original reasons and available constraint values remain the underlying evidence.
+
+Bound pressure counts distinct coordinates within the outer 5% of each normalized
+numerical interval, including rejected candidates. Choice categories are excluded
+from numerical bound-pressure interpretation. Up to five distinct feasible elites
+are selected using the existing objective. At least three elites with 60% near a
+bound trigger a bound-review signal. Otherwise fewer than 512 distinct candidates
+or five elites can expose a continuation suggestion. These are UX conventions,
+not evidence of saturation, optimality or periodic convergence.
+
+Actions have distinct meanings:
+
+- Shell commands, such as `resume` or report regeneration, are copyable suggestions
+  for the operator; the HTML never executes them.
+- A `bounds` action displays an inspection button that scrolls to bound pressure.
+- A `filter` action displays an inspection button selecting a failure category or
+  violated constraint, scoped to its source.
+
+The renderer does not replace `bounds` or `filter` actions with report commands.
+Review actions never change bounds, constraints or model domains automatically.
+Cross-study evidence remains separated by source.
 
 ## Journal-first persistence
 
-New results no longer produce `candidates/<sha256>.json`. Instead:
+New campaigns use `history.jsonl.gz`. Each appended result is an independent gzip
+member containing one canonical JSON record terminated by a newline. Compression
+is lossless and uses a deterministic gzip timestamp.
 
-1. Atomically write and fsync `recovery.json`, including its directory rename.
-2. Append the complete result to `history.jsonl` and fsync it.
-3. Atomically update and fsync `state.json` with its existing schema.
-4. Remove `recovery.json` and fsync the directory.
+A completed evaluation, including a cache hit, follows this durable order:
 
-The runner clears recovery only after the state commit, including when resuming
-from a recovered result. Cache-hit attempts follow the same durable sequence.
-A recovery record absent from the journal is verified and appended exactly once.
-A residual recovery matching a journal record is not duplicated. Conflicting
-records or invalid identities fail explicitly. The pending Sobol point is
-reconciled with durable completed records before any new evaluation.
+1. Atomically write and fsync `recovery.json`.
+2. Append the result to the journal and fsync it.
+3. Atomically update and fsync `state.json`.
+4. Remove `recovery.json` after durable state acknowledgement.
 
-A torn final append is preserved in the existing `history_torn_tail_*.bin`
-artifact, truncated and recovered from the completion slot. Non-final
-corruption remains an error. Read-only inspection includes unjournaled recovery
-without modifying the journal, state or recovery file. Execution resume repairs
-under the existing exclusive writer lock.
+Directory updates are also synchronized. A verified recovery result absent from
+the journal is appended exactly once; a matching already-journaled result is not
+duplicated. Conflicting records or invalid identities fail explicitly. Pending
+work is reconciled with durable completions before a new evaluation.
 
-Legacy `candidates/*.json` files remain readable and recoverable. No automatic
-migration or deletion occurs, and new evaluations in those campaigns also use
-the single recovery slot. Exact cache, original IDs, warm states and Sobol order
-are retained. A large campaign now has one growing result journal, one transient
-completion file and existing per-phase summaries, rather than a file per result.
+Read-only inspection can include unjournaled recovery without changing storage.
+Execution resume performs repairs under the exclusive writer lock. An incomplete
+last gzip member can be preserved as `history_torn_tail_*.bin` and truncated back
+to the last complete member. CRC corruption of a complete member is an error,
+not an interrupted append; non-final corruption is not silently repaired.
+
+Legacy `history.jsonl` and `candidates/*.json` remain readable/recoverable.
+An existing plain journal continues in plain format; there is no automatic
+migration or deletion. Simultaneous `history.jsonl` and `history.jsonl.gz` files
+are rejected as ambiguous history.
+
+Interruptions preserve pending work for controlled resume. `--retry-incomplete`
+explicitly retries unresolved deadline-limited work. Execution compatibility is
+checked against stored snapshots, while offline inspection may remain available
+when resume is incompatible. See the [technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md)
+for the complete cache and compatibility contract.
+
+## Native solver stderr
+
+The integration wrappers capture native solver stderr around the relevant solver
+calls. Captured text can remain in technical diagnostics without changing the
+scientific status or reason. The descriptor is restored even after an exception
+or `KeyboardInterrupt`; normal Python error reporting remains available.
+
+This is a POSIX, process-wide facility. Wrapped calls are serialized, but unrelated
+threads must not write to stderr during a solve. Capture is not a change to solver
+arguments, tolerances, validity limits or retry rules.
+
+## Execution limits are not scientific criteria
+
+Generated and capacity-rescaled studies default to 512 attempts per invocation.
+The CLI interprets the historical configured default 16 as 512 without rewriting
+snapshots; explicit `--max-candidates 16` still requests 16. Other configured caps
+remain effective. This is not a total campaign-size limit.
+
+The attempt cap, invocation time budget and individual evaluation deadline have
+different scheduling roles. None establishes physical validity or convergence.
+Capacity transformation rules belong to the [capacity reference](DADA_ENGINE_RESEARCH_CAPACITY.md);
+current evidence boundaries and known failures belong to [validation](validation.md).
