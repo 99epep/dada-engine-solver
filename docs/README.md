@@ -1,8 +1,7 @@
 # Documentation
 
 Start with the [Research guide](DADA_ENGINE_RESEARCH.md). It begins with the
-source-checkout shell helper and covers the daily commands. This index separates
-current model references from dated experiments: an old candidate, limit or
+source-checkout shell helper and covers the daily commands. This index covers current model references; an old candidate, limit or
 benchmark is not a default for a new study.
 
 ## Use Research
@@ -26,7 +25,7 @@ benchmark is not a default for a new study.
 | Finite external stream, wall storage and refrigeration COP | [External streams](EXTERNAL_STREAM_THERMAL_MODEL.md) |
 | EOS, conservative reconstruction and compiled property tables | [Working fluids](WORKING_FLUID_MODELS.md) |
 | Other exchanger screening/fixed-point interfaces | [Exchanger screening](HEAT_EXCHANGERS.md) |
-| Empirical provenance and limits | [Exchanger validation](EXCHANGER_VALIDATION.md), [literature](EXCHANGER_LITERATURE.md), [Doty screening](DOTY_SCREENING.md) |
+| Empirical provenance and limits | [Exchanger validation](EXCHANGER_VALIDATION.md), [Doty screening](DOTY_SCREENING.md) |
 | Model domain versus design requirement | [Current physics decisions](PHYSICS_DECISIONS.md) |
 
 ## Design motion and mechanisms
@@ -54,16 +53,3 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 - [Numerical execution](SOLVER_PERFORMANCE.md): Python/Numba, exact reuse,
   diagnostic replay, benchmark evidence and rejected acceleration experiments.
 - [Validation map](validation.md): tests to run and the meaning of their results.
-
-## Application boundaries and historical evidence
-
-- [Cooling cell](COOLING_CELL.md): load calculation and indicated-input boundary.
-- [Domestic refrigerator](DOMESTIC_REFRIGERATOR.md): separate appliance boundary;
-  dated standards/product references require review for a new comparison.
-- [Motor demonstrator](MOTOR_DEMONSTRATOR.md): application-specific design brief,
-  not global solver limits.
-
-Saved `outputs/`, examples, audit JSON/CSV, fixtures and source artifacts are not
-edited by documentation maintenance. Some large output directories are local-only
-and may be absent from a distributed checkout. Their absence is not a reason to
-invent replacement results.

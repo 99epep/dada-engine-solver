@@ -42,8 +42,8 @@ to Doty or exposed through the historical CLI.
 
 For current exchanger models and evidence, read docs/MICROTUBE_GAS_MODEL.md,
 docs/EXTERNAL_STREAM_THERMAL_MODEL.md, docs/DOTY_SCREENING.md and
-docs/EXCHANGER_VALIDATION.md; consult docs/EXCHANGER_LITERATURE.md for
-bibliographic provenance. External airflow is now sized
+docs/EXCHANGER_VALIDATION.md; these references retain the applicable source
+provenance and limitations. External airflow is now sized
 from expected peak internal flow with a capacity-rate margin; verify achieved
 ratios and retain finite thermal-film resistance.
 Use checkpoint intervals and optional bounded wall initial-guess acceleration

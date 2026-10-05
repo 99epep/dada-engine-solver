@@ -18,7 +18,7 @@ research --help
 
 - [Research guide](docs/DADA_ENGINE_RESEARCH.md): study setup, run/resume,
   refine/rescale, reports, curves and mechanism animations.
-- [Documentation index](docs/README.md): physics, models, development and historical evidence.
+- [Documentation index](docs/README.md): physics, models, methods and validation.
 - [Current physical decisions](docs/PHYSICS_DECISIONS.md): conventions, validity,
   model boundaries and deliberate omissions.
 

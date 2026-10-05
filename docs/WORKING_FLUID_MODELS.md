@@ -179,9 +179,8 @@ tolerances. These historical figures do not certify a modern helium machine.
 Higher ideal-gas pressure can scale power at proportionally changed hardware;
 it is not by itself a COP improvement. Helium's transport advantages, stronger
 adiabatic excursions, containment and nonideality require separate assessment.
-Compare indicated cycle COP with a like-for-like thermal/work boundary, never
-directly with an appliance's annual electrical label. See the
-[domestic-appliance boundary](DOMESTIC_REFRIGERATOR.md).
+Compare indicated cycle COP only with a like-for-like thermal/work boundary;
+an appliance's annual electrical label includes a different system boundary.
 
 Retained primary references from the original screening:
 

@@ -38,11 +38,12 @@ implicit machine defaults are materialized where necessary.
 | Research coordinate | Action |
 |---|---|
 | Total swept volume; explicit total gas inventory | Multiply by `s` |
-| Microtube count; declared additional internal gas volume | Multiply by `s` |
+| Microtube count and individual length | Coupled total-length transformation below |
+| Declared additional internal gas volume | Multiply by `s` |
 | External-stream mass flow; declared external wall conductance | Multiply by `s` |
 | Legacy external-air mass flow | Multiply by `s` |
 | Frequency, volume/clearance ratios and selected kinematics | Preserve |
-| Individual tube dimensions, pitch/packing settings and materials | Preserve |
+| Inner/outer tube diameters, pitch/packing settings and materials | Preserve |
 | Temperatures and specific properties | Preserve |
 
 The rebuilt basis also scales cylinder minimum/maximum volumes, reservoir
@@ -55,19 +56,37 @@ Study constraints, mechanical requirements, validity thresholds, screening and
 numerical tolerances are preserved. A larger machine may therefore violate a
 constraint that the source satisfied; rescaling does not certify feasibility.
 
-## Active parameters and integer counts
+## Microtube length and integer counts
+
+For each exchanger independently, capacity multiplies total physical microtube
+length, not count alone. For source count `N`, individual length `L` and factor `s`:
+
+```text
+target total tube length = s N L
+N_ideal = N sqrt(s)
+N' = round(N_ideal), nearest integer with ties to even
+L' = s N L / N'
+N' L' = s N L
+```
+
+A quantized count below one is rejected, not clamped. Length must remain finite
+and strictly positive. Inner and outer diameters, pitch and material remain
+unchanged. Factor `1` retains count and length exactly. The length correction
+preserves the total-length invariant even when `N_ideal` is not integral.
 
 Fixed/active ownership and active transforms are retained. Every declaration is
 centered on the selected physical candidate:
 
-- An extensive fixed value or active initial value is multiplied by `s`.
-- Extensive active bounds are multiplied by `s`.
+- Ordinary extensive values and bounds are multiplied by `s`.
+- Microtube count initial values and bound endpoints use the same nearest-integer
+  quantization of their value times `sqrt(s)`.
+- Microtube length initial values use the coupled rule above; length bounds are
+  multiplied by the selected candidate's actual length factor `s N / N'`.
 - Intensive initial values come from the candidate; their bounds stay unchanged.
-- Tube counts must remain positive integers. No opportunistic rounding is allowed;
-  only absolute roundoff within `1e-9` count is accepted.
-- Integer bounds use `ceil(s * lower)` and `floor(s * upper)`.
-  Collapsed or invalid intervals are rejected, including equal endpoints.
 
+Collapsed or invalid active intervals are rejected, including equal endpoints;
+no bounds are widened silently. These are independent search bounds around the
+transformed candidate, not a coupled constraint on every future count/length pair.
 See the [technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md) for general
 parameter declarations and search encoding.
 
@@ -94,21 +113,22 @@ Unknown/custom hydraulic closures are refused rather than extrapolated.
 
 ## Circular collectors
 
-For `circular_triangular_frustum_v1`, individual tube dimensions, `pitch_ratio`,
-`conduit_area_ratio` and collector half-angle stay fixed. With an admissible integer
-count change `N -> s*N`, the implemented geometry gives:
+For `circular_triangular_frustum_v1`, tube diameters, `pitch_ratio`,
+`conduit_area_ratio` and collector half-angle stay fixed. Ignoring integer
+quantization, the continuous trend is:
 
-- bundle and conduit diameters proportional to `sqrt(s)`;
-- collector height proportional to `sqrt(s)`;
-- collector volume proportional to `s^(3/2)`;
-- conduit/ideal-diode area proportional to `s`.
+- count and individual tube length proportional to `sqrt(s)`;
+- bundle/conduit diameters and collector height proportional to `s^(1/4)`;
+- collector volume proportional to `s^(3/4)`;
+- conduit/ideal-diode area proportional to `sqrt(s)`.
 
-This follows exactly from the continuous triangular-cell envelope and conical
-frustum formulas, apart from floating-point roundoff. It is a consequence of the
-chosen geometry, not a scaling error. Tube gas volume and declared additional
-volume scale by `s`, but total hold-up need not. Reference-pressure inventory is
-therefore re-derived from the final connected volumes rather than forced to scale
-linearly. See the [microtube model](MICROTUBE_GAS_MODEL.md) for formulas and domains.
+The actual geometry uses the retained integer count: for `r = N'/N`, diameters
+and collector height scale by `sqrt(r)`, collector volume by `r^(3/2)` and conduit
+area by `r`. Production reconstructs these quantities; rescale does not force them.
+Tube gas volume and declared additional volume scale by `s`, but total hold-up
+need not. Reference-pressure inventory is therefore re-derived from the final
+connected volumes rather than forced to scale linearly. See the
+[microtube model](MICROTUBE_GAS_MODEL.md) for formulas and domains.
 
 ## Warm start and identity
 
@@ -124,12 +144,13 @@ provenance and a new scientific identity, not an alias or cache hit.
 
 ## Provenance and portability
 
-The basis records `provenance.capacity_scaling`: version, mode, factor, parent
+The basis records `provenance.capacity_scaling` version `2`: mode, factor, parent
 candidate, source study/definition, source location and basis digest, before/after
 changes, bound conventions, unchanged constraints, geometry reconstruction and
-warm-start policy. Existing provenance is retained. The generic geometry note
-mentions discrete packing; the actual bank family determines whether discrete
-packing or the circular continuum formula applies.
+warm-start policy. It identifies ordinary extensive scaling, the coupled microtube
+rule, ideal/retained counts, actual length factors and unchanged diameters. The
+source/output search domains record normalization of a local source. Existing
+provenance is retained without copying local regions into the output search.
 
 Required mechanism artifacts are copied and referenced locally. Move the new TOML
 together with its associated basis and artifacts; reconstruction does not require
@@ -137,18 +158,22 @@ the original campaign directory. Source paths retained in provenance are evidenc
 not live dependencies.
 
 Scaling by `s` can conceptually be followed by `1/s`, but bitwise reversibility is
-not promised: integer bounds, ceil/floor, discrete packing, roundoff and geometric
+not promised: integer quantization of counts/bounds, discrete packing, roundoff and geometric
 reconstruction can intervene. The original source and recorded `before` values
 remain the reference.
 
 ## Unsupported cases and related references
 
 Only schema 2/3 (V2/V3) machine studies are supported. Schema 1 remains inspectable
-but requires explicit migration before scaling. `local_regions_v1` is rejected:
-rescale the global source first, then optionally refine the new study.
+but requires explicit migration before scaling. Global and `local_regions_v1`
+candidates are accepted: local origin describes how the candidate was found,
+not an ambiguity in its physical machine. A local source produces a global
+`fixed_global_bounds` Sobol study retaining `seed` and `scramble`. Old regions,
+centers, radius, allocation and center scheduling are discarded. The transformed
+candidate supplies the new initial point; no parent campaign is required.
 
 Unsupported schemas, custom hydraulic flow models, unknown hydraulic quantities,
-non-integral counts, overflow, invalid bounds and existing destinations fail
+counts quantized below one, nonpositive/nonfinite lengths, overflow, invalid bounds and existing destinations fail
 explicitly. Unknown declarations must pass the normal production schema checks;
 there is no fallback scaling rule for unrecognized physical quantities.
 These refusals protect the declared scientific transformation.

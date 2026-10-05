@@ -6,7 +6,6 @@ and thermal-entry Nu through the existing hardware/wall architecture. The
 rectangular-channel screening correlations described below retain their
 historical fully developed assumptions for compatibility.
 
-
 The exchanger module translates a real gas-passage geometry into quantities
 that the thermodynamic sizing problem can constrain. It is a low-order design
 tool, not a CFD solver and not an experimental calibration.
@@ -40,8 +39,9 @@ fluid, manifold or fabrication value silently.
 The cold and hot exchangers may use the same internal architecture while
 having different external models. A water-glycol loop and ambient air do not
 generally have the same external resistance. The present API expresses that
-difference through `external_conductance`; future reservoir-side models can
-replace it without changing the gas-passage geometry.
+difference through declared `external_conductance`. The separate
+[external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md) owns finite external
+flow and wall storage; those are not implicitly provided by this screening input.
 
 ## Correlations and validity
 
@@ -51,12 +51,14 @@ polynomials. For turbulent flow it uses the Haaland Darcy friction factor and
 the Gnielinski Nusselt correlation. The interval `2300 <= Re < 4000` is not
 interpolated: thermal conductance and pressure drop are reported as
 `unavailable`. Values outside the declared turbulent Reynolds and Prandtl
-ranges are treated the same way.
+ranges are treated the same way. The supported turbulent range is
+`4000 <= Re <= 5e6`, `0.5 <= Pr <= 2000`.
 
 The entrance-length check is deliberately conservative. The fully developed
 correlations are unavailable when the channel is shorter than the estimated
-hydrodynamic or thermal entrance length. A future entrance-region model may
-recover such designs, but the current model does not extrapolate them.
+hydrodynamic or thermal entrance length: laminar flow requires
+`L >= max(0.05 Re Dh, 0.05 Re Pr Dh)`, turbulent flow `L >= 10 Dh`.
+These screening correlations do not extrapolate into developing flow.
 
 Pressure drop is calculated with a mean-density Darcy model. It is not a
 compressible duct solution. Every sizing study must therefore set both an
@@ -74,24 +76,14 @@ literature, including:
   DOI `10.1115/1.3240948`.
 - R. K. Shah and A. L. London, *Laminar Flow Forced Convection in Ducts*,
   Academic Press (1978), for fully developed non-circular duct correlations.
-- [Wire-mesh oscillatory-flow experiments and correlations](https://www.sciencedirect.com/science/article/pii/S1110016815000927),
-  which are relevant to a future porous-matrix implementation but are not used
-  by the rectangular-channel model.
-- [Experimental regenerator wire-mesh flow and heat-transfer study](https://cir.nii.ac.jp/crid/1390282679648971648),
-  documenting why steady correlations cannot by themselves validate an
-  oscillatory porous exchanger.
 - [Experimental oscillating-air pin-fin measurements](https://doi.org/10.1155/2013/283830),
-  which found a 20--34 percent enhancement without bypass but degradation for
+  which found enhancement without bypass but degradation for
   excessive bypass in its tested apparatus. This is evidence that manifold and
   bypass geometry matter, not a correction factor for DADA.
 - [Laminar pulsating-flow analysis in a rectangular channel](https://doi.org/10.1016/j.ijheatmasstransfer.2018.08.109),
   which found a reduction of time-averaged Nusselt number for its boundary
   conditions. Together with the preceding experiment, this rules out assuming
   that pulsation is universally beneficial.
-- [Oscillatory shell-and-tube air/water experiments](https://www.osti.gov/servlets/purl/1026487),
-  which organize effectiveness using peak-flow Reynolds number and thermal
-  penetration depth. These are appropriate future similarity variables for
-  DADA exchanger validation.
 
 The literature therefore supports the present steady-flow model as a screening
 baseline, but it does not provide one universal multiplier that converts it
@@ -123,9 +115,7 @@ heat, drainage, corrosion, valve adhesion or passage blockage. Those effects
 must not be added until water becomes an explicit transported constituent.
 For each control volume, the report gives the maximum saturation ratio and the
 first saturated sample relative to `theta = 0`, including angle, temperature,
-pressure and predicted equilibrium phase. When plotting is enabled, an eighth
-panel shows the complete S/L/C/H saturation-ratio histories and the unit
-saturation boundary.
+pressure and predicted equilibrium phase.
 
 ## Coupling to the cycle
 
@@ -142,8 +132,9 @@ pulsatile velocity history.
 
 The geometric result may provide candidate values for exchanger gas volume and
 `UA` in a subsequent thermodynamic run. It must not silently replace the four
-configured hydraulic `CdA` values. A geometry-based compressible passage law
-requires a later coupled implementation and validation.
+configured hydraulic `CdA` values. The optional geometric hydraulic coupling
+described below must be selected explicitly; it remains a quasi-steady
+mean-density approximation, not a full compressible duct solution.
 
 ## Command line
 
@@ -196,11 +187,6 @@ pressure drop and achieved `UA`. This Pareto set allows the machine-level
 sizing process to reconsider a slightly larger exchanger when it offers a
 large hydraulic benefit.
 
-For the illustrative file, minimum-volume optimization reduces the best
-screened gas volume from `1.60e-4 m3` to approximately `1.17e-4 m3` while
-meeting its artificial `20 W/K` target. This verifies the optimization path;
-it is not a proposed DADA component.
-
 ## Cycle/exchanger fixed point
 
 The coupled command alternates a complete periodic simulation and two
@@ -212,8 +198,7 @@ dada-exchanger-coupled examples/exchanger_coupled_example.toml
 
 The coupled file references one thermodynamic configuration plus separate
 cold- and hot-exchanger files. This permits different external conductances,
-materials, channel bounds, constraints and objectives on the glycol and heat-
-rejection sides.
+materials, channel bounds, constraints and objectives on the two branches.
 
 At every outer iteration the adapter obtains a conservative port-flow value
 for each exchanger. It uses the minimum pressure and maximum temperature of
@@ -254,7 +239,7 @@ geometries and final-cycle performance when available.
 
 ## Geometric hydraulic coupling
 
-The coupled loop can now replace the four reference orifice closures with a
+The coupled loop can replace the four reference orifice closures with a
 geometric quasi-steady model. The reference `CompressibleOrifice` remains the
 default for ordinary simulation files and can always be selected for direct
 comparison.
@@ -283,8 +268,8 @@ infeasibility rather than compensated by changing the target `UA`.
 The approximation follows the conservative limits documented by the
 [NIST comparison of incompressible and isothermal compressible pipe-flow
 formulae](https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote356.pdf):
-compressibility cannot be neglected freely as Mach approaches one third or
-relative pressure loss approaches ten percent. The code therefore reports
+compressibility cannot be neglected without assessing Mach and relative
+pressure loss. The code therefore reports
 Mach and `delta_P/P` independently and does not label results beyond the
 configured limits valid. Sonic capacity follows the official
 [NASA isentropic-flow relations](https://www.grc.nasa.gov/www/k-12/airplane/isentrop.html).
@@ -301,32 +286,17 @@ indicators from a periodic mass-flow history:
   `delta_P_inertia = (L/A) d(m_dot)/dt`.
 
 No acceptance threshold is hard-coded. If either time/inertia threshold is
-violated, `inertia_model_recommended` becomes true. Only then is a momentum
-state for each passage justified as the next physical level.
+violated, `inertia_model_recommended` becomes true. This is a recommendation
+to investigate a dynamic hydraulic model, not experimental validation or an
+automatic change of closure.
 
 `compare_hydraulic_models` evaluates reference `CdA` and geometric closures at
 the same pressure ratios and temperature without fitting either model. The
 coupled report also retains the initial reference-cycle performance for a
 before/after comparison when a geometric iteration has actually run.
 
-The exploratory cooling-cell files are intentionally separate from the
-generic demonstration:
+## Two-sided liquid/gas screening
 
-- `examples/cooling_cell_exchanger_exploratory.toml`;
-- `examples/cooling_cell_exchanger_coupled_exploratory.toml`.
-
-Their air transport properties, wall model and `500 W/K` external conductance
-are provisional inputs, not measurements. They are useful for sensitivity and
-software verification only.
-
-The 20-minute similarity point requires about `382.9 W/K` per exchanger after
-its speed is adjusted to 27.85 rpm. Directly increasing the gas volume to
-6.4 litres reduced cooling to about 41.5 W and COP to about one; exchanger gas
-volume cannot therefore be traded freely for area. With 0.4 litre per exchanger,
-the same first-level cycle instead produces 347.58 W cooling, requires 103.83 W
-thermodynamic input and retains COP 3.3476 at a 1 bar filling pressure.
-
-The former lumped external conductance is no longer the only available closure.
 `two_sided.py` evaluates an explicitly configured incompressible liquid channel
 side, combines gas convection, wall conduction and liquid convection in series,
 and reports liquid pressure drop and ideal pump input separately. Liquid density,
@@ -334,44 +304,6 @@ heat capacity, viscosity, conductivity, flow and pump efficiency are mandatory;
 the solver supplies no invented glycol properties or pump efficiency. The gas-
 side geometric pressure loss remains a screening value and must not be added to
 the cycle work a second time when it has already been represented by fitted CdA.
-
-## Compact plate-fin candidate for the 20-minute cell
-
-The compact-exchanger literature reports surface densities above
-`10000 m2/m3` for passages below 1 mm. Brazed plate-fin construction is an
-established gas-to-liquid architecture, with alternating passages and fins:
-
-- [Review of compact and microchannel air-side correlations](https://doi.org/10.1016/j.enconman.2018.06.104)
-- [Alfa Laval brazed plate-and-fin architecture](https://www.alfalaval.com/products/heat-transfer/plate-heat-exchangers/plate-and-fin-heat-exchangers/brazed-plate-and-fin-heat-exchangers/)
-
-A straight-fin screening candidate uses 200 parallel gas passages, each 200 mm
-wide, 0.30 mm high and 11 mm long. Its calculated core quantities at 0.096 kg/s,
-72 kPa and 264 K are:
-
-| Quantity | Screening value |
-|---|---:|
-| Gas volume | 0.132 L |
-| Gas-side area | 0.881 m2 |
-| Gas velocity | 8.0 m/s |
-| Mach number | 0.026 |
-| Core pressure drop including assumed K=1 | 244 Pa |
-
-Alternating 0.75 mm liquid passages provide approximately the same shared area.
-Using deliberately conservative 40% propylene-glycol properties tabulated at
--20 degrees Celsius, a 5 K loop rise, 0.1 mm aluminium separating walls and an
-exploratory pump efficiency of 30%, the model returns about 227.5 W/K and less
-than 1 mW of ideal core pumping power. The fluid data are from the
-[DOWFROST HD technical data sheet](https://www.dow.com/content/dam/dcc/documents/en-us/productdatasheet/180/180-01315-01-dowfrost-hd-tds.pdf).
-
-This result establishes plausibility, not hardware validity. The 0.4 L control-
-volume allowance leaves about 0.268 L for gas headers, but header distribution
-and pressure loss are not yet demonstrated. The 0.30 mm gas gap is vulnerable
-to retained condensate, frost, manufacturing variation and fouling. Oscillating
-intermittent flow may also change heat transfer and pressure loss relative to
-the steady fully-developed correlations. A 0.5 mm option is less vulnerable but
-uses roughly 0.35 L of core gas volume for similar UA, leaving almost no header
-allowance. Header design and minimum clear passage are therefore the next Pareto
-variables; neither candidate is selected yet.
 
 ## Required next validation
 
@@ -386,3 +318,7 @@ Before selecting hardware, each promising geometry still requires:
 
 CFD is justified only if collector maldistribution, entrance flow or complex
 porous geometry cannot be bounded adequately by correlations and bench tests.
+
+Current experimental evidence is documented in
+[exchanger validation](EXCHANGER_VALIDATION.md); test status and numerical
+proof boundaries are in [validation](validation.md).

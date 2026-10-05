@@ -22,6 +22,12 @@ boundary temperatures differ. The three helium measurements span 749–825 kPa
 and 79–213 mg/s flow. The reported uncertainties are retained in the source CSV;
 the screening factors below are not statistical confidence bounds.
 
+Extrapolations must retain the source conditions and disclose gas-property and
+geometry scaling, Reynolds-number changes and sensitivity scenarios; they are
+estimates, not measurements or manufacturer ratings. Frequency alone does not
+justify transferring a pulsating-flow correlation: waveform, Reynolds number,
+thermal boundary conditions and reflux must also be compared.
+
 ## Implemented calculation
 
 `dada_solver.exchangers.doty.scale_bank` replicates complete banks in parallel,

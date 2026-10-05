@@ -251,13 +251,41 @@ def test_invalid_local_schema(source,tmp_path,mutation):
     with pytest.raises(ValueError): load_study(path)
 
 
-def test_rescale_local_region_is_explicitly_unsupported(source,tmp_path):
+@pytest.mark.parametrize('factor', [1, 5])
+def test_rescale_local_candidate_is_portable_global_study(source,tmp_path,factor,monkeypatch):
+    from dataclasses import asdict
     from dada_solver.research.rescale import rescale
-    _,definition=local(source,tmp_path)
+    path,definition=local(source,tmp_path)
     directory=tmp_path/'local_campaign';clock=Clock()
-    OptimizationCampaign(definition,directory,evaluator=Evaluator(clock),clock=clock).run(100,maximum_candidates=1)
-    with pytest.raises(ValueError,match='rescale the global source first'):
-        rescale(directory,'best',5,tmp_path/'unsafe.toml')
+    OptimizationCampaign(definition,directory,evaluator=Evaluator(clock),clock=clock).run(100,maximum_candidates=3)
+    record=CampaignHistory(directory).load()[-1]
+    assert record['physical'] != {p.name:p.initial for p in definition.space.parameters}
+    expected=definition.adapter.build(dict(definition.fixed_parameters,**record['physical']))
+    shutil.rmtree(source)
+    path.unlink()  # Only stored snapshots, never parent lookups or the external TOML.
+    monkeypatch.setattr('dada_solver.campaign.evaluator.MachineEvaluator.evaluate',lambda *a:pytest.fail('integration'))
+    output=rescale(directory,record['candidate_id'][:12],factor,tmp_path/'scaled'/'study.toml')
+    shutil.rmtree(directory)
+    study=load_study(output);scaled=compile_study(study)
+    physical=dict(study.fixed_parameters,**{p.name:p.initial for p in study.space.parameters})
+    actual=scaled.adapter.build(physical)
+    assert physical['volume.swept_ratio']==record['physical']['volume.swept_ratio']
+    assert physical['volume.total_swept_m3']==definition.fixed_parameters['volume.total_swept_m3']*factor
+    assert study.data['search']==dict(type='sobol',domain='fixed_global_bounds',
+        seed=definition.search_settings['seed'],scramble=definition.search_settings['scramble'])
+    assert study.data['study']['parent_candidate_id']==record['candidate_id']
+    provenance=study.basis.data['provenance']['capacity_scaling']
+    assert provenance['source_candidate_id']==record['candidate_id']
+    assert provenance['source_definition_id']==definition.definition_id
+    assert provenance['source_study_id']==definition.study.study_id
+    assert provenance['search']==dict(source_domain='local_regions_v1',output_domain='fixed_global_bounds')
+    for side in ('heat_in','heat_out'):
+        a,b=getattr(expected,side).bank,getattr(actual,side).bank
+        assert b.tube_count*b.tube_length_m==pytest.approx(factor*a.tube_count*a.tube_length_m)
+    if factor==1:
+        assert asdict(actual.configuration)==asdict(expected.configuration)
+        assert asdict(actual.heat_in)==asdict(expected.heat_in)
+        assert asdict(actual.heat_out)==asdict(expected.heat_out)
 
 
 @pytest.mark.parametrize('center,missing,unexpected', [

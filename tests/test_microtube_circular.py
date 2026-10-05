@@ -157,8 +157,8 @@ def test_circular_rescale_keeps_additional_volume_extensive(tmp_path):
     d=compile_study(load_study(scaled));design=d.adapter.build(d.fixed_parameters)
     for side in ('heat_in','heat_out'):
         a=getattr(source,side);b=getattr(design,side)
-        assert b.bank.tube_count==4*a.bank.tube_count
+        assert b.bank.tube_count==2*a.bank.tube_count
         assert b.bank.additional_internal_volume_m3==4*a.bank.additional_internal_volume_m3
-        assert b.outlet_valve_cda_m2==pytest.approx(4*a.outlet_valve_cda_m2)
-        assert b.bank.dimensions()['header_gas_volume_m3']==pytest.approx(8*a.bank.dimensions()['header_gas_volume_m3'])
-    # Growing the face at fixed cone angle grows length too: headers scale s^1.5.
+        assert b.outlet_valve_cda_m2==pytest.approx(2*a.outlet_valve_cda_m2)
+        assert b.bank.dimensions()['header_gas_volume_m3']==pytest.approx(2**1.5*a.bank.dimensions()['header_gas_volume_m3'])
+    # Count grows by sqrt(s); circular header volume grows by s^0.75.

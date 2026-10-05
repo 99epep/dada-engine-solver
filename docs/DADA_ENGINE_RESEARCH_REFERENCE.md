@@ -320,8 +320,9 @@ adaptive basin selection, local gradient optimizer or cross-study cache.
 
 `research rescale` accepts schema-2/3 stored candidates and creates a new portable
 study/basis, with parent/provenance and preserved constraints. It never integrates,
-changes source histories or silently relaxes constraints. Local-region sources are
-rejected: rescale the global source first, then refine. Detailed extensive/intensive
+changes source histories or silently relaxes constraints. Stored global or local
+candidates supply their physical coordinates; local search basins are replaced by
+a global Sobol domain in the standalone output study. Detailed transformation
 rules belong in [capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md).
 
 ## Filling at a reference pressure and maximum total gas volume

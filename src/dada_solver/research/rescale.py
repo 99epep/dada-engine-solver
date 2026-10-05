@@ -1,6 +1,6 @@
 """Explicit capacity scaling of a stored candidate; no similarity is assumed."""
 import copy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import hashlib
 import json
 import math
@@ -16,17 +16,39 @@ from .study_io import dumps
 
 def extensive(name):
     return name in ('volume.total_swept_m3', 'charge.total_mass_kg') or (
-        name.startswith('microtube.') and name.endswith(('.tube_count','.additional_internal_volume_m3'))) or (
+        name.startswith('microtube.') and name.endswith('.additional_internal_volume_m3')) or (
         name.startswith('external_stream.') and name.rsplit('.', 1)[-1] in
         ('mass_flow_kg_s', 'wall_conductance_w_k')) or (
         name.startswith('thermal.') and name.endswith('.air_mass_flow_kg_s'))
 
 
+def quantized_microtube_count(count, factor):
+    """Nearest integer to N sqrt(s), ties to even; never clamp to one."""
+    ideal = count * math.sqrt(factor)
+    if not math.isfinite(ideal):
+        raise ValueError('Microtube count scaling overflows.')
+    result = round(ideal)
+    if result < 1:
+        raise ValueError('Scaled microtube count must be at least one.')
+    return result
+
+
+def scaled_microtube_dimensions(count, length, factor):
+    """Preserve total physical microtube length after integer quantization."""
+    if not math.isfinite(factor) or factor <= 0:
+        raise ValueError('Capacity factor must be finite and positive.')
+    new_count = quantized_microtube_count(count, factor)
+    new_length = length if factor == 1 else length * (factor * count / new_count)
+    if not math.isfinite(new_length) or new_length <= 0:
+        raise ValueError('Scaled microtube length must be finite and positive.')
+    return new_count, new_length
+
+
 def rescale(source, candidate, factor, output, *, mode='capacity'):
     """Create a new portable V2/V3 study centered on a selected candidate.
 
-    Active bounds scale multiplicatively; intensive bounds and all constraints
-    stay unchanged. Non-integral physical tube counts are rejected, never rounded.
+    Active bounds follow the capacity rule; intensive bounds and all constraints
+    stay unchanged. Microtube count and length share total-length growth.
     Header packing is rebuilt by MicrotubeBank, not forced into exact similarity.
     """
     if mode != 'capacity': raise ValueError('Only capacity scaling is supported.')
@@ -38,22 +60,19 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
     data = inspect(source)
     if data['scientific']['schema_version'] not in (2, 3):
         raise ValueError('Capacity rescale requires a V2/V3 machine study; V1 needs explicit migration first.')
-    if data['scientific']['search'].get('domain')=='local_regions_v1':
-        raise ValueError('Capacity scaling of local-region studies is not supported; rescale the global source first, then refine.')
     record, = select_records(data, [candidate])
     changes = []
-    def scale(value, name, integer=False):
+    def scale(value, name):
         new = value * factor
         if not math.isfinite(new): raise ValueError(f'Scaling overflows {name}.')
-        if integer:
-            rounded = round(new)
-            if rounded < 1 or not math.isclose(new, rounded, rel_tol=0, abs_tol=1e-9):
-                raise ValueError(f'Capacity scaling requires an integral tube count for {name}; got {new}.')
-            new = rounded
         changes.append(dict(quantity=name, before=value, after=new))
         return new
     with stored_study(data) as study:
         raw = copy.deepcopy(study.data)
+        source_search_domain = raw['search']['domain']
+        if source_search_domain == 'local_regions_v1':
+            raw['search'] = dict(type='sobol', domain='fixed_global_bounds',
+                seed=raw['search']['seed'], scramble=raw['search']['scramble'])
         raw['execution']['default_max_candidates'] = 512
         physical = dict(study.fixed_parameters, **record['physical'])
         design = compile_study(study).adapter.build(physical)
@@ -76,6 +95,7 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
             if 'cda' in key: config['hydraulics'][key] = scale(value, 'basis.hydraulics.'+key)
             elif key != 'orifice_pressure_regularization':
                 raise ValueError(f'Unknown hydraulic quantity cannot be safely scaled: {key}')
+        microtube_scaling = {}
         for side in ('heat_in', 'heat_out'):
             exchanger = getattr(design, side)
             if exchanger is None: continue
@@ -83,10 +103,28 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
             b[side] = asdict(exchanger)
             if 'family' in original: b[side]['family'] = original['family']
             row = b[side]
-            row['bank']['tube_count'] = scale(row['bank']['tube_count'], side+'.tube_count', True)
+            old_count, old_length = exchanger.bank.tube_count, exchanger.bank.tube_length_m
+            new_count, new_length = scaled_microtube_dimensions(old_count, old_length, factor)
+            row['bank'].update(tube_count=new_count, tube_length_m=new_length)
+            microtube_scaling[side] = dict(ideal_count=old_count*math.sqrt(factor),
+                count=new_count, length_factor=1.0 if factor == 1 else factor*old_count/new_count)
+            for key, before, after in (('tube_count', old_count, new_count),
+                                       ('tube_length_m', old_length, new_length)):
+                changes.append(dict(quantity=f'microtube.{side}.{key}', before=before, after=after))
             row['bank']['additional_internal_volume_m3'] = scale(row['bank']['additional_internal_volume_m3'], side+'.additional_internal_volume_m3')
             row['inputs']['extra_wall_capacity_j_k'] = scale(row['inputs']['extra_wall_capacity_j_k'], side+'.extra_wall_capacity_j_k')
-            row['outlet_valve_cda_m2'] = scale(row['outlet_valve_cda_m2'], side+'.outlet_valve_cda_m2')
+            old_cda = exchanger.outlet_valve_cda_m2
+            if exchanger.bank.circular_collectors:
+                row['outlet_valve_cda_m2'] = replace(exchanger.bank,
+                    tube_count=new_count, tube_length_m=new_length).dimensions()['conduit_area_m2']
+            elif raw['policies']['outlet_valve_cda'] == 'source_cda_times_count_ratio_v1':
+                row['outlet_valve_cda_m2'] = old_cda * new_count / old_count
+            else:
+                row['outlet_valve_cda_m2'] = old_cda * factor
+            if not math.isfinite(row['outlet_valve_cda_m2']):
+                raise ValueError(f'Scaling overflows {side}.outlet_valve_cda_m2.')
+            changes.append(dict(quantity=side+'.outlet_valve_cda_m2',
+                before=old_cda, after=row['outlet_valve_cda_m2']))
             if 'external_stream' in row['inputs']:
                 for key in ('mass_flow_kg_s', 'wall_conductance_w_k'):
                     stream = row['inputs']['external_stream']
@@ -115,24 +153,40 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
         for row in raw['parameters']:
             name = row['name']; initial_key = 'value' if 'value' in row else 'initial'
             row[initial_key] = physical[name]
-            if extensive(name):
-                integer = name.endswith('.tube_count')
-                row[initial_key] = scale(row[initial_key], name, integer)
+            parts = name.split('.')
+            coupled = (len(parts) == 3 and parts[0] == 'microtube'
+                and parts[1] in microtube_scaling and parts[2] in ('tube_count', 'tube_length_m'))
+            if coupled:
+                side, coordinate = parts[1:]
+                row[initial_key] = b[side]['bank'][coordinate]
                 if initial_key == 'initial':
                     for key in ('lower', 'upper'):
-                        value = row[key] * factor
-                        row[key] = (math.ceil(value) if key == 'lower' else math.floor(value)) if integer else value
-                    if row['lower'] >= row['upper']:
-                        raise ValueError(f'Scaled integer search bounds collapse for {name}.')
+                        row[key] = (quantized_microtube_count(row[key], factor)
+                            if coordinate == 'tube_count' else
+                            row[key] * microtube_scaling[side]['length_factor'])
+            elif extensive(name):
+                row[initial_key] = scale(row[initial_key], name)
+                if initial_key == 'initial':
+                    for key in ('lower', 'upper'):
+                        row[key] *= factor
+            if initial_key == 'initial' and row.get('kind') != 'choice':
+                if (not all(math.isfinite(row[k]) for k in ('initial', 'lower', 'upper'))
+                        or not row['lower'] < row['upper']
+                        or not row['lower'] <= row['initial'] <= row['upper']):
+                    raise ValueError(f'Scaled search bounds are invalid or collapse for {name}.')
         raw['study']['name'] += f' — capacity ×{factor:g}'
         raw['study']['parent_candidate_id'] = record['candidate_id']
-        b['provenance']['capacity_scaling'] = dict(version=1, mode=mode, factor=factor,
+        b['provenance']['capacity_scaling'] = dict(version=2, mode=mode, factor=factor,
             source_candidate_id=record['candidate_id'], source_study_id=data['study_id'],
             source_definition_id=data['definition_id'], source=str(source),
             source_basis_sha256=study.basis.sha256, changes=changes,
-            active_bounds='extensive bounds multiplied; integer bounds ceil/floor; intensive bounds unchanged',
+            ordinary_capacity='extensive quantities multiplied by factor',
+            microtubes=dict(rule='N_ideal=N*sqrt(s); N_next=round_ties_to_even(N_ideal); L_next=s*N*L/N_next',
+                sides=microtube_scaling, diameters='inner and outer unchanged'),
+            search=dict(source_domain=source_search_domain, output_domain=raw['search']['domain']),
+            active_bounds='ordinary extensive bounds multiplied by s; count endpoints quantized; length bounds multiplied by selected length factor; intensive bounds unchanged',
             constraints='unchanged; physical limits are not automatically relaxed',
-            header_geometry='production discrete packing, not exact capacity similarity',
+            header_geometry='rebuilt by production bank geometry from quantized count; not forced capacity similarity',
             warm_start='original source guess scaled when inventory-compatible; not a cached solution')
         artifacts = {}
         for side, artifact in study.artifacts.items():

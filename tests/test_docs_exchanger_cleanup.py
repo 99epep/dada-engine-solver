@@ -18,6 +18,6 @@ def test_obsolete_trial_layer_is_absent():
 
 
 def test_scientific_references_remain():
-    for name in ('DOTY_SCREENING', 'EXCHANGER_VALIDATION', 'EXCHANGER_LITERATURE',
+    for name in ('DOTY_SCREENING', 'EXCHANGER_VALIDATION',
                  'MICROTUBE_GAS_MODEL', 'EXTERNAL_STREAM_THERMAL_MODEL', 'HEAT_EXCHANGERS'):
         assert (ROOT / 'docs' / (name + '.md')).is_file()

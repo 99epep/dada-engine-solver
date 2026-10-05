@@ -1,8 +1,7 @@
 # Motor research objectives
 
 These are ordered research questions, not permission to launch an unattended
-campaign or universal defaults. The application-specific demonstrator brief is in
-[MOTOR_DEMONSTRATOR.md](MOTOR_DEMONSTRATOR.md); new studies own their power, size,
+campaign or universal defaults. New studies own their power, size,
 source-temperature and frequency requirements explicitly.
 
 ## 1. Improve motion laws, then realize them mechanically
