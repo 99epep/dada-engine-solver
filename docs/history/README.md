@@ -33,6 +33,10 @@ hierarchical search evidence matter for future human-cell mechanisms.
 
 ## Research implementation provenance
 
+- [Limit ownership cleanup audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md): dated
+  provenance of historical guard removal and compatibility decisions. The
+  [current ownership rule](../PHYSICS_DECISIONS.md) remains authoritative.
+
 [Initial architecture audit](DADA_ENGINE_RESEARCH_ARCHITECTURE_AUDIT.md),
 [implementation record](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md),
 [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and

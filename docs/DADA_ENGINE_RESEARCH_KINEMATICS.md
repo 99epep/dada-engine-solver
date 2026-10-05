@@ -16,7 +16,7 @@ candidate vector. Their physical meaning belongs in the
 [configuration reference](DADA_ENGINE_RESEARCH_REFERENCE.md),
 [microtube model](MICROTUBE_GAS_MODEL.md),
 [external-stream model](EXTERNAL_STREAM_THERMAL_MODEL.md) and
-[limit-ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+[current ownership rule](PHYSICS_DECISIONS.md).
 
 ## 2. Quick start
 

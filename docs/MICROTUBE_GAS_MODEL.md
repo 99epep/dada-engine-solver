@@ -421,7 +421,7 @@ There is no universal 0.08 kg/s admissible flow: geometry and local state determ
 velocity, Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass flow
 remains an observable and an optional explicit study constraint. Pressure inequality
 is diagnostic-only; isothermality excursion is no longer reported or constrained.
-See [the limit audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+See [current physics decisions](PHYSICS_DECISIONS.md).
 
 
 ## Species-dependent dilute transport, version `dilute_species_v2`

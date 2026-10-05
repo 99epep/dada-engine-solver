@@ -1,5 +1,8 @@
 # Research limit ownership audit — 2026-09-30
 
+> Historical cleanup audit dated 30 September 2026, retained as migration provenance.
+> The current ownership rule is defined in [Physics decisions](../PHYSICS_DECISIONS.md).
+
 This audit uses the local checkout, including saved outputs. It does not infer
 physical ratings from historical optimizer guards. No optimization was run.
 
@@ -25,7 +28,7 @@ geometry closure and actual exchanger domains remain enforced.
 
 ## Absolute-flow inventory and decisions
 
-The machine-readable [inventory](research_audit/absolute_mass_flow_inventory.json)
+The machine-readable [inventory](../research_audit/absolute_mass_flow_inventory.json)
 records file-level matches from the full local audit. Searches included
 `maximum_absolute_mass_flow`, `MAXIMUM_ABSOLUTE_MASS_FLOW`, `MAX_FLOW`, decimal
 and exponent spellings of 0.08, and possible 80 g/s spellings. Numeric matches

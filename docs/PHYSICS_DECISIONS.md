@@ -142,7 +142,7 @@ Pressure inequality remains a diagnostic, never a thermodynamic-validity veto.
 Isothermality excursion metrics/constraints have been removed. Old configuration
 keys load as ignored compatibility inputs. Historical saved verdicts are not
 rewritten; changed source identity prevents unsafe resume/cache reuse.
-The [ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) records exceptions and
+The [ownership audit](history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) records exceptions and
 legacy fixtures, including the named V1 parity preset.
 
 ## Inventory, periodic convergence and diagnostics

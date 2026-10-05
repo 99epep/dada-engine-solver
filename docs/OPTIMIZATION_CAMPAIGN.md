@@ -299,4 +299,4 @@ generic presets. Use Research for new declarative multi-family studies.
 
 No test-count snapshot or old smoke performance is a guarantee for a changed
 property model. See [validation](validation.md) and
-[limit ownership](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) before interpreting old verdicts.
+[limit ownership](history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) before interpreting old verdicts.

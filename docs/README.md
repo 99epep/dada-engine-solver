@@ -28,7 +28,7 @@ benchmark is not a default for a new study.
 | EOS, conservative reconstruction and compiled property tables | [Working fluids](WORKING_FLUID_MODELS.md) |
 | Other exchanger screening/fixed-point interfaces | [Exchanger screening](HEAT_EXCHANGERS.md) |
 | Empirical provenance and limits | [Exchanger validation](EXCHANGER_VALIDATION.md), [literature](EXCHANGER_LITERATURE.md), [Doty screening](DOTY_SCREENING.md) |
-| Model domain versus design requirement | [Limit ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) |
+| Model domain versus design requirement | [Current physics decisions](PHYSICS_DECISIONS.md) |
 
 ## Design motion and mechanisms
 

@@ -140,7 +140,7 @@ universal defaults.
 
 Model applicability/domain, study requirements, search bounds and numerical settings
 have distinct owners. A stricter study Mach limit does not redefine the exchanger's
-correlation domain. See the [limit-ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+correlation domain. See the [current ownership rule](PHYSICS_DECISIONS.md).
 
 Mechanical requirements use separate side-scoped declarations:
 
@@ -459,7 +459,7 @@ plan](history/DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
 | Working fluids | [Fluid models](WORKING_FLUID_MODELS.md) |
 | Current validation status | [Validation](validation.md) |
 | Historical Research extraction evidence | [Historical ledger](history/RESEARCH_VALIDATION_LEDGER.md) |
-| Limit ownership history | [Ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) |
+| Limit ownership history | [Historical ownership audit](history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md) |
 
 For retained geometry and synthesis methodology, use the [primary
 catalogue](PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar

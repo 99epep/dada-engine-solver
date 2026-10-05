@@ -192,7 +192,7 @@ defines this contract.
 Model domains, study requirements, search bounds and numerical settings have
 distinct owners. Historical study constraints must not become universal solver
 limits merely because an old candidate used them. See the
-[limit-ownership audit](../RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
+[limit-ownership audit](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md).
 
 ## 6. Evidence that remains versioned
 
