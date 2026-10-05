@@ -40,9 +40,10 @@ the current trial balance; do not confuse exclusion with zero physical losses. R
 wall storage is implemented in the opt-in air_wall wrapper, but not calibrated
 to Doty or exposed through the historical CLI.
 
-For current progress and reproducible graphs, read docs/PARALLEL_EXCHANGER_TRIAL.md,
-docs/HIGHER_TEMPERATURE_TRIAL.md and docs/EXCESS_AIR_TRIAL.md
-and the preceding docs/DOUBLED_EXCHANGER_TRIAL.md. External airflow is now sized
+For current exchanger models and evidence, read docs/MICROTUBE_GAS_MODEL.md,
+docs/EXTERNAL_STREAM_THERMAL_MODEL.md, docs/DOTY_SCREENING.md and
+docs/EXCHANGER_VALIDATION.md; consult docs/EXCHANGER_LITERATURE.md for
+bibliographic provenance. External airflow is now sized
 from expected peak internal flow with a capacity-rate margin; verify achieved
 ratios and retain finite thermal-film resistance.
 Use checkpoint intervals and optional bounded wall initial-guess acceleration

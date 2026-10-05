@@ -9,7 +9,7 @@ experimental demonstrator, not a commercial product. Commercial refers only to
 purchased exchanger candidates. The current reservoir difference is 300 K (25/325 deg C), temporarily raised
 from 150 K to guide dimensional optimization. Reduce it progressively after
 improving the design; it is not part of the demonstrator name. See
-[HIGHER_TEMPERATURE_TRIAL.md](history/EXCHANGER_TRIALS.md).
+[current physical decisions](PHYSICS_DECISIONS.md).
 
 | Quantity | Requirement |
 | --- | --- |
@@ -140,14 +140,7 @@ The four-bar integration and matched speed comparison are documented in
 Ordered long-term motion-law and design-map objectives are recorded in
 [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).
 
-The selected external-air boundary and geometry sizing foundation are described
-in [AIR_SOURCE_EXCHANGERS.md](history/EXCHANGER_TRIALS.md).
-
-The opt-in air/wall coupling, numerical results and continuation checkpoint
-are in [AIR_WALL_COUPLING.md](history/EXCHANGER_TRIALS.md).
-
-The geometry-to-volume, resistance, wall-capacity, hydraulic and fan connection
-is now implemented; see [GEOMETRIC_MOTOR_COUPLING.md](history/EXCHANGER_TRIALS.md).
-
-Current doubled-exchanger and independent lower-Lambda trials, with external
-aerodynamic losses excluded, are in [DOUBLED_EXCHANGER_TRIAL.md](history/EXCHANGER_TRIALS.md).
+The current external-air boundary and geometry model are documented in
+[external streams](EXTERNAL_STREAM_THERMAL_MODEL.md) and
+[microtubes](MICROTUBE_GAS_MODEL.md). These references supersede the early
+trial notes; they do not reproduce their historical performance figures.

@@ -3,7 +3,6 @@
 Reference for geometry, internal transport, correlations, domains and diagnostics.
 For study setup see [Research configuration](DADA_ENGINE_RESEARCH_REFERENCE.md);
 for finite external streams see [the thermal boundary](EXTERNAL_STREAM_THERMAL_MODEL.md).
-Historical constant-property trials are summarized [separately](history/EXCHANGER_TRIALS.md).
 
 ## Reading map
 

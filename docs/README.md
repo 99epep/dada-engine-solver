@@ -64,11 +64,9 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
   dated standards/product references require review for a new comparison.
 - [Motor demonstrator](MOTOR_DEMONSTRATOR.md): historical engineering brief,
   not global solver limits.
-- [Historical studies index](history/README.md): condensed exchanger trials,
-  original decisions and retained motor/mechanism research records.
+- [Historical studies index](history/README.md): original decisions and retained motor/mechanism research records.
 
 Saved `outputs/`, examples, audit JSON/CSV, fixtures and source artifacts are not
 edited by documentation maintenance. Some large output directories are local-only
 and may be absent from a distributed checkout. Their absence is not a reason to
-invent replacement results. See [the consolidation map](history/DOCUMENTATION_MAP.md)
-for renamed/merged notes and exact pre-consolidation local Git provenance.
+invent replacement results.

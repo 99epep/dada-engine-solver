@@ -9,12 +9,8 @@ Old test counts are dated records, not the present test status.
 
 - [Decision ledger](PHYSICS_DECISION_LEDGER.md): original decisions, reversals and
   withdrawn early results. [Current decisions](../PHYSICS_DECISIONS.md) take precedence.
-- [Early exchanger trials](EXCHANGER_TRIALS.md): finite-air/wall, geometry, doubled
-  banks, excess air, temperature and constant-area parallel-tube comparisons.
 - [Numerical execution](../SOLVER_PERFORMANCE.md): consolidated acceleration
   evidence, adopted optimizations and negative interpolation/Anderson experiments.
-- [Documentation map](DOCUMENTATION_MAP.md): old names, destinations and local
-  Git provenance for the full pre-consolidation prose.
 
 ## Motor and mechanism studies retained in detail
 

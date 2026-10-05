@@ -138,4 +138,5 @@ compactness from cylinder volume alone. A robust ranking must survive property,
 flow distribution, pulse-response and unmeasured shell-side-loss scenarios.
 
 The selected external-air boundary and geometry sizing foundation are described
-in [AIR_SOURCE_EXCHANGERS.md](history/EXCHANGER_TRIALS.md).
+in [external streams](EXTERNAL_STREAM_THERMAL_MODEL.md) and
+[microtube geometry](MICROTUBE_GAS_MODEL.md).

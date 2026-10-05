@@ -89,6 +89,14 @@ loss assumptions. Selecting circular collectors changes the scientific study;
 it is not a transparent resume of an old campaign. Formulas, compatibility and
 uncertainty are in [the microtube reference](MICROTUBE_GAS_MODEL.md).
 
+At fixed external capacity rate, increasing transfer area has diminishing benefit;
+large air flow suppresses outlet-temperature change but does not remove film
+resistance. More, shorter tubes at fixed surface can reduce tube friction while
+increasing collector hold-up. H_i and H_o geometries may be independent. Multiplying
+UA at unchanged volume and hydraulics is a sensitivity experiment, not physical
+resizing. Internal hydraulic losses already affect cycle work and must not be
+subtracted again as an additional fictitious pump load.
+
 ## Fluids and model domains
 
 Production thermodynamics remains calorically perfect ideal gas. Variable

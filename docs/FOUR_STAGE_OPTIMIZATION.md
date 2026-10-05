@@ -372,7 +372,7 @@ Temperature work has now started independently. No temperature campaign was
 launched, interrupted or modified by this documentation update.
 
 The durable exchanger lessons and remaining external-air uncertainty are in
-[EXCHANGER_NEXT_STEPS.md](history/EXCHANGER_TRIALS.md). The later path is selected
+[current physical decisions](PHYSICS_DECISIONS.md). The later path is selected
 linear target -> C2 smoothing and limited thermodynamic readjustment -> six-bar
 synthesis -> evaluation of actual six-bar motion. Existing free-target six-bar
 work does not mean that this new four-stage-to-C2-to-mechanism sequence is done.

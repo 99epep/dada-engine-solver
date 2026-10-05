@@ -136,7 +136,7 @@ Test 50% more tubes with lengths divided by 1.5, retaining contact area and tube
 hold-up while allowing the geometry-derived headers to grow. Compare against
 an original-motion-only control so the effects can be distinguished. This does
 not impose mirror symmetry on future optimization. See
-[PARALLEL_EXCHANGER_TRIAL.md](../history/EXCHANGER_TRIALS.md).
+the retired parallel exchanger trial note.
 
 ### Temporary 25/325 deg C source temperatures
 
@@ -145,7 +145,7 @@ inlet at 298.15 K. Optimize dimensions first, then reduce hot-source temperature
 progressively. The 100 W useful-power objective, 2–10 Hz range and 66 L large-
 cylinder ceiling remain unchanged. Retain P–V diagrams as optional diagnostics;
 angle-based plots remain the primary phase-reading view. See
-[HIGHER_TEMPERATURE_TRIAL.md](../history/EXCHANGER_TRIALS.md) for the controlled
+the retired higher temperature trial note for the controlled
 comparison with the previous 175 deg C trial.
 
 ### Excess external air and independent opposed Lambdas
@@ -155,7 +155,7 @@ Size fixed external flow from expected peak internal flow with an explicit
 capacity-rate margin, verify achieved ratios and check sensitivity to doubling
 flow. Retain thermal-film resistance and pause heat exchange. The independent
 lower-S/higher-L Lambda trial and restored pressure/event plots are recorded in
-[EXCESS_AIR_TRIAL.md](../history/EXCHANGER_TRIALS.md). This is a thermal-boundary experiment,
+the retired excess air trial note. This is a thermal-boundary experiment,
 not a validated external-flow hardware selection.
 
 ### External-loss exclusion and doubled-exchanger trial
@@ -165,7 +165,7 @@ consumption from the current optimization balance, while retaining finite air
 flow, temperature change and thermal resistances. This supersedes earlier
 requirements to deduct fans for these trials; excluded losses are not physically
 zero. The requested doubled tube count and length and the independent lower-
-Lambda mechanical trial are recorded in [DOUBLED_EXCHANGER_TRIAL.md](../history/EXCHANGER_TRIALS.md).
+Lambda mechanical trial are recorded in the retired doubled exchanger trial note.
 Checkpoint timing, optional wall initial-guess acceleration and full diagnostic
 plots accompany the new results. Motion-law optimality remains unproven.
 
@@ -177,7 +177,7 @@ now replaces exchanger volumes and all four adjacent passage closures, splitting
 tube and header resistance equally around each storage node and retaining
 outlet valve losses. External airflow and fan power have explicit assumptions.
 Constant-property/Nusselt and laminar closures remain screening models, not
-Doty calibration. See [GEOMETRIC_MOTOR_COUPLING.md](../history/EXCHANGER_TRIALS.md).
+Doty calibration. See the retired geometric motor coupling note.
 
 ### Opt-in air/wall motor dynamics
 
@@ -186,7 +186,7 @@ motor wrapper using continuous ideal diodes. Existing eight-state operation
 remains unchanged. External air has finite heat-capacity rate; gas heat remains
 active during pauses. Gas plus wall energy is conserved against external heat
 and boundary work. Conductance split and wall capacity remain explicit uncalibrated
-inputs. See [AIR_WALL_COUPLING.md](../history/EXCHANGER_TRIALS.md) for equations, verification
+inputs. See the retired air wall coupling note for equations, verification
 and the counterflow calibration limitation.
 
 ### Air-source demonstrator exchanger decision
@@ -197,7 +197,7 @@ heat-capacity rates and count fan power separately; source temperatures are
 external-air inlet conditions. Optimize tube geometry and collectors jointly,
 including working-gas hold-up. More shorter tubes at constant diameter and
 surface do not inherently increase tube volume; collectors can dominate the
-increase. See [AIR_SOURCE_EXCHANGERS.md](../history/EXCHANGER_TRIALS.md) for implemented
+increase. See the retired air source exchangers note for implemented
 geometry, assumptions and the planned wall-storage extension. No dynamic cycle
 equations have been changed by the geometry implementation.
 
