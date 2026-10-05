@@ -1,19 +1,19 @@
 # Dada-Engine Research — first implementation proposal
 
 > Implementation chronology, retained for provenance. Dated pending steps and test counts are not the current product status; start with the Research guide.
-> See the [documentation index](README.md) for current references.
+> See the [documentation index](../README.md) for current references.
 
 Status: steps 1–5 authorized by the user and implemented for the reduced
-fixed-pair validation study. The [user guide](DADA_ENGINE_RESEARCH.md) describes
+fixed-pair validation study. The [user guide](../DADA_ENGINE_RESEARCH.md) describes
 the executable interface; the proposal below remains the design record.
 Physical parity is required, historical candidate-order parity is not.
 The user subsequently validated initial hands-on trials and authorized the V2
 kinematics/mechanism mission. The original plan below remains historical; see
-[DADA_ENGINE_RESEARCH_KINEMATICS.md](DADA_ENGINE_RESEARCH_KINEMATICS.md) for the
+[DADA_ENGINE_RESEARCH_KINEMATICS.md](../DADA_ENGINE_RESEARCH_KINEMATICS.md) for the
 implemented extension. Further usability trials remain important before large
 research campaigns.
 This plan follows the [local audit](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
-and preserves the guarantees of [OPTIMIZATION_CAMPAIGN.md](OPTIMIZATION_CAMPAIGN.md).
+and preserves the guarantees of [OPTIMIZATION_CAMPAIGN.md](../OPTIMIZATION_CAMPAIGN.md).
 The application name is **Dada-Engine Research**, independent of temperature.
 
 ## First deliverable
@@ -71,7 +71,7 @@ rules; document that stopping is cooperative, not instantaneous.
 
 ## Versioned TOML and parameter semantics
 
-[proposed_rank01.toml](research_audit/proposed_rank01.toml) is a complete parseable
+[proposed_rank01.toml](../research_audit/proposed_rank01.toml) is a complete parseable
 **schema proposal**, not an input accepted by the current CLI. It pins the
 captured reference bundle digest and explicitly records:
 
@@ -249,7 +249,7 @@ The initiating audit's section 10 explicitly says: “Stop for human review befo
 writing the new implementation or cleaning the repository.” That review was
 completed: the user authorized steps 1–5 above, with physical evaluation parity
 and a real researcher usability review before expanding to other campaigns.
-The [validation record](history/RESEARCH_VALIDATION_LEDGER.md) records the delivered
+The [validation record](RESEARCH_VALIDATION_LEDGER.md) records the delivered
 fixed-pair thermo-5D CLI and offline reports. This authorization does not cover
 deleting examples, changing physical equations, reproducing a full local search
 campaign, or treating the historical 25 W indicated floor as the demonstrator's

@@ -33,9 +33,9 @@ hierarchical search evidence matter for future human-cell mechanisms.
 
 ## Research implementation provenance
 
-[Initial architecture audit](../DADA_ENGINE_RESEARCH_ARCHITECTURE_AUDIT.md),
-[implementation record](../DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md),
-[migration matrix](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and
+[Initial architecture audit](DADA_ENGINE_RESEARCH_ARCHITECTURE_AUDIT.md),
+[implementation record](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md),
+[migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and
 [condensed Research implementation/parity ledger](RESEARCH_VALIDATION_LEDGER.md) retain source extraction,
 parity cases and compatibility decisions. Use the current Research guide for
 commands; early limitations in dated sections do not describe the current CLI.

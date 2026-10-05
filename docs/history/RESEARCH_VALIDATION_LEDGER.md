@@ -15,7 +15,7 @@ For current Research usage, see
 [`../DADA_ENGINE_RESEARCH.md`](../DADA_ENGINE_RESEARCH.md).
 
 For detailed source-extraction provenance, see
-[`../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md`](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
+[`DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md`](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
 and `../research_audit/`.
 
 ## 1. Validation philosophy
@@ -219,4 +219,4 @@ reference; this ledger supplies neither a replacement status nor new limits.
 - [Research reference](../DADA_ENGINE_RESEARCH_REFERENCE.md): configuration and persistence.
 - [Kinematics](../DADA_ENGINE_RESEARCH_KINEMATICS.md): current family and artifact APIs.
 - [Cockpit](../DADA_ENGINE_RESEARCH_COCKPIT.md): reporting and diagnostic presentation.
-- [Migration matrix](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md): detailed extraction provenance.
+- [Migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md): detailed extraction provenance.

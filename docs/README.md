@@ -15,7 +15,7 @@ benchmark is not a default for a new study.
 | Interpret candidate evidence, margins and reports | [Cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md) |
 | Change machine capacity | [Capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md) |
 | Current validation | [Validation and evidence](validation.md) |
-| Historical Research parity and extraction | [historical Research ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) |
+| Historical Research parity and extraction | [historical Research ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration matrix](history/DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) |
 
 ## Understand the physical model
 

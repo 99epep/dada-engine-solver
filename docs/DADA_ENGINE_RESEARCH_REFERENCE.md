@@ -442,8 +442,8 @@ schema 2 or 3.
 
 Historical extraction details belong in the [validation
 ledger](history/RESEARCH_VALIDATION_LEDGER.md), [migration
-matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and [implementation
-plan](DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
+matrix](history/DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md) and [implementation
+plan](history/DADA_ENGINE_RESEARCH_IMPLEMENTATION_PLAN.md).
 
 ## Related references
 

@@ -1,5 +1,9 @@
 # Dada-Engine Research — local migration audit
 
+> Historical local extraction and migration audit, not the current Research API inventory.
+> For current usage and contracts, see the [guide](../DADA_ENGINE_RESEARCH.md)
+> and [technical reference](../DADA_ENGINE_RESEARCH_REFERENCE.md).
+
 Status: V1 completed and user-tested; V2 kinematics/mechanism extension implemented.
 The local checkout, including local outputs and untracked inputs, is authoritative.
 The CSV/inventory have been regenerated from this working tree. Hashes identify
@@ -11,10 +15,10 @@ the eleventh Research family; unrelated local work is outside that update.
 
 ## Reviewed V2 mathematical families versus search protocols
 
-The explicit [reviewed status map](research_audit/kinematics_v2_migrations.json)
+The explicit [reviewed status map](../research_audit/kinematics_v2_migrations.json)
 is applied by the inventory generator. It distinguishes extracted representation,
 existing production reuse and retained search/plotting code. AST imports alone
-never mark a script as parity-verified. The [kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md)
+never mark a script as parity-verified. The [kinematics reference](../DADA_ENGINE_RESEARCH_KINEMATICS.md)
 documents the parameter schema and available execution boundary.
 
 | Historical lineage | Mathematical representation | V2 status / protocol distinction |
@@ -43,12 +47,12 @@ is recorded explicitly rather than claiming complete campaign migration.
 
 ## Inventory and evidence
 
-The [CSV matrix](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv) has one row for every
+The [CSV matrix](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv) has one row for every
 Python/TOML example: **241 files, 188 Python and 53 TOML**, including the locally
 untracked bounded V2 demonstration script. It supplies all nine requested migration columns,
 plus hashes, tracking state, and documentation references.
 
-The [detailed inventory](research_audit/example_inventory.json) records full-source
+The [detailed inventory](../research_audit/example_inventory.json) records full-source
 AST/TOML evidence: imports, transitive imports of other examples, CLI declarations
 with defaults, input/output call sites, path expressions and artifact literals,
 optimization calls, feasibility functions, rendering calls, and direct test
@@ -164,7 +168,7 @@ filename in new documentation.
 
 ## Reference inputs and preservation
 
-The [rank-01 snapshot](research_audit/rank01_reference_snapshot.json) contains
+The [rank-01 snapshot](../research_audit/rank01_reference_snapshot.json) contains
 the original pair and selected result, resolved machine/exchanger configuration,
 all wall settings, initial/final state, source hashes, backend/runtime identity,
 and the twelve actual JSON/JSONL/TOML inputs observed during reconstruction.
@@ -184,7 +188,7 @@ The construction dependencies are:
 - thermo-5D rank-01 `report.json` and `history.jsonl` for the selected result
   and its precise warm-start predecessor.
 
-The [family reference manifest](research_audit/family_reference_manifest.json)
+The [family reference manifest](../research_audit/family_reference_manifest.json)
 also preserves checksums, representative stored result excerpts, script hashes,
 and reference commands across the major workflow families. These other studies
 were inspected/snapshotted, **not rerun**. The commands describe the historical

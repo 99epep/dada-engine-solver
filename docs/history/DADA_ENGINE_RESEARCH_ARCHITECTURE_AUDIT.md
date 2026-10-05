@@ -1,7 +1,7 @@
 # Dada-Engine Research — Architecture Audit and Implementation Plan
 
 > Historical pre-implementation audit. Research has since implemented later phases and extensions; use the Research guide/reference for current capabilities.
-> See the [documentation index](README.md) for current references.
+> See the [documentation index](../README.md) for current references.
 
 **Status:** design proposal for Codex; no implementation authorized by this document.  
 **Repository:** `99epep/dada-engine-solver`  

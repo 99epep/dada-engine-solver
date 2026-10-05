@@ -1,157 +1,158 @@
-# Candidate capacity scaling and offline comparison
+# Capacity scaling
 
-## Capacity scaling
+## What it does
 
-`rescale` creates a new V2/V3 study and a new portable machine basis from a
-verified stored candidate. It accepts a campaign directory or a standalone
-Research evaluation artifact, an exact ID or an unambiguous ID prefix, and one
-explicit mode, `capacity`. It never integrates or modifies the source.
+`research rescale --mode capacity` creates a new portable study from a verified
+stored candidate. Capacity scaling changes extensive inputs while retaining the
+selected intensive coordinates; it is **not geometric similarity** or a promise
+that power will scale exactly. It performs no thermodynamic integration and does
+not modify the source. Constraints remain unchanged, without relaxation.
 
-```sh
-research rescale examples/human_cell_stage0/campaign \
-  --candidate a16ed2c7 --mode capacity --factor 5 \
-  --output outputs/my_human_cell_A5/study.toml
-research validate outputs/my_human_cell_A5/study.toml
-research evaluate outputs/my_human_cell_A5/study.toml \
-  --output outputs/my_human_cell_A5/evaluation.json --budget 3m
-```
-
-Here `research` is the shell helper documented in
-[DADA_ENGINE_RESEARCH.md](DADA_ENGINE_RESEARCH.md); `research` is the
-installed entry point. Output paths must be unused.
-
-The selected candidate becomes the new initial point, including every active
-kinematic and intensive coordinate. Existing fixed/active ownership is retained.
-Implicit machine defaults are materialized so that edited basis defaults cannot
-silently leave the new study at the old capacity.
-
-| Quantity | Capacity action |
-| --- | --- |
-| Total swept volume, gas inventory | Multiply by `s` |
-| Cylinder minimum/maximum and reservoir exchanger reference volumes | Multiply by `s` |
-| Tube counts | Multiply by `s`; require integral physical counts |
-| Tube flow area, gas-film conductance, wall material capacity | Rebuild from production geometry |
-| Additional internal exchanger volume and extra wall capacity | Multiply by `s` |
-| External stream mass flow and declared wall conductance | Multiply by `s` |
-| Legacy air mass flow | Multiply by `s`; air film remains geometry-derived |
-| Hydraulic configuration CdA and fixed exchanger outlet CdA | Multiply by `s` |
-| Count-ratio outlet CdA policy | Keep the reference CdA/count slope; scaled tube count supplies the factor once |
-| Legacy reservoir conductance references | Multiply by `s` |
-| Frequency, kinematics, volume ratio, clearance ratios | Preserve selected candidate values |
-| Tube length/diameter/wall thickness/pitch/header depth, materials, temperatures, Cp | Preserve selected candidate values |
-| Constraints, validity thresholds and numerical tolerances | Preserve, without relaxation |
-
-This is capacity scaling, **not geometric length similarity**. Physical
-mechanism lengths, if declared, remain unchanged: this can imply changed piston
-area and loads, which this operation does not certify mechanically. The
-production square-pitch rectangular bank packing is retained. Integer row and
-column counts mean header volume and envelope are not necessarily exactly `s`
-times their previous values. No independent UA, header volume, flow resistance,
-or pressure is fitted to force the desired output power.
-
-An active extensive coordinate retains its transform and has initial value and
-bounds multiplied by `s`. Integer bounds become `ceil(s*lower)` and
-`floor(s*upper)`; collapsed bounds are rejected. The selected tube count must
-be integral without rounding (floating-point roundoff within 1e-9 count is
-accepted). Intensive bounds remain unchanged. A factor must be finite and
-positive. V1 rescaling, custom hydraulic closures, unknown schemas and unsafe
-count conversions fail explicitly; they need deliberate migration or a
-family-specific implementation first. V1 inspection remains supported.
-
-Source warm states, when present and inventory-compatible, are scaled as
-conservative initial guesses, not reused as cached solutions. The regular
-wall-capacity adjustment and periodic convergence remain in force. Uniform
-initialization stays uniform. A factor of one preserves exactly the same
-physical inputs, but receives a new scientific identity because it explicitly
-records its parent and transformation.
-
-The basis `provenance.capacity_scaling` contains version 1, mode, factor,
-source candidate/study/definition identities, source path and basis digest,
-main before/after values, bound policy, unchanged-limit policy and header
-packing convention. Existing basis provenance is retained. Associated mechanism
-artifacts are copied. No schema bump or history migration is required: this
-uses existing V2/V3 provenance and parent-candidate fields. Exact cache and
-runtime/source compatibility rules remain unchanged.
-
-Multiplication can conceptually be reversed with `1/s`. Integer bound clipping
-and floating-point rounding are explicitly not claimed to be exactly reversible;
-the original source and recorded before values remain the reference.
-
-## Valve chronology availability
-
-The ten-state wall integration path (`external_stream_wall` and historical
-`air_wall`) uses continuous ideal diodes but does **not** locate or record
-pressure-crossing roots. `WallDiagnosticCycle` previously supplied `events=()`
-and placeholder closed topologies to generic diagnostics. The replay did not
-lose recorded transitions: no transitions had been collected in that integrator.
-The separate eight-state integrator does record continuous-diode events through
-its root-observation code; that behavior is retained.
-
-Wall-cycle topology is now `unavailable`, with reason
-`wall_integrator_does_not_record_valve_events`. Any empty generic sequence is
-also unavailable (`no_usable_valve_event_sequence`), rather than automatically
-non-nominal. Nonempty recorded sequences retain the existing cyclic nominal /
-non-nominal classification. No sampled flow sign is silently promoted to an
-accurate valve event, and no thermodynamic or valve equation is changed.
-
-Old records remain immutable. Inspection adds `topology_display` with
-`unavailable` for an empty legacy sequence; the original classification and
-reasons stay in `diagnostics`, and the display correction records the old
-classification. Local reflux remains a separate signed-flow diagnostic.
-
-## Offline table and volume plots
-
-Click visible column headings to toggle ascending/descending order, or use
-**Sort by** and **Direction**. Sort keys include COP, cooling power, indicated
-input and gas power, pressure/temperature/absolute-flow maxima, cycles, duration,
-all active coordinates, and absolute/relative constraint margins. Missing values
-stay last in either direction, with candidate ID as a deterministic tie-breaker.
-Status and validity filters compose with sorting. The main table exposes
-chronology availability, reflux detection and the worst minimum signed flow.
+## Command
 
 ```sh
-research report examples/human_cell_stage0/campaign \
-  --candidate a16ed2c7 --candidate 256fdb49 --plots volumes \
-  --html outputs/my_human_cell_comparison.html
-research compare outputs/human_cell_A5/evaluation.json \
-  outputs/human_cell_B5/evaluation.json --plots volumes \
-  --html outputs/my_scaled_comparison.html
+research rescale SOURCE \
+  --candidate CANDIDATE --mode capacity --factor 5 \
+  --output scaled/study.toml
+research validate scaled/study.toml
 ```
 
-`--plots volumes` reconstructs only the selected candidates, samples 721 angles
-including both cycle endpoints, and embeds both cylinder volumes in the
-standalone HTML. Production factory conventions apply the operation direction
-once. The horizontal axis is solver cycle angle [deg]; stored volumes are in
-m^3 and the figure displays litres. Candidate colors and solid-small /
-dashed-large styles identify the curves. Duplicate selections reuse the same
-samples within a report. Historical result artifacts contain no volume arrays,
-so reconstruction is needed; no ODE, thermal replay, or optimization is run.
-Reports include full selected evidence and lightweight whole-campaign progress.
+`research` is the checkout helper in the [user guide](DADA_ENGINE_RESEARCH.md);
+the installed entry is `dada-research`. SOURCE is a Research campaign or compatible
+standalone evaluation. Select a candidate by full ID, unambiguous prefix, or the
+production selectors `best`/`second`.
 
-The structured `plots.volumes` dataset is deliberately separate from thermal
-metrics, leaving room for future plot types without implying thermal replay is
-available. Only volumes are currently accepted. Standalone V2/V3 evaluations and
-campaign snapshots can be reconstructed using current production models, even
-when execution resume is incompatible; the runtime warning remains visible.
-Reports may regenerate derived HTML, need no network/server, and preserve scientific input
-provenance. Cross-study comparison is evidence, not a combined optimization
-ranking.
+The factor must be finite and strictly positive. Output must end in `.toml`;
+the study, associated basis and mechanism-artifact destinations must all be new.
+The command validates the generated study before publishing it and does not
+launch a campaign. Generated execution settings use a 512-attempt default;
+this scheduling convention is not a physical criterion. See the
+[technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md) for execution semantics.
 
-## Bounded Human Cell validation
+## Scaling contract
 
-See [the demonstration and measured results](../outputs/human_cell_stage0/README.md).
-No optimization was launched. A×1 and an original-A replay with identical uniform
-initialization have exactly equal recorded metrics on this runtime. Small
-differences from the historical campaign result arise from its different warm
-start and finite convergence tolerance, not changed factor-one physics.
+Research coordinate scaling and physical-basis reconstruction are distinct.
+The selected candidate supplies the new fixed values and active initial point;
+implicit machine defaults are materialized where necessary.
 
-### Circular conical collectors
+| Research coordinate | Action |
+|---|---|
+| Total swept volume; explicit total gas inventory | Multiply by `s` |
+| Microtube count; declared additional internal gas volume | Multiply by `s` |
+| External-stream mass flow; declared external wall conductance | Multiply by `s` |
+| Legacy external-air mass flow | Multiply by `s` |
+| Frequency, volume/clearance ratios and selected kinematics | Preserve |
+| Individual tube dimensions, pitch/packing settings and materials | Preserve |
+| Temperatures and specific properties | Preserve |
 
-Capacity scaling keeps `pitch_ratio`, `conduit_area_ratio` and cone half-angle
-fixed, while scaling tube count and declared additional gas volume by `s`.
-Consequently, bundle/conduit diameters and cone height scale by `sqrt(s)` and
-**collector volume scales by `s^(3/2)`**, not `s`. This is a physical consequence
-of the chosen collector shape, not forced extensive-volume similarity. Total
-exchanger hold-up (and geometry-derived atmospheric charge) is rebuilt normally.
-The reported ideal-diode area follows the conduit area and scales by `s`;
-historical CdA scaling policies cannot throttle a circular exchanger.
+The rebuilt basis also scales cylinder minimum/maximum volumes, reservoir
+exchanger reference volumes, legacy conductance references, additional wall heat
+capacity and supported hydraulic CdA quantities. Tube areas, tube-wall capacity
+and gas-film conductance are reconstructed from production geometry and models,
+not treated as independent target-performance inputs.
+
+Study constraints, mechanical requirements, validity thresholds, screening and
+numerical tolerances are preserved. A larger machine may therefore violate a
+constraint that the source satisfied; rescaling does not certify feasibility.
+
+## Active parameters and integer counts
+
+Fixed/active ownership and active transforms are retained. Every declaration is
+centered on the selected physical candidate:
+
+- An extensive fixed value or active initial value is multiplied by `s`.
+- Extensive active bounds are multiplied by `s`.
+- Intensive initial values come from the candidate; their bounds stay unchanged.
+- Tube counts must remain positive integers. No opportunistic rounding is allowed;
+  only absolute roundoff within `1e-9` count is accepted.
+- Integer bounds use `ceil(s * lower)` and `floor(s * upper)`.
+  Collapsed or invalid intervals are rejected, including equal endpoints.
+
+See the [technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md) for general
+parameter declarations and search encoding.
+
+## Geometry is rebuilt, not geometrically similar
+
+The transformation starts from the production machine constructed for the selected
+candidate. It creates a new basis and declarations, then validates them through
+normal study loading. It does not blindly multiply every old object field.
+
+The selected bank geometry remains authoritative. Legacy rectangular banks retain
+their discrete packing; row/column changes can make header volume and envelope
+non-proportional to `s`. Circular banks use the continuous approximation described
+below. Neither independent UA nor pressure loss nor pressure is adjusted to force
+power similarity.
+
+Declared physical mechanism lengths are not homothetically scaled. Retaining
+stroke while changing swept volume can change required bore and mechanical loads;
+this operation does not certify those loads.
+
+For outlet valves, fixed/source CdA is extensive. A count-ratio policy preserves
+the reference CdA/count slope: the new tube count supplies the factor once, not
+twice. Circular microtube ideal-diode area is instead derived from conduit area.
+Unknown/custom hydraulic closures are refused rather than extrapolated.
+
+## Circular collectors
+
+For `circular_triangular_frustum_v1`, individual tube dimensions, `pitch_ratio`,
+`conduit_area_ratio` and collector half-angle stay fixed. With an admissible integer
+count change `N -> s*N`, the implemented geometry gives:
+
+- bundle and conduit diameters proportional to `sqrt(s)`;
+- collector height proportional to `sqrt(s)`;
+- collector volume proportional to `s^(3/2)`;
+- conduit/ideal-diode area proportional to `s`.
+
+This follows exactly from the continuous triangular-cell envelope and conical
+frustum formulas, apart from floating-point roundoff. It is a consequence of the
+chosen geometry, not a scaling error. Tube gas volume and declared additional
+volume scale by `s`, but total hold-up need not. Reference-pressure inventory is
+therefore re-derived from the final connected volumes rather than forced to scale
+linearly. See the [microtube model](MICROTUBE_GAS_MODEL.md) for formulas and domains.
+
+## Warm start and identity
+
+A stored source warm state is scaled as a conservative initial guess only when
+its original inventory matches the selected design and charge uses explicit
+inventory. Otherwise that stored guess is discarded in favor of uniform
+initialization. Uniform initialization remains uniform. Wall-capacity adjustment
+and normal periodic convergence still apply; a guess is not a cached solution.
+
+Factor `1` preserves the selected candidate's physical inputs, as checked by the
+production regression tests. It still creates a new study with explicit parent
+provenance and a new scientific identity, not an alias or cache hit.
+
+## Provenance and portability
+
+The basis records `provenance.capacity_scaling`: version, mode, factor, parent
+candidate, source study/definition, source location and basis digest, before/after
+changes, bound conventions, unchanged constraints, geometry reconstruction and
+warm-start policy. Existing provenance is retained. The generic geometry note
+mentions discrete packing; the actual bank family determines whether discrete
+packing or the circular continuum formula applies.
+
+Required mechanism artifacts are copied and referenced locally. Move the new TOML
+together with its associated basis and artifacts; reconstruction does not require
+the original campaign directory. Source paths retained in provenance are evidence,
+not live dependencies.
+
+Scaling by `s` can conceptually be followed by `1/s`, but bitwise reversibility is
+not promised: integer bounds, ceil/floor, discrete packing, roundoff and geometric
+reconstruction can intervene. The original source and recorded `before` values
+remain the reference.
+
+## Unsupported cases and related references
+
+Only schema 2/3 (V2/V3) machine studies are supported. Schema 1 remains inspectable
+but requires explicit migration before scaling. `local_regions_v1` is rejected:
+rescale the global source first, then optionally refine the new study.
+
+Unsupported schemas, custom hydraulic flow models, unknown hydraulic quantities,
+non-integral counts, overflow, invalid bounds and existing destinations fail
+explicitly. Unknown declarations must pass the normal production schema checks;
+there is no fallback scaling rule for unrecognized physical quantities.
+These refusals protect the declared scientific transformation.
+
+Result tables, report reconstruction and display corrections belong to the
+[cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md). Current validation evidence
+belongs to [validation](validation.md), not to a particular historical campaign.
