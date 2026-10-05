@@ -35,21 +35,7 @@ unique best design. Keep frozen-design sensitivity separate from reoptimized
 hardware/motion, and report budgets, seeds and retained basins. A finite local
 search is best-found evidence, not a universal design law.
 
-## Existing evidence and next-study boundary
-
-The earlier temperature map is no longer merely planned: the
-[temperature/topology campaign](MOTOR_TEMPERATURE_AND_VALVE_CAMPAIGN.md) records
-its results. The [four-stage record](FOUR_STAGE_OPTIMIZATION.md) separates old
-constant-property and variable-property runs; the
-[initialization synthesis](MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md) proposes
-continuation hypotheses from those data. These are dated motor results, not
-validated refrigerator or helium initialization rules.
-
-The candidate-3952 hierarchical synthesis and subsequent mechanical robustness
-work are documented in the theory/family references. Research now supports
-multiple motion families, local multi-centre search and editable study-level
-mechanical quality constraints; it does not yet replace every historical
-synthesis script with an automatic target-to-mechanism command.
+## New-study boundary
 
 For a new temperature/geometry campaign, define its own filling policy. The
 current reference-pressure policy uses maximum **simultaneous total gas volume**;

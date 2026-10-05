@@ -1,7 +1,8 @@
 # First kinematic initialization synthesis for DADA motor optimization
 
 > Dated initialization hypothesis from motor studies. Preserve confidence levels and evidence; it is not a validated universal rule for refrigeration or helium.
-> See the [documentation index](README.md) for current references.
+> Its topology and temperature trends are conditional on that study, not defaults
+> for a new machine. See the [documentation index](README.md) for current references.
 
 ## Status and purpose
 
@@ -9,8 +10,7 @@ This note defines a **first practical initialization law** for future DADA motor
 
 It combines two complementary bodies of numerical evidence:
 
-1. the multi-temperature and passive-valve campaign documented in
-   [`MOTOR_TEMPERATURE_AND_VALVE_CAMPAIGN.md`](MOTOR_TEMPERATURE_AND_VALVE_CAMPAIGN.md);
+1. the historical multi-temperature and passive-valve campaign;
 2. the later 260 K search for a smooth compact C2 motion law, culminating in the
    15-parameter hybrid family and the retained near-optimal candidate **3952**.
 

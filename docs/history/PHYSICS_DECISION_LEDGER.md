@@ -41,15 +41,13 @@ the intended final piston law. After this thermal study, return to smoother,
 more natural laws for the first prototype. The linear target informs that work
 without requiring its corners or exact shape to survive. C2 readjustment and
 mechanism evaluation remain the documented route; no new mechanism is selected
-by this clarification. See [FOUR_STAGE_OPTIMIZATION.md](../FOUR_STAGE_OPTIMIZATION.md)
-for the completed local 9D result and the separate temperature-study handoff.
+by this clarification. The completed local 9D result and temperature-study handoff remain historical
+campaign evidence.
 
 ## 2026-09-17: four-stage design probe and whole-machine temperature map
 
 These decisions supersede contrary interpretations of the historical experiment
-records below. Detailed numerical results and their exact output artifacts are
-in [FOUR_STAGE_OPTIMIZATION.md](../FOUR_STAGE_OPTIMIZATION.md); the
-study plan is specified as future work in
+records below. The study plan was specified as future work in
 [MOTOR_RESEARCH_OBJECTIVES.md](../MOTOR_RESEARCH_OBJECTIVES.md).
 
 - Four-stage piecewise-linear motion is a thermodynamic design probe, not a

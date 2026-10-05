@@ -228,12 +228,9 @@ The following scopes should remain distinct:
 5. Evaluate the **actual six-bar kinematics** in the periodic thermodynamic
    solver; geometric RMS fit alone is not a performance result.
 
-The [four-stage chronology](FOUR_STAGE_OPTIMIZATION.md) records the implemented
-experiments; [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md) defines
-the planned whole-machine temperature map. Existing spline and six-bar support
-are reusable capabilities. They do not establish that C2 smoothing, its
-reoptimization or mechanism synthesis for the newly selected four-stage target
-has already been completed.
+[Motor research objectives](MOTOR_RESEARCH_OBJECTIVES.md) defines the
+whole-machine questions. Existing spline and six-bar support are reusable
+capabilities, not evidence that synthesis for any new target is complete.
 
 Velocity/acceleration and mechanical bounds must be made explicit before
 claiming realizability. Certification, optimal-control bounds and branch-and-
@@ -253,22 +250,7 @@ Use the following terminology consistently.
 | rigorous relaxed upper bound close to best admissible motion | certified near-optimal motion in the stated admissible class |
 | no explicit upper bound | do not claim global optimality |
 
-## Current status (2026-09-17)
-
-The project remains at the **best-found / parameterization-comparison** stage.
-Shared seven-parameter four-stage timing has been explored and finely refined.
-An 11D independent S/L timing search retained the shared seed; a focused 4D
-relative-event test then found a small gain from sub-degree RMS separation.
-Shared timing is therefore a useful reduced approximation, not exact physics.
-
-An independent local climb from 150/30/150/30 deg found another, more balanced
-timing basin. Those comparisons used the legacy gas model. The current physical
-9D refinement varies shared motion and independent H_i/H_o tube counts with the
-production variable-property model; its local run is complete at 312 attempts (best record 299).
-This is finite-search completion, not a proof of optimality.
-See [the report-based chronology](FOUR_STAGE_OPTIMIZATION.md) for exact artifacts,
-parameters, filling rules, budgets and model generations. Efficiencies across
-those generations must not be ranked as optimization improvements.
+## Interpretation of the four-stage probe
 
 The four-stage law deliberately simplifies features discovered in previous
 freer-motion searches. It is a temporary thermodynamic design probe, plausibly

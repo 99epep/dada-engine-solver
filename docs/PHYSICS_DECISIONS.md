@@ -26,6 +26,12 @@ Valve timing is not prescribed by piston phases or Lambda targets. Reflux on
 bidirectional links remains visible. Unsupported/missing event observations
 must not be converted into a non-nominal chronology verdict.
 
+Moving a valve upstream or downstream changes the hydraulic network and can
+change pressures, flows and heat transfer. Treat placement as a design variable
+and reoptimize it with motion and hardware. Valves remain pressure-driven, not
+angle-commanded. A topology preferred in one finite motor campaign is not a
+universal choice for another machine, fluid or operating regime.
+
 Continuous ideal diodes impose direction without valve memory. The separate
 hysteretic event solver preserves state and quadratures at threshold crossings;
 there is no instantaneous pressure equalization/reset. The wall wrapper requires

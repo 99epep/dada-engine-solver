@@ -16,8 +16,6 @@ Old test counts are dated records, not the present test status.
 
 | Record | Why retain it |
 |---|---|
-| [Four-stage optimization](../FOUR_STAGE_OPTIMIZATION.md), [K2 search](../FOUR_STAGE_K2_SEARCH.md) | Distinguishes artificial conductance sensitivity from actual hardware changes and different motion basins |
-| [Valve screening](../VALVE_PLACEMENT_SCREENING.md), [temperature/topology campaign](../MOTOR_TEMPERATURE_AND_VALVE_CAMPAIGN.md) | Matched DD/UD/DU/UU comparisons and temperature-specific evidence |
 | [Four-bar comparison](../MOTOR_FOUR_BAR.md), [champion integration](../MOTOR_CHAMPION_FOUR_BAR.md), [six-bar K2](../SIX_BAR_K2_EVALUATION.md) | Motion substitution at fixed thermodynamic inputs and sign/scale conventions |
 | [Initialization synthesis](../MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md) | Explicit confidence levels and transferable versus gas/application-specific hypotheses |
 | [Compact synthesis](../COMPACT_KINEMATIC_SYNTHESIS.md) | Finite rods, output frames, compactness and branch lessons |
