@@ -41,8 +41,8 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 - [Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md) and
   [six-bar families](SIX_BAR_MECHANISM_FAMILIES.md): retained geometry, conventions,
   reproducible data and nominal mechanical margins.
-- [Compact finite-rod synthesis](COMPACT_KINEMATIC_SYNTHESIS.md) and
-  [earlier optimizer audit](FOUR_BAR_AUDIT.md): implementation lessons.
+- [Research kinematics](DADA_ENGINE_RESEARCH_KINEMATICS.md): production mechanisms,
+  branches, physical scale and mechanical diagnostics.
 - [Motion optimality](MOTION_OPTIMALITY.md): best-found evidence versus proof.
 - [Motor objectives](MOTOR_RESEARCH_OBJECTIVES.md): ordered research questions;
   [initialization study](MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md): a dated

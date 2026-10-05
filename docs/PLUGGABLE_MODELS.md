@@ -240,7 +240,8 @@ existing wall numerical settings and convergence criterion. Its output
 SHA-256 identities, explicit candidate selections, volume limits, configuration,
 wall settings, initial and last states, convergence history and diagnostics.
 Efficiency uses external-source heat, not wall-to-gas heat alone.
-See [SIX_BAR_K2_EVALUATION.md](SIX_BAR_K2_EVALUATION.md) for the recorded result.
+Current mechanism conventions are in the
+[Research kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).
 
 For new studies, use versioned Research mechanism artifacts rather than requiring
 the historical Stage 2F/L1 file layout. See the [artifact reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).

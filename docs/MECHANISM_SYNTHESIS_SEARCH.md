@@ -830,6 +830,11 @@ This is the reason for retaining several families through the hierarchy.
 
 ---
 
+Complete-mechanism fitting must score the actual finite-rod piston/slider
+displacement, not rocker angle or an intermediate point projection. Failure of
+one fitted geometry or one bounded search does not establish a limitation of
+the complete mechanism family.
+
 ## 17. Why position error becomes diagnostic
 
 During early synthesis, normalized piston-position error is useful because it

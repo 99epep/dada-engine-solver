@@ -1140,7 +1140,7 @@ piston displacement without an explicit finite connecting rod. The coupled
 solver will instead require an explicit slider/follower constraint and score
 the resulting cylinder volume law directly. Assembly branch, continuous crank
 rotation and singularity margin will be explicit validity diagnostics. The
-detailed findings are in `docs/FOUR_BAR_AUDIT.md`.
+the earlier optimizer was audited before integration.
 
 For the first low-tech search, both four-bar loops share one physical crank
 plate and the same crank pin. The common crank radius and phase are therefore
@@ -1587,7 +1587,7 @@ shared-crank rocker model and finite slider rods, with automatic motor reversal.
 The initial comparison holds hardware and gas inventory fixed across piecewise-linear and
 four-bar waveforms at 2, 5 and 10 Hz. The 1 litre seed and exchanger parameters
 are exploratory, not selected hardware. No new thermodynamic equation or Doty
-closure is introduced. See [MOTOR_FOUR_BAR.md](../MOTOR_FOUR_BAR.md).
+closure is introduced.
 
 ## 2026-09-10: dynamic-wall microtube campaigns
 

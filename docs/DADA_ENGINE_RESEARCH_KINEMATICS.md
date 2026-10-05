@@ -316,6 +316,18 @@ physical_stroke = stroke_over_crank * crank_radius_m
 This does not determine bore. Abstract families do not acquire a physical crank
 scale merely by specifying a swept volume.
 
+For finite-rod slider closures, changing the assembly branch changes the
+kinematic law and potentially the stroke; it is not a rigid translation.
+Crank phase is not generally piston-extremum phase, especially for offset sliders
+and non-harmonic mechanisms. A common crank does not require symmetric outputs.
+
+A sampled planar envelope is only a geometric screening proxy. It does not
+certify component thickness, bearings, supports, cylinder bodies, axial layering
+or collision clearance. Crossing line segments in a planar drawing alone do not
+establish physical collision. Normalized geometry and acceleration/shape scores
+do not determine loads, stress, fatigue, bearing forces or mechanical losses;
+these require physical scale and separate engineering models.
+
 ## 8. Mechanism artifacts and libraries
 
 `dada_solver.research.artifacts` provides `MechanismArtifact` and

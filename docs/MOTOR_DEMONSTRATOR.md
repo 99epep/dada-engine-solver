@@ -134,8 +134,8 @@ whole-bank scaling implementation and its limitations are documented in
 [DOTY_SCREENING.md](DOTY_SCREENING.md). This adds a separate steady screening
 calculation, not a change to the conservative cycle equations.
 
-The four-bar integration and matched speed comparison are documented in
-[MOTOR_FOUR_BAR.md](MOTOR_FOUR_BAR.md).
+Realizable mechanisms must be evaluated with their actual motion and hardware;
+see [Research kinematics](DADA_ENGINE_RESEARCH_KINEMATICS.md).
 
 Ordered long-term motion-law and design-map objectives are recorded in
 [MOTOR_RESEARCH_OBJECTIVES.md](MOTOR_RESEARCH_OBJECTIVES.md).

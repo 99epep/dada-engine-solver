@@ -16,9 +16,7 @@ Old test counts are dated records, not the present test status.
 
 | Record | Why retain it |
 |---|---|
-| [Four-bar comparison](../MOTOR_FOUR_BAR.md), [champion integration](../MOTOR_CHAMPION_FOUR_BAR.md), [six-bar K2](../SIX_BAR_K2_EVALUATION.md) | Motion substitution at fixed thermodynamic inputs and sign/scale conventions |
 | [Initialization synthesis](../MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md) | Explicit confidence levels and transferable versus gas/application-specific hypotheses |
-| [Compact synthesis](../COMPACT_KINEMATIC_SYNTHESIS.md) | Finite rods, output frames, compactness and branch lessons |
 | [Primary families](../PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar families](../SIX_BAR_MECHANISM_FAMILIES.md) | Exact geometry, discrete branches, documentary reproductions and nominal mechanical margins |
 
 The [synthesis method](../MECHANISM_SYNTHESIS_SEARCH.md) remains a primary
