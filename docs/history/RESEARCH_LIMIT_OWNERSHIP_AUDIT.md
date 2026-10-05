@@ -28,8 +28,8 @@ geometry closure and actual exchanger domains remain enforced.
 
 ## Absolute-flow inventory and decisions
 
-The machine-readable [inventory](../research_audit/absolute_mass_flow_inventory.json)
-records file-level matches from the full local audit. Searches included
+A temporary machine-readable inventory recorded file-level matches from the
+full local audit; it was removed after migration. Searches included
 `maximum_absolute_mass_flow`, `MAXIMUM_ABSOLUTE_MASS_FLOW`, `MAX_FLOW`, decimal
 and exponent spellings of 0.08, and possible 80 g/s spellings. Numeric matches
 alone include geometry, plot settings, search radii, external stream inputs and
@@ -65,8 +65,8 @@ Historical TOML occurrences include `motor_four_bar_thermo_stage4/4b`,
 `motor_mechanics_stage5_{A_reference,B_low_ratio,C_high_ratio}`,
 `motor_thermo_stage6_{A,B,C}`, `motor_mechanics_stage7A{,2,3,4,5}_edge`,
 `examples/human_cell_stage0/study.toml`,
-`docs/research_audit/proposed_rank01.toml`, and saved Research campaign/output
-TOMLs listed individually in the inventory. They retain explicit inherited
+the temporary schema proposal, and saved Research campaign/output
+TOMLs recorded during the audit. They retain explicit inherited
 requirements, not validated component ratings. Other explicit 0.05 and 0.02
 example/controlled-test limits are not replacements for the removed default.
 

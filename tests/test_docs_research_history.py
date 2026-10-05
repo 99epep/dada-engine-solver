@@ -24,15 +24,12 @@ def test_root_document_links_use_history_paths():
         assert not set(NAMES).intersection(targets), path
 
 
-def test_audit_material_has_not_moved():
-    assert (DOCS / 'DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv').is_file()
-    assert (DOCS / 'research_audit/generate_inventory.py').is_file()
-    matrix = (DOCS / 'history' / RESEARCH_ARCHIVES[-1]).read_text()
-    assert '](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv)' in matrix
-    assert '](../research_audit/example_inventory.json)' in matrix
+def test_intermediate_audit_material_is_removed():
+    assert not (DOCS / 'research_audit').exists()
+    assert not (DOCS / 'DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv').exists()
 
 
-def test_current_ownership_authority_and_retained_inventory():
+def test_current_ownership_authority():
     index = (DOCS / 'README.md').read_text()
     row = next(line for line in index.splitlines()
                if 'Model domain versus design requirement' in line)
@@ -42,8 +39,5 @@ def test_current_ownership_authority_and_retained_inventory():
         text = (DOCS / name).read_text()
         assert '[current ownership rule](PHYSICS_DECISIONS.md)' in text
         assert '](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md)' not in text
-    inventory = DOCS / 'research_audit/absolute_mass_flow_inventory.json'
-    assert inventory.is_file()
     audit = (DOCS / 'history/RESEARCH_LIMIT_OWNERSHIP_AUDIT.md').read_text()
-    assert '](../research_audit/absolute_mass_flow_inventory.json)' in audit
     assert '](../PHYSICS_DECISIONS.md)' in audit

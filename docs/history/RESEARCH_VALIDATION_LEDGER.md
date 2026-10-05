@@ -16,7 +16,8 @@ For current Research usage, see
 
 For detailed source-extraction provenance, see
 [`DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md`](DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md)
-and `../research_audit/`.
+for the retained narrative record. Intermediate machine-readable audit artifacts
+and capture scripts were removed after migration; active regression fixtures remain.
 
 ## 1. Validation philosophy
 

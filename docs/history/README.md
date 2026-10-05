@@ -43,7 +43,8 @@ hierarchical search evidence matter for future human-cell mechanisms.
 [condensed Research implementation/parity ledger](RESEARCH_VALIDATION_LEDGER.md) retain source extraction,
 parity cases and compatibility decisions. Use the current Research guide for
 commands; early limitations in dated sections do not describe the current CLI.
-Machine-readable `research_audit/` inventories remain intact.
+Intermediate machine-readable inventories and capture scripts were removed after
+migration; production tests and active regression fixtures remain.
 
 Results under `outputs/` and `examples/` are not relocated, regenerated, cleaned
 or relabelled by this documentation pass. A saved feasible verdict may include

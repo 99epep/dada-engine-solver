@@ -15,8 +15,7 @@ the eleventh Research family; unrelated local work is outside that update.
 
 ## Reviewed V2 mathematical families versus search protocols
 
-The explicit [reviewed status map](../research_audit/kinematics_v2_migrations.json)
-is applied by the inventory generator. It distinguishes extracted representation,
+A reviewed status map was applied during inventory generation. It distinguished extracted representation,
 existing production reuse and retained search/plotting code. AST imports alone
 never mark a script as parity-verified. The [kinematics reference](../DADA_ENGINE_RESEARCH_KINEMATICS.md)
 documents the parameter schema and available execution boundary.
@@ -47,12 +46,12 @@ is recorded explicitly rather than claiming complete campaign migration.
 
 ## Inventory and evidence
 
-The [CSV matrix](../DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.csv) has one row for every
+The migration CSV had one row for every
 Python/TOML example: **241 files, 188 Python and 53 TOML**, including the locally
-untracked bounded V2 demonstration script. It supplies all nine requested migration columns,
+untracked bounded V2 demonstration script. It supplied all nine requested migration columns,
 plus hashes, tracking state, and documentation references.
 
-The [detailed inventory](../research_audit/example_inventory.json) records full-source
+The detailed inventory recorded full-source
 AST/TOML evidence: imports, transitive imports of other examples, CLI declarations
 with defaults, input/output call sites, path expressions and artifact literals,
 optimization calls, feasibility functions, rendering calls, and direct test
@@ -68,15 +67,9 @@ The original semantic review covered the first slice; the explicit V2 status
 map now adds the reviewed motion and mechanism lineages above. No row is
 marked migrated or parity verified merely because its filename looks relevant.
 
-Regenerate the static inventory from any directory:
-
-```sh
-python3 docs/research_audit/generate_inventory.py
-```
-
-The script uses its own checkout location. Generated review documents are excluded
-from documentation-reference discovery, so the inventory does not cite itself.
-This is developer audit tooling, separate from the executable Research application.
+The intermediate inventories, status map and one-shot capture tooling were
+removed after migration. Production tests and their active fixtures retain the
+durable regression evidence.
 
 ## Workflow decisions
 
@@ -168,13 +161,13 @@ filename in new documentation.
 
 ## Reference inputs and preservation
 
-The [rank-01 snapshot](../research_audit/rank01_reference_snapshot.json) contains
+The migration produced a rank-01 snapshot containing
 the original pair and selected result, resolved machine/exchanger configuration,
 all wall settings, initial/final state, source hashes, backend/runtime identity,
 and the twelve actual JSON/JSONL/TOML inputs observed during reconstruction.
 All twelve are present locally and tracked. There is **no missing-input blocker**
-for this first slice. The snapshot is a small review artifact, not an invented
-historical result or a substitute for its source lineage.
+for this first slice. The snapshot was an intermediate review artifact, subsequently removed; it was
+not a substitute for its source lineage.
 
 The construction dependencies are:
 
@@ -188,8 +181,7 @@ The construction dependencies are:
 - thermo-5D rank-01 `report.json` and `history.jsonl` for the selected result
   and its precise warm-start predecessor.
 
-The [family reference manifest](../research_audit/family_reference_manifest.json)
-also preserves checksums, representative stored result excerpts, script hashes,
+A temporary family reference manifest also recorded checksums, representative stored result excerpts, script hashes,
 and reference commands across the major workflow families. These other studies
 were inspected/snapshotted, **not rerun**. The commands describe the historical
 entry points; some write default historical locations and must be redirected
@@ -199,10 +191,10 @@ before future execution. No example or output was moved in this phase.
 
 ```sh
 PYTHONPATH=src python3 -m pytest -q tests/test_campaign.py tests/test_six_bar.py tests/test_machine_injection.py
-MPLCONFIGDIR=/tmp/dada-matplotlib PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:examples python3 docs/research_audit/capture_reference.py
 ```
 
-The focused tests passed: **61 passed in 2.61 seconds**. The original rank-01
+A one-shot capture script also replayed the original evaluator during this audit.
+That script is no longer retained. The focused tests passed: **61 passed in 2.61 seconds**. The original rank-01
 evaluator replay converged in 13 cycles, with the same saved warm-start state:
 
 | Metric | Stored result | Fresh original-evaluator replay |

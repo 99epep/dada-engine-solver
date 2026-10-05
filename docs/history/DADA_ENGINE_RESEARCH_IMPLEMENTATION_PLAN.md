@@ -71,9 +71,9 @@ rules; document that stopping is cooperative, not instantaneous.
 
 ## Versioned TOML and parameter semantics
 
-[proposed_rank01.toml](../research_audit/proposed_rank01.toml) is a complete parseable
-**schema proposal**, not an input accepted by the current CLI. It pins the
-captured reference bundle digest and explicitly records:
+A complete parseable **schema proposal** was produced during migration, not an
+input accepted by the current CLI. This intermediate artifact has since been
+removed. It pinned the captured reference bundle digest and recorded:
 
 - schema version, study protocol and historical purpose;
 - the immutable source bundle and historical parent candidate;
