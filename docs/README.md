@@ -44,9 +44,7 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 - [Research kinematics](DADA_ENGINE_RESEARCH_KINEMATICS.md): production mechanisms,
   branches, physical scale and mechanical diagnostics.
 - [Motion optimality](MOTION_OPTIMALITY.md): best-found evidence versus proof.
-- [Motor objectives](MOTOR_RESEARCH_OBJECTIVES.md): ordered research questions;
-  [initialization study](MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md): a dated
-  motor continuation hypothesis, not a universal initialization law.
+- [Motor objectives](MOTOR_RESEARCH_OBJECTIVES.md): ordered research questions.
 
 ## Develop and validate
 
@@ -62,9 +60,9 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 - [Cooling cell](COOLING_CELL.md): load calculation and indicated-input boundary.
 - [Domestic refrigerator](DOMESTIC_REFRIGERATOR.md): separate appliance boundary;
   dated standards/product references require review for a new comparison.
-- [Motor demonstrator](MOTOR_DEMONSTRATOR.md): historical engineering brief,
+- [Motor demonstrator](MOTOR_DEMONSTRATOR.md): application-specific design brief,
   not global solver limits.
-- [Historical studies index](history/README.md): original decisions and retained motor/mechanism research records.
+- [Evidence index](history/README.md): retained numerical evidence and mechanism references.
 
 Saved `outputs/`, examples, audit JSON/CSV, fixtures and source artifacts are not
 edited by documentation maintenance. Some large output directories are local-only

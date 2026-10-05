@@ -51,9 +51,10 @@ periodic state does not establish that a physical machine is validated.
 ## Scientific and implementation provenance
 
 The originating [Thermodynamic and Mechanical Study](https://dada-engine.org/Thermodynamic_and_Mechanical_Study)
-and its locally recorded revisions are discussed in the
-[decision ledger](docs/history/PHYSICS_DECISION_LEDGER.md). Current implementation
-choices and later user decisions are summarized in the current physics reference.
+provides the originating analytical reference. Current implementation choices
+and later user decisions are summarized in
+[physical decisions](docs/PHYSICS_DECISIONS.md); branch and direction conventions
+are explained in [motor operation](docs/MOTOR_OPERATION.md).
 
 > The substantial initial implementation was produced by OpenAI Codex running
 > GPT-5.6 Sol (`gpt-5.6-sol`), under human scientific direction, on 2026-09-02

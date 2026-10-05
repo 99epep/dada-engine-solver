@@ -1,9 +1,8 @@
 # Current physical decisions
 
 This is the current model handoff, consolidated on 2026-10-03. Explicit later
-user decisions override it. The [dated decision ledger](history/PHYSICS_DECISION_LEDGER.md)
-preserves the original discussion, including withdrawn results and superseded
-requirements. It is not an additional set of active constraints.
+user decisions override it. Earlier decisions and superseded requirements remain
+available in Git history; this document is the current source of truth.
 
 ## Conservative state and hydraulic topology
 
@@ -169,10 +168,22 @@ maximum method and warm-start compatibility.
 
 Initial guesses may be rescaled compatibly, but integrated mass is never
 renormalized between cycles. Only an ordinary complete physical cycle passing
-the declared periodic criterion certifies convergence. Wall extrapolation or a
+the declared periodic criterion certifies convergence. For hysteretic valves,
+the discrete valve state must also recur; matching gas states alone is insufficient.
+Continuous ideal diodes have no valve memory to recover. Wall extrapolation or a
 safe retry changes an initial guess, not the equations, tolerance or verdict.
 A recovered rejected-trial diagnostic stays historical; current constraint
 margins describe the final cycle. Sampled screens are not analytic guarantees.
+
+## Scope of ideal-model similarity
+
+For fixed dimensionless motion and the lumped ideal-gas, reservoir-UA/orifice
+model, `dada_solver.similarity.scale_capacity_and_speed` scales all volumes and
+inventory by `s`, frequency by `f`, and UA and CdA by `s*f`. Corresponding pressure
+and temperature histories versus angle are preserved; cycle heat/work scale by
+`s`, powers by `s*f`, and COP is unchanged. This mathematical similarity does not
+establish how real exchanger conductance, hold-up or hydraulics scale. It is not
+the geometry-rebuilding [Research capacity transformation](DADA_ENGINE_RESEARCH_CAPACITY.md).
 
 ## Evidence and remaining work
 
@@ -184,7 +195,7 @@ model converts gas work into shaft performance. Distributed exchange, actual
 valve losses, mechanics, experimental calibration and real-fluid hydraulics
 require separate evidence and decisions.
 
-The historical motor demonstrator brief (about 100 W useful output, 2–10 Hz,
+The application-specific motor demonstrator brief (about 100 W useful output, 2–10 Hz,
 25/325 °C sources, 66 L ceiling) describes that application only. Cooling-cell
 loads and new Research studies have their own explicit boundaries. See
 [validation](validation.md) and [research objectives](MOTOR_RESEARCH_OBJECTIVES.md).

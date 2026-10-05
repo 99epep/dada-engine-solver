@@ -81,10 +81,11 @@ new geometry. See [capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md).
 
 Early piecewise-linear sensitivity results were withdrawn because the angular
 origin gave the wrong filling volume/inventory. Another sweep was withdrawn
-because sizing initials overrode the edited base geometry. Their numerical
-listings are omitted here; the reasons and original record remain in the
-[decision ledger](history/PHYSICS_DECISION_LEDGER.md). Old examples and outputs
-are unchanged and are not promoted to current recommended studies.
+because sizing initials overrode the edited base geometry. Do not reuse those
+results as current evidence. Verify the assembled geometry and derived inventory
+before comparison; see [current charge conventions](PHYSICS_DECISIONS.md#inventory-periodic-convergence-and-diagnostics).
+Old examples and outputs are unchanged and are not promoted to current
+recommended studies.
 
 The [domestic refrigerator comparison](DOMESTIC_REFRIGERATOR.md) has a different
 load, temperature and auxiliary boundary. It requires its own design study.

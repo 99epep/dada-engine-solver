@@ -7,8 +7,6 @@ Old test counts are dated records, not the present test status.
 
 ## Condensed records
 
-- [Decision ledger](PHYSICS_DECISION_LEDGER.md): original decisions, reversals and
-  withdrawn early results. [Current decisions](../PHYSICS_DECISIONS.md) take precedence.
 - [Numerical execution](../SOLVER_PERFORMANCE.md): consolidated acceleration
   evidence, adopted optimizations and negative interpolation/Anderson experiments.
 
@@ -16,7 +14,6 @@ Old test counts are dated records, not the present test status.
 
 | Record | Why retain it |
 |---|---|
-| [Initialization synthesis](../MOTOR_KINEMATIC_INITIALIZATION_SYNTHESIS_V1.md) | Explicit confidence levels and transferable versus gas/application-specific hypotheses |
 | [Primary families](../PRIMARY_FOUR_BAR_FAMILIES.md), [six-bar families](../SIX_BAR_MECHANISM_FAMILIES.md) | Exact geometry, discrete branches, documentary reproductions and nominal mechanical margins |
 
 The [synthesis method](../MECHANISM_SYNTHESIS_SEARCH.md) remains a primary
