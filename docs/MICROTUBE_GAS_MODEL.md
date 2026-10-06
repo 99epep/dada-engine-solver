@@ -409,29 +409,37 @@ relative pressure drop 0.2005927 above the unchanged 0.2 guard. This is not a
 converged performance result. See [the artifact and reproduction command](../outputs/research_microtube_transition/README.md).
 
 
-## Research limit ownership (2026-09-30)
+## Research limit ownership
 
 Microtube validity uses each selected gas model's declared Mach limit, including
-its hydraulic upstream diagnostics. The historical generic validity value 0.2
-no longer adds a second exchanger-domain veto to a model allowing 0.3. An explicit
-study `maximum_mach_number` constraint may impose a stricter engineering limit.
-No transport, pressure-drop, entry, rarefaction or correlation limit is relaxed.
-There is no universal 0.08 kg/s admissible flow: geometry and local state determine
-velocity, Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass flow
-remains an observable and an optional explicit study constraint. Pressure inequality
-is diagnostic-only; isothermality excursion is no longer reported or constrained.
+its hydraulic upstream diagnostics. Research adds no implicit generic physical
+limit to that domain. An explicit study `maximum_mach_number` constraint may
+impose a stricter engineering limit without redefining the model's domain.
+Transport, pressure-drop, entry, rarefaction and correlation-specific limits
+remain enforced.
+
+Research imposes no universal absolute mass-flow ceiling. Hydraulic admissibility
+depends on geometry, local state and the selected model; these determine velocity,
+Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass flow is an
+observable and an optional explicit study constraint. Pressure inequality is
+diagnostic-only, not an implicit thermodynamic-validity veto. Isothermality
+excursion is neither reported nor constrained.
 See [current physics decisions](PHYSICS_DECISIONS.md).
 
 
 ## Species-dependent dilute transport, version `dilute_species_v2`
 
-This is a scientific property-law change, not an EOS replacement. New air defaults
-are 100–1000 K; helium 50–1000 K; nitrogen and argon remain 200–1000 K.
+`dilute_species_v2` defines the selected transport property laws; it does not
+replace the thermodynamic EOS. The transport temperature domains are air
+100–1000 K, helium 50–1000 K, and nitrogen/argon 200–1000 K.
 `minimum_temperature` and `maximum_temperature` may restrict, never expand, these
-ranges. Serialized old explicit 200 K lower bounds remain restrictive. Old studies
-remain readable, but new code uses the new correlation formulas even at 200–1000 K;
-source/backend identity prevents silently resuming a historical runtime. Preserve
-old outputs and use a new study/basis/campaign, not a rewritten journal.
+ranges. Serialized legacy explicit 200 K lower bounds remain restrictive.
+
+Legacy studies remain readable, but compatibility loading does not restore a
+superseded transport law. The selected implementation uses `dilute_species_v2`;
+source/backend identity prevents silent resume across transport-law changes.
+Preserve results produced under another transport-law identity. Use a distinct
+study/basis/campaign for a changed physical law rather than rewriting its journal.
 
 ### Formulas and provenance
 

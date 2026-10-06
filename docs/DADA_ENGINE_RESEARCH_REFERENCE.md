@@ -150,8 +150,7 @@ unless a separate physical model supplies them.
 
 Each declaration includes `type` and `unit`; numeric fields must be positive and finite.
 Duplicates are rejected. Generic studies require an explicit `valid_thermodynamic_model`
-constraint. Historical power, pressure, temperature and absolute-flow guards are not
-universal defaults.
+constraint.
 
 Model applicability/domain, study requirements, search bounds and numerical settings
 have distinct owners. A stricter study Mach limit does not redefine the exchanger's
