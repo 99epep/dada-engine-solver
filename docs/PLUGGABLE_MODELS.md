@@ -193,12 +193,10 @@ belongs in adapters; conservative integration remains independent of those choic
 
 Tests cover spline extrema/derivatives, branch/closure validation, direct
 kinematics injection, exchanger ownership, conservation and original-model parity.
-`examples/pluggable_kinematics_smoke.py` is a historical constant-UA/orifice
-example, not a comparison against current microtube hardware.
 
 ## Independent six-bar integration
 
-`dada_solver.six_bar` adds `SixBarCylinderMechanism` and
+`dada_solver.six_bar` provides `SixBarCylinderMechanism` and
 `IndependentSixBarVolumeKinematics`. They compose the primary A-B-C-D linkage,
 E rigid on BC, the E-F-G RR dyad, H rigid on EF, and a finite H-P rod with the
 positive slider-closure branch. Circle closures and their differentiated
@@ -206,41 +204,27 @@ constraint equations provide analytic slider velocities. The two cylinders
 have independent geometry and stored phases in the common study-angle domain.
 There is no extra L reflection or phase adjustment. Injection through
 `MachineDesign(..., kinematics=motion)` or `build_model(..., kinematics=motion)`
-uses the existing single motor-direction transformation. Research selects this production family without changing thermodynamic equations.
+uses the single motor-direction transformation.
 
-`load_six_bar_mechanism(path)` reads the global best from Stage 2F/L1 JSON;
-`restart=0, second_branch=1` explicitly selects the small-cylinder champion.
-Missing, ambiguous or infeasible selections raise an error. Lengths remain in
-crank-radius units; physical strokes are `None` without an externally specified
-scale. Assembly branches, full primary rotation and closure/singularity
-conditions are checked. A 1440-interval scan brackets slider-velocity roots;
-Brent refinement determines continuous travel extrema. Geometry is also checked
-at every evaluation. This is numerical preflight, not a proof excluding all
-possible singularities of arbitrary future mechanisms between scan points.
+Assembly branches, full primary rotation and closure/singularity conditions
+are checked. A 1440-interval scan brackets slider-velocity roots; Brent refinement
+determines continuous travel extrema. Geometry is checked on the scan and at
+every evaluation. This is numerical preflight, not a proof excluding all
+possible singularities between scan points.
 
-Normalization preserves the synthesis convention:
-`q = 1 - (slider - slider_min) / stroke`, with volume obtained from the given
-`CylinderVolumeLimits`. Unlike the historical scripts' sampled extrema, refined
-extrema keep the continuous law in the volume range without clipping. For the
-selected champions, the stroke correction is 1.20 ppm for S and 0.37 ppm for L.
-At the original sampled normalization, position and derivative trajectories
-agree with the independent synthesis scripts to better than 1e-13 RMS.
+Normalization uses `q = 1 - (slider - slider_min) / stroke`, with volume obtained
+from the given `CylinderVolumeLimits`. Refined extrema define the continuous
+volume law without clipping. Lengths are expressed in crank-radius units;
+`IndependentSixBarVolumeKinematics` reports physical strokes as `None`.
+Research can derive physical stroke from explicit `crank_radius_m` metadata.
 
-Run the unchanged K2 hardware/thermodynamics with these mechanisms:
+`load_six_bar_mechanism(path)` reads a stored best candidate or selects one
+using both `restart` and `second_branch`. Inputs must declare
+`length_unit = "crank_radius"`; stored assembly branches are used verbatim.
+Missing, ambiguous or infeasible selections raise an error, without fallback
+to another candidate.
 
-```sh
-PYTHONPATH=src python3 examples/evaluate_motor_champion_sixbar.py
-```
-
-The example reuses the established K2 assembly and wall evaluation helpers,
-fixes gas inventory, applies K2 exchanger geometry factors, and retains the
-existing wall numerical settings and convergence criterion. Its output
-`outputs/motor_champion_sixbar_k2.json` includes geometry source contents and
-SHA-256 identities, explicit candidate selections, volume limits, configuration,
-wall settings, initial and last states, convergence history and diagnostics.
-Efficiency uses external-source heat, not wall-to-gas heat alone.
-Current mechanism conventions are in the
-[Research kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).
-
-For new studies, use versioned Research mechanism artifacts rather than requiring
-the historical Stage 2F/L1 file layout. See the [artifact reference](DADA_ENGINE_RESEARCH_KINEMATICS.md).
+Research constructs this production family from declared coordinates or
+versioned mechanism artifacts without changing thermodynamic equations. See
+the [Research kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) for
+coordinate conventions, physical scale and artifact identity.
