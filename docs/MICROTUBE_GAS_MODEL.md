@@ -400,13 +400,9 @@ Older artifacts are unchanged and do not acquire these fields retrospectively.
 
 ### Transition validation result
 
-Boundary/continuity, retained guards, cycle-weighted usage and explicit Numba
-fallback tests pass. Related tests: **146 passed**. Complete suite:
-**815 passed, 0 warnings in 295.04 s**.
-The single bounded Human Cell evaluation at N=1000, D=0.770 mm, L=0.8 m
-reaches Re=2393.30 with `gnielinski_transition_interpolation`, then rejects
-relative pressure drop 0.2005927 above the unchanged 0.2 guard. This is not a
-converged performance result. See [the artifact and reproduction command](../outputs/research_microtube_transition/README.md).
+`tests/test_microtube_transition.py` checks boundary continuity, retained guards,
+cycle-weighted transition diagnostics and Python/Numba parity. These checks do
+not establish experimental validation; see [validation](validation.md).
 
 
 ## Research limit ownership

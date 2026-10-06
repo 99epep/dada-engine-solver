@@ -292,10 +292,9 @@ human decisions. No evidence of global optimality is inferred from a small run.
 ## Verification and legacy entry points
 
 `tests/test_campaign.py` and the Research tests exercise identity, recovery,
-cache, interruption and deterministic local/global continuation. Old examples
-`examples/free_kinematics_campaign.toml` and `examples/microtube_free_campaign.toml`
-remain usable through `dada-optimize`; they are historical studies, not current
-generic presets. Use Research for new declarative multi-family studies.
+cache, interruption and deterministic local/global continuation. `dada-optimize`
+accepts a campaign TOML for creation or an existing campaign directory for resume.
+Use Research for new declarative multi-family studies.
 
 No test-count snapshot or old smoke performance is a guarantee for a changed
 property model. See [validation](validation.md) and

@@ -1,4 +1,5 @@
 """Analytic limits, source regressions and connected variable-film checks."""
+from tests.synthetic_machine import hardware, hardware_text
 from dataclasses import replace
 from pathlib import Path
 import math
@@ -130,7 +131,7 @@ def test_doty_helium_hydraulics():
 
 
 def test_variable_film_requires_and_uses_flow_context_and_preserves_wall_balance():
-    _,bank,inputs,_=load_hardware_definition((ROOT/'examples/motor_hardware.toml').read_text(),1005)
+    bank,inputs=hardware()
     thermal,_=build_exchanger(bank,replace(inputs,gas_model=MicrotubeGasModel()))
     energy=thermal.wall_capacity_j_k*400
     with pytest.raises(ValueError,match='context'): thermal.rates(300,energy)
@@ -144,7 +145,7 @@ def test_variable_film_requires_and_uses_flow_context_and_preserves_wall_balance
 
 
 def test_hardware_toml_selects_variable_model_explicitly():
-    text=(ROOT/'examples/motor_hardware.toml').read_text()
+    text=hardware_text()
     _,_,legacy,_=load_hardware_definition(text,1005)
     _,_,modern,_=load_hardware_definition(text+'\n[gas_model]\nmode="variable_properties"\nspecies="air"\n',1005)
     assert legacy.gas_model is None
@@ -172,7 +173,7 @@ def test_heat_fraction_diagnostics_use_time_weights_not_adaptive_sample_counts()
     from dada_solver.exchangers.gas_diagnostics import cycle_microtube_diagnostics
     from dada_solver.geometry import CylinderVolumeLimits
     from dada_solver.state import ThermodynamicState
-    _,bank,inputs,_=load_hardware_definition((ROOT/'examples/motor_hardware.toml').read_text(),1005)
+    bank,inputs=hardware()
     wall,_=build_exchanger(bank,replace(inputs,gas_model=MicrotubeGasModel()))
     gas=CaloricallyPerfectGas(287.,1005.,718.)
     # Deliberately nonuniform samples: the first interval occupies 10%, not 50%.

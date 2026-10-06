@@ -1,14 +1,13 @@
+from tests.synthetic_machine import configuration as synthetic_configuration
+from dataclasses import replace
 import numpy as np
 
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_initial_state, build_model, initial_valve_topology
 from dada_solver.integration import CycleIntegrator
 
 
 def test_conserved_state_is_exactly_continuous_at_nonzero_valve_events() -> None:
-    configuration = load_simulation_configuration(
-        "examples/harmonic_controlled_example.toml"
-    )
+    configuration = replace(synthetic_configuration(), valve_model='discrete_hysteretic')
     model = build_model(configuration)
     initial_state = build_initial_state(configuration, model)
     cycle = CycleIntegrator(

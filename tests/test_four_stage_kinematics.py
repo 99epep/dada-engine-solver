@@ -1,16 +1,15 @@
 """Four-stage user chronology, angle adaptation and exact linear derivatives."""
+from tests.synthetic_machine import configuration as synthetic_configuration
 import math
-from pathlib import Path
 import numpy as np
 import pytest
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model
 from dada_solver.four_stage_kinematics import FourStageVolumeKinematics
 
 
 @pytest.fixture
 def model():
-    config=load_simulation_configuration(Path(__file__).resolve().parents[1]/'examples/motor_demonstrator_original_325c.toml')
+    config=synthetic_configuration(motor=True)
     limits=config.machine_volumes
     k=FourStageVolumeKinematics(limits.small_cylinder,limits.large_cylinder,.3,.55,.8,.4,.7,.6,.2)
     return build_model(config,kinematics=k)

@@ -1,12 +1,11 @@
+from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import replace
-from pathlib import Path
 import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
 from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
 from dada_solver.exchangers.wall_cycle import wall_cycle_performance, WallDiagnosticCycle
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state
 
 
@@ -37,7 +36,7 @@ def test_paused_isolated_gas_and_wall_relax_without_losing_energy():
 
 
 def test_coupled_motor_instantaneous_total_energy_balance():
-    config = load_simulation_configuration(Path(__file__).resolve().parents[1]/'examples/motor_demonstrator_piecewise.toml')
+    config = synthetic_configuration(motor=True)
     model = build_model(config)
     wrapper = AirWallMotor(model, exchanger(), replace(exchanger(), air_inlet_temperature_k=298.15))
     state = np.r_[build_initial_state(config, model).as_array(), 40000, 30000, np.zeros(5)]
@@ -80,7 +79,7 @@ def test_wall_efficiency_uses_external_air_heat_boundary():
 
 def test_wall_heat_diagnostics_do_not_use_legacy_reservoir_closure():
     from dada_solver.results import extract_cycle_diagnostics
-    config=load_simulation_configuration(Path(__file__).resolve().parents[1]/'examples/motor_demonstrator_piecewise.toml')
+    config=synthetic_configuration(motor=True)
     model=build_model(config)
     hot=AirWallExchanger(7,20,100,.05,1005,448.15)
     cold=replace(hot,gas_wall_conductance_w_k=11,air_inlet_temperature_k=298.15)

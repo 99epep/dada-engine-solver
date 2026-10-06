@@ -1,6 +1,8 @@
+from tests.synthetic_machine import configuration as synthetic_configuration
 import pytest
 
-from dada_solver.configuration import load_simulation_configuration
+from dataclasses import replace
+from dada_solver.configuration import ChargeConfiguration
 from dada_solver.factory import build_initial_state, build_model
 from dada_solver.similarity import (
     required_power_similarity_factor,
@@ -12,9 +14,7 @@ from dada_solver.performance import ConservationReport, CyclePerformance, Operat
 
 
 def test_extensive_similarity_preserves_intensive_initial_state() -> None:
-    configuration = load_simulation_configuration(
-        "examples/cooling_cell_mechanical_candidate_001.toml"
-    )
+    configuration = replace(synthetic_configuration('published_e0_opposed'), charge=ChargeConfiguration(temperature=290., total_mass=.001))
     factor = 3.5
     scaled = scale_extensive_machine(configuration, factor)
     model = build_model(configuration)
@@ -35,17 +35,13 @@ def test_extensive_similarity_preserves_intensive_initial_state() -> None:
 
 
 def test_similarity_rejects_non_positive_factor() -> None:
-    configuration = load_simulation_configuration(
-        "examples/cooling_cell_mechanical_candidate_001.toml"
-    )
+    configuration = replace(synthetic_configuration('published_e0_opposed'), charge=ChargeConfiguration(temperature=290., total_mass=.001))
     with pytest.raises(ValueError, match="Capacity factor"):
         scale_extensive_machine(configuration, 0.0)
 
 
 def test_speed_similarity_scales_rates_without_scaling_inventory() -> None:
-    configuration = load_simulation_configuration(
-        "examples/cooling_cell_mechanical_candidate_001.toml"
-    )
+    configuration = replace(synthetic_configuration('published_e0_opposed'), charge=ChargeConfiguration(temperature=290., total_mass=.001))
     scaled = scale_capacity_and_speed(configuration, 1.0, 3.0)
 
     assert scaled.machine_volumes == configuration.machine_volumes
@@ -78,9 +74,7 @@ def test_required_power_similarity_factor_uses_refrigerating_reference() -> None
 
 
 def test_pressure_volume_similarity_preserves_inventory_and_scales_pressure() -> None:
-    configuration = load_simulation_configuration(
-        "examples/domestic_freezer_helium_seed.toml"
-    )
+    configuration = synthetic_configuration()
     scaled = scale_volume_at_constant_inventory(configuration, 0.2)
     model = build_model(configuration)
     scaled_model = build_model(scaled)
@@ -101,9 +95,7 @@ def test_pressure_volume_similarity_preserves_inventory_and_scales_pressure() ->
 
 
 def test_pressure_volume_similarity_requires_pressure_charge() -> None:
-    configuration = load_simulation_configuration(
-        "examples/cooling_cell_mechanical_candidate_001.toml"
-    )
+    configuration = replace(synthetic_configuration('published_e0_opposed'), charge=ChargeConfiguration(temperature=290., total_mass=.001))
 
     with pytest.raises(ValueError, match="pressure-based charge"):
         scale_volume_at_constant_inventory(configuration, 0.2)

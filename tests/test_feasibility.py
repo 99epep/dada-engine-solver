@@ -1,8 +1,8 @@
+from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.sizing.constraints import ConstraintValue
 from dada_solver.sizing.design import DesignParameter, DesignPoint, DesignVariable, apply_design_point
 from dada_solver.sizing.export import write_feasibility_csv
@@ -12,14 +12,9 @@ from dada_solver.sizing.problem import SizingProblem
 from dada_solver.sizing.sensitivity import SamplingScale, run_one_at_a_time_sensitivity
 
 
-EXAMPLE_PATH = (
-    Path(__file__).parents[1] / "examples" / "harmonic_controlled_example.toml"
-)
-
-
 class AlgebraicEvaluator:
     def __init__(self) -> None:
-        self.base = load_simulation_configuration(EXAMPLE_PATH)
+        self.base = synthetic_configuration()
 
     def evaluate(self, point: DesignPoint):
         return SimpleNamespace(

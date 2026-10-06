@@ -34,3 +34,16 @@ def test_sizing_references_are_independent_of_application_artifacts():
         text = (ROOT / 'docs' / name).read_text()
         for stale_reference in ('examples/', 'outputs/'):
             assert stale_reference not in text
+
+
+def test_model_references_do_not_depend_on_application_artifacts():
+    for name in ('MICROTUBE_GAS_MODEL.md', 'MOTOR_OPERATION.md',
+                 'OPTIMIZATION_CAMPAIGN.md'):
+        text = (ROOT / 'docs' / name).read_text()
+        for stale_reference in ('examples/', 'outputs/'):
+            assert stale_reference not in text
+
+    # External-stream commands may use illustrative user-created destinations.
+    text = (ROOT / 'docs' / 'EXTERNAL_STREAM_THERMAL_MODEL.md').read_text()
+    for stale_reference in ('examples/', '../outputs/'):
+        assert stale_reference not in text

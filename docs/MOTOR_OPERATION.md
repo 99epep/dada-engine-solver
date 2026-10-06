@@ -123,60 +123,25 @@ power/task constraints require actual refrigeration operation, so a motor's
 heat input cannot satisfy a cooling demand. These additions provide sizing
 interfaces, not an optimized motor design.
 
-## Example and verification
+## Command line and verification
 
 From an uninstalled source checkout:
 
 ```console
-PYTHONPATH=src python3 -m dada_solver examples/motor_controlled_example.toml
+PYTHONPATH=src python3 -m dada_solver path/to/motor_configuration.toml
 PYTHONPATH=src python3 -m pytest
 ```
 
 After package installation, the first command can be written as
-`dada-solver examples/motor_controlled_example.toml`.
-
-The example reverses the existing ideal-piecewise cooling candidate with
-explicit illustrative reservoirs of 600 K and 300 K, dry constant-property gas,
-continuous ideal diodes, and 0.03 Pa orifice regularization. It is not a validated
-hardware or working-fluid specification.
-
-On 2026-09-08, the reference run converged in five cycles:
-
-| Quantity | Result |
-|---|---:|
-| Heat input per cycle `Q_i` | 7127.422 J |
-| Heat received at heat-out exchanger `Q_o` | -5857.849 J |
-| Gas work per cycle | 1269.573 J |
-| Mean motor power | 192.362 W |
-| Thermal efficiency | 0.178125 (17.8125%) |
-| Mass residual | -5.55e-17 kg |
-| First-law residual | 5.09e-11 J |
-
-These are historical constant-reservoir measurements, not current microtube
-results or experimental performance. Mach was unavailable and event chronology
-was non-nominal in that record.
-
-Refinement and regularization sensitivity, with the same periodic tolerances:
-
-| Integration rtol | Maximum progress step | Regularization | Motor power | Efficiency |
-|---|---:|---:|---:|---:|
-| 1e-8 | 0.5 degrees | 0.03 Pa | 192.362137 W | 0.178125115 |
-| 1e-9 | 0.25 degrees | 0.03 Pa | 192.362138 W | 0.178125129 |
-| 1e-9 | 0.25 degrees | 0.01 Pa | 192.383485 W | 0.178086221 |
-
-Both refined runs converge in four cycles. Reducing regularization by three
-changes power by about 0.011% and efficiency by about 0.022%; this is a finite
-sensitivity check, not proof of convergence to zero regularization or of exact
-valve chronology.
+`dada-solver path/to/motor_configuration.toml`.
 
 The regression suite covers reversal and derivative signs for the supported
 kinematic configurations, reflected piecewise breakpoints, unchanged origin and
 inventory, unchanged unequal UA hardware and valve directions, signed power
 and efficiency, motor sizing, and periodic mass/energy closure.
 
-An additional diagnostic correction recognizes cyclic rotations of the nominal
-four-event valve sequence. Previously a different choice of angular origin
-could produce a false `non_nominal` verdict. Simultaneous, repeated, missing,
-or overlapping transitions remain non-nominal when events were actually observed.
-An unavailable event sequence is not itself evidence of non-nominal operation. No valve event is imposed
-or suppressed by this classification.
+Valve-sequence classification recognizes cyclic rotations of the nominal
+four-event sequence. Simultaneous, repeated, missing or overlapping transitions
+remain non-nominal when events were actually observed. An unavailable event
+sequence is not itself evidence of non-nominal operation. No valve event is
+imposed or suppressed by this classification.

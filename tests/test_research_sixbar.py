@@ -1,9 +1,7 @@
 """Physical parity is evaluated at fixed inputs, independently of search order."""
-from dataclasses import asdict
 import json
 from pathlib import Path
 from types import SimpleNamespace
-import time
 
 import numpy as np
 import pytest
@@ -47,65 +45,6 @@ def test_stored_reference_physical_metrics(definition):
     assert result['warm_start_source_status']=='external_reference_initial_guess'
     assert result['derived']['external_air_capacity_diagnostics']['heat_in']['external_to_peak_internal_capacity_rate_ratio'] > 1
     assert len(result['derived']['local_reflux']['minimum_signed_flows_kg_s']) == 4
-
-
-@pytest.mark.parametrize('variant', [1,2])
-def test_varied_inputs_match_original_evaluator(definition,variant,monkeypatch,tmp_path):
-    if not (ROOT/'outputs/motor_spline_from_linear_260k/report.json').exists():
-        pytest.skip('Optional historical parity oracle requires the source-checkout output artifacts.')
-    pytest.importorskip('matplotlib')
-    monkeypatch.chdir(ROOT)
-    monkeypatch.setenv('MPLCONFIGDIR',str(tmp_path/'mpl'))
-    monkeypatch.syspath_prepend(str(ROOT/'examples'))
-    import optimize_sixbar_pairs_thermo5d_3952_hlat25 as legacy
-    seed,old_definition,mass,geometry,_,_=legacy.make_3952_basis()
-    pair=legacy.load_pair(1)
-    p=values(definition)
-    p['volume.swept_ratio'] *= .98 if variant==1 else 1.02
-    p['microtube.heat_in.tube_count'] += 17*variant
-    p['microtube.heat_out.tube_count'] -= 23*variant
-    p['microtube.heat_in.tube_length_m'] *= 1.01
-    p['microtube.heat_out.tube_length_m'] *= .99
-    old_p={PARAMETERS[k][2]:v for k,v in p.items()}
-    old_design=legacy.build_design(seed,geometry,mass,old_p,pair['small'],pair['large'])
-    new_design=definition.adapter.build(p)
-    assert asdict(new_design.configuration)==asdict(old_design.configuration)
-    for side in ('heat_in','heat_out'):
-        new_hw=asdict(getattr(new_design,side));old_hw=asdict(getattr(old_design,side))
-        # Stored sources retain explicit Tmin=200 and historical provenance;
-        # the historical script now instantiates today's default Tmin=100.
-        # Both execute today's same correlation, tested over the shared range.
-        for hw in (new_hw,old_hw):
-            transport=hw['inputs']['gas_model']['transport']
-            assert transport.pop('minimum_temperature') in (100.,200.)
-            transport.pop('provenance')
-        assert new_hw==old_hw
-        for temperature in (200.,300.,600.,1000.):
-            a=getattr(new_design,side).inputs.gas_model.transport
-            b=getattr(old_design,side).inputs.gas_model.transport
-            assert (a.viscosity(temperature),a.conductivity(temperature),a.cp(temperature)) == (b.viscosity(temperature),b.conductivity(temperature),b.cp(temperature))
-    for side in ('small','large'):
-        for suffix in ('cylinder_volume','cylinder_volume_derivative'):
-            method=f'{side}_{suffix}'
-            # Compare the injected study-angle laws before the single motor reversal.
-            a=[getattr(new_design.kinematics,method)(t) for t in np.linspace(0,2*np.pi,361)]
-            b=[getattr(old_design.kinematics,method)(t) for t in np.linspace(0,2*np.pi,361)]
-            np.testing.assert_allclose(a,b,rtol=2e-13,atol=2e-13)
-    initial=np.array(definition.initial_wall_state['values'])
-    hw=legacy.hardware(old_design)
-    caps=np.array([hw[side]['wall_capacity_j_k'] for side in ('H_i','H_o')])
-    initial[8:10] *= caps/np.array(definition.initial_wall_state['wall_capacities_j_k'])
-    expected=legacy.evaluate(label='research_parity',design=old_design,definition=old_definition,
-                             initial=initial,deadline=time.monotonic()+180,candidate_seconds=180)
-    actual=MachineEvaluator(definition).evaluate(candidate_for_values(definition,p))
-    json.dumps(actual, allow_nan=False)
-    assert actual['converged']==(expected['compact']['status']=='converged')
-    assert (actual['status']=='feasible')==expected['feasible']
-    for key in ('indicated_power_w','indicated_thermal_efficiency','heat_input_w',
-                'maximum_pressure_pa','maximum_temperature_k','maximum_absolute_mass_flow_kg_s'):
-        assert actual['metrics'][key]==pytest.approx(expected['compact'][key],rel=2e-11,abs=1e-11)
-    failures=[c['name'] for c in actual['constraints'] if not c['available'] or not c['satisfied']]
-    assert failures==expected['reasons']
 
 
 def test_safe_domain_retry_preserves_wall_state_and_deadline(definition,monkeypatch):

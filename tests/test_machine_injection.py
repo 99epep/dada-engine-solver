@@ -1,21 +1,18 @@
+from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import replace
-from pathlib import Path
 import numpy as np
 import pytest
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model
 from dada_solver.free_kinematics import FreeKinematics
 from dada_solver.machine import MachineDesign
 from dada_solver.kinematics import ReversedVolumeKinematics
 
-ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.parametrize('family', ['free', 'four_bar'])
 @pytest.mark.parametrize('motor', [False, True])
 def test_direct_injection_skips_selector_and_reverses_once(family, motor):
-    name = 'motor_free_kinematics.toml' if family == 'free' else 'motor_demonstrator_original_325c.toml'
-    source = load_simulation_configuration(ROOT/'examples'/name)
+    source = synthetic_configuration('free' if family == 'free' else 'shared_crank_rocker')
     source = replace(source, angular_speed=abs(source.angular_speed))
     injected = FreeKinematics(source.free_kinematics) if family == 'free' else build_model(source).kinematics
     # A different, valid selector makes accidental rebuilding observable.
@@ -31,7 +28,7 @@ def test_direct_injection_skips_selector_and_reverses_once(family, motor):
 
 
 def test_already_reversed_and_mismatched_volumes_are_rejected():
-    config = load_simulation_configuration(ROOT/'examples/motor_free_kinematics.toml')
+    config = synthetic_configuration('free', motor=True)
     free = FreeKinematics(config.free_kinematics)
     with pytest.raises(ValueError, match='already reversed'):
         MachineDesign(config, kinematics=ReversedVolumeKinematics(free)).build()

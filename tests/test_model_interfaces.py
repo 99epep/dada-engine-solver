@@ -1,20 +1,17 @@
 """Interchangeability and regression checks at construction boundaries."""
+from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import dataclass, replace
 import ast
 import math
 from pathlib import Path
-import tomllib
 import numpy as np
 import pytest
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state, initial_valve_topology
 from dada_solver.four_bar import FourBarKinematics, shared_crank_rocker_kinematics
 from dada_solver.kinematics import KinematicsModel
 from dada_solver.exchangers.base import ExchangerComponents, ExchangerModel, connect_exchangers
 from dada_solver.exchangers.microtube import MicrotubeExchanger
-from dada_solver.exchangers.hardware import HardwareInputs, build_exchanger, TubeHalfLink, connect_hardware
-from dada_solver.exchangers.microtube_geometry import MicrotubeBank
-from dada_solver.exchangers.air_wall import AirWallMotor
+from dada_solver.exchangers.hardware import build_exchanger, connect_hardware
 from dada_solver.heat_transfer import ReservoirHeatTransfer
 from dada_solver.hydraulics import CompressibleOrifice
 from dada_solver.state import ThermodynamicState
@@ -23,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def config():
-    return load_simulation_configuration(ROOT/'examples/motor_demonstrator_original_325c.toml')
+    return synthetic_configuration('shared_crank_rocker', motor=True)
 
 
 def test_four_bar_protocol_matches_legacy_trajectory_and_branches():
@@ -97,10 +94,9 @@ def test_wall_wrapper_consumes_rates_without_air_or_linear_film_assumptions():
 
 def test_microtube_connector_and_dynamic_rhs_preserve_previous_equations():
     c = config();base = build_model(c)
-    data = tomllib.loads((ROOT/'examples/motor_hardware_parallel_325c.toml').read_text())
-    bank = MicrotubeBank(**data['geometry'])
-    hi = HardwareInputs(**data['properties'], **data['heat_in'])
-    ho = HardwareInputs(**data['properties'], **data['heat_out'])
+    from tests.synthetic_machine import hardware
+    bank, hi = hardware()
+    ho = replace(hi, air_inlet_temperature_k=300.)
     wrapper, report = connect_hardware(base, bank, bank, hi, ho,
         heat_in_valve_cda_m2=c.hydraulics.cold_to_large_valve_cda,
         heat_out_valve_cda_m2=c.hydraulics.hot_to_small_valve_cda)
@@ -138,7 +134,7 @@ def test_mixed_storage_is_explicitly_unsupported():
 
 def test_machine_composes_independent_families_without_a_registry():
     from dada_solver.machine import MachineDesign
-    c = load_simulation_configuration(ROOT/'examples/motor_free_kinematics.toml')
+    c = synthetic_configuration('free', motor=True)
     model = MachineDesign(c, StaticTestExchanger(4e-5, 598.15),
                           StaticTestExchanger(6e-5, 298.15)).build()
     assert model.machine_volumes.cold_heat_exchanger == 4e-5

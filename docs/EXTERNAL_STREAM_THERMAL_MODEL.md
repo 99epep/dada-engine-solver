@@ -151,6 +151,4 @@ The frozen local pre-V3 source trajectory is in
 not a post-refactor result. Regression checks cover rates, wall states, outlets,
 cycle trajectories and boundary work/heat. The existing stored rank01 test also
 checks periodic convergence, efficiency and heat/work at its original tight
-numerical tolerances. The [V3 acceptance directory](../outputs/research_v3/validated/)
-contains a bounded refrigerator, its tabulated replay, a neutral-name historical
-air motor, two Sobol candidates with persisted resume, and offline HTML reports.
+numerical tolerances.

@@ -1,6 +1,5 @@
 """Model domains are distinct from study requirements and search bounds."""
 from dataclasses import asdict, replace
-from pathlib import Path
 from types import SimpleNamespace as NS
 import tomllib
 
@@ -112,10 +111,14 @@ def test_historical_v1_preset_is_explicitly_preserved(tmp_path):
 
 
 def test_obsolete_sizing_constraints_and_scales_load_but_are_inactive(tmp_path):
-    source=Path('examples/sizing_controlled_example.toml')
-    raw=tomllib.loads(source.read_text())
-    for key in ('base_configuration','cooling_load_configuration'):
-        raw['problem'][key]=str((source.parent/raw['problem'][key]).resolve())
+    from tests.synthetic_machine import CONFIGURATION
+    raw=dict(problem=dict(base_configuration=str(CONFIGURATION)),
+        variables=[dict(parameter='cold_ua',lower_bound=1.,upper_bound=10.,initial_value=5.)],
+        objective=dict(type='minimize_total_ua'),
+        constraints=[dict(type='maximum_pressure_equalization_error',limit=.1)],
+        optimizer=dict(objective_scale=1.,unavailable_objective_penalty=1e6,
+            unavailable_constraint_margin=-1.,maximum_iterations=10,function_tolerance=1e-6,
+            constraint_scales=dict(maximum_pressure_equalization_error=.1)))
     path=tmp_path/'sizing.toml';path.write_text(dumps(raw))
     loaded=load_sizing_problem(path)
     assert all(c.name != "maximum_pressure_equalization_error" for c in loaded.problem.constraints)

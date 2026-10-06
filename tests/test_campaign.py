@@ -1,5 +1,5 @@
 """Fast campaign tests use a deterministic evaluator and a simulated clock."""
-from dataclasses import asdict
+from tests.synthetic_machine import campaign_file
 from pathlib import Path
 import json
 import subprocess
@@ -14,8 +14,7 @@ from dada_solver.campaign.runner import OptimizationCampaign, parse_budget, esti
 from dada_solver.campaign.history import CampaignHistory, atomic_json
 from dada_solver.campaign.report import make_report, elite_records
 from dada_solver.campaign.evaluator import rejected, MachineEvaluator
-from dada_solver.campaign.evaluator import (EvaluationControl, rescale_wall_state,
-    select_warm_start, finalize_microtube_validity)
+from dada_solver.campaign.evaluator import rescale_wall_state, select_warm_start, finalize_microtube_validity
 from dada_solver.campaign.adapters import validate_ownership, microtube_design
 from dada_solver.free_kinematics import FreeKinematics
 
@@ -43,8 +42,8 @@ class Evaluator:
 
 
 @pytest.fixture
-def definition():
-    return CampaignDefinition(ROOT/'examples/free_kinematics_campaign.toml')
+def definition(tmp_path):
+    return CampaignDefinition(campaign_file(tmp_path / 'inputs'))
 
 
 @pytest.mark.parametrize('transform,bounds,expected', [('linear',(-2.,8.),3.),('log',(1.,100.),10.)])
@@ -322,7 +321,7 @@ def test_unavailable_constraints_are_not_reported_as_violations():
 
 
 def test_microtube_campaign_builds_dynamic_wall_and_snapshots_hardware(tmp_path):
-    definition=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+    definition=CampaignDefinition(campaign_file(tmp_path / 'inputs', microtube=True))
     physical=definition.space.decode(definition.space.initial_coordinates)
     design=definition.adapter.build(physical)
     from dada_solver.exchangers.air_wall import AirWallMotor
@@ -403,7 +402,7 @@ def test_wall_solver_retains_only_last_complete_cycle_on_interrupt():
 
 
 def test_changed_hardware_snapshot_refuses_resume(tmp_path):
-    definition=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+    definition=CampaignDefinition(campaign_file(tmp_path / 'inputs', microtube=True))
     OptimizationCampaign(definition,tmp_path,evaluator=Evaluator(Clock()))
     (tmp_path/'hardware.toml').write_text((tmp_path/'hardware.toml').read_text()+'\n# changed\n')
     with pytest.raises(ValueError,match='changed'):
@@ -422,8 +421,8 @@ def test_valid_microtube_cycle_can_satisfy_global_validity_constraint():
     assert constraint.available and constraint.satisfied
 
 
-def test_wall_numerical_settings_are_in_candidate_identity(definition):
-    wall=CampaignDefinition(ROOT/'examples/microtube_free_campaign.toml')
+def test_wall_numerical_settings_are_in_candidate_identity(tmp_path):
+    wall=CampaignDefinition(campaign_file(tmp_path / 'inputs', microtube=True))
     settings=wall.numerical_settings['wall_cycle']
     assert settings['integration_method']=='LSODA'
     assert len(settings['integration_absolute_tolerances'])==15

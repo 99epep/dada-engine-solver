@@ -1,5 +1,5 @@
 """Trend-sensitive proposals and rollback of unsuccessful wall guesses."""
-from dataclasses import replace
+from tests.synthetic_machine import campaign_file
 from types import SimpleNamespace
 import numpy as np
 import pytest
@@ -164,17 +164,15 @@ def test_default_waits_when_two_contracting_walls_have_unequal_reliability():
 
 
 def test_adaptive_campaign_option_is_explicit_and_identity_owned(tmp_path):
-    from pathlib import Path
     from dada_solver.campaign.definition import CampaignDefinition
-    root=Path(__file__).resolve().parents[1]
-    source=root/'examples/motor_mechanics_stage7A5_edge.toml'
+    source=campaign_file(tmp_path / 'inputs', microtube=True)
     original=CampaignDefinition(source)
     assert original.adaptive_wall_acceleration is None
     assert 'adaptive_wall_acceleration' not in original.numerical_settings
     configured=tmp_path/'adaptive.toml'
     configured.write_text(source.read_text()+'\n[adaptive_wall_acceleration]\ndamping = 0.97\n')
     adapted=CampaignDefinition(configured,base_path=original.base_path,
-        hardware_path=root/'examples/motor_hardware_parallel_325c.toml')
+        hardware_path=source.parent / 'hardware.toml')
     assert adapted.adaptive_wall_acceleration.damping==.97
     assert adapted.numerical_settings['adaptive_wall_acceleration']['damping']==.97
     assert adapted.numerical_settings!=original.numerical_settings
@@ -183,10 +181,8 @@ def test_adaptive_campaign_option_is_explicit_and_identity_owned(tmp_path):
 
 
 def test_adaptive_campaign_rejects_reservoir_family(tmp_path):
-    from pathlib import Path
     from dada_solver.campaign.definition import CampaignDefinition
-    root=Path(__file__).resolve().parents[1]
-    source=root/'examples/free_kinematics_campaign.toml'
+    source=campaign_file(tmp_path / 'inputs')
     original=CampaignDefinition(source)
     assert original.wall_numerical_settings is None
     configured=tmp_path/'adaptive.toml'

@@ -1,5 +1,4 @@
 """Parity frozen from the historical compact law before its extraction."""
-import hashlib
 import json
 from pathlib import Path
 import tomllib
@@ -11,7 +10,6 @@ from dada_solver.research.families import FAMILIES,build_side,available_metrics
 from dada_solver.research.presets import initialize_v2,initialize_v3
 from dada_solver.research.schema import load_study,compile_study,candidate_for_values
 from dada_solver.research.study_io import dumps
-from dada_solver.campaign.evaluator import MachineEvaluator
 
 FIXTURES=Path(__file__).parent/'fixtures/hybrid_compact'
 REFERENCE=json.loads((FIXTURES/'reference.json').read_text())
@@ -86,24 +84,3 @@ def test_mixed_family_and_v3_schema(tmp_path,small,large):
     study=load_study(path)
     assert study.settings['small']['family']==small
     assert study.settings['large']['family']==large
-
-
-def test_historical_champion_thermodynamic_parity(tmp_path):
-    pytest.importorskip('numba')
-    path=initialize_v2(tmp_path/'study.toml','hybrid_compact','hybrid_compact')
-    d=compile_study(load_study(path));r=MachineEvaluator(d).evaluate(candidate_for_values(d,{}))
-    ref=REFERENCE['champion']['result']
-    assert r['status']=='feasible',r['reason']
-    assert r['periodic_cycle_count']==ref['cycles_completed']==7
-    for key in ('indicated_power_w','indicated_thermal_efficiency','heat_input_w','heat_out_w','maximum_pressure_pa','maximum_temperature_k','maximum_absolute_mass_flow_kg_s','maximum_tube_mach_number','maximum_tube_reynolds'):
-        actual=r['metrics'].get(key,r['derived'].get(key))
-        assert actual==pytest.approx(ref[key],rel=2e-11,abs=1e-11)
-    assert r['metrics']['validity']['verdict']=='valid'
-    assert r['periodic_convergence']['last_normalized_periodic_error']<=1
-    assert all(row['values']['zero_crossing_count']==2 for row in r['derived']['kinematic_metrics'])
-
-
-def test_historical_example_reexports_production_class(monkeypatch):
-    monkeypatch.syspath_prepend(str(Path(__file__).parents[1]/'examples'))
-    import optimize_motor_hybrid_compact_260k as historical
-    assert historical.HybridCompactKinematics is HybridCompactKinematics

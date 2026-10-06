@@ -1,12 +1,11 @@
 """Independent four-stage chronology, phase release and breakpoints."""
+from tests.synthetic_machine import configuration as synthetic_configuration
 
 import math
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model
 from dada_solver.four_stage_kinematics import FourStageVolumeKinematics
 from dada_solver.independent_four_stage_kinematics import (
@@ -19,11 +18,7 @@ TAU = 2.0 * math.pi
 
 @pytest.fixture
 def limits():
-    config = load_simulation_configuration(
-        Path(__file__).resolve().parents[1]
-        / "examples"
-        / "motor_demonstrator_original_325c.toml"
-    )
+    config = synthetic_configuration(motor=True)
     return config, config.machine_volumes
 
 

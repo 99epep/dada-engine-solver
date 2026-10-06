@@ -1,40 +1,26 @@
 """Motor signs, geometry reversal, and a conservative periodic motor cycle."""
+from tests.synthetic_machine import configuration as synthetic_configuration, configuration_data
+from dada_solver.research.study_io import dumps
 
 from dataclasses import astuple, replace
 import math
-from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from dada_solver.configuration import load_simulation_configuration
-from dada_solver.factory import build_initial_state, build_model, build_periodic_solver, initial_valve_topology
+from dada_solver.factory import build_initial_state, build_model
 from dada_solver.performance import OperatingMode, calculate_cycle_performance
-from dada_solver.periodic import PeriodicStatus
-from dada_solver.state import ThermodynamicState
 from dada_solver.sizing.constraints import MinimumCoolingPower, MinimumMotorPower
 from dada_solver.sizing.design import DesignParameter, DesignPoint, DesignVariable, apply_design_point
 from dada_solver.sizing.objectives import MaximizeMotorPower, MaximizeThermalEfficiency
 from dada_solver.sizing.configuration import load_sizing_problem
-from dada_solver.reporting import format_simulation_report
-from dada_solver.results import extract_cycle_diagnostics
-from dada_solver.validity import assess_cycle_validity
 from tests.test_periodic import create_static_cycle
 
 
-EXAMPLES = Path(__file__).parents[1] / "examples"
-
-
-@pytest.mark.parametrize("name", [
-    "harmonic_controlled_example.toml",
-    "cooling_cell_high_cop_candidate.toml",
-    "cooling_cell_e0_reference.toml",
-    "cooling_cell_f65_reference.toml",
-    "cooling_cell_mechanical_candidate_001.toml",
-])
-def test_reversal_preserves_origin_hardware_and_reverses_volume_rates(name):
-    config = load_simulation_configuration(EXAMPLES / name)
+@pytest.mark.parametrize("family", ["harmonic_example", "ideal_piecewise_linear", "published_e0_opposed", "published_f65_opposed", "shared_crank_rocker"])
+def test_reversal_preserves_origin_hardware_and_reverses_volume_rates(family):
+    config = synthetic_configuration(family)
     # Unequal UA values catch an accidental exchange of hardware as well.
     config = replace(config, cold_thermal_conductance=11.0, hot_thermal_conductance=23.0)
     forward = build_model(config)
@@ -64,17 +50,17 @@ def test_reversal_preserves_origin_hardware_and_reverses_volume_rates(name):
 
 
 def test_reversed_piecewise_discontinuities_and_origin():
-    config = load_simulation_configuration(EXAMPLES / "motor_controlled_example.toml")
+    config = synthetic_configuration('ideal_piecewise_linear', motor=True)
     model = build_model(config)
     assert model.volumes(0.0).large_cylinder == config.machine_volumes.large_cylinder.maximum
     assert model.kinematics.breakpoint_angles() == pytest.approx(
-        np.radians([126.0, 180.0, 306.0])
+        np.radians([108.0, 180.0, 288.0])
     )
 
 
 @pytest.mark.parametrize("speed", [0.0, float("nan"), float("inf"), -float("inf")])
 def test_nonfinite_or_zero_speed_is_rejected(speed):
-    config = load_simulation_configuration(EXAMPLES / "motor_controlled_example.toml")
+    config = synthetic_configuration('ideal_piecewise_linear', motor=True)
     with pytest.raises(ValueError, match="non-zero"):
         replace(config, angular_speed=speed)
 
@@ -112,7 +98,7 @@ def test_performance_uses_received_heat_and_positive_elapsed_time(ideal_gas, qi,
 
 
 def test_motor_speed_design_bounds_keep_rotation_direction():
-    config = load_simulation_configuration(EXAMPLES / "motor_controlled_example.toml")
+    config = synthetic_configuration('ideal_piecewise_linear', motor=True)
     variable = DesignVariable(DesignParameter.ANGULAR_SPEED, -2.0, -0.5, -1.0)
     changed = apply_design_point(config, DesignPoint({variable.parameter: -1.5}))
     assert changed.angular_speed == -1.5
@@ -135,10 +121,12 @@ def test_failed_motor_is_not_reported_as_a_refrigerator(ideal_gas):
 
 @pytest.mark.parametrize("objective", ["maximize_thermal_efficiency", "maximize_motor_power"])
 def test_motor_sizing_configuration_loads(objective, tmp_path):
-    path = tmp_path / "motor_sizing.toml"
+    base = configuration_data(); base['operation']['angular_speed'] = -10.
+    (tmp_path / 'base.toml').write_text(dumps(base))
+    path = tmp_path / 'motor_sizing.toml'
     path.write_text(f'''
 [problem]
-base_configuration = "{EXAMPLES / 'motor_controlled_example.toml'}"
+base_configuration = "base.toml"
 [[variables]]
 parameter = "angular_speed"
 lower_bound = -2.0
@@ -162,51 +150,3 @@ minimum_motor_power = 100.0
     assert loaded.problem.objective.name == objective
     assert isinstance(loaded.problem.constraints[0], MinimumMotorPower)
     assert loaded.problem.evaluator.base_configuration.motor_operation
-
-
-def test_controlled_motor_reaches_periodic_state_and_conserves_energy():
-    config = load_simulation_configuration(EXAMPLES / "motor_controlled_example.toml")
-    model = build_model(config)
-    initial = build_initial_state(config, model)
-    result = build_periodic_solver(config, model).solve(initial, initial_valve_topology())
-    assert result.status is PeriodicStatus.CONVERGED
-    cycle = result.final_cycle
-    start = ThermodynamicState.from_array(cycle.states[:, 0])
-    performance = calculate_cycle_performance(cycle, start, config.angular_speed)
-    assert performance.operating_mode is OperatingMode.MOTOR
-    assert performance.motor_power == pytest.approx(192.36, rel=0.002)
-    assert 0.0 < performance.thermal_efficiency < 1.0-config.cold_reservoir_temperature/config.hot_reservoir_temperature
-    assert performance.thermal_efficiency == pytest.approx(
-        1.0+performance.heat_out_per_cycle/performance.heat_in_per_cycle, abs=1e-6
-    )
-    assert abs(performance.conservation.relative_mass_residual) < 1e-10
-    assert abs(performance.conservation.relative_energy_residual) < 1e-10
-    assert cycle.final_state.total_mass == pytest.approx(initial.total_mass, rel=1e-10)
-    report = format_simulation_report(
-        result, performance, extract_cycle_diagnostics(cycle, model),
-        assess_cycle_validity(cycle, model, config.validity), initial.total_mass,
-    )
-    assert "operating_mode = motor" in report
-    assert "heat_in_power_W = " in report
-    assert "motor_power_W = 1.923" in report
-    assert "thermal_efficiency = 1.781" in report
-    assert "cooling_COP = unavailable" in report
-    assert "cooling_power_W = " not in report
-
-
-def test_demonstrator_waveforms_share_hardware_and_reservoirs():
-    ideal = load_simulation_configuration(EXAMPLES / 'motor_demonstrator_piecewise.toml')
-    four_bar = load_simulation_configuration(EXAMPLES / 'motor_demonstrator_four_bar.toml')
-    assert ideal.machine_volumes == four_bar.machine_volumes
-    assert ideal.hydraulics == four_bar.hydraulics
-    assert ideal.cold_thermal_conductance == four_bar.cold_thermal_conductance
-    assert ideal.hot_thermal_conductance == four_bar.hot_thermal_conductance
-    assert four_bar.machine_volumes.large_cylinder.maximum == pytest.approx(0.001)
-    assert four_bar.angular_speed == pytest.approx(-4 * math.pi)
-    model = build_model(four_bar)
-    assert model.cold_heat_transfer.reservoir_temperature == 448.15
-    assert model.hot_heat_transfer.reservoir_temperature == 298.15
-    for angle in np.linspace(0, 2 * math.pi, 361):
-        volumes = model.volumes(float(angle))
-        assert 0 < volumes.large_cylinder <= 0.001 * (1 + 1e-9)
-        assert volumes.small_cylinder > 0

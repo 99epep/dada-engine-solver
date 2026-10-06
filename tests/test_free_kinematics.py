@@ -1,18 +1,16 @@
 """Free laws, analytic feasibility and generic thermodynamic integration."""
+from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import asdict, replace
 import json
 import math
-from pathlib import Path
 import numpy as np
 import pytest
 from dada_solver.free_kinematics import FreeMotionDefinition, FreeKinematicsConfiguration, FreeKinematics
 from dada_solver.kinematics import KinematicsModel, ReversedVolumeKinematics
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.factory import build_model, build_initial_state, build_periodic_solver, initial_valve_topology
 from dada_solver.results import extract_cycle_diagnostics
 from dada_solver.sizing.design import apply_design_point, DesignPoint, DesignParameter
 
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def motion(**kwargs):
@@ -106,7 +104,7 @@ def test_derivative_constraint_extrema_and_explicit_infeasibility():
 
 
 def test_motor_reversal_and_sizing_volume_update():
-    config = load_simulation_configuration(ROOT/'examples/motor_free_kinematics.toml')
+    config = synthetic_configuration('free', motor=True)
     model = build_model(config)
     assert isinstance(model.kinematics, ReversedVolumeKinematics)
     forward = FreeKinematics(config.free_kinematics)
@@ -117,9 +115,9 @@ def test_motor_reversal_and_sizing_volume_update():
     assert build_model(changed).kinematics.small_volume_limits == changed.machine_volumes.small_cylinder
 
 
-@pytest.mark.parametrize('filename', ['motor_free_kinematics.toml', 'motor_demonstrator_original_325c.toml'])
-def test_thermodynamic_cycle_and_periodic_diagnostics_through_interface(filename):
-    config = load_simulation_configuration(ROOT/'examples'/filename)
+@pytest.mark.parametrize('family', ['free', 'shared_crank_rocker'])
+def test_thermodynamic_cycle_and_periodic_diagnostics_through_interface(family):
+    config = synthetic_configuration(family, motor=True)
     model = build_model(config)
     assert isinstance(model.kinematics, KinematicsModel)
     # One full cycle through the actual periodic evaluator, without claiming convergence.
@@ -135,7 +133,7 @@ def test_thermodynamic_cycle_and_periodic_diagnostics_through_interface(filename
 
 def test_sizing_preserves_explicit_kinematic_rejection_without_running_cycle():
     from dada_solver.sizing.evaluator import ThermodynamicSizingEvaluator, EvaluationStatus, evaluate_configuration
-    c = load_simulation_configuration(ROOT/'examples/motor_free_kinematics.toml')
+    c = synthetic_configuration('free', motor=True)
     c = replace(c, free_kinematics=replace(c.free_kinematics,
         small=replace(c.free_kinematics.small, maximum_absolute_first_derivative=0)))
     evaluator = ThermodynamicSizingEvaluator(c)
@@ -150,7 +148,7 @@ def test_sizing_preserves_explicit_kinematic_rejection_without_running_cycle():
 
 def test_free_shape_survives_existing_similarity_transforms():
     from dada_solver.similarity import scale_volume_at_constant_inventory
-    c = load_simulation_configuration(ROOT/'examples/motor_free_kinematics.toml')
+    c = synthetic_configuration('free', motor=True)
     changed = scale_volume_at_constant_inventory(c, 2)
     assert changed.free_kinematics.small.control_values == c.free_kinematics.small.control_values
     assert changed.free_kinematics.small.limits.swept == pytest.approx(2*c.free_kinematics.small.limits.swept)

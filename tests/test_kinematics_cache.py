@@ -1,7 +1,4 @@
 """Exact provider reuse, isolation and interruption equivalence."""
-import json
-import sys
-from pathlib import Path
 import numpy as np
 import pytest
 from dada_solver.kinematics_cache import prepare_exact_kinematics
@@ -36,12 +33,12 @@ def test_no_combined_provider_is_not_wrapped():
 @pytest.mark.parametrize('backend',['python','numba'])
 def test_cycle_and_retained_endpoint_after_interruption_are_exact(backend):
     if backend=='numba': pytest.importorskip('numba')
-    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'examples'))
-    from benchmark_solver_acceleration import DEFAULT_MANIFEST
-    from refine_motor_four_stage_hx9d_variable_gas import _load_basis,_build_design
-    case=next(c for c in json.loads(DEFAULT_MANIFEST.read_text())['cases'] if c['name']=='production_cold')
-    _,base=_load_basis();w=_build_design(base,case['parameters']).build()
-    initial=np.asarray(case['initial_state'])
+    from tests.test_solver_acceleration import variable_wrapper
+    from dada_solver.state import UniformCharge
+    w=variable_wrapper()
+    gas=UniformCharge(2e5,350.).create_state(w.model.gas,w.model.volumes(0))
+    initial=np.r_[gas.as_array(),w.heat_in.wall_capacity_j_k*400.,
+                  w.heat_out.wall_capacity_j_k*330.]
     results=[]
     for enabled in (False,True):
         completed=[]
