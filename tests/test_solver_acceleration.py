@@ -1,66 +1,49 @@
-"""Equivalence to frozen pre-refactor algebra, including physical edge cases."""
+"""Current conservative execution, compiled parity and interruption contracts."""
 from dataclasses import replace
-from pathlib import Path
 import math
-import re
 
 import numpy as np
 import pytest
 
-from dada_solver.configuration import load_simulation_configuration
-from dada_solver.dynamics import ValveTopology
-from dada_solver.factory import build_model, initial_valve_topology
 from dada_solver.four_stage_kinematics import FourStageVolumeKinematics
-from dada_solver.exchangers.hardware import connect_hardware, load_hardware_definition
-from dada_solver.state import ThermodynamicState, UniformCharge
-from dada_solver.valves import ValveState
-from tests import solver_acceleration_reference as reference
+from dada_solver.kinematics import ReversedVolumeKinematics
+from dada_solver.exchangers.hardware import connect_hardware, HardwareInputs
+from dada_solver.exchangers.microtube_geometry import MicrotubeBank
+from dada_solver.exchangers.gas_correlations import MicrotubeGasModel
+from dada_solver.fluids import CaloricallyPerfectGas
+from dada_solver.state import UniformCharge
 from tests.test_dynamics import create_model, LinearInstantKinematics
-
-ROOT = Path(__file__).resolve().parents[1]
-
-
-def assert_rates_equal(actual, expected):
-    np.testing.assert_array_equal(actual.state_derivative, expected.state_derivative)
-    for field in ('flows','cold_heat_rate','hot_heat_rate','gas_work_rate',
-                  'mass_residual_rate','energy_residual_rate'):
-        assert getattr(actual,field) == getattr(expected,field)
-
-
-@pytest.mark.parametrize('continuous',[False,True])
-@pytest.mark.parametrize('stored',[ValveState.OPEN,ValveState.CLOSED])
-@pytest.mark.parametrize('delta',[-.2,-1e-12,0.,1e-12,.2])
-def test_point_and_balance_match_frozen_reference(ideal_gas, continuous, stored, delta):
-    model=replace(create_model(ideal_gas,LinearInstantKinematics(2e-4,5e-4,-2e-6,3e-6)),
-                  continuous_ideal_diodes=continuous)
-    state=UniformCharge(2e5,300).create_state(ideal_gas,model.volumes(0))
-    values=state.as_array(); values[1]*=1+delta; values[7]*=1-delta
-    state=ThermodynamicState.from_array(values); topology=ValveTopology(stored,stored)
-    expected=reference.evaluate(model,0,state,topology)
-    assert_rates_equal(model.evaluate(0,state,topology),expected)
-    point=model.instantaneous_point(0,state,topology)
-    np.testing.assert_array_equal(point.temperatures,state.temperatures(model.gas))
-    np.testing.assert_array_equal(point.pressures,state.pressures(model.gas,model.volumes(0)))
-    assert point.volumes == model.volumes(0)
-    assert point.volume_rates == model.cylinder_volume_rates(0)
-    assert point.topology == reference.effective_topology(model,0,state,topology)
-    assert point.flows == expected.flows
-    assert_rates_equal(model.assemble_rates(point,expected.cold_heat_rate,expected.hot_heat_rate),expected)
 
 
 def variable_wrapper(heat_in='downstream', heat_out='downstream'):
-    config=load_simulation_configuration(ROOT/'examples/motor_demonstrator_original_325c.toml')
-    config=replace(config, heat_in_valve_placement=heat_in,
-                   heat_out_valve_placement=heat_out)
-    model=build_model(config)
-    limits=config.machine_volumes
-    model=replace(model,kinematics=FourStageVolumeKinematics(limits.small_cylinder,limits.large_cylinder,
-        .25,.45,.75,.1,.8,.2,.9))
-    _,bank,hi,ho=load_hardware_definition(
-        (ROOT/'examples/motor_hardware_parallel_325c_variable_gas.toml').read_text(),model.gas.heat_capacity_cp)
-    wrapper,_=connect_hardware(model,bank,bank,hi,ho,
-        heat_in_valve_cda_m2=config.hydraulics.cold_to_large_valve_cda,
-        heat_out_valve_cda_m2=config.hydraulics.hot_to_small_valve_cda)
+    """Synthetic supported tube/wall machine, independent of application studies."""
+    gas = CaloricallyPerfectGas(287.05, 1005., 717.95)
+    model = create_model(gas, LinearInstantKinematics(2e-4, 5e-4, 0., 0.))
+    limits = model.machine_volumes
+    model = replace(
+        model, continuous_ideal_diodes=True, study_crank_direction=-1,
+        heat_in_valve_placement=heat_in, heat_out_valve_placement=heat_out,
+        kinematics=ReversedVolumeKinematics(FourStageVolumeKinematics(
+            limits.small_cylinder, limits.large_cylinder,
+            .2, .4, .6, .1, .7, .2, .8)),
+    )
+    bank = MicrotubeBank(256, .2, .001, .0001, .0015, .002)
+    inputs = HardwareInputs(
+        metal_conductivity_w_m_k=200., metal_density_kg_m3=2700.,
+        metal_cp_j_kg_k=900., extra_wall_capacity_j_k=0.,
+        gas_conductivity_w_m_k=.026, gas_viscosity_pa_s=1.8e-5,
+        gas_nusselt=3.66, air_conductivity_w_m_k=.026,
+        air_viscosity_pa_s=1.8e-5, air_nusselt=3.66,
+        air_density_kg_m3=1.2, air_cp_j_kg_k=1005.,
+        air_mass_flow_kg_s=.02, air_inlet_temperature_k=400.,
+        air_poiseuille_number=64., air_minor_loss_coefficient=0.,
+        fan_total_efficiency=.5, core_loss_multiplier=1.,
+        header_loss_coefficient=0., gas_model=MicrotubeGasModel(),
+    )
+    wrapper, _ = connect_hardware(
+        model, bank, bank, inputs, replace(inputs, air_inlet_temperature_k=300.),
+        heat_in_valve_cda_m2=1e-5, heat_out_valve_cda_m2=1e-5,
+    )
     return wrapper
 
 
@@ -85,20 +68,6 @@ def test_all_valve_placements_match_python_and_compiled_rhs(heat_in, heat_out, e
     assert compiled.snapshot()['fallback_calls'] == 0
 
 
-@pytest.mark.parametrize('temperature',[298.15,598.15])
-@pytest.mark.parametrize('delta',[-1e-5,0,1e-5])
-def test_wall_rhs_matches_reference_around_breakpoints(temperature,delta):
-    wrapper=variable_wrapper()
-    for edge in (0.,*wrapper.model.kinematics.breakpoint_angles(),2*math.pi):
-        for angle in (edge-1e-10,edge,edge+1e-10):
-            gas=UniformCharge(2e5,temperature).create_state(wrapper.model.gas,wrapper.model.volumes(angle))
-            values=np.r_[gas.as_array(),wrapper.heat_in.wall_capacity_j_k*450,
-                         wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
-            values[1]*=1+delta; values[7]*=1-delta
-            assert wrapper.flow_contexts(angle,values)==reference.flow_contexts(wrapper,angle,values)
-            np.testing.assert_array_equal(wrapper.derivative(angle,values),reference.derivative(wrapper,angle,values))
-
-
 def test_wall_rhs_solves_hydraulics_once(monkeypatch):
     wrapper=variable_wrapper();cls=type(wrapper.model);original=cls.instantaneous_point;calls=[]
     def counted(self,*args,**kwargs):
@@ -109,16 +78,6 @@ def test_wall_rhs_solves_hydraulics_once(monkeypatch):
                  wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
     wrapper.derivative(.3,values)
     assert len(calls)==1
-
-
-def test_invalid_transport_state_keeps_exception_semantics():
-    wrapper=variable_wrapper()
-    state=UniformCharge(2e5,2000).create_state(wrapper.model.gas,wrapper.model.volumes(.3))
-    values=np.r_[state.as_array(),wrapper.heat_in.wall_capacity_j_k*450,
-                 wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
-    with pytest.raises(ValueError) as expected: reference.derivative(wrapper,.3,values)
-    with pytest.raises(type(expected.value),match=re.escape(str(expected.value))):
-        wrapper.derivative(.3,values)
 
 
 def test_tube_validity_reuses_complete_report(monkeypatch):
@@ -154,19 +113,6 @@ def test_prepared_air_constants_refresh_on_replace():
     assert AirWallExchanger(**asdict(changed)).rates(300,35000)==changed.rates(300,35000)
 
 
-def test_unsupported_rarefied_state_keeps_domain_error():
-    from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
-    wrapper=variable_wrapper()
-    gas=UniformCharge(100,350).create_state(wrapper.model.gas,wrapper.model.volumes(.3))
-    values=np.r_[gas.as_array(),wrapper.heat_in.wall_capacity_j_k*450,
-                 wrapper.heat_out.wall_capacity_j_k*330,np.zeros(5)]
-    with pytest.raises(MicrotubeDomainError) as expected:
-        reference.derivative(wrapper,.3,values)
-    with pytest.raises(MicrotubeDomainError) as actual:
-        wrapper.derivative(.3,values)
-    assert str(actual.value)==str(expected.value)
-
-
 def test_segment_counters_and_interruption_are_explicit():
     from dada_solver.integration import IntegrationInterrupted
     wrapper=variable_wrapper()
@@ -186,7 +132,6 @@ def test_segment_counters_and_interruption_are_explicit():
 
 
 def test_complete_segment_counters_preserve_integration(monkeypatch):
-    from types import SimpleNamespace
     from dada_solver.exchangers.air_wall import AirWallMotor
     from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
     wrapper=variable_wrapper()

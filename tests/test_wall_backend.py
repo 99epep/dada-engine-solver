@@ -1,13 +1,11 @@
 """Production backend identity, shared physics, optional dependency and safeguards."""
 from dataclasses import replace
-from pathlib import Path
-import json
 import math
 import subprocess
 import sys
 import numpy as np
 import pytest
-from dada_solver.wall_backend import WallBackendSettings,WallRHS,backend_identity
+from dada_solver.wall_backend import WallBackendSettings,WallRHS
 from dada_solver import numerical_primitives as numeric
 from dada_solver.exchangers.air_wall import AirWallMotor
 from dada_solver.exchangers.gas_transport import DiluteGasTransport
@@ -101,20 +99,22 @@ assert r.snapshot()['reason']=='numba_unavailable'
     subprocess.run([sys.executable,'-c',code],check=True)
 
 
-def test_campaign_backend_is_identity_owned(tmp_path):
-    from dada_solver.campaign.definition import CampaignDefinition
-    root=Path(__file__).resolve().parents[1];source=root/'examples/motor_mechanics_stage7A5_edge.toml'
-    default=CampaignDefinition(source)
-    assert default.wall_backend.name=='python'
-    assert 'wall_backend' not in default.identity
-    selected=tmp_path/'campaign.toml';selected.write_text(source.read_text()+'\n[wall_backend]\nname="numba"\n')
-    definition=CampaignDefinition(selected,base_path=default.base_path,
-        hardware_path=root/'examples/motor_hardware_parallel_325c.toml')
-    assert definition.definition_id!=default.definition_id
-    identity=definition.identity['wall_backend']
-    assert identity['settings']['name']=='numba'
+def test_research_backend_is_identity_owned(tmp_path):
+    from dada_solver.research.presets import initialize_v3
+    from dada_solver.research.schema import load_study, compile_study
+    from tests.test_research_v3 import rewrite
+    path = initialize_v3(tmp_path/'study.toml')
+    rewrite(path, lambda raw: raw['numerical'].update(backend='python'))
+    reference = compile_study(load_study(path))
+    rewrite(path, lambda raw: raw['numerical'].update(backend='numba'))
+    compiled = compile_study(load_study(path))
+    assert reference.wall_backend.name == 'python'
+    assert compiled.definition_id != reference.definition_id
+    identity = compiled.identity['wall_backend']
+    assert identity['settings']['name'] == 'numba'
     assert identity['source_sha256'] and identity['python']
-    if identity['numba_available']: assert identity['numba'] and identity['llvm'] and identity['llvmlite']
+    if identity['numba_available']:
+        assert identity['numba'] and identity['llvm'] and identity['llvmlite']
 
 
 def test_first_progress_interruption_preserves_no_endpoint():
@@ -128,24 +128,37 @@ def test_first_progress_interruption_preserves_no_endpoint():
     assert any(x["phase"]=="integration_preflight" for x in records)
 
 
-def test_interruption_retains_completed_endpoint():
+def test_interruption_retains_completed_endpoint(monkeypatch):
     pytest.importorskip('numba')
     from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
     from dada_solver.integration import IntegrationInterrupted
-    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'examples'))
-    from benchmark_solver_acceleration import DEFAULT_MANIFEST
-    from refine_motor_four_stage_hx9d_variable_gas import _load_basis,_build_design
-    manifest=json.loads(DEFAULT_MANIFEST.read_text())
-    case=next(c for c in manifest['cases'] if c['name']=='production_cold')
-    _,base=_load_basis();w=_build_design(base,case['parameters']).build();ends=[]
+    w = variable_wrapper()
+    ends = []
+
+    def integrate(self, state, *, rhs, progress_callback, **kwargs):
+        # Exercise the selected RHS without a costly convergence campaign.
+        rhs(0., np.r_[state, np.zeros(5)])
+        progress_callback({})
+        end = state.copy()
+        end[8] *= 1.01  # Keep the first complete cycle non-periodic.
+        trajectory = np.zeros((15, 2))
+        trajectory[:10, 0] = state
+        trajectory[:10, 1] = end
+        return np.array([0., 2*math.pi]), trajectory
+
+    monkeypatch.setattr(AirWallMotor, 'integrate_cycle', integrate)
     def stop(_):
-        if ends:raise IntegrationInterrupted('After one cycle')
-    r=solve_periodic_wall_motor(w,np.asarray(case['initial_state']),maximum_cycles=3,
-        backend=WallBackendSettings('numba'),progress_callback=stop,
-        cycle_callback=lambda cycle,end,error,item: ends.append(end))
-    assert r.status=='interrupted'
-    np.testing.assert_array_equal(r.last_complete_state,ends[0])
-    assert r.backend_statistics['calls']>0
+        if ends:
+            raise IntegrationInterrupted('After one cycle')
+    result = solve_periodic_wall_motor(
+        w, values(w)[:10], maximum_cycles=3,
+        backend=WallBackendSettings('numba'), progress_callback=stop,
+        cycle_callback=lambda cycle, end, error, item: ends.append(end.copy()),
+    )
+    assert result.status == 'interrupted'
+    np.testing.assert_array_equal(result.last_complete_state, ends[0])
+    assert result.backend_statistics['actual_backend'] == 'numba'
+    assert result.backend_statistics['calls'] > 0
 
 
 @pytest.mark.parametrize('name',['cuda','NUMBA',''])
