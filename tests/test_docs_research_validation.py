@@ -7,7 +7,7 @@ CURRENT = ROOT / "docs/validation.md"
 def test_current_validation_remains_authoritative():
     text = CURRENT.read_text()
     assert text.startswith("# Validation and evidence")
-    assert "## Current check record" in text
+    assert "## Current regression evidence" in text
     assert "## Physical limits of the evidence" in text
     assert "not validate" in text.lower()
 

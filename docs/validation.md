@@ -49,28 +49,25 @@ An intentional physical-model revision can invalidate historical parity without
 being a regression in the revised model. Keep fixtures documenting the old model
 unchanged and version current-physics regressions separately.
 
-## Current check record
+## Current regression evidence
 
-The complete suite after Bennett/Shah entry and continuous-transition integration
-on 2026-10-04 reports **1190 passed, 2 failed, no warnings** (503.98 s).
-The focused exchanger/Research/backend check reports **218 passed**.
-The two failing test names already failed before this physical revision:
+Current-physics thermal regression cases are versioned separately in
+`tests/data/developing_entry_thermal_reference.json` and consumed by
+`tests/test_research_v2_thermodynamics.py` and `tests/test_research_sixbar.py`.
+These check integrated results and periodic convergence under the declared
+model and numerical settings; they do not assert parity with superseded physics.
 
-- `test_external_stream_v3.py::test_pre_v3_source_trajectory_and_neutral_roundtrip`:
-  the pre-V3 frozen RHS uses historical physics; current maximum absolute
-  discrepancy is 1.09678032.
-- `test_hybrid_compact_kinematics.py::test_historical_champion_thermodynamic_parity`:
-  current evaluation converges in 12 cycles versus seven in the old fixture
-  (the pre-entry revision already differed, at three cycles).
+`tests/test_microtube_developing_entry.py` checks Bennett against independent
+HeatLib/Octave reference points, Shah against Eq.192 and its Darcy asymptote,
+axial segment additivity and forward/reverse ownership. It also checks continuity
+and monotonicity of segment pressure loss across the Reynolds 2300–4000 bridge.
+`tests/test_microtube_transition.py` and `tests/test_compiled_transition.py`
+cover transition behavior and compiled/reference pointwise parity, including
+preservation of domain rejections.
 
-Do not describe this as a completely green suite. Historical fixtures remain
-unchanged. Four explicit current-physics thermal regression cases are versioned
-separately in `tests/data/developing_entry_thermal_reference.json`; tolerances
-are unchanged. Bennett has 50 independent HeatLib/Octave reference points;
-Shah has Eq.192, Darcy-asymptote, axial-additivity and reverse-flow checks.
-Continuity/monotonicity and compiled pointwise tests cover the revised
-2300–4000 bridge. Bounded DD13 replay evidence is under
-`outputs/research_microtube_developing_entry/continuous_transition_v1/`.
+These are equation and software checks. Sources, formulas and domains belong to
+the [microtube reference](MICROTUBE_GAS_MODEL.md); experimental comparisons and
+their limitations belong to [exchanger validation](EXCHANGER_VALIDATION.md).
 
 ## Physical limits of the evidence
 

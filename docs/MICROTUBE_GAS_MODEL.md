@@ -296,7 +296,7 @@ or out-of-domain states still fall back to the authoritative Python path at the
 same state, preserving rejection messages and diagnostics. Backend statistics
 retain `fallback_calls` and `unsupported_state`. No physical threshold, transition
 uncertainty classification or periodic convergence setting changes. See
-[the execution benchmark](SOLVER_PERFORMANCE.md#compiled-transition-benchmark).
+[backend selection and fallback](SOLVER_PERFORMANCE.md#backend-selection-and-fallback).
 
 This remains a quasi-steady approximation in a pulsed machine. Transition onset,
 intermittency, inlet disturbances, hysteresis and micro/mini-channel surface effects
