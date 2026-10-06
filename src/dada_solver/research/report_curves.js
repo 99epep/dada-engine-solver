@@ -15,7 +15,7 @@ function tickLabel(value,step){
 /* Offline rendering only: all scientific samples come from production Python. */
 function additionalPlots(){
  const host=byId('additionalPlots');host.innerHTML='';
- const titles={positions:'Normalized piston positions',heat:'Heat transfer: gas → wall',pressures:'Gas pressures',temperatures:'Gas and wall temperatures',flows:'Signed passage mass flows',velocity:'Normalized piston velocity per cycle radian',acceleration:'Normalized piston acceleration per cycle radian squared'};
+ const titles={positions:'Normalized piston positions',heat:'Heat transfer: gas → wall',pressures:'Gas pressures',temperatures:'Cylinder gas temperatures',flows:'Signed passage mass flows',velocity:'Normalized piston velocity per cycle radian',acceleration:'Normalized piston acceleration per cycle radian squared'};
  const colors=['#17658b','#b74424','#087660','#773baa','#986700','#b32573','#247070','#666666'];
  for(const [kind,title] of Object.entries(titles)){
   const candidates=rows.filter(r=>r.plots?.[kind]);if(!candidates.length)continue;
@@ -26,7 +26,7 @@ function additionalPlots(){
    const p=r.plots[kind],note=document.createElement('p');note.className=p.unavailable?'warning':'muted';
    note.textContent=r.candidate_id.slice(0,12)+' · '+(p.unavailable?'Unavailable: '+p.unavailable:p.method)+(r.plots_runtime_compatible===false?' Stored runtime differs: these curves use the current code.':'');
    if(p.replay)note.textContent+=' Endpoint relative drift: '+p.replay.endpoint_relative_drift.toPrecision(3)+'. Backend: '+(p.replay.backend.actual_backend||'recorded in plot data')+'.';
-   card.appendChild(note);if(!p.unavailable)for(const series of p.series)available.push({record:r,plot:p,series});
+   card.appendChild(note);if(!p.unavailable)for(const series of p.series){if(kind==='temperatures'&&!['small gas','large gas'].includes(series.label))continue;available.push({record:r,plot:p,series});}
   }
   if(!available.length)continue;
   let low=Infinity,high=-Infinity;for(const a of available)for(const v of a.series.values){low=Math.min(low,v);high=Math.max(high,v);}

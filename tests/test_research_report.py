@@ -62,3 +62,28 @@ def test_inspection_rejects_corrupted_scientific_identity(tmp_path):
     raw=json.loads(path.read_text()); raw['scientific']['fixed']['hot_air_inlet_K']=598.15
     path.write_text(json.dumps(raw))
     with pytest.raises(ValueError,match='definition does not match'): inspect(tmp_path/'run')
+
+
+def test_exchanger_total_volume_and_comparison_fields(tmp_path):
+    from tests.test_research_rescale import snapshot
+    from dada_solver.research.presets import initialize_v3
+    path=initialize_v3(tmp_path/'study.toml')
+    _,definition,record=snapshot(path,tmp_path/'source')
+    record['derived']={'heat_in_gas_volume_m3':.001,'heat_out_gas_volume_m3':.002}
+    journal=tmp_path/'source'/'history.jsonl'
+    journal.write_text(json.dumps(record)+'\n');before=journal.read_bytes()
+    data=inspect(tmp_path/'source')
+    assert data['records'][0]['derived']['total_exchanger_gas_volume_m3']==pytest.approx(.003)
+    assert journal.read_bytes()==before
+    from dada_solver.research.report import text_report
+    assert 'exchanger gas volume=0.003 m³' in text_report(data,list_candidates=True)
+    page=render_html(data,tmp_path/'report.html').read_text()
+    assert 'Total exchanger gas volume [m³]' in page
+    assert "['composite','COP × cooling power per microtube [W/microtube]'" in page
+    assert "value=composite?'composite':productivity?'microtube'" in page
+    comparison=page[page.index('function compare(){'):]
+    assert comparison.index('for(const name of active)parameter(name)') < comparison.index("kinematic family")
+    assert "cooling_cop_times_power_per_total_microtube_w:'W/microtube'" in comparison
+    record['derived'].pop('heat_out_gas_volume_m3')
+    journal.write_text(json.dumps(record)+'\n')
+    assert inspect(tmp_path/'source')['records'][0]['derived']['total_exchanger_gas_volume_m3'] is None

@@ -156,3 +156,23 @@ def test_comparison_does_not_duplicate_selected_records(tmp_path):
     assert len(data['selected'])==3
     data=report.compare([c.directory],[data['records'][0]['candidate_id']])
     assert len(data['selected'])==1
+
+
+def test_temperature_renderer_only_draws_cylinders():
+    if not shutil.which('node'): pytest.skip('Optional Node runtime')
+    script=Path('src/dada_solver/research/report_curves.js').read_text()
+    harness=r"""
+const assert=require('node:assert/strict');
+const nodes=[];
+const document={createElement:tag=>{const n={tag,style:{},children:[],appendChild(c){this.children.push(c);}};nodes.push(n);return n;}};
+const host=document.createElement('main'),byId=()=>host,esc=s=>s;
+const labels=['small gas','large gas','heat_in gas','heat_out gas','heat_in wall','heat_out wall'];
+const rows=[{candidate_id:'abc',plots:{temperatures:{angle:[0,360],unit:'K',method:'stored',series:labels.map(label=>({label,values:[300,310]}))}}}];
+additionalPlots();
+const svg=nodes.find(n=>n.tag==='div').innerHTML;
+assert.equal((svg.match(/<polyline /g)||[]).length,2);
+assert.ok(svg.includes('small gas'));assert.ok(svg.includes('large gas'));
+assert.ok(!svg.includes('heat_in'));assert.ok(!svg.includes('heat_out'));
+assert.equal(rows[0].plots.temperatures.series.length,6);
+"""
+    subprocess.run(['node','-e',script.replace('additionalPlots();mechanismPlots();','')+harness],check=True,capture_output=True)

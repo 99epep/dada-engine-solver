@@ -29,10 +29,12 @@ OBJECTIVE_UNITS = {
     'maximize_motor_power': 'W',
     'maximize_cooling_power': 'W',
     'maximize_cooling_power_per_total_microtube': 'W/microtube',
+    'maximize_cooling_cop_times_power_per_total_microtube': 'W/microtube',
 }
 COOLING_OBJECTIVES = frozenset((
     'maximize_cooling_cop', 'maximize_cooling_power',
     'maximize_cooling_power_per_total_microtube',
+    'maximize_cooling_cop_times_power_per_total_microtube',
 ))
 
 POLICIES=dict(volume_partition='total_swept_and_clearance_ratios',charge='explicit_inventory',
@@ -262,10 +264,17 @@ class ResearchDefinitionV2(CampaignDefinition):
         self.adapter=V2Adapter(study,self.configuration)
         self.families={side:study.settings[side]['family'] for side in ('small','large')}
         self.families.update(kinematics='composed',exchanger='microtube' if study.basis.heat_in is not None else 'reservoir')
-        from dada_solver.campaign.objectives import MaximizeCoolingPowerPerTotalMicrotube
-        self.objective=(MaximizeCoolingPowerPerTotalMicrotube()
-            if raw['objective']['type']=='maximize_cooling_power_per_total_microtube'
-            else _load_objective({'type':raw['objective']['type']}))
+        from dada_solver.campaign.objectives import (
+            MaximizeCoolingPowerPerTotalMicrotube,
+            MaximizeCoolingCopTimesPowerPerTotalMicrotube,
+        )
+        microtube_objectives = {
+            'maximize_cooling_power_per_total_microtube': MaximizeCoolingPowerPerTotalMicrotube(),
+            'maximize_cooling_cop_times_power_per_total_microtube': MaximizeCoolingCopTimesPowerPerTotalMicrotube(),
+        }
+        self.objective=microtube_objectives.get(raw['objective']['type'])
+        if self.objective is None:
+            self.objective=_load_objective({'type':raw['objective']['type']})
         self.constraints=tuple(MaximumMechanicalInputPower(row['limit']) if row['type']=='maximum_mechanical_input_power' else _load_constraint({k:v for k,v in row.items() if k!='unit'},None) for row in raw['constraints'])
         self.wall_numerical_settings=WallCycleNumericalSettings(**study.basis.data['wall_settings']) if study.basis.heat_in is not None else None
         self.wall_backend=WallBackendSettings(raw['numerical']['backend']); self.adaptive_wall_acceleration=None

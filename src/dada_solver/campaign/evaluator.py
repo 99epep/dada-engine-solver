@@ -211,6 +211,7 @@ class MachineEvaluator:
             result['metrics'].setdefault('total_mass_kg',design.configuration.charge.total_mass)
         if 'total_microtube_count' in derived:
             result['metrics'].setdefault('cooling_power_per_total_microtube_w', None)
+            result['metrics'].setdefault('cooling_cop_times_power_per_total_microtube_w', None)
         if mechanical: result['constraints']=list(mechanical)+result['constraints']
         return result
 
@@ -484,7 +485,8 @@ class MachineEvaluator:
         return float(max_re), float(max_mach)
 
     def _assessment(self, evaluation, derived, source, distance, convergence, guess, extra=()):
-        from .objectives import MaximizeCoolingPowerPerTotalMicrotube, cooling_power_per_total_microtube
+        from .objectives import (MaximizeCoolingPowerPerTotalMicrotube,
+            cooling_power_per_total_microtube, cooling_cop_times_power_per_total_microtube)
         context = {key: derived.get(key) for key in
                    ('heat_in_microtube_count', 'heat_out_microtube_count')}
         objective = (self.definition.objective.evaluate(evaluation, **context)
@@ -513,8 +515,11 @@ class MachineEvaluator:
             performance = evaluation.performance
             power = (performance.cooling_power if performance is not None
                 and performance.operating_mode is OperatingMode.REFRIGERATION else None)
-            metrics['cooling_power_per_total_microtube_w'] = cooling_power_per_total_microtube(
-                power, **context)
+            productivity = cooling_power_per_total_microtube(power, **context)
+            metrics['cooling_power_per_total_microtube_w'] = productivity
+            metrics['cooling_cop_times_power_per_total_microtube_w'] = (
+                cooling_cop_times_power_per_total_microtube(
+                    performance.cooling_cop if power is not None else None, productivity))
         reasons = [c['name']+(': unavailable' if not c['available'] else ': violated') for c in constraints if not c['available'] or not c['satisfied']]
         if not objective_valid: reasons.append('objective unavailable or nonfinite')
         return dict(status=status, integrated=True, converged=evaluation.usable,

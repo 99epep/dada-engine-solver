@@ -151,7 +151,7 @@ def test_global_initial_is_opt_in_and_not_repeated(source,tmp_path,enabled):
         assert all('search_origin' not in r for r in records)
 
 
-def test_multiple_standalones_and_incompatibility(source,tmp_path):
+def test_multiple_standalones_and_incompatibility(source,tmp_path,capsys):
     data=inspect(source)
     identity=json.loads((source/'definition.json').read_text())
     artifacts=[]
@@ -161,6 +161,7 @@ def test_multiple_standalones_and_incompatibility(source,tmp_path):
         artifacts.append(p)
     output=tmp_path/'standalone.toml'
     assert main(['refine',*map(str,artifacts),'--radius','.2','--output',str(output)])==0
+    assert f'Created {output}\nCenters' in capsys.readouterr().out
     assert len(load_study(output).data['search']['regions'])==2
     # Alter the embedded scientific identity, not physical result values.
     raw=json.loads(artifacts[1].read_text());raw['definition']['study_id']='f'*64

@@ -67,6 +67,8 @@ energy residual retains storage: `delta(U + E_wall) - Q_i - Q_o + W`.
 Indicated input/output is distinct from human shaft input/useful output.
 Mechanical efficiency is not assumed. External pump/fan losses excluded by a
 study are unknown physical losses, not zero losses.
+Compare indicated cycle COP only with a like-for-like thermal/work boundary;
+an appliance annual electrical label includes a different system boundary.
 
 The reservoir model uses `UA*(T_source-T_gas)`. The wall model resolves internal
 film → wall storage → external conductance → finite-capacity stream. Heat
@@ -184,6 +186,11 @@ and temperature histories versus angle are preserved; cycle heat/work scale by
 `s`, powers by `s*f`, and COP is unchanged. This mathematical similarity does not
 establish how real exchanger conductance, hold-up or hydraulics scale. It is not
 the geometry-rebuilding [Research capacity transformation](DADA_ENGINE_RESEARCH_CAPACITY.md).
+
+Within the same ideal model, `scale_volume_at_constant_inventory` trades volume
+against pressure while preserving heat, work and COP through matched volume,
+CdA and valve-threshold changes. Higher pressure alone is not a COP improvement
+or evidence that real hardware retains this similarity.
 
 ## Evidence and remaining work
 

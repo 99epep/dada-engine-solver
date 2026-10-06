@@ -5,7 +5,9 @@ import tomllib
 import pytest
 
 from dada_solver.campaign.objectives import (
-    MaximizeCoolingPowerPerTotalMicrotube, cooling_power_per_total_microtube,
+    MaximizeCoolingPowerPerTotalMicrotube,
+    MaximizeCoolingCopTimesPowerPerTotalMicrotube,
+    cooling_power_per_total_microtube, cooling_cop_times_power_per_total_microtube,
 )
 from dada_solver.campaign.evaluator import MachineEvaluator
 from dada_solver.performance import OperatingMode, ConservationReport
@@ -17,6 +19,7 @@ from dada_solver.research.progress import metric_parts
 from dada_solver.research import report
 
 NAME = 'maximize_cooling_power_per_total_microtube'
+COMPOSITE_NAME = 'maximize_cooling_cop_times_power_per_total_microtube'
 
 
 def test_score_and_objective():
@@ -46,6 +49,40 @@ def test_score_and_objective():
     assert not objective.evaluate(evaluation).available
 
 
+def test_composite_score_objective_unavailability_and_ranking():
+    assert cooling_cop_times_power_per_total_microtube(2.0, 1.5) == 3.0
+    assert cooling_cop_times_power_per_total_microtube(None, 1.5) is None
+    assert cooling_cop_times_power_per_total_microtube(2.0, None) is None
+    objective = MaximizeCoolingCopTimesPowerPerTotalMicrotube()
+    evaluation = SimpleNamespace(performance=SimpleNamespace(
+        operating_mode=OperatingMode.REFRIGERATION, cooling_power=450., cooling_cop=2.))
+    result = objective.evaluate(
+        evaluation, heat_in_microtube_count=100, heat_out_microtube_count=200)
+    assert result.available and result.value == -3.0
+    evaluation.performance.cooling_cop = None
+    assert not objective.evaluate(
+        evaluation, heat_in_microtube_count=100, heat_out_microtube_count=200).available
+    evaluation.performance.cooling_cop = 2.
+    assert not objective.evaluate(evaluation).available
+
+    from dataclasses import asdict
+    from dada_solver.campaign.report import elite_records
+    def score(candidate_id, cop, productivity):
+        candidate = SimpleNamespace(performance=SimpleNamespace(
+            operating_mode=OperatingMode.REFRIGERATION,
+            cooling_power=productivity*100, cooling_cop=cop))
+        value = objective.evaluate(
+            candidate, heat_in_microtube_count=50, heat_out_microtube_count=50)
+        return dict(candidate_id=candidate_id, status='feasible', objective=asdict(value))
+
+    ranked = elite_records([
+        score('A', 1.5, 0.40),
+        score('B', 2.2, 0.30),
+        score('C', 3.0, 0.15),
+    ])
+    assert ranked[0]['candidate_id'] == 'B'
+
+
 @pytest.mark.parametrize('objective,unit', OBJECTIVE_UNITS.items())
 def test_schema_objective_units_and_direction(tmp_path, objective, unit):
     motor = objective in ('maximize_motor_power', 'maximize_thermal_efficiency')
@@ -59,16 +96,17 @@ def test_schema_objective_units_and_direction(tmp_path, objective, unit):
     with pytest.raises(ValueError, match='objective or unit'): load_study(path)
 
 
-def test_motor_rejects_productivity(tmp_path):
+@pytest.mark.parametrize('objective', [NAME, COMPOSITE_NAME])
+def test_motor_rejects_productivity(tmp_path, objective):
     path = initialize_v3(tmp_path/'study.toml', mode='motor')
     raw = tomllib.loads(path.read_text())
-    raw['objective'] = dict(type=NAME, unit='W/microtube')
+    raw['objective'] = dict(type=objective, unit='W/microtube')
     path.write_text(dumps(raw))
     with pytest.raises(ValueError, match='operating direction'): load_study(path)
 
 
 @pytest.mark.parametrize('active_sides', [(), ('heat_in',), ('heat_in', 'heat_out')])
-@pytest.mark.parametrize('objective', [NAME, 'maximize_cooling_cop'])
+@pytest.mark.parametrize('objective', [NAME, COMPOSITE_NAME, 'maximize_cooling_cop'])
 def test_built_counts_include_fixed_coordinates(tmp_path, monkeypatch, active_sides, objective):
     path = initialize_v3(tmp_path/'study.toml')
     raw = tomllib.loads(path.read_text())
@@ -101,7 +139,11 @@ def test_built_counts_include_fixed_coordinates(tmp_path, monkeypatch, active_si
     assert result['derived']['heat_out_microtube_count'] == 200
     assert result['derived']['total_microtube_count'] == 300
     assert result['metrics']['cooling_power_per_total_microtube_w'] == 1.5
-    assert result['objective']['value'] == (-1.5 if objective == NAME else -2.)
+    assert result['metrics']['cooling_cop_times_power_per_total_microtube_w'] == (
+        result['metrics']['cooling_cop']
+        * result['metrics']['cooling_power_per_total_microtube_w'])
+    expected = {NAME: -1.5, COMPOSITE_NAME: -3.0, 'maximize_cooling_cop': -2.0}
+    assert result['objective']['value'] == expected[objective]
     assert result['status'] == 'feasible'
 
 
@@ -113,16 +155,28 @@ def test_report_and_progress_cooling_classification(tmp_path):
     assert "cooling=d.cooling_objective" in page
     assert "productivity?'cooling_power_per_total_microtube_w'" in page
     assert 'Cooling power per microtube [W/microtube]' in page
-    parts = metric_parts(dict(cooling_power_per_total_microtube_w=1.5,
+    composite_page = report.render_html(dict(name='Composite', records=[], best=[],
+        scientific=dict(objective=dict(type=COMPOSITE_NAME, unit='W/microtube'))),
+        tmp_path/'composite.html').read_text()
+    assert '"cooling_objective": true' in composite_page
+    assert "composite=objective==='maximize_cooling_cop_times_power_per_total_microtube'" in composite_page
+    assert 'COP×Qcold/microtube [W/microtube]' in composite_page
+    parts = metric_parts(dict(
+                             cooling_cop_times_power_per_total_microtube_w=3.0,
+                             cooling_power_per_total_microtube_w=1.5,
                              cooling_cop=2., cooling_power_w=450.))
-    assert 'Qcold/microtube 1.5 W/microtube' in parts
+    assert 'COP·Q/N 3 W/µt' in parts
+    assert 'Q/N 1.5 W/µt' in parts
     assert any(p.startswith('COP ') for p in parts)
     assert any(p.startswith('Qcold ') for p in parts)
     data = dict(name='Productivity', study_id='study', records=[], status_counts={},
                 best=[dict(candidate_id='candidate', status='feasible', metrics=dict(
-                    cooling_cop=2., cooling_power_w=450., cooling_power_per_total_microtube_w=1.5))],
+                    cooling_cop=2., cooling_power_w=450.,
+                    cooling_power_per_total_microtube_w=1.5,
+                    cooling_cop_times_power_per_total_microtube_w=3.0))],
                 warnings=[])
     assert 'Qcold/microtube=1.5 W/microtube' in report.text_report(data)
+    assert 'COP×Qcold/microtube=3.0 W/microtube' in report.text_report(data)
 
 
 def test_offline_legacy_metric_uses_fixed_and_active_without_replay(tmp_path, monkeypatch):
@@ -145,4 +199,5 @@ def test_offline_legacy_metric_uses_fixed_and_active_without_replay(tmp_path, mo
                 for side in ('heat_in', 'heat_out'))
     assert inspected['derived']['total_microtube_count'] == total
     assert inspected['metrics']['cooling_power_per_total_microtube_w'] == 450/total
+    assert inspected['metrics']['cooling_cop_times_power_per_total_microtube_w'] == 2*450/total
     assert source.read_bytes() == before

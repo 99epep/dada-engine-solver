@@ -87,3 +87,7 @@ def test_microtube_productivity_objective_contract():
     assert '| `maximize_cooling_power_per_total_microtube` | `W/microtube` | Refrigeration |' in content
     assert 'cooling_power_per_total_microtube_w' in content
     assert 'microtube.heat_in.tube_count + microtube.heat_out.tube_count' in content
+    assert '| `maximize_cooling_cop_times_power_per_total_microtube` | `W/microtube` | Refrigeration |' in content
+    assert ('`maximize_cooling_cop_times_power_per_total_microtube` maximizes\n'
+            '`cooling_cop * cooling_power_per_total_microtube_w`.') in content
+    assert 'does not impose minimum COP or cooling power by itself' in content

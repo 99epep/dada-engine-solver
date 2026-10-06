@@ -173,7 +173,7 @@ def main(argv=None):
         elif args.command == 'refine':
             from .refine import refine
             path=refine(args.sources,args.candidate,args.radius,args.output)
-            print(f'Created {path}. Centers will be evaluated before local Sobol sampling.')
+            print(f'Created {path}\nCenters will be evaluated before local Sobol sampling.')
         elif args.command == 'rescale':
             from .rescale import rescale
             path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)

@@ -176,3 +176,9 @@ The attempt cap, invocation time budget and individual evaluation deadline have
 different scheduling roles. None establishes physical validity or convergence.
 Capacity transformation rules belong to the [capacity reference](DADA_ENGINE_RESEARCH_CAPACITY.md);
 current evidence boundaries and known failures belong to [validation](validation.md).
+
+Terminal productivity labels use `Q/N` and `COP·Q/N`, with `W/µt` meaning watts
+per physical microtube; `N` counts both exchangers. HTML temperature curves show
+only SMALL/LARGE gas temperatures. Candidate comparisons list active parameters
+first and report total exchanger gas hold-up (both exchangers), not external
+packaging volume.

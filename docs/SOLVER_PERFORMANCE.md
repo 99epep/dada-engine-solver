@@ -103,7 +103,6 @@ Useful artifacts (local-only output directories may be absent elsewhere):
 | Isolated Numba prototype | `outputs/solver_acceleration_stage3/` |
 | Production adapter/parity/cache | `outputs/solver_acceleration_stage4/final_comparison.json`, `final_compiled_pointwise.json`, `tight_comparison.json` |
 | Exact cache/shared replay | `outputs/solver_acceleration_stage5/p1_exact.json`, `p2_exact.json`, `campaign_contract.json`, `tight_exact.json` |
-| Ideal vs tabulated compiled RHS | [Working-fluid benchmark](WORKING_FLUID_MODELS.md#bounded-measurements-and-next-scientific-work) |
 
 ## Negative experiments worth retaining
 
