@@ -101,12 +101,12 @@ class DiluteGasTransport:
 
 @dataclass(frozen=True)
 class ConstantGasTransport:
-    """Explicit legacy/screening transport; not the production property law."""
+    """Explicit constant-property screening transport; not the production property law."""
     gas_constant: float
     dynamic_viscosity: float
     thermal_conductivity: float
     heat_capacity_cp: float
-    provenance: str = 'Explicit caller-supplied legacy/screening constants'
+    provenance: str = 'Explicit caller-supplied screening constants'
 
     @property
     def mean_free_path_convention(self):
@@ -114,7 +114,7 @@ class ConstantGasTransport:
 
     def __post_init__(self):
         if any(not math.isfinite(v) or v<=0 for v in (self.gas_constant,self.dynamic_viscosity,self.thermal_conductivity,self.heat_capacity_cp)):
-            raise ValueError('Positive finite legacy properties required.')
+            raise ValueError('Positive finite screening properties required.')
         if self.heat_capacity_cp<=self.gas_constant: raise ValueError('cp must exceed R.')
     def viscosity(self,t): return self.dynamic_viscosity
     def conductivity(self,t): return self.thermal_conductivity

@@ -22,11 +22,12 @@ def test_journal_documentation_matches_current_path_selection(tmp_path):
     text = DOC.read_text()
     assert journal_path(tmp_path).name == 'history.jsonl.gz'
     (tmp_path / 'history.jsonl').touch()
-    assert journal_path(tmp_path).name == 'history.jsonl'
-    (tmp_path / 'history.jsonl.gz').touch()
-    with pytest.raises(ValueError, match='ambiguous'):
+    with pytest.raises(ValueError):
         journal_path(tmp_path)
-    for token in ('history.jsonl.gz', 'Legacy `history.jsonl`', 'ambiguous',
+    (tmp_path / 'history.jsonl.gz').touch()
+    with pytest.raises(ValueError, match='Uncompressed'):
+        journal_path(tmp_path)
+    for token in ('history.jsonl.gz', 'recovery.json', 'rejected',
                   'CRC', 'Read-only inspection', 'Execution resume'):
         assert token in text
     assert 'Append the complete result to `history.jsonl`' not in text

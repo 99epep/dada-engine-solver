@@ -1,3 +1,4 @@
+import gzip
 """Capacity scaling preserves ownership and explicit physical boundaries."""
 from dataclasses import asdict
 import json
@@ -25,7 +26,7 @@ def snapshot(path, directory, values=None):
     candidate = candidate_for_values(definition, physical)
     record = dict(candidate.payload, candidate_id=candidate.candidate_id, status='feasible',
         metrics={}, constraints=[], duration_seconds=0, evaluation_number=0)
-    (directory/'history.jsonl').write_text(json.dumps(record)+'\n')
+    (directory/'history.jsonl.gz').write_bytes(gzip.compress((json.dumps(record)+'\n').encode()))
     return study, definition, record
 
 
@@ -152,15 +153,6 @@ def test_cli_and_offline_volume_plots(source,tmp_path,monkeypatch):
     with pytest.raises(ValueError,match='Unknown plot'):report.compare([directory],plots='unknown_plot')
 
 
-def test_legacy_empty_event_display_preserves_original_record(source,tmp_path):
-    directory,_,_,record=source
-    record['diagnostics']=dict(valve_events=[],topology=dict(classification='non_nominal',
-        reasons=['observed_event_sequence_differs_from_nominal_sequence']))
-    journal=directory/'history.jsonl';journal.write_text(json.dumps(record)+'\n');before=journal.read_bytes()
-    row=report.inspect(directory)['records'][0]
-    assert row['topology_display']['classification']=='unavailable'
-    assert row['diagnostics']['topology']['classification']=='non_nominal'
-    assert journal.read_bytes()==before
 
 
 def test_standalone_evaluation_reconstruction(source,tmp_path):

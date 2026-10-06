@@ -156,7 +156,7 @@ class MassConservingCoordinates:
     def project(self,state):
         values=_physical_state(state)
         if not mass_compatible(values,self.total_mass):
-            raise ValueError('Historical state is incompatible with the fixed gas charge.')
+            raise ValueError('Initial state is incompatible with the fixed gas charge.')
         return self.basis.T@((values-self.anchor)/self.scales)
 
     def reconstruct(self,z):

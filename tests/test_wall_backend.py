@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from dada_solver.wall_backend import WallBackendSettings,WallRHS
 from dada_solver import numerical_primitives as numeric
-from dada_solver.exchangers.air_wall import AirWallMotor
+from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
 from dada_solver.exchangers.gas_transport import DiluteGasTransport
 from dada_solver.fluids import CaloricallyPerfectGas
 from dada_solver.state import UniformCharge
@@ -51,14 +51,14 @@ def test_species_properties_and_rhs(species,temperature):
 @pytest.mark.parametrize('delta',[-1e-5,-1e-12,0.,1e-12,1e-5])
 def test_breakpoints_reversal_zero_and_conservation(delta):
     pytest.importorskip('numba')
-    w=variable_wrapper();r=WallRHS(w,WallBackendSettings('numba'));original=AirWallMotor.derivative
+    w=variable_wrapper();r=WallRHS(w,WallBackendSettings('numba'));original=ExternalStreamWallMachine.derivative
     for edge in (0.,*w.model.kinematics.breakpoint_angles(),2*math.pi):
         for a in (edge-1e-10,edge,edge+1e-10):
             x=values(w,a);x[1]*=1+delta;x[7]*=1-delta
             y=r(a,x);np.testing.assert_allclose(y,w.derivative(a,x),rtol=2e-11,atol=1e-11)
             assert abs(sum(y[:8:2]))<1e-15
             assert abs(sum(y[1:8:2])+sum(y[8:10])-sum(y[10:12])+y[14])<1e-9
-    assert AirWallMotor.derivative is original
+    assert ExternalStreamWallMachine.derivative is original
     assert r.snapshot()['fallback_calls']==0
 
 
@@ -118,11 +118,11 @@ def test_research_backend_is_identity_owned(tmp_path):
 
 
 def test_first_progress_interruption_preserves_no_endpoint():
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
     from dada_solver.integration import IntegrationInterrupted
     w=variable_wrapper();records=[]
     def stop(_):raise IntegrationInterrupted('Deadline')
-    r=solve_periodic_wall_motor(w,values(w)[:10],maximum_cycles=2,
+    r=solve_periodic_wall_machine(w,values(w)[:10],maximum_cycles=2,
         backend=WallBackendSettings('numba'),progress_callback=stop,statistics_callback=records.append)
     assert r.status=='interrupted' and r.last_complete_state is None
     assert any(x["phase"]=="integration_preflight" for x in records)
@@ -130,7 +130,7 @@ def test_first_progress_interruption_preserves_no_endpoint():
 
 def test_interruption_retains_completed_endpoint(monkeypatch):
     pytest.importorskip('numba')
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
     from dada_solver.integration import IntegrationInterrupted
     w = variable_wrapper()
     ends = []
@@ -146,11 +146,11 @@ def test_interruption_retains_completed_endpoint(monkeypatch):
         trajectory[:10, 1] = end
         return np.array([0., 2*math.pi]), trajectory
 
-    monkeypatch.setattr(AirWallMotor, 'integrate_cycle', integrate)
+    monkeypatch.setattr(ExternalStreamWallMachine, 'integrate_cycle', integrate)
     def stop(_):
         if ends:
             raise IntegrationInterrupted('After one cycle')
-    result = solve_periodic_wall_motor(
+    result = solve_periodic_wall_machine(
         w, values(w)[:10], maximum_cycles=3,
         backend=WallBackendSettings('numba'), progress_callback=stop,
         cycle_callback=lambda cycle, end, error, item: ends.append(end.copy()),
@@ -167,13 +167,13 @@ def test_invalid_backend(name):
 
 
 def test_invalid_preflight_precedes_progress_in_both_backends():
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
     from dada_solver.integration import IntegrationInterrupted
     w=variable_wrapper();errors=[]
     def stop(_): raise IntegrationInterrupted('Should not precede invalid preflight')
     for name in ('python','numba'):
         with pytest.raises(ValueError) as error:
-            solve_periodic_wall_motor(w,values(w,temperature=2000.)[:10],maximum_cycles=2,
+            solve_periodic_wall_machine(w,values(w,temperature=2000.)[:10],maximum_cycles=2,
                 backend=WallBackendSettings(name),progress_callback=stop)
         errors.append((type(error.value),str(error.value)))
     assert errors[0]==errors[1]

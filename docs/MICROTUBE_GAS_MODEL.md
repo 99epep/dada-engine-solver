@@ -31,7 +31,7 @@ production = replace(exchanger, inputs=replace(
     exchanger.inputs, gas_model=MicrotubeGasModel()))
 ```
 
-The hardware TOML loader also supports the following frozen campaign input:
+The hardware TOML loader also supports the following input:
 
 ```toml
 [gas_model]
@@ -41,12 +41,12 @@ domain_policy = "reject"
 thermal_entry = true
 ```
 
-Supported species: air, nitrogen, argon, helium. Omitting this section preserves
-historical constant-property **legacy/screening** behavior and its regressions.
-Constant `gas_nusselt`, viscosity and conductivity fields remain for legacy
-compatibility/reference metadata; they do not control the selected production
-internal film. External-air properties/film are unchanged and still explicit
-screening inputs. This change must not be described as a new external-air model.
+Supported species: air, nitrogen, argon, helium. Omitting this section selects
+explicit constant-property screening behavior.
+Constant `gas_nusselt`, viscosity and conductivity fields control constant-property
+screening. With a selected `gas_model`, the production internal film uses
+instantaneous gas transport instead. External-air properties/film are unchanged and still explicit
+screening inputs. The internal gas-film selection does not define an external-air model.
 
 `HardwareInputs.gas_model` is immutable and serializable through dataclasses.
 The hardware TOML contents already participate in campaign identity/snapshots.
@@ -70,7 +70,7 @@ thermal entrance at the storage node. The wall resistance is then placed in
 series. This is a disclosed lumped approximation; there is no axial temperature
 field or resolved conjugate wall conduction.
 
-`AirWallMotor.thermal_rates(angle, state)` supplies the actual instantaneous
+`ExternalStreamWallMachine.thermal_rates(angle, state)` supplies the actual instantaneous
 film to integration and diagnostics. A contextual wall refuses `rates()` without
 its flow context, preventing silent substitution of the old static UA. At a
 closed valve with zero flow, the blocked port pressure jump is not treated as
@@ -141,14 +141,14 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   `pi*D^4*delta_p*pm/(128*mu*R*T*L)` with `pm=(pin+pout)/2`.
 - Implementation: `gas_correlations.compressible_poiseuille`, called by
   `hardware.TubeHalfLink._gas_flow` with **L/2** for each of the two links.
-- Important compatibility result: the old Poiseuille closure evaluated with
+- The Poiseuille relation evaluated with
   arithmetic mean pressure density is algebraically identical at fixed mu/T.
   Changing notation alone does not add a compressibility correction.
 - Header/valve terms remain separate mean-density losses:
   `delta_p_header=K*m_dot^2/(4*rho*A^2)` per half link;
   `delta_p_valve=m_dot^2/(2*rho*CdA^2)` on the outlet. These are the existing
   project component assumptions, not Graur measurements. The compressible
-  orifice cap remains. Continuum laminar entrance pressure losses now use the
+  orifice cap remains. Continuum laminar entrance pressure losses use the
   cumulative Shah correction below. Axial acceleration, roughness and
   nonisothermal axial fields remain unresolved.
 
@@ -194,7 +194,7 @@ at the tube midpoint is not a fresh entrance.
 supported laminar regime. `thermal_developing` retains `L < 0.05 Re Pr D`.
 Neither condition alone invalidates a supported laminar state.
 
-Hausen remains a public reference function and the **historical** transition
+Hausen is a public reference function and the transition
 endpoint (replaced by Bennett in the continuous revision below):
 `Nu_bar=3.66+0.0668*Gz/(1+0.04*Gz^(2/3))`, `Gz=Re Pr D/L`.
 It assumes a developed velocity profile and constant wall temperature.
@@ -254,11 +254,11 @@ f_transition = (1-w)*f_low + w*f_Haaland(4000)
 Delta_p_segment = M * f_transition * ell/D * mdot^2/(2*rho_mean*A_flow^2)
 ```
 
-Header/legacy-valve terms are added separately. Including M in the denominator
+Header/finite-CdA valve terms are added separately. Including M in the denominator
 of the entrance part keeps that correction independent of the core multiplier,
 just as in the laminar closure. The segment excesses still telescope, including
 inside transition. The no-slip production path matches both endpoint pressure
-losses continuously. The separately retained legacy slip bridge is not evidence
+losses continuously. The separately slip bridge is not evidence
 for developing slip flow; thermal slip still rejects such states.
 
 This is an explicit engineering interpolation, not a measured developing-
@@ -357,8 +357,7 @@ The internal gas film, tube hydraulics and gas-transport domains remain the same
 `ExternalStreamMicrotubeExchanger` connects these components to a declared
 finite-capacity stream through explicit wall conductance. Air is one scenario;
 liquid labels do not select unvalidated correlations. Wall storage and pause
-heat transfer remain active in motor and refrigeration operation. The legacy
-`AirWallExchanger` inputs/results remain supported. See
+heat transfer remain active in motor and refrigeration operation. `AirWallExchanger` provides the declared air-film model. See
 [external-stream equations and sign conventions](EXTERNAL_STREAM_THERMAL_MODEL.md).
 
 Thermodynamic EOS/caloric reconstruction now has a separate conservative-state
@@ -428,13 +427,11 @@ See [current physics decisions](PHYSICS_DECISIONS.md).
 replace the thermodynamic EOS. The transport temperature domains are air
 100–1000 K, helium 50–1000 K, and nitrogen/argon 200–1000 K.
 `minimum_temperature` and `maximum_temperature` may restrict, never expand, these
-ranges. Serialized legacy explicit 200 K lower bounds remain restrictive.
+ranges. Serialized explicit temperature bounds remain restrictive.
 
-Legacy studies remain readable, but compatibility loading does not restore a
-superseded transport law. The selected implementation uses `dilute_species_v2`;
-source/backend identity prevents silent resume across transport-law changes.
-Preserve results produced under another transport-law identity. Use a distinct
-study/basis/campaign for a changed physical law rather than rewriting its journal.
+Transport-law identity is part of source/backend identity. Results produced under
+another identity are not rewritten or resumed silently; use a distinct
+study/basis/campaign for a changed law.
 
 ### Formulas and provenance
 
@@ -483,11 +480,6 @@ The test also bounds the oracle's density-reduction sensitivity. These tolerance
 measure agreement with the oracle, not experimental accuracy of CoolProp or
 validation of the complete physical model.
 
-`tests/data/legacy_dilute_transport_v1.json` is also consumed by that test file
-for a legacy-reference regression: Cp equality and species-specific bounds on
-viscosity/conductivity differences. It does not select a legacy transport law
-at runtime. The regression bounds belong to the tests.
-
 ### Domain failures and campaign isolation
 
 `TransportDomainError` records species, temperature and allowed bounds, with
@@ -502,10 +494,7 @@ raises the same typed error. No CoolProp property call occurs inside the RHS.
 
 ### Versioned transport-law regression reference
 
-`tools/generate_transport_v2_thermal_reference.py` performs bounded fixed-input
-DADA evaluations without search or optimization and writes
-`tests/data/transport_v2_thermal_reference.json`. This transport-law reference
-is not currently consumed by the test suite; integrated thermal regressions use
+Integrated thermal regressions use the versioned current-physics reference
 `tests/data/developing_entry_thermal_reference.json`, as described in
 [validation](validation.md#current-regression-evidence).
 
@@ -532,7 +521,7 @@ hold-up adds tube bore volume and `additional_internal_volume_m3` exactly once.
 No external-fluid interstitial volume is calculated. These are internal header
 dimensions; vessel walls and extra fabrication clearances are not modeled.
 
-Compatibility is explicit: legacy `pitch_m` inputs retain square packing and
+`pitch_m` selects square packing and
 the `columns*pitch_m` by `rows*pitch_m` envelope. Do not supply both pitch
 forms.
 Selecting `pitch_ratio` changes header hold-up and scientific study identity;
@@ -582,12 +571,12 @@ quadratic valve resistance. Both that resistance and the smaller-valve sonic
 cap are absent. The **tube-area** compressible cap, tube friction, transport
 and gas-model validity guards remain. Upstream/downstream valve placement
 continues to determine which port blocks reverse flow. Generic orifices and
-legacy finite-CdA links are unchanged.
+finite-CdA links are unchanged.
 
 `header_loss_coefficient` remains the existing lumped loss coefficient referred
 to total tube-passage velocity, divided between the two links. It is independent
 of cone angle and is not a distribution, separation or pressure-recovery
-correlation for conical manifolds. For legacy external-air thermal models only,
+correlation for conical manifolds. For declared external-air thermal models only,
 the equivalent-passage screen uses the circular face area and
 perimeter; no empirical correlation is implied. Declared external-stream
 conductances are unchanged.
@@ -597,12 +586,11 @@ bore area, conduit area/diameter/ratio, cone angle/height, both header and total
 gas volumes, derived valve area, and loss-model scope. These values also appear
 in Research candidate comparisons when present in the recorded hardware data.
 
-**Compatibility:** existing files and histories are not silently migrated. Without a cone-angle
-input, square-pitch and rectangular staggered legacy envelopes retain their stored
+**Geometry selection:** without a cone-angle
+input, square-pitch and rectangular staggered envelopes retain their stored
 header volumes and finite-CdA hydraulic behavior. Selecting the circular model
 changes geometry and valve physics, hence scientific identity; use a new study/
-campaign. Exact reconstruction of legacy inputs remains possible, subject
-to the existing runtime compatibility checks.
+campaign. Runtime identity checks prevent incompatible resume.
 
 ## Combined laminar entry
 
@@ -655,7 +643,7 @@ Delta_p_entry[x1,x2] = [K_entry(x2/(D Re))-K_entry(x1/(D Re))]
 
 The second K expression avoids subtracting large fully developed contributions.
 The correction alone uses local mean ideal density `(p1+p2)/(2 R T_upstream)`;
-the pressure-squared Poiseuille term is preserved. Header K and diode/legacy
+the pressure-squared Poiseuille term is preserved. Header K and diode/finite-CdA
 valve terms remain separate. Header K describes manifold/contraction/exit losses,
 not the velocity-profile development already counted by Shah. No new multiplier
 is introduced. This incompressible correction is used only within the existing

@@ -30,7 +30,7 @@ New code lives in `dada_solver.campaign`:
 
 There is no database, plugin discovery, distributed execution, Bayesian search
 or new external optimization dependency. The first strategy is Sobol, not
-SLSQP. Research V2/V3 additionally use `scheduled_search.ScheduledSobol` for
+SLSQP. Research additionally uses `scheduled_search.ScheduledSobol` for
 explicit initial evaluations and center-first local regions; the original global
 Sobol path stays unchanged. See [Research local refinement](DADA_ENGINE_RESEARCH_REFERENCE.md#local-refinement-and-explicit-initial-evaluations)
 for normalization, round-robin allocation and resume semantics.
@@ -84,10 +84,10 @@ has its own Sobol index and deterministic round-robin allocation. Search-origin
 metadata does not alter physical candidate identity. The study's search definition
 and durable schedule still participate in reproducible execution.
 
-Adapters avoid expanding the legacy enum:
+Adapters avoid expanding the sizing enum:
 
 - `common.<existing DesignParameter value>` uses `DesignPoint` for operating,
-  charge, cylinder ranges and compatible legacy exchanger inputs;
+  charge, cylinder ranges and compatible exchanger inputs;
 - `operation.frequency_hz` maps positive frequency to the base configuration's
   existing signed angular-speed convention;
 - `free.small.<index>` and `free.large.<index>` vary independent stereographic
@@ -97,11 +97,11 @@ Adapters avoid expanding the legacy enum:
 - `microtube.heat_in.<geometry field>` and `microtube.heat_out.<geometry field>`
   are owned by the separate microtube geometry adapter. Tube count can be an integer
   coordinate. Circular collectors derive pitch, header volume and diode section;
-  independent legacy UA/hold-up/CdA coordinates cannot override that geometry.
+  independent configuration UA/hold-up/CdA coordinates cannot override that geometry.
 
 Wrong-family or unknown names are rejected. Frequency and angular speed cannot
 both vary; neither can pressure and inventory, or clearance volume and ratio.
-Microtube ownership explicitly forbids independent legacy UA, exchanger gas
+Microtube ownership explicitly forbids independent configuration UA, exchanger gas
 volume and equivalent inlet hydraulic-resistance coordinates. Its geometry
 adapter derives components with the existing `MicrotubeExchanger`; it does not
 fit independently free UA or hold-up values.
@@ -109,7 +109,7 @@ fit independently free UA or hold-up values.
 ### Physical evaluators
 
 Reservoir closures use the existing eight-state periodic solver. Microtube
-exchangers construct the existing `AirWallMotor` and use the reusable ten-state
+exchangers construct the existing `ExternalStreamWallMachine` and use the reusable ten-state
 wall-cycle evaluator factored from hardware screening. The extra states remain
 H_i and H_o wall energies. The wall convergence rule, correlations, valve
 equations and integration tolerances are unchanged.
@@ -217,7 +217,6 @@ campaign_directory/
     state.json                # Sobol index, pending candidate, phase and archive IDs
     history.jsonl.gz          # new campaigns: append-only gzip members, one full JSON record each
     recovery.json            # one transient durable completed result before state commit
-    candidates/<sha256>.json  # legacy only; retained/read, never newly generated
     report.json
     report.txt
     reports/phase_0001.json
@@ -230,19 +229,19 @@ sequence index. After evaluation, its full candidate record is written using
 an atomic rename and filesystem sync to `recovery.json`, then the journal is
 appended and synced, then the state/archive snapshot is updated and synced.
 Only then is recovery removed and the directory synced. A completed recovery
-record (or legacy candidate file) absent from the journal is recovered on restart;
+record absent from the journal is recovered on restart;
 an already journaled recovery is acknowledged without duplication. An unfinished pending candidate may
 be retried; a completed result is not silently re-integrated.
 
 The sole journal-edit exception is recovery of a torn final append: its bytes
 are saved to `history_torn_tail_*.bin`, the incomplete tail is removed, and any
-completed recovery record or legacy candidate file is recovered. Non-final corruption fails explicitly.
+completed recovery record is recovered. Non-final corruption fails explicitly.
 Thus a process crash loses at most the in-flight evaluation. This assumes a
 local filesystem honoring the sync/atomic-rename operations; it is not a
 replicated storage system. A POSIX advisory lock prevents concurrent writers.
 
 Cache hits append a complete attempt referring to the original evaluation,
-using the same single recovery slot. Legacy candidate files are not rewritten. Archives are reconstructed from history on resume.
+using the same single recovery slot. Archives are reconstructed from history on resume.
 They contain distinct feasible candidate identities ranked by minimum objective,
 not the last iterate. The phase report also preserves the best at phase start,
 best at phase end, and the best candidates evaluated in that phase.
@@ -289,7 +288,7 @@ the report. Bounds, assumptions, freezing and eventual local refinement remain
 human decisions. No evidence of global optimality is inferred from a small run.
 
 
-## Verification and legacy entry points
+## Verification and entry points
 
 `tests/test_campaign.py` and the Research tests exercise identity, recovery,
 cache, interruption and deterministic local/global continuation. `dada-optimize`

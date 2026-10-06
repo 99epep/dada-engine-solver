@@ -69,8 +69,7 @@ constraints include:
 An unavailable quantity makes its constraint unavailable and therefore
 infeasible. A Mach constraint needs an available geometric flow-area diagnostic;
 microtubes supply it, whereas a bare orifice CdA alone does not. Pressure inequality
-is diagnostic-only. Legacy pressure-equalization constraint keys load as ignored
-compatibility inputs; they are not an active feasibility criterion.
+is diagnostic-only.
 
 ## SLSQP adapter
 
@@ -162,6 +161,6 @@ friction, bearing reactions and structural stresses require a future
 ## Interchangeable model preparation
 
 See [PLUGGABLE_MODELS.md](PLUGGABLE_MODELS.md) for independent periodic free
-kinematics, exchanger construction and the family-specific campaign adapters. The legacy enum is preserved. Free-motion derivative violations return
+kinematics, exchanger construction and the family-specific campaign adapters. The sizing enum is preserved. Free-motion derivative violations return
 `invalid_kinematics` with separate diagnostic margins before integration.
 Swept-volume/clearance changes update free-motion ranges without changing shape.

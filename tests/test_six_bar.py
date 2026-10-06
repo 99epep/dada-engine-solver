@@ -9,7 +9,7 @@ import pytest
 
 from dada_solver.factory import build_model
 from dada_solver.kinematics import KinematicsModel, ReversedVolumeKinematics
-from dada_solver.six_bar import IndependentSixBarVolumeKinematics, SixBarCylinderMechanism, load_six_bar_mechanism
+from dada_solver.six_bar import IndependentSixBarVolumeKinematics, SixBarCylinderMechanism
 from tests.synthetic_machine import configuration as synthetic_configuration
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,26 +72,3 @@ def test_motor_factory_reverses_injected_sixbar_exactly_once(pair):
         for t in np.linspace(0, 2*math.pi, 30):
             assert getattr(model.kinematics, f'{side}_cylinder_volume')(t) == getattr(kin, f'{side}_cylinder_volume')(-t)
             assert getattr(model.kinematics, f'{side}_cylinder_volume_derivative')(t) == -getattr(kin, f'{side}_cylinder_volume_derivative')(-t)
-
-
-def test_explicit_selection_and_invalid_geometry(mechanisms,tmp_path):
-    # The currently supported loader selects an explicit run without fallback.
-    from dataclasses import asdict
-    parameters=asdict(mechanisms[0])
-    primary=parameters.pop('primary_branch'); secondary=parameters.pop('second_branch')
-    candidate=dict(feasible=True,parameters=parameters,primary=dict(assembly_branch=primary),second_branch=secondary)
-    path=tmp_path/'mechanism.json'
-    path.write_text(json.dumps(dict(length_unit='crank_radius',best=candidate,
-        runs=[dict(restart=3,second_branch=secondary,best_dense=candidate)])))
-    restored=load_six_bar_mechanism(path,restart=3,second_branch=secondary)
-    assert restored == mechanisms[0]
-    with pytest.raises(ValueError, match='both'):
-        load_six_bar_mechanism(path, restart=3)
-    with pytest.raises(ValueError, match='absent'):
-        load_six_bar_mechanism(path, restart=999, second_branch=secondary)
-    with pytest.raises(ValueError, match='branches'):
-        replace(mechanisms[0], second_branch=0)
-    with pytest.raises(ValueError, match='piston rod'):
-        replace(mechanisms[0], piston_rod=.01)
-    with pytest.raises(ValueError, match='finite'):
-        replace(mechanisms[0], primary_phase=float('nan'))

@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
-from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
+from dada_solver.exchangers.air_wall import AirWallExchanger
+from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
 from dada_solver.exchangers.wall_cycle import wall_cycle_performance, WallDiagnosticCycle
 from dada_solver.factory import build_model, build_initial_state
 
@@ -16,9 +17,9 @@ def exchanger(flow=.05):
 def test_finite_air_capacity_and_energy_conservation():
     hx = exchanger()
     rates = hx.rates(300, 350*100)
-    assert 350 < rates['air_outlet_temperature_k'] < 448.15
-    assert rates['air_heat_w'] == pytest.approx(rates['wall_energy_rate_w']+rates['gas_heat_w'])
-    assert rates['air_heat_w'] < .05*1005*(448.15-350)
+    assert 350 < rates['external_outlet_temperature_k'] < 448.15
+    assert rates['external_heat_w'] == pytest.approx(rates['wall_energy_rate_w']+rates['gas_heat_w'])
+    assert rates['external_heat_w'] < .05*1005*(448.15-350)
 
 
 def test_paused_isolated_gas_and_wall_relax_without_losing_energy():
@@ -32,13 +33,13 @@ def test_paused_isolated_gas_and_wall_relax_without_losing_energy():
     assert np.sum(solution.y[:, -1]) == pytest.approx(sum(initial), rel=1e-12)
     equilibrium = sum(initial)/(gas_capacity+100)
     assert solution.y[0, -1]/gas_capacity == pytest.approx(equilibrium, rel=1e-6)
-    assert hx.rates(300, 40000)['air_outlet_temperature_k'] is None
+    assert hx.rates(300, 40000)['external_outlet_temperature_k'] is None
 
 
 def test_coupled_motor_instantaneous_total_energy_balance():
     config = synthetic_configuration(motor=True)
     model = build_model(config)
-    wrapper = AirWallMotor(model, exchanger(), replace(exchanger(), air_inlet_temperature_k=298.15))
+    wrapper = ExternalStreamWallMachine(model, exchanger(), replace(exchanger(), air_inlet_temperature_k=298.15))
     state = np.r_[build_initial_state(config, model).as_array(), 40000, 30000, np.zeros(5)]
     derivative = wrapper.derivative(.4, state)*model.angular_speed
     stored_energy_rate = derivative[1:8:2].sum()+derivative[8:10].sum()
@@ -77,13 +78,13 @@ def test_wall_efficiency_uses_external_air_heat_boundary():
     assert performance.gas_power==pytest.approx(20)
 
 
-def test_wall_heat_diagnostics_do_not_use_legacy_reservoir_closure():
+def test_wall_heat_diagnostics_do_not_use_reservoir_closure():
     from dada_solver.results import extract_cycle_diagnostics
     config=synthetic_configuration(motor=True)
     model=build_model(config)
     hot=AirWallExchanger(7,20,100,.05,1005,448.15)
     cold=replace(hot,gas_wall_conductance_w_k=11,air_inlet_temperature_k=298.15)
-    wrapper=AirWallMotor(model,hot,cold)
+    wrapper=ExternalStreamWallMachine(model,hot,cold)
     gas=build_initial_state(config,model).as_array()
     trajectory=np.zeros((15,2));trajectory[:8]=np.column_stack((gas,gas))
     trajectory[8]=[42000,43000];trajectory[9]=[31000,32000]
@@ -95,7 +96,7 @@ def test_wall_heat_diagnostics_do_not_use_legacy_reservoir_closure():
                 cold.rates(temperatures[3],trajectory[9,index])['gas_heat_w'])
         expected.append(values);return values
     actual=extract_cycle_diagnostics(cycle,model,heat_rate_provider=provider)
-    legacy=extract_cycle_diagnostics(cycle,model)
+    reference=extract_cycle_diagnostics(cycle,model)
     assert actual.cold_heat_rate_extrema.maximum==pytest.approx(max(x[0] for x in expected))
     assert actual.hot_heat_rate_extrema.minimum==pytest.approx(min(x[1] for x in expected))
-    assert actual.cold_heat_rate_extrema != legacy.cold_heat_rate_extrema
+    assert actual.cold_heat_rate_extrema != reference.cold_heat_rate_extrema

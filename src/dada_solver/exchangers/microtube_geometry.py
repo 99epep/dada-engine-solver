@@ -36,7 +36,7 @@ class MicrotubeBank:
             raise ValueError("conduit_area_ratio must be finite and at least 1.")
         if self.pitch_ratio is not None:
             if self.pitch_m is not None or not math.isfinite(self.pitch_ratio) or self.pitch_ratio <= 1:
-                raise ValueError("pitch_ratio must exceed 1 and replaces legacy pitch_m.")
+                raise ValueError("pitch_ratio must exceed 1 and cannot be supplied with pitch_m.")
         elif self.pitch_m is None or not math.isfinite(self.pitch_m) or self.pitch_m <= self.outer_diameter_m:
             raise ValueError("Expected positive geometry, nonoverlapping tubes and nonnegative additional volume.")
         if (type(self.tube_count) is not int or self.tube_count < 1
@@ -78,7 +78,7 @@ class MicrotubeBank:
         """Full-face internal gas plenums; no external interstitial volume.
 
         Ratio input selects staggered triangular packing bounded by tube edges.
-        Absolute pitch retains the historical square envelope for old studies.
+        Absolute pitch selects the square envelope.
         """
         if self.circular_collectors:
             return self._circular_dimensions()

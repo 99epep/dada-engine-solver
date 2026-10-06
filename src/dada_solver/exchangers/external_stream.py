@@ -226,10 +226,6 @@ class ExternalWallThermalPoint:
     wall_temperature_k: float
     film_diagnostics: tuple = ()
 
-    # Read-only compatibility for historical diagnostic consumers.
-    air_heat_w = property(lambda s: s.external_heat_w)
-    air_outlet_temperature_k = property(lambda s: s.external_outlet_temperature_k)
-
     def rates(self):
         return dict(gas_heat_w=self.gas_heat_w, external_heat_w=self.external_heat_w,
                     wall_energy_rate_w=self.wall_energy_rate_w,
@@ -255,12 +251,6 @@ class ExternalStreamWallExchanger:
     external_mass_flow_kg_s = property(lambda s: s.external_stream.mass_flow_kg_s)
     external_cp_j_kg_k = property(lambda s: s.external_stream.cp_j_kg_k)
     effective_external_conductance_w_k = property(lambda s: s._effective_external_conductance)
-    # Compatibility adapters; serialization contains only the neutral fields above.
-    air_inlet_temperature_k = property(lambda s: s.external_inlet_temperature_k)
-    air_mass_flow_kg_s = property(lambda s: s.external_mass_flow_kg_s)
-    air_cp_j_kg_k = property(lambda s: s.external_cp_j_kg_k)
-    _effective_air_conductance = property(lambda s: s.effective_external_conductance_w_k)
-
     def rates(self, gas_temperature_k, wall_energy_j, *, context=None):
         return self.thermal_point(gas_temperature_k, wall_energy_j, context=context).rates()
 

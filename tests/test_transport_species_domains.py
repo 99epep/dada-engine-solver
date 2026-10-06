@@ -41,14 +41,6 @@ def test_frozen_coolprop8_oracle(row):
     assert max(row['density_reduction_relative_change'].values())<2e-11
 
 
-def test_old_range_changes_are_bounded_and_cp_is_unchanged():
-    legacy=json.loads((DATA/'legacy_dilute_transport_v1.json').read_text())['rows']
-    for row in legacy:
-        tr=DiluteGasTransport(row['species']);t=row['temperature_k']
-        assert tr.cp(t)==row['cp_j_kg_k']
-        for method,key in ((tr.viscosity,'viscosity_pa_s'),(tr.conductivity,'conductivity_w_m_k')):
-            tolerance={'air':.041,'helium':.006,'nitrogen':0,'argon':0}[row['species']]
-            assert abs(method(t)/row[key]-1)<=tolerance
 
 
 def test_python_numba_transport_parity():

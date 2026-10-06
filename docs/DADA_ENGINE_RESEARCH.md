@@ -105,7 +105,7 @@ research refine outputs/my_study/campaign --candidate best --radius 0.20 \
 research validate outputs/local/study.toml
 ```
 
-`refine` creates a portable schema-2/3 study around selected stored candidates;
+`refine` creates a portable schema-3 study around selected stored candidates;
 it does not launch a campaign or copy their results as completed evaluations.
 Sources must have the same scientific study identity and an active parameter
 space. Repeat `--candidate` to retain several centers. The radius is a fraction
@@ -123,7 +123,7 @@ research rescale outputs/my_study/campaign --candidate best --factor 2 \
 research validate outputs/larger/study.toml
 ```
 
-`rescale` creates a new portable schema-2/3 study without integrating or modifying
+`rescale` creates a new portable schema-3 study without integrating or modifying
 the source. It preserves declared constraints and never overwrites destination
 files. Global and local candidates are accepted; old local basins are not reused
 in the new study. Review the result before evaluation or search.
@@ -134,7 +134,7 @@ quantities scale and which remain fixed.
 ## Further reading
 
 - [Research technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md): schema,
-  scientific identity, policies, search, persistence and legacy compatibility.
+  scientific identity, policies, search, persistence and runtime compatibility.
 - [Cockpit and reports](DADA_ENGINE_RESEARCH_COCKPIT.md): progress, recovery,
   result inspection and evidence presentation.
 - [Kinematics and mechanisms](DADA_ENGINE_RESEARCH_KINEMATICS.md): motion families,

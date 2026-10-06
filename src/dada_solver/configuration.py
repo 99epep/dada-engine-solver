@@ -50,25 +50,16 @@ class HydraulicNetworkConfiguration:
             )
 
 
-@dataclass(frozen=True, slots=True, init=False)
+@dataclass(frozen=True, slots=True)
 class ValidityThresholds:
-    """Caloric/EOS approximation tolerances.
-
-    Legacy pressure-equalization and Mach arguments are ignored.
-    Only caloric/EOS approximation tolerances are retained or serialized. Mach
-    domains belong to the selected exchanger, and design limits to the study.
-    """
+    """Caloric/EOS approximation tolerances; model and study Mach limits are separate."""
 
     maximum_compressibility_deviation: float
     maximum_cp_variation: float
 
-    def __init__(self, maximum_pressure_equalization_error=None,
-                 maximum_mach_number=None,
-                 maximum_compressibility_deviation=None, maximum_cp_variation=None):
-        for name, value in (("maximum_compressibility_deviation", maximum_compressibility_deviation),
-                            ("maximum_cp_variation", maximum_cp_variation)):
-            _require_positive(name, value)
-            object.__setattr__(self, name, value)
+    def __post_init__(self):
+        for name in ("maximum_compressibility_deviation", "maximum_cp_variation"):
+            _require_positive(name, getattr(self, name))
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,7 +277,6 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
         validity_data = data["validity"]
         allowed_validity = {
             "maximum_compressibility_deviation", "maximum_cp_variation",
-            "maximum_pressure_equalization_error", "maximum_mach_number",
         }
         unknown_validity = set(validity_data) - allowed_validity
         if unknown_validity:

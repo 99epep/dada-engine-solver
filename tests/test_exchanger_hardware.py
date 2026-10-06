@@ -1,9 +1,10 @@
+from tests.synthetic_machine import connect_microtube_machine
 from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import replace
 from pathlib import Path
 import pytest
 
-from dada_solver.exchangers.hardware import TubeHalfLink, build_exchanger, connect_hardware
+from dada_solver.exchangers.hardware import TubeHalfLink, build_exchanger
 from dada_solver.exchangers.microtube import MicrotubeExchanger
 from dada_solver.factory import build_model
 
@@ -41,7 +42,7 @@ def test_resistance_capacity_and_fan_energy():
 def test_hardware_replaces_hold_up_and_all_four_port_losses():
     bank, props = inputs()
     model = build_model(synthetic_configuration())
-    coupled, report = connect_hardware(model, bank, bank, props, replace(props, air_inlet_temperature_k=298.15), heat_in_valve_cda_m2=.0001, heat_out_valve_cda_m2=.0002)
+    coupled, report = connect_microtube_machine(model, bank, bank, props, replace(props, air_inlet_temperature_k=298.15), heat_in_valve_cda_m2=.0001, heat_out_valve_cda_m2=.0002)
     assert coupled.model.machine_volumes.cold_heat_exchanger == bank.dimensions()['working_gas_volume_m3']
     assert coupled.model.kinematics is model.kinematics
     assert isinstance(coupled.model.small_cold_link, TubeHalfLink)

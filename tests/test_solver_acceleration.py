@@ -1,3 +1,4 @@
+from tests.synthetic_machine import connect_microtube_machine
 """Current conservative execution, compiled parity and interruption contracts."""
 from dataclasses import replace
 import math
@@ -7,7 +8,7 @@ import pytest
 
 from dada_solver.four_stage_kinematics import FourStageVolumeKinematics
 from dada_solver.kinematics import ReversedVolumeKinematics
-from dada_solver.exchangers.hardware import connect_hardware, HardwareInputs
+from dada_solver.exchangers.hardware import HardwareInputs
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.exchangers.gas_correlations import MicrotubeGasModel
 from dada_solver.fluids import CaloricallyPerfectGas
@@ -40,7 +41,7 @@ def variable_wrapper(heat_in='downstream', heat_out='downstream'):
         fan_total_efficiency=.5, core_loss_multiplier=1.,
         header_loss_coefficient=0., gas_model=MicrotubeGasModel(),
     )
-    wrapper, _ = connect_hardware(
+    wrapper, _ = connect_microtube_machine(
         model, bank, bank, inputs, replace(inputs, air_inlet_temperature_k=300.),
         heat_in_valve_cda_m2=1e-5, heat_out_valve_cda_m2=1e-5,
     )
@@ -109,7 +110,7 @@ def test_prepared_air_constants_refresh_on_replace():
     from dataclasses import asdict
     wall=AirWallExchanger(10,20,100,.05,1005,450)
     changed=replace(wall,air_mass_flow_kg_s=.1,air_wall_conductance_w_k=40)
-    assert changed.rates(300,35000)['air_heat_w']==2*wall.rates(300,35000)['air_heat_w']
+    assert changed.rates(300,35000)['external_heat_w']==2*wall.rates(300,35000)['external_heat_w']
     assert AirWallExchanger(**asdict(changed)).rates(300,35000)==changed.rates(300,35000)
 
 
@@ -132,13 +133,13 @@ def test_segment_counters_and_interruption_are_explicit():
 
 
 def test_complete_segment_counters_preserve_integration(monkeypatch):
-    from dada_solver.exchangers.air_wall import AirWallMotor
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
     wrapper=variable_wrapper()
     # Zero derivative isolates integrator accounting from expensive thermal work.
-    monkeypatch.setattr(AirWallMotor,'derivative',lambda self,a,y:np.zeros(15))
+    monkeypatch.setattr(ExternalStreamWallMachine,'derivative',lambda self,a,y:np.zeros(15))
     records=[]
-    result=solve_periodic_wall_motor(wrapper,np.ones(10),maximum_cycles=1,
+    result=solve_periodic_wall_machine(wrapper,np.ones(10),maximum_cycles=1,
         statistics_callback=records.append,measure_rhs_time=True)
     assert result.converged
     segments=[r for r in records if r['phase']=='solver_segment']
@@ -166,7 +167,7 @@ def test_candidate_measurement_keeps_failure_record():
 
 def test_interrupt_after_extrapolation_retains_physical_endpoint():
     from types import SimpleNamespace
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor, WallCycleNumericalSettings
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine, WallCycleNumericalSettings
     from dada_solver.integration import IntegrationInterrupted
     class Wrapper:
         heat_in=SimpleNamespace(wall_capacity_j_k=1)
@@ -183,7 +184,7 @@ def test_interrupt_after_extrapolation_retains_physical_endpoint():
             trajectory=np.zeros((15,2));trajectory[:10,0]=state;trajectory[:10,1]=end
             return np.array([0.,2*math.pi]),trajectory
     wrapper=Wrapper()
-    result=solve_periodic_wall_motor(wrapper,np.r_[np.ones(8),100,100],maximum_cycles=20,
+    result=solve_periodic_wall_machine(wrapper,np.r_[np.ones(8),100,100],maximum_cycles=20,
         settings=WallCycleNumericalSettings(accelerate_walls=True))
     assert result.status=='interrupted'
     assert result.history[-1]['wall_initial_guess_extrapolated']
@@ -191,10 +192,10 @@ def test_interrupt_after_extrapolation_retains_physical_endpoint():
 
 
 def test_fast_segments_still_check_deadlines_at_boundaries(monkeypatch):
-    from dada_solver.exchangers.air_wall import AirWallMotor
+    from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
     from dada_solver.integration import IntegrationInterrupted
     wrapper=variable_wrapper();calls=[];records=[]
-    monkeypatch.setattr(AirWallMotor,'derivative',lambda self,a,y:np.zeros(15))
+    monkeypatch.setattr(ExternalStreamWallMachine,'derivative',lambda self,a,y:np.zeros(15))
     def check(progress):
         calls.append(progress)
         if len(calls)==2: raise IntegrationInterrupted('Boundary deadline')

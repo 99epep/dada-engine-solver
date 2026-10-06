@@ -27,7 +27,7 @@ def test_transport_rejection_then_next_candidate(tmp_path,monkeypatch,stage,temp
         values=np.r_[state,np.zeros(5)]
         return WallCycleResult('converged','test convergence',({'normalized_state_error':.5},),
             np.array([0.,2*np.pi]),np.column_stack([values,values]),state,{},{})
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',solve)
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',solve)
     def fail(*args,**kwargs): DiluteGasTransport().conductivity(temperature)
     if stage=='replay':
         monkeypatch.setattr('dada_solver.diagnostic_replay.replay_wall_trajectory',fail)

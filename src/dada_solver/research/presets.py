@@ -7,7 +7,7 @@ from pathlib import Path
 from .artifacts import MechanismArtifact
 from .families import parameter_specs, PHYSICAL_FAMILIES
 from .machine_basis import load_machine_basis, machine_parameters
-from .schema_v2 import POLICIES
+from .schema_v2 import POLICIES_V3
 from .study_io import dumps
 
 
@@ -22,8 +22,6 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     if champion: small=large='structured_c2_15p'
     basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis_v2.json').read_text()
     basis_data=json.loads(basis_text)
-    for key in ('maximum_pressure_equalization_error','maximum_mach_number'):
-        basis_data['configuration']['validity'].pop(key,None)
     basis_text=json.dumps(basis_data,indent=2)+'\n'
     digest=hashlib.sha256(basis_text.encode()).hexdigest()
     # Build and validate all content before publishing a complete template.
@@ -50,7 +48,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
                     ('zero_crossing_count','equal',2,'1'))]
             mechanical.extend(dict(row,side=side) for row in constraints)
             artifact=MechanismArtifact.create(family,parameters,settings=settings,constraints=[],
-                provenance=dict(description='Historical geometry seed; no new optimization',sources=seed_data['provenance']))
+                provenance=dict(description='Explicit geometry seed; no optimization',sources=seed_data['provenance']))
             artifacts[side]=artifact
             settings=dict(settings,artifact=artifact_paths[side].name,sha256=artifact.content_hash)
         else:
@@ -64,9 +62,9 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
                 key=f'kinematics.shared.{name}'
             else: key=f'kinematics.{side}.{name}'
             declarations.append(dict(name=key,value=value,unit=owned[name].unit))
-    raw=dict(schema_version=2,study=dict(name='Dada-Engine Research — '+('candidate 3952' if champion else small+' / '+large),
+    raw=dict(schema_version=3,study=dict(name='Dada-Engine Research — '+('candidate 3952' if champion else small+' / '+large),
         protocol='machine_design',purpose='bounded_family_evaluation'),sources=dict(machine=dict(path=basis_file.name,sha256=digest)),
-        kinematics=kinematics,parameters=declarations,policies=POLICIES,
+        kinematics=kinematics,parameters=declarations,policies=POLICIES_V3,
         objective=dict(type='maximize_thermal_efficiency',unit='1'),
         constraints=[dict(type='valid_thermodynamic_model',unit='1')],
         mechanical_constraints=mechanical,screening=dict(samples=1440),

@@ -2,7 +2,7 @@
 
 ## 1. Purpose and scope
 
-This reference describes the current kinematic/mechanism layer used by schema-2
+This reference describes the current kinematic/mechanism layer used by schema-3
 and schema-3 Research studies. Each study selects cylinder laws, declares their
 fixed and active coordinates, and builds a production `KinematicsModel` for the
 existing solver and campaign engine.

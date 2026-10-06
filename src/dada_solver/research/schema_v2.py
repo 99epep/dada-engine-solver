@@ -1,4 +1,4 @@
-"""Research schema 2: independently owned fixed/active coordinates and motion families."""
+"""Research schema 3: independently owned fixed/active coordinates and motion families."""
 from dataclasses import dataclass, asdict, replace
 import copy
 import json
@@ -37,14 +37,10 @@ COOLING_OBJECTIVES = frozenset((
     'maximize_cooling_cop_times_power_per_total_microtube',
 ))
 
-POLICIES=dict(volume_partition='total_swept_and_clearance_ratios',charge='explicit_inventory',
-    outlet_valve_cda='source_cda_times_count_ratio_v1',mechanical_losses='unknown',
-    useful_power='unavailable',external_air_aerodynamic_losses='excluded_from_balance',
-    fan_consumption='excluded_from_balance',local_reflux='retain_signed_flows')
-
-
-POLICIES_V3={k:v for k,v in POLICIES.items() if k not in ('external_air_aerodynamic_losses','fan_consumption')}
-POLICIES_V3.update(external_loop_hydraulics='unmodelled',external_pump_fan_consumption='excluded_from_balance')
+POLICIES_V3 = dict(volume_partition='total_swept_and_clearance_ratios', charge='explicit_inventory',
+    outlet_valve_cda='source_cda_times_count_ratio_v1', mechanical_losses='unknown',
+    useful_power='unavailable', local_reflux='retain_signed_flows',
+    external_loop_hydraulics='unmodelled', external_pump_fan_consumption='excluded_from_balance')
 
 @dataclass(frozen=True)
 class StudyV2:
@@ -66,8 +62,8 @@ class StudyV2:
 def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     path=Path(path); source=path.read_text(); raw=tomllib.loads(source); canonical_json(raw)
     keys(raw,('schema_version','study','sources','kinematics','parameters','policies','objective','constraints',
-              'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 2',('charge_reference',))
-    if type(raw['schema_version']) is not int or raw['schema_version'] not in (2,3): raise ValueError('Expected schema_version = 2.')
+              'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 3',('charge_reference',))
+    if type(raw['schema_version']) is not int or raw['schema_version'] != 3: raise ValueError('Expected schema_version = 3.')
     keys(raw['study'],('name','protocol','purpose'),'study',('parent_candidate_id',))
     if raw['study']['protocol']!='machine_design': raise ValueError('V2 protocol must be machine_design.')
     if any(not isinstance(x,str) or not x for x in raw['study'].values()): raise ValueError('Study labels must be nonempty strings.')
@@ -76,7 +72,7 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     basis=load_machine_basis(basis_path or path.parent/ref['path'],ref['sha256'])
     if basis.data['schema_version']!=raw['schema_version']: raise ValueError('Study and machine schema versions must match.')
     specs,defaults=machine_parameters(basis, [p.get('name') for p in raw['parameters']])
-    expected_policy=POLICIES_V3 if raw['schema_version']==3 else POLICIES
+    expected_policy=POLICIES_V3
     policy=raw['policies']
     from .charge import POLICY as REFERENCE_CHARGE
     if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'],charge='explicit_inventory')!=expected_policy or policy.get('charge') not in ('explicit_inventory',REFERENCE_CHARGE) or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda','geometry_conduit_area_v1'):

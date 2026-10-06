@@ -32,7 +32,7 @@ are `free_kinematics.py`, `machine.py`, `exchangers/base.py` and
 - optional physical strokes, represented by `None` for mathematical volume laws;
 - derivative-discontinuity breakpoints for integration.
 
-The existing name `VolumeKinematics` remains an alias. A combined
+A combined
 `cylinder_volumes_and_derivatives` method remains an optional fast path.
 `SmoothKinematicsModel` describes optional analytical second derivatives;
 thermodynamics requires only the first derivative. Diagnostics specific to a
@@ -50,24 +50,15 @@ at zero; initial filling uses its actual volumes at the declared origin.
 import a concrete four-bar or free-motion class. Family selection is confined
 to configuration/factory boundaries and implementation-specific tools.
 
-## Four-bar compatibility
+## Shared-crank four-bar kinematics
 
-`four_bar.FourBarKinematics` aliases the existing
-`SharedCrankFourBarVolumeKinematics` class. Existing circle closure, assembly
-branches, finite slider rods, normalization, stroke evaluation and singularity
-checks are reused without rewriting their mathematics. Existing configuration
-names, animation and sizing code keep the same concrete objects. The factory's
-motor-direction handling for the shared-crank type is unchanged.
+`SharedCrankFourBarVolumeKinematics` provides volume and first-derivative
+trajectories from the assembly and slider-state APIs. Analytical second volume
+derivatives are unavailable; finite differences are not substituted.
+Toggle and branch diagnostics remain accessible through those APIs.
 
-A regression test compares full volume/first-derivative trajectories and slider
-states with the original constructor over three revolutions. There is no
-numerical change. Analytical second volume derivatives were not previously
-implemented by this class; they remain unavailable rather than introducing
-finite differences or unrelated new mechanics. Toggle/branch diagnostics remain
-accessible through the original assembly and slider-state APIs.
-
-Harmonic examples and the historical `ideal_piecewise_linear` family are
-retained. The latter is a reference parameterization, not a proven optimum.
+Harmonic motion and `ideal_piecewise_linear` are supported families. The latter
+is a reference parameterization, not a proven optimum.
 
 ## Free periodic motion
 
@@ -137,8 +128,8 @@ No objective penalty hides this state.
 passive valve thresholds. `MicrotubeExchanger` derives them using the unchanged
 `MicrotubeBank`, `HardwareInputs`, `build_exchanger` and `TubeHalfLink`. It
 retains the same tube/header loss allocation, wall capacity, thermal resistance
-and external-air assumptions. `connect_hardware` remains a compatibility
-constructor with its former return shape and report keys.
+and external-air assumptions. Assemble these components through
+`connect_exchangers` or `MachineDesign`.
 
 `HeatTransferModel` needs only `heat_rate(Tgas)`; no reservoir reference is
 needed for validity. Existing reservoir closures retain their numerical results.
@@ -146,7 +137,7 @@ The one-wall integrator consumes already evaluated heat/storage rates instead
 of rebuilding a hard-coded linear film. The equations and numerical values for
 current air-wall models are unchanged; a test-only nonlinear model proves that
 conductance and air-side input fields are not required by this integration.
-The legacy `air_heat_w` key denotes external-source heat in this capability.
+The `external_heat_w` key denotes external-source heat in this capability.
 
 A future family may supply other geometry, correlations or measured behaviour
 without sharing microtube input parameters. The neutral external-stream family reuses the same wall-state capability with
@@ -163,9 +154,9 @@ In a microtube candidate, geometry/material/correlation choices determine gas
 volume, internal conductance, hydraulic closures and wall capacity. Those derived
 quantities must not also be independent search variables. In the external-stream
 family, declared external conductance remains a separate scenario input. With `MachineDesign` exchanger designs,
-legacy UA, hold-up and passage closures in the thermodynamic configuration are
+configuration UA, hold-up and passage closures in the thermodynamic configuration are
 superseded seeds, not additional campaign coordinates. Valve CdA remains an
-explicit component input for legacy rectangular microtubes. Circular collectors
+explicit component input for rectangular microtubes. Circular collectors
 derive a lossless-diode section from conduit geometry; see the microtube reference.
 
 Likewise, free physical volume ranges are separate from canonical shape; the
@@ -174,14 +165,14 @@ cylinder ranges. A free law has no inferred physical stroke, bore, realizable
 linkage or mechanical loss model.
 
 `SizingProblem`, `DesignPoint`, objectives and explicit constraint margins are
-preserved. The legacy `DesignParameter` enum is not extended with spline or
+preserved. The `DesignParameter` enum is not extended with spline or
 microtube internals. Campaigns use a family-specific parameter
 adapter from bounded coordinates to immutable `MachineDesign` inputs. Reuse
-legacy `DesignPoint` for its supported operating/volume parameters, then apply
+`DesignPoint` for its supported operating/volume parameters, then apply
 shape and exchanger-design coordinates in their own adapters. Reject attempts
 to vary superseded derived exchanger quantities in that campaign adapter.
 Cache/persist the complete serialized candidate, fixed family choices, model
-assumptions and numerical settings, not only the legacy enum vector.
+assumptions and numerical settings, not only the sizing enum vector.
 
 ## Campaign and verification boundary
 
@@ -218,11 +209,8 @@ volume law without clipping. Lengths are expressed in crank-radius units;
 `IndependentSixBarVolumeKinematics` reports physical strokes as `None`.
 Research can derive physical stroke from explicit `crank_radius_m` metadata.
 
-`load_six_bar_mechanism(path)` reads a stored best candidate or selects one
-using both `restart` and `second_branch`. Inputs must declare
-`length_unit = "crank_radius"`; stored assembly branches are used verbatim.
-Missing, ambiguous or infeasible selections raise an error, without fallback
-to another candidate.
+Research mechanism artifacts carry explicit geometry and branch selections; see
+[DADA_ENGINE_RESEARCH_KINEMATICS.md](DADA_ENGINE_RESEARCH_KINEMATICS.md).
 
 Research constructs this production family from declared coordinates or
 versioned mechanism artifacts without changing thermodynamic equations. See

@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 from dada_solver.kinematics_cache import prepare_exact_kinematics
-from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
 from dada_solver.integration import IntegrationInterrupted
 from dada_solver.wall_backend import WallBackendSettings
 
@@ -44,7 +44,7 @@ def test_cycle_and_retained_endpoint_after_interruption_are_exact(backend):
         completed=[]
         def progress(info):
             if completed: raise IntegrationInterrupted('Test deadline after one cycle.')
-        result=solve_periodic_wall_motor(w,initial,maximum_cycles=3,
+        result=solve_periodic_wall_machine(w,initial,maximum_cycles=3,
             progress_callback=progress,cycle_callback=lambda *_:completed.append(True),
             backend=WallBackendSettings(backend),exact_kinematics_cache=enabled)
         results.append(result)

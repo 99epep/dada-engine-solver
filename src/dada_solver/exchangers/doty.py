@@ -104,7 +104,7 @@ def validate_gas_hydraulics(path: str | Path) -> list[dict]:
         t=(float(row['T3_K'])+float(row['T4_K']))/2
         p=float(row['pressure_Pa']); flow=float(row['mass_flow_kg_s'])
         measured=float(row['pressure_drop_Pa']);uncertainty=float(row['pressure_drop_uncertainty_Pa'])
-        for model_id,mu in [('legacy_constant_300K',tr.viscosity(300)),('compressible_variable_transport',tr.viscosity(t))]:
+        for model_id,mu in [('constant_temperature_300K',tr.viscosity(300)),('compressible_variable_transport',tr.viscosity(t))]:
             predicted=128*mu*bank.tube_length_m*flow*tr.gas_constant*t/(p*bank.tube_count*math.pi*bank.inner_diameter_m**4)
             recovered=compressible_poiseuille(p+predicted/2,p-predicted/2,t,mu,bank.tube_length_m,
                 bank.inner_diameter_m,bank.tube_count,tr.gas_constant)

@@ -31,12 +31,12 @@ def test_compressible_poiseuille_forward_reverse_symmetry():
     assert compressible_poiseuille(2e5,2e5,*args)==0
 
 
-def test_legacy_poiseuille_identity_and_separate_entrance_loss():
+def test_constant_property_poiseuille_identity_and_separate_entrance_loss():
     tr=DiluteGasTransport();gas=CaloricallyPerfectGas(tr.gas_constant,1005,1005-tr.gas_constant)
-    legacy=TubeHalfLink(BANK,tr.viscosity(350),1,0)
-    modern=replace(legacy,gas_model=MicrotubeGasModel(tr))
+    reference=TubeHalfLink(BANK,tr.viscosity(350),1,0)
+    modern=replace(reference,gas_model=MicrotubeGasModel(tr))
     for p in (200001,200100,201000):
-        old=legacy.directed_flow(p,2e5,350,gas).mass_flow_rate
+        old=reference.directed_flow(p,2e5,350,gas).mass_flow_rate
         exact=compressible_poiseuille(p,2e5,350,tr.viscosity(350),BANK.tube_length_m/2,BANK.inner_diameter_m,BANK.tube_count,tr.gas_constant)
         assert old==pytest.approx(exact,rel=1e-12)
         assert 0 < modern.directed_flow(p,2e5,350,gas).mass_flow_rate < old
@@ -125,7 +125,7 @@ def test_doty_nitrogen_hydraulics():
 def test_doty_helium_hydraulics():
     rows=check_doty('helium')
     variable=[r for r in rows if r['model_id']=='compressible_variable_transport']
-    # Updated dilute Arp viscosity: ~0.248% higher flow than the legacy interpolation.
+    # Updated dilute Arp viscosity: ~0.248% higher flow than the reference interpolation.
     np.testing.assert_allclose([r['predicted'] for r in variable],[3327.088720,2211.212221,5490.762659],rtol=.001)
     assert all(r['relative_error']>0 and not r['inside_experimental_uncertainty'] for r in variable)
 
@@ -139,16 +139,16 @@ def test_variable_film_requires_and_uses_flow_context_and_preserves_wall_balance
     moving=dict(frequency_hz=2,passages=((1e-4,200100,2e5),(1e-4,200100,2e5)))
     r0=thermal.rates(300,energy,context=paused);r1=thermal.rates(300,energy,context=moving)
     assert r1['gas_heat_w']>r0['gas_heat_w']>0
-    assert r1['wall_energy_rate_w']==pytest.approx(r1['air_heat_w']-r1['gas_heat_w'])
+    assert r1['wall_energy_rate_w']==pytest.approx(r1['external_heat_w']-r1['gas_heat_w'])
     poisoned=replace(thermal,gas_wall_conductance_w_k=1e15)
     assert poisoned.rates(300,energy,context=moving)==r1
 
 
 def test_hardware_toml_selects_variable_model_explicitly():
     text=hardware_text()
-    _,_,legacy,_=load_hardware_definition(text,1005)
+    _,_,reference,_=load_hardware_definition(text,1005)
     _,_,modern,_=load_hardware_definition(text+'\n[gas_model]\nmode="variable_properties"\nspecies="air"\n',1005)
-    assert legacy.gas_model is None
+    assert reference.gas_model is None
     assert isinstance(modern.gas_model,MicrotubeGasModel)
 
 

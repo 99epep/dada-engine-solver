@@ -6,7 +6,7 @@ read on 2026-09-08; especially sections 1, 2.1, 3, 6.5 and 8.
 Plots and reports use `H_i`/`H_o` throughout current cycle plots, pressure and
 temperature reports, valve and flow labels, moisture displays and coupled
 exchanger reports. Historical artifacts retain their original labels; Python and TOML retain
-legacy identifiers so existing configurations remain usable.
+hydraulic port field names.
 
 ## Scientific mapping
 
@@ -15,24 +15,17 @@ hardware are independent of which external reservoir is connected:
 
 | Study | Existing code and TOML branch name | Hydraulic path |
 |---|---|---|
-| Heat-in exchanger `H_i` | `C`, `cold_*` | `S <-> C -> L` |
-| Heat-out exchanger `H_o` | `H`, `hot_*` | `L <-> H -> S` |
+| Heat-in exchanger `H_i` | `cold_*` | `S <-> H_i -> L` |
+| Heat-out exchanger `H_o` | `hot_*` | `L <-> H_o -> S` |
 
 The table shows downstream placement; upstream placement moves the valve to
 the other half-link without changing branch circulation. Both placements are
 configurable independently in Research.
 
-Legacy branch identifiers remain usable throughout the state vector, geometry,
-UA, CdA, valves, validity and exchanger tools. They identify fixed hardware;
-in motor operation `C` is connected to the **hot** reservoir and `H` to the
-**cold** reservoir. The reservoir configuration keys `cold_temperature` and
-`hot_temperature` continue to mean the actual external temperatures.
-
-The first-level conservative state remains `(m_S,U_S,m_L,U_L,m_C,U_C,m_H,U_H)`.
-Review against the new study found no need to change its mass balances,
-upstream enthalpy transport, finite-UA heat transfer or cylinder boundary work.
-The independent-pressure model remains the previously chosen finite-resistance
-extension of the study's quasi-pressure-equalized analytical limits.
+H_i and H_o identify fixed hardware. In motor operation H_i connects to the
+hot reservoir and H_o to the cold reservoir. The reservoir configuration keys
+`cold_temperature` and `hot_temperature` identify actual external temperatures.
+The conservative state is `(m_S,U_S,m_L,U_L,m_Hi,U_Hi,m_Ho,U_Ho)`.
 
 ## Configuration and integration
 
@@ -106,22 +99,21 @@ positive work, convergence, nominal topology or physical validity.
 The report exposes signed `heat_in_*`, `heat_out_*` and `gas_power_W`, plus
 `thermal_efficiency` and `motor_power_W` when available. COP is unavailable
 under the motor reservoir assignment, even if that attempted motor still
-consumes work. Signed mechanical input remains `-W_cycle` for compatibility.
+consumes work. Signed mechanical input is `-W_cycle`.
 
-The Python `CyclePerformance` retains its historical `cold_heat_per_cycle`,
+The Python `CyclePerformance` stores `cold_heat_per_cycle`,
 `hot_heat_per_cycle`, `cooling_power` and `heating_power` fields as signed branch
 quantities. In motor calculations use the neutral `heat_in_per_cycle`,
 `heat_out_per_cycle`, `heat_in_power` and `heat_out_power` properties instead;
-`heat_out_power` has the received-heat sign, opposite the legacy heating power.
-Motor reports omit legacy cooling/heating-power labels.
+`heat_out_power` has the received-heat sign, opposite the heating-power sign convention.
+Motor reports use indicated motor power and signed branch heat.
 
-Sizing now supports objectives `maximize_thermal_efficiency` and
+Sizing supports objectives `maximize_thermal_efficiency` and
 `maximize_motor_power`, and the `minimum_motor_power` constraint with a positive
 `required_power`. Negative angular-speed design bounds are allowed, but a search
 interval cannot contain zero or cross between operation modes. Existing cooling
 power/task constraints require actual refrigeration operation, so a motor's
-heat input cannot satisfy a cooling demand. These additions provide sizing
-interfaces, not an optimized motor design.
+heat input cannot satisfy a cooling demand. These are sizing interfaces, not an optimized motor design.
 
 ## Command line and verification
 

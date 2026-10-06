@@ -20,7 +20,7 @@ from dada_solver.valves import PassiveCheckValve, ValveState
 
 @dataclass(frozen=True, slots=True)
 class ValveTopology:
-    """States of H_o and H_i valves, retaining their legacy field names."""
+    """States of H_o and H_i valves, using the hydraulic port field names."""
 
     hot_to_small: ValveState
     cold_to_large: ValveState
@@ -136,7 +136,7 @@ class ThermodynamicModel:
         state: ThermodynamicState,
         topology: ValveTopology,
     ) -> ModelRates:
-        """Compatibility facade over the authoritative point and balances."""
+        """Evaluate conservative balances from the authoritative instantaneous point."""
         point = self.instantaneous_point(theta, state, topology)
         return self.assemble_rates(
             point,

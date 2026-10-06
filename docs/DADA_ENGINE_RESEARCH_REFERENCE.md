@@ -10,24 +10,16 @@ guide](DADA_ENGINE_RESEARCH.md).
 This reference does not define thermodynamic equations, mechanism families or report
 layout. Their canonical references are listed at the end.
 
-## Supported schemas and presets
+## Supported schema and presets
 
-| Schema | Role today |
-|---|---|
-| Schema 1 | Historical `fixed_pair_thermo5d` regression protocol; loadable and evaluable, resumable when runtime-compatible |
-| Schema 2 | Generic `machine_design` studies with configurable kinematics, machine parameters, policies and wall/reservoir models |
-| Schema 3 | `machine_design` extension for external-stream wall models and compiled-fluid support |
+Study and machine basis files require `schema_version = 3`. The loader accepts
+only this schema and performs no automatic schema conversion.
+Generic initialization entry points are `init kinematics`,
+`init external-stream-refrigeration` and `init external-stream-motor`.
+They share the fixed/active parameter and campaign layer, with explicit physical
+families and matching study/basis versions.
 
-Schemas 2 and 3 share the fixed/active parameter and campaign layer. Schema 3 extends
-the machine representation, not the campaign semantics. The study and portable basis
-must have matching schema versions. Schema 1 is compatibility support, not the
-recommended starting point for new research.
-
-Current generic initialization entry points are `init kinematics`, `init
-external-stream-refrigeration` and `init external-stream-motor`. The named regression
-presets are described under legacy compatibility below.
-
-## Schema 2/3 study anatomy
+## Study anatomy
 
 | Group | Ownership |
 |---|---|
@@ -175,7 +167,7 @@ certification; some individual metrics have stronger analytic implementations.
 
 ## Policies
 
-Schema 2 base policies are explicit declarations:
+Policies are explicit declarations:
 
 | Key | Supported convention |
 |---|---|
@@ -183,8 +175,6 @@ Schema 2 base policies are explicit declarations:
 | `mechanical_losses` | `unknown` |
 | `useful_power` | `unavailable` |
 | `local_reflux` | `retain_signed_flows` |
-| `external_air_aerodynamic_losses` | `excluded_from_balance` |
-| `fan_consumption` | `excluded_from_balance` |
 
 `charge` accepts `explicit_inventory` or
 `reference_pressure_at_maximum_total_volume_v1`. `outlet_valve_cda` accepts
@@ -193,7 +183,7 @@ These select existing derivation conventions; the [microtube
 reference](MICROTUBE_GAS_MODEL.md) owns their geometry rules and compatibility
 requirements.
 
-Schema 3 replaces the two external-air/fan keys with:
+The external boundary requires:
 
 | Key | Convention |
 |---|---|
@@ -201,12 +191,12 @@ Schema 3 replaces the two external-air/fan keys with:
 | `external_pump_fan_consumption` | `excluded_from_balance` |
 
 An external fluid label does not provide a pump or hydraulic model. Excluded losses are
-not asserted to be physically zero. `POLICIES` and `POLICIES_V3` in `research.schema_v2`
+not asserted to be physically zero. `POLICIES_V3` in `research.schema_v2`
 define the supported base policy sets.
 
 ## Warm starts and domain retry
 
-Schema 2/3 `warm_start.initial_source` accepts `uniform` or `source_exact`.
+Schema 3 `warm_start.initial_source` accepts `uniform` or `source_exact`.
 `source_exact` requires a stored compatible source state and its original fixed
 inventory. It is incompatible with geometry-derived reference-pressure charge. A warm
 state is an initial guess, not proof of periodic convergence.
@@ -221,7 +211,7 @@ presentation belongs in the [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md).
 
 ### `study_id`
 
-This is the hash of canonical scientific study content. For schema 2/3 it includes basis
+This is the hash of canonical scientific study content. For schema 3 it includes basis
 content, fixed/active ownership, parameter bounds/transforms/ encodings, kinematic and
 mechanism scientific content, policies, objective, constraints, mechanical constraints,
 screening, search definition, numerical settings and warm-start policy. Reference-charge
@@ -272,8 +262,6 @@ active `initial` values unless overridden with `--set NAME=VALUE`. Overrides mus
 address declared active coordinates within their domains. It does not run a search and
 never overwrites an existing result.
 
-For schema 1 only, `--reference` selects the legacy regression point. Schema 2/3 uses
-configured fixed/initial values and rejects `--reference`.
 
 ## Global Sobol search
 
@@ -288,12 +276,12 @@ scramble = true
 Optional `evaluate_initial = true` schedules the exact initial physical point first. If
 absent or false, global search starts at Sobol index zero without inserting that point.
 An unevaluated initial value is not an incumbent. This option participates in study
-identity; old studies without it retain their scheduling behaviour.
+identity.
 
 ## Local refinement and explicit initial evaluations
 
 `research refine SOURCE --candidate ID --radius 0.20 --output outputs/local/study.toml`
-accepts schema-2/3 sources with an active parameter space. Multiple sources must have
+accepts schema-3 sources with an active parameter space. Multiple sources must have
 the same `study_id`. Campaign sources require selectors; standalone single-evaluation
 artifacts may supply their sole record implicitly.
 
@@ -324,7 +312,7 @@ adaptive basin selection, local gradient optimizer or cross-study cache.
 
 ## Capacity rescale
 
-`research rescale` accepts schema-2/3 stored candidates and creates a new portable
+`research rescale` accepts schema-3 stored candidates and creates a new portable
 study/basis, with parent/provenance and preserved constraints. It never integrates,
 changes source histories or silently relaxes constraints. Stored global or local
 candidates supply their physical coordinates; local search basins are replaced by
@@ -407,10 +395,8 @@ journal is lossless and append-only: one complete canonical JSON record per inde
 gzip member, with deterministic gzip timestamp. `recovery.json` is a temporary durable
 completion slot, not a second history.
 
-Legacy `history.jsonl` and `candidates/*.json` remain readable/recoverable. An existing
-plain journal continues in plain format; simultaneous plain and compressed journals are
-rejected as ambiguous. No automatic history migration or deletion of legacy result files
-occurs.
+Campaign persistence requires `history.jsonl.gz` and the single `recovery.json`
+completion slot. Plain journals and per-candidate recovery layouts are rejected.
 
 After evaluation, completion is written atomically to recovery and synchronized, then
 appended/synchronized to the journal; state is published durably before recovery is
@@ -444,16 +430,6 @@ incompatible studies.
 
 Command use belongs in the [guide](DADA_ENGINE_RESEARCH.md); report controls and
 evidence presentation belong in the [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md).
-
-## Legacy compatibility
-
-Schema 1 remains the loadable `fixed_pair_thermo5d` protocol. `init sixbar-thermo5d`
-creates its regression input, and `evaluate --reference` is schema-1-only. Old campaigns
-remain inspectable; execution resume still requires strict runtime/source matching.
-
-`init structured-c2-3952` is a named historical schema-2 regression seed/preset. Neither
-legacy preset defines generic defaults for new studies. `refine` and `rescale` require
-schema 2 or 3.
 
 ## Related references
 

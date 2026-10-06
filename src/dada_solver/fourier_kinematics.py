@@ -1,4 +1,4 @@
-"""Historical normalized Fourier/C2 law, independent of search policy."""
+"""Normalized Fourier/C2 law, independent of search policy."""
 from dataclasses import dataclass, field
 import math
 import numpy as np

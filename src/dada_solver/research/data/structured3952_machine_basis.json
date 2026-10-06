@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "configuration": {
     "gas": {
       "gas_constant": 287.0,
@@ -45,8 +45,6 @@
       "closing_pressure_difference": 0.0
     },
     "validity": {
-      "maximum_pressure_equalization_error": 0.05,
-      "maximum_mach_number": 0.2,
       "maximum_compressibility_deviation": 0.01,
       "maximum_cp_variation": 0.01
     },
@@ -149,7 +147,8 @@
       }
     },
     "outlet_valve_cda_m2": 0.0006308991476817586,
-    "valve_placement": "downstream"
+    "valve_placement": "downstream",
+    "family": "microtube_air_wall"
   },
   "heat_out": {
     "bank": {
@@ -202,7 +201,8 @@
       }
     },
     "outlet_valve_cda_m2": 0.0001895260771222754,
-    "valve_placement": "downstream"
+    "valve_placement": "downstream",
+    "family": "microtube_air_wall"
   },
   "geometry": {
     "total_swept_m3": 0.0018217821782178217,

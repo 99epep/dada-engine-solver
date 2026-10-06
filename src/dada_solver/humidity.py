@@ -156,7 +156,7 @@ def assess_moisture_phase_change_risk(
                 )
             except ValueError:
                 unavailable_samples.append(
-                    f"{('S', 'L', 'C', 'H')[volume_index]} at {temperature:.6g} K"
+                    f"{('S', 'L', 'H_i', 'H_o')[volume_index]} at {temperature:.6g} K"
                 )
                 continue
             ratios[volume_index, index] = (
@@ -167,7 +167,7 @@ def assess_moisture_phase_change_risk(
 
     diagnostics: dict[str, ControlVolumeMoistureDiagnostic] = {}
     maximum_ratio = 0.0
-    for volume_index, name in enumerate(("S", "L", "C", "H")):
+    for volume_index, name in enumerate(("S", "L", "H_i", "H_o")):
         if np.all(np.isnan(ratios[volume_index])):
             continue
         sample_index = int(np.nanargmax(ratios[volume_index]))

@@ -65,7 +65,7 @@ class InstantaneousVolumes:
 
     @staticmethod
     def names() -> tuple[str, ...]:
-        return ("S", "L", "C", "H")
+        return ("S", "L", "H_i", "H_o")
 
     def as_tuple(self) -> tuple[float, float, float, float]:
         return (

@@ -111,14 +111,11 @@ def test_progress_during_long_candidate(tmp_path):
     assert len([e for e in events if e['event']=='progress' and e['attempted']==0])==3
 
 
-@pytest.mark.parametrize('stage',['recovery_only','journal_and_recovery','torn','legacy'])
+@pytest.mark.parametrize('stage',['recovery_only','journal_and_recovery','torn'])
 def test_recovery_windows_no_reintegration(tmp_path,stage):
     c,clock=campaign(tmp_path,1);record=c.history.load()[0];journal=c.history.path
-    if stage=='legacy':
-        (c.directory/'candidates').mkdir()
-        atomic_json(c.directory/'candidates'/f"{record['candidate_id']}.json",record)
-    else:atomic_json(c.directory/'recovery.json',record)
-    if stage in ('recovery_only','legacy'):journal.write_text('')
+    atomic_json(c.directory/'recovery.json',record)
+    if stage=='recovery_only':journal.write_bytes(b'')
     if stage=='torn':journal.write_bytes(journal.read_bytes()[:30])
     # Read-only inspection sees the completed record, never repairs source files.
     before={p:p.read_bytes() for p in c.directory.rglob('*') if p.is_file()}
@@ -133,7 +130,7 @@ def test_recovery_windows_no_reintegration(tmp_path,stage):
     assert record['candidate_id'] not in ev.calls
     assert [r['sequence_index'] for r in resumed.history.load()]==[0,1]
     assert not (c.directory/'recovery.json').exists()
-    assert len(list((c.directory/'candidates').glob('*.json')))==(1 if stage=='legacy' else 0)
+    assert len(list((c.directory/'candidates').glob('*.json')))==0
     assert resumed.history.state()['pending'] is None
 
 
@@ -220,29 +217,12 @@ def test_execution_default_does_not_change_scientific_or_candidate_identity(tmp_
     from dada_solver.research.schema import load_study,compile_study,candidate_for_values
     d=definition(tmp_path);path=tmp_path/'study.toml'
     raw=tomllib.loads(path.read_text());raw['execution']['default_max_candidates']=16
-    path.write_text(dumps(raw));legacy=compile_study(load_study(path))
-    assert legacy.study.study_id==d.study.study_id
+    path.write_text(dumps(raw));changed=compile_study(load_study(path))
+    assert changed.study.study_id==d.study.study_id
     values={p.name:p.initial for p in d.space.parameters}
-    assert candidate_for_values(legacy,values).candidate_id==candidate_for_values(d,values).candidate_id
+    assert candidate_for_values(changed,values).candidate_id==candidate_for_values(d,values).candidate_id
 
 
-def test_cli_legacy_16_default_and_explicit_override(tmp_path,capsys):
-    import tomllib
-    from dada_solver.research.study_io import dumps
-    from dada_solver.research.schema import load_study,compile_study
-    definition(tmp_path);path=tmp_path/'study.toml'
-    raw=tomllib.loads(path.read_text());raw['execution']['default_max_candidates']=16
-    path.write_text(dumps(raw))
-    d=compile_study(load_study(path));directory=tmp_path/'run'
-    OptimizationCampaign(d,directory)
-    snapshot=(directory/'study.toml').read_bytes()
-    main(['resume',str(directory),'--budget','0'])
-    text=capsys.readouterr().out
-    assert 'max 512 new candidates' in text and 'Finished' in text
-    assert 'Study:' not in text
-    main(['resume',str(directory),'--budget','0','--max-candidates','16'])
-    assert 'max 16 new candidates' in capsys.readouterr().out
-    assert (directory/'study.toml').read_bytes()==snapshot
 
 
 def test_recovery_mismatch_is_not_appended(tmp_path):

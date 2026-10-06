@@ -100,3 +100,18 @@ def campaign_file(directory, *, microtube=False):
     path = directory / 'campaign.toml'
     path.write_text(dumps(raw))
     return path
+
+
+def connect_microtube_machine(model, heat_in_bank, heat_out_bank, heat_in_inputs,
+                              heat_out_inputs, *, heat_in_valve_cda_m2, heat_out_valve_cda_m2):
+    from dada_solver.exchangers.microtube import MicrotubeExchanger
+    from dada_solver.exchangers.base import connect_exchangers
+    incoming = MicrotubeExchanger(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2,
+                                 model.heat_in_valve_placement)
+    outgoing = MicrotubeExchanger(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2,
+                                 model.heat_out_valve_placement)
+    reports = {name: dict(exchanger.build().metadata)
+               for name, exchanger in (('H_i', incoming), ('H_o', outgoing))}
+    reports['total_fan_electrical_power_w'] = sum(
+        reports[name]['fan_electrical_power_w'] for name in ('H_i', 'H_o'))
+    return connect_exchangers(model, incoming, outgoing), reports

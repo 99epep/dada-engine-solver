@@ -61,7 +61,7 @@ def test_pitch_inputs_are_exclusive():
         MicrotubeBank(10, .1, .0003, .00002, .001, .002, pitch_ratio=1.2)
 
 
-def test_legacy_square_envelope_is_unchanged():
+def test_square_envelope_is_unchanged():
     bank = MicrotubeBank(7, .1, .0003, .00002, .001, .002)
     dims = bank.dimensions()
     assert dims['core_width_m'] == .003

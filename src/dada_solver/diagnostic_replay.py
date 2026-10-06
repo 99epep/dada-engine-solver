@@ -67,8 +67,8 @@ def replay_wall_trajectory(wrapper, cycle, trajectory):
                 contextual=getattr(wall,'requires_flow_context',False)
                 rates=wall.rates(temperature,energy,context=context) if contextual else wall.rates(temperature,energy)
                 diagnostics=wall.gas_film.evaluate(temperature,energy/wall.wall_capacity_j_k,context)[1] if contextual else ()
-                evaluated=WallThermalPoint(rates['gas_heat_w'],rates['air_heat_w'],
-                    rates['wall_energy_rate_w'],rates.get('air_outlet_temperature_k'),
+                evaluated=WallThermalPoint(rates['gas_heat_w'],rates['external_heat_w'],
+                    rates['wall_energy_rate_w'],rates.get('external_outlet_temperature_k'),
                     energy/wall.wall_capacity_j_k,diagnostics)
             thermal.append(evaluated)
             if not getattr(wall,'requires_flow_context',False):

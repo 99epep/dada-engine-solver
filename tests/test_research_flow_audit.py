@@ -5,7 +5,6 @@ import json
 from types import SimpleNamespace as NS
 import tomllib
 import pytest
-from dada_solver.research.cli import initialize
 from dada_solver.research.presets import initialize_v2, initialize_v3
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.study_io import dumps
@@ -143,11 +142,6 @@ def test_report_defaults_follow_existing_ranking_and_table_retains_data(tmp_path
     assert '"comparison_default_ids": []' in html
 
 
-def test_obsolete_generic_mach_is_not_a_model_boundary():
-    scientific={'basis':{'configuration':{'validity':{'maximum_mach_number':.2}}}}
-    record=dict(status='converged_infeasible',constraints=[],metrics={'validity':{'maximum_mach_number':.25}})
-    evidence=limiting_evidence(record,scientific)
-    assert evidence==[]
 
 
 @pytest.mark.parametrize('status,reason',[

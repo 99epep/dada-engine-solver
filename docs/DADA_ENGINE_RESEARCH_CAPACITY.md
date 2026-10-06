@@ -41,13 +41,13 @@ implicit machine defaults are materialized where necessary.
 | Microtube count and individual length | Coupled total-length transformation below |
 | Declared additional internal gas volume | Multiply by `s` |
 | External-stream mass flow; declared external wall conductance | Multiply by `s` |
-| Legacy external-air mass flow | Multiply by `s` |
+| External-air mass flow | Multiply by `s` |
 | Frequency, volume/clearance ratios and selected kinematics | Preserve |
 | Inner/outer tube diameters, pitch/packing settings and materials | Preserve |
 | Temperatures and specific properties | Preserve |
 
 The rebuilt basis also scales cylinder minimum/maximum volumes, reservoir
-exchanger reference volumes, legacy conductance references, additional wall heat
+exchanger reference volumes, conductance references, additional wall heat
 capacity and supported hydraulic CdA quantities. Tube areas, tube-wall capacity
 and gas-film conductance are reconstructed from production geometry and models,
 not treated as independent target-performance inputs.
@@ -96,7 +96,7 @@ The transformation starts from the production machine constructed for the select
 candidate. It creates a new basis and declarations, then validates them through
 normal study loading. It does not blindly multiply every old object field.
 
-The selected bank geometry remains authoritative. Legacy rectangular banks retain
+The selected bank geometry remains authoritative. Rectangular banks retain
 their discrete packing; row/column changes can make header volume and envelope
 non-proportional to `s`. Circular banks use the continuous approximation described
 below. Neither independent UA nor pressure loss nor pressure is adjusted to force
@@ -164,8 +164,7 @@ remain the reference.
 
 ## Unsupported cases and related references
 
-Only schema 2/3 (V2/V3) machine studies are supported. Schema 1 remains inspectable
-but requires explicit migration before scaling. Global and `local_regions_v1`
+Only current schema-3 machine studies are supported. Global and `local_regions_v1`
 candidates are accepted: local origin describes how the candidate was found,
 not an ambiguity in its physical machine. A local source produces a global
 `fixed_global_bounds` Sobol study retaining `seed` and `scramble`. Old regions,

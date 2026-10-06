@@ -25,8 +25,8 @@ def stored_study(data):
         yield study
         return
     raw = copy.deepcopy(data['scientific'])
-    if raw['schema_version'] not in (2, 3):
-        raise ValueError('Standalone reconstruction requires a V2/V3 evaluation or a campaign directory.')
+    if raw['schema_version'] != 3:
+        raise ValueError('Standalone reconstruction requires a schema-3 evaluation or a campaign directory.')
     basis = raw.pop('basis')
     fixed = raw.pop('fixed_parameters')
     raw['study']['name'] = data['name']

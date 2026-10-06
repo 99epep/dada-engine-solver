@@ -31,15 +31,13 @@ def load_machine_basis(path, expected_sha256):
     if digest!=expected_sha256: raise ValueError('Machine basis SHA-256 mismatch.')
     data=json.loads(source); canonical_json(data)
     required={'schema_version','configuration','heat_in','heat_out','geometry','wall_settings','warm_start','provenance'}
-    if set(data)!=required or type(data['schema_version']) is not int or data['schema_version'] not in (2,3):
+    if set(data)!=required or type(data['schema_version']) is not int or data['schema_version'] != 3:
         raise ValueError('Unsupported machine basis schema.')
-    if data['schema_version']==2 and (data['configuration']['gas'].get('model') or any((data[side] or {}).get('family')=='external_stream_wall' for side in ('heat_in','heat_out'))):
-        raise ValueError('New fluid/exchanger definitions require machine schema 3.')
     configuration=configuration_from_data(data['configuration'])
     if (data['heat_in'] is None)!=(data['heat_out'] is None): raise ValueError('Provide both exchangers or neither.')
     hi=exchanger_from_data(data['heat_in']) if data['heat_in'] is not None else None
     ho=exchanger_from_data(data['heat_out']) if data['heat_out'] is not None else None
-    if configuration.charge.total_mass is None: raise ValueError('V2 machine studies currently require explicit gas inventory.')
+    if configuration.charge.total_mass is None: raise ValueError('Machine studies currently require explicit gas inventory.')
     if data['warm_start'] is not None:
         warm=data['warm_start']; values=np.asarray(warm['values'],float)
         if hi is None or values.shape!=(10,) or np.any(values<=0) or not np.all(np.isfinite(values)):

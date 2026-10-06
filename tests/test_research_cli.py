@@ -6,14 +6,25 @@ import pytest
 
 from dada_solver.campaign.definition import CampaignDefinition
 from dada_solver.campaign.runner import OptimizationCampaign
-from dada_solver.research.cli import initialize, main
+from dada_solver.research.cli import main
+from dada_solver.research.presets import initialize_v2 as initialize
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.report import inspect
 from tests.test_campaign import Clock, Evaluator
 
 
 def definition(tmp_path):
-    return compile_study(load_study(initialize(tmp_path/'study.toml')))
+    path = initialize(tmp_path/'study.toml')
+    from dada_solver.research.study_io import dumps
+    study = load_study(path)
+    raw = study.data
+    for row in raw['parameters']:
+        if row['name'] == 'operation.frequency_hz':
+            value = row.pop('value')
+            row.update(initial=value, lower=value*.8, upper=value*1.2,
+                       kind='continuous', transform='linear')
+    path.write_text(dumps(raw))
+    return compile_study(load_study(path))
 
 
 def test_split_resume_matches_uninterrupted_and_uses_snapshots(tmp_path):
@@ -52,7 +63,7 @@ def test_exact_duplicate_cache_is_retained(tmp_path,monkeypatch):
     original=SobolStrategy.next_point
     def repeated(self):
         original(self)
-        return tuple([.5]*5)
+        return tuple([.5]*len(d.space.parameters))
     monkeypatch.setattr(SobolStrategy,'next_point',repeated)
     campaign=OptimizationCampaign(d,tmp_path/'run',evaluator=evaluator,clock=clock)
     campaign.run(100,maximum_candidates=2)
@@ -64,7 +75,7 @@ def test_incompatible_source_refuses_resume_but_remains_inspectable(tmp_path,mon
     d=definition(tmp_path); clock=Clock()
     c=OptimizationCampaign(d,tmp_path/'run',evaluator=Evaluator(clock),clock=clock)
     c.run(100,maximum_candidates=1)
-    monkeypatch.setattr('dada_solver.research.schema.runtime_identity',lambda:dict(changed=True))
+    monkeypatch.setattr('dada_solver.research.schema_v2.runtime_identity',lambda:dict(changed=True))
     with pytest.raises(ValueError,match='runtime changed'): CampaignDefinition.resume(tmp_path/'run')
     assert len(inspect(tmp_path/'run')['records'])==1
     source=tmp_path/'run'/'basis.json'; source.write_text(source.read_text()+' ')
@@ -73,10 +84,13 @@ def test_incompatible_source_refuses_resume_but_remains_inspectable(tmp_path,mon
 
 def test_cli_validation_and_no_budget_run(tmp_path,capsys,monkeypatch):
     path=tmp_path/'study.toml'
-    assert main(['init','sixbar-thermo5d','--output',str(path)])==0
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',lambda *a,**k:pytest.fail('solver called'))
+    assert main(['init','kinematics','--output',str(path)])==0
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('solver called'))
     assert main(['validate',str(path),'--json'])==0
     assert '"integration_started": false' in capsys.readouterr().out
+    # Configure an active coordinate before starting a campaign.
+    path.unlink(); path.with_suffix('.basis.json').unlink()
+    path = definition(tmp_path).study.path
     assert main(['run',str(path),'--directory',str(tmp_path/'run'),'--budget','0'])==0
     assert inspect(tmp_path/'run')['records']==[]
     assert main(['resume',str(tmp_path/'run'),'--budget','0'])==0
@@ -84,8 +98,8 @@ def test_cli_validation_and_no_budget_run(tmp_path,capsys,monkeypatch):
 
 
 def test_run_default_directory_and_resume_from_toml(tmp_path,monkeypatch,capsys):
-    path=initialize(tmp_path/'study.toml')
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',lambda *a,**k:pytest.fail('solver called'))
+    path=definition(tmp_path).study.path
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('solver called'))
     assert main(['run',str(path),'--budget','0'])==0
     campaign=tmp_path/'campaign'
     assert inspect(campaign)['records']==[]

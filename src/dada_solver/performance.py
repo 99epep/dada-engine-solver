@@ -26,7 +26,7 @@ class ConservationReport:
 
 @dataclass(frozen=True, slots=True)
 class CyclePerformance:
-    """Signed branch quantities; legacy cold/hot names mean H_i/H_o.
+    """Signed branch quantities; cold/hot fields identify H_i/H_o.
 
     Those branches stay fixed when the external reservoirs are exchanged.
     In motor operation their powers must not be interpreted as refrigeration.

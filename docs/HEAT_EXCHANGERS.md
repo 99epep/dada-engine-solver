@@ -11,9 +11,8 @@ that the thermodynamic sizing problem can constrain. It is a low-order design
 tool, not a CFD solver and not an experimental calibration.
 
 Current displays use `H_i` for the heat-in exchanger and `H_o` for the heat-out
-exchanger. The legacy `cold`/`C` and `hot`/`H` branch identifiers below are
-retained in Python and TOML for compatibility; their external reservoirs swap
-in motor operation. See [MOTOR_OPERATION.md](MOTOR_OPERATION.md).
+exchanger. The Python/TOML `cold_*` and `hot_*` fields identify these hydraulic
+branches; external reservoirs swap in motor operation. See [MOTOR_OPERATION.md](MOTOR_OPERATION.md).
 
 ## Model boundary
 

@@ -30,7 +30,7 @@ def inspect(path):
         title = artifact['name']
     else:
         definition = json.loads((path/'definition.json').read_text())
-        if definition.get('definition_kind') not in ('research_v1','research_v2','research_v3'):
+        if definition.get('definition_kind') != 'research_v3':
             raise ValueError('This report requires a Dada-Engine Research study directory.')
         study = json.loads((path/'study.json').read_text())
         if study['study_id'] != definition['study_id'] or study['definition_id'] != definition['definition_id']:
@@ -58,6 +58,8 @@ def inspect(path):
         raise ValueError('Stored definition does not match its identity.')
     if content_hash(definition['scientific']) != definition['study_id']:
         raise ValueError('Stored scientific inputs do not match their study identity.')
+    if definition['scientific'].get('schema_version') != 3:
+        raise ValueError('Research inspection requires study schema_version = 3.')
     for record in records:
         verify_record(record)
         if record['definition_id'] != definition['definition_id']:
@@ -86,11 +88,6 @@ def inspect(path):
         diagnostic = record.get('diagnostics') or {}
         topology = diagnostic.get('topology')
         record['topology_display'] = topology
-        if topology and not diagnostic.get('valve_events') and topology.get('classification') != 'unavailable':
-            # Presentation correction only: retain the original stored diagnostic.
-            record['topology_display'] = dict(classification='unavailable',
-                reasons=['legacy_record_has_no_usable_valve_event_sequence'],
-                stored_classification=topology.get('classification'))
     from .cockpit import campaign_evidence
     from .local_search import region_summary
     return dict(local_search=region_summary(records,scientific),cockpit=campaign_evidence(records, scientific, str(path), path.is_dir()),
@@ -162,7 +159,7 @@ def compare(paths, selectors=(), *, plots=None, cache_directory=None, notify=lam
             # Explicit selectors request those exact candidates, without a rerank.
             targets = selected if selectors else elite_records(selected,2)
             if not targets and len(selected)==1 and selected[0]["status"]=="feasible":
-                targets = selected  # A standalone legacy result needs no ranking.
+                targets = selected  # A standalone evaluation needs no ranking.
             if targets:
                 with stored_study(study) as snapshot:
                     for row in targets:
@@ -298,7 +295,7 @@ const fmt=v=>v===null||v===undefined?'unavailable':typeof v==='number'?Number(v.
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rows=[...new Map((d.selected||d.records).map(r=>[r.candidate_id,r])).values()];
 byId('warnings').innerHTML=d.warnings.map(w=>'<p class="warning">'+esc(w)+'</p>').join('');
-const fixed=d.scientific.fixed||d.scientific.fixed_parameters||{},cooling=d.cooling_objective;
+const fixed=d.scientific.fixed_parameters,cooling=d.cooling_objective;
 const objective=d.scientific.objective.type;
 const productivity=objective==='maximize_cooling_power_per_total_microtube';
 const composite=objective==='maximize_cooling_cop_times_power_per_total_microtube';

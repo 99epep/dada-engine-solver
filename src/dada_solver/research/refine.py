@@ -27,7 +27,7 @@ def refine(sources, selectors, radius, output):
         chosen=[d['records'][0] for d in datasets]
     chosen=list({r['candidate_id']:r for r in chosen}.values())
     with stored_study(datasets[0]) as study:
-        if study.data['schema_version'] not in (2,3): raise ValueError('Refinement requires a V2/V3 study.')
+        if study.data['schema_version'] != 3: raise ValueError('Refinement requires a schema-3 study.')
         raw=copy.deepcopy(study.data)
         if not study.space.parameters: raise ValueError('Refinement requires active ordered parameters.')
         for record in chosen: study.space.encode(record['physical'])

@@ -121,7 +121,7 @@ class TabulatedFluid:
             return rho
         raise NotImplementedError('Supply a validated P/T inversion for initial filling of this table.')
 
-    # These are compatibility properties for explicitly ideal-only diagnostics.
+    # These are ideal-reference properties for explicitly ideal-only diagnostics.
     # Access on a non-ideal table is a clear rejection, never an approximation.
     def _ideal(self):
         from .fluids import require_ideal_hydraulics

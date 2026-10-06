@@ -23,19 +23,16 @@ from dada_solver.integration import IntegrationInterrupted
 class WallThermalPoint:
     """Typed numerical facts; dictionaries are only the public rates boundary."""
     gas_heat_w: float
-    air_heat_w: float
+    external_heat_w: float
     wall_energy_rate_w: float
-    air_outlet_temperature_k: float | None
+    external_outlet_temperature_k: float | None
     wall_temperature_k: float
     film_diagnostics: tuple = ()
 
-    external_heat_w = property(lambda s: s.air_heat_w)
-    external_outlet_temperature_k = property(lambda s: s.air_outlet_temperature_k)
-
     def rates(self):
-        return dict(gas_heat_w=self.gas_heat_w, air_heat_w=self.air_heat_w,
+        return dict(gas_heat_w=self.gas_heat_w, external_heat_w=self.external_heat_w,
                     wall_energy_rate_w=self.wall_energy_rate_w,
-                    air_outlet_temperature_k=self.air_outlet_temperature_k)
+                    external_outlet_temperature_k=self.external_outlet_temperature_k)
 
 
 @dataclass(frozen=True)
@@ -65,7 +62,7 @@ class AirWallExchanger:
     def external_stream(self):
         from .external_stream import ExternalFluidStream
         return ExternalFluidStream(self.air_inlet_temperature_k, self.air_mass_flow_kg_s,
-            self.air_cp_j_kg_k, self.air_wall_conductance_w_k, 'air (legacy)')
+            self.air_cp_j_kg_k, self.air_wall_conductance_w_k, 'air')
 
     external_inlet_temperature_k = property(lambda s: s.air_inlet_temperature_k)
     external_mass_flow_kg_s = property(lambda s: s.air_mass_flow_kg_s)
@@ -96,7 +93,3 @@ class AirWallExchanger:
         return WallThermalPoint(gas_heat, air_heat, wall_rate,
             self.air_inlet_temperature_k-air_heat/capacity_rate if capacity_rate > 0 else None,
             wall_temperature, diagnostics)
-
-
-# Historical name retained for callers and stored study schemas.
-from .external_stream import ExternalStreamWallMachine as AirWallMotor

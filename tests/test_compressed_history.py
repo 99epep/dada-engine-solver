@@ -1,4 +1,4 @@
-"""Lossless member-wise journal appends, crash recovery and legacy reads."""
+"""Lossless member-wise journal appends, crash recovery."""
 import gzip
 import json
 import pytest
@@ -46,16 +46,3 @@ def test_crc_corruption_is_not_treated_as_torn_append(tmp_path,member_index):
     damaged=b''.join(members);c.history.path.write_bytes(damaged)
     with pytest.raises(ValueError,match='Corrupt compressed'): c.history.load()
     assert c.history.path.read_bytes()==damaged
-
-
-def test_existing_plain_journal_remains_append_only(tmp_path):
-    d=definition(tmp_path);directory=tmp_path/'legacy';directory.mkdir()
-    clock=Clock();OptimizationCampaign(d,directory,evaluator=Evaluator(clock),clock=clock)
-    path=directory/'history.jsonl';path.write_text('')
-    c=OptimizationCampaign(d,directory,evaluator=Evaluator(clock),clock=clock)
-    c.run(100,maximum_candidates=1);before=path.read_bytes()
-    OptimizationCampaign.resume(directory,evaluator=Evaluator(clock),clock=clock).run(100,maximum_candidates=1)
-    assert path.read_bytes().startswith(before)
-    assert len(c.history.load())==2 and not (directory/'history.jsonl.gz').exists()
-    (directory/'history.jsonl.gz').write_bytes(b'')
-    with pytest.raises(ValueError,match='Both plain and compressed'): journal_path(directory)

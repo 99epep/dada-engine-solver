@@ -12,38 +12,19 @@ from dada_solver.campaign.evaluator import MachineEvaluator, EvaluationControl
 from dada_solver.campaign.history import atomic_json
 from dada_solver.campaign.runner import OptimizationCampaign, parse_budget
 from .schema import load_study, compile_study, candidate_for_values
-from .sixbar import PARAMETERS
 from . import report
 
 
-def initialize(output):
-    output = Path(output)
-    if output.suffix != '.toml': raise ValueError('Study output must end in .toml.')
-    basis = output.with_suffix('.basis.json')
-    if output.exists() or basis.exists(): raise ValueError('Study or basis already exists; choose a new output name.')
-    resources = files('dada_solver.research').joinpath('data')
-    source = resources.joinpath('sixbar-thermo5d.toml').read_text().replace('path = "rank01_basis.json"', f'path = {json.dumps(basis.name, ensure_ascii=False)}')
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with basis.open('x') as stream: stream.write(resources.joinpath('rank01_basis.json').read_text())
-    with output.open('x') as stream: stream.write(source)
-    return output
-
-
-def evaluate(study_path, output, *, assignments=(), reference=False, budget=None):
+def evaluate(study_path, output, *, assignments=(), budget=None):
     output = Path(output)
     if output.exists(): raise ValueError('Evaluation output already exists; choose a new filename.')
     study = load_study(study_path)
     definition = compile_study(study)
     values = {p.name:p.initial for p in study.space.parameters}
-    if reference:
-        if study.data['schema_version']!=1: raise ValueError('V2 uses configured fixed/initial values; --reference is a V1 regression selector.')
-        values = {name:study.basis.data['reference_parameters'][spec[2]] for name,spec in PARAMETERS.items()}
-    aliases = {spec[2]:name for name,spec in PARAMETERS.items()}
     owned={p.name:p for p in study.space.parameters}
     assigned = set()
     for assignment in assignments:
         name, sep, value = assignment.partition('=')
-        name = aliases.get(name,name)
         if not sep or name not in owned or name in assigned:
             raise ValueError(f'Expected a unique known parameter=value, got {assignment!r}.')
         assigned.add(name)
@@ -59,7 +40,7 @@ def evaluate(study_path, output, *, assignments=(), reference=False, budget=None
         cache_hit=False, evaluation_number=0, sequence_index=None, phase_id=0)
     artifact = dict(artifact_type='research_evaluation_v1', name=study.data['study']['name'],
         definition=dict(definition.identity, definition_id=definition.definition_id), record=record,
-        selection='reference_with_explicit_overrides' if reference else 'configured_initial_values_with_explicit_overrides')
+        selection='configured_initial_values_with_explicit_overrides')
     output.parent.mkdir(parents=True, exist_ok=True)
     atomic_json(output, artifact)
     return record
@@ -69,7 +50,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     init = commands.add_parser('init', help='Create an editable study and its portable basis')
-    init.add_argument('preset', choices=['sixbar-thermo5d','kinematics','structured-c2-3952','external-stream-refrigeration','external-stream-motor'])
+    init.add_argument('preset', choices=['kinematics','external-stream-refrigeration','external-stream-motor'])
     from .families import FAMILIES
     init.add_argument('--small',choices=FAMILIES,default='harmonic')
     init.add_argument('--large',choices=FAMILIES,default='harmonic')
@@ -90,7 +71,6 @@ def main(argv=None):
     single = commands.add_parser('evaluate', help='Evaluate one exact configuration without a search')
     single.add_argument('study', type=Path)
     single.add_argument('--output', required=True, type=Path)
-    single.add_argument('--reference', action='store_true', help='Start from the stored regression candidate instead of TOML initials')
     single.add_argument('--set', action='append', default=[], metavar='PARAMETER=VALUE')
     single.add_argument('--budget')
     refinement = commands.add_parser('refine', help='Create a portable center-first local Sobol study')
@@ -116,31 +96,24 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'init':
-            if args.preset=='sixbar-thermo5d':
-                if (args.small,args.large,args.coupling)!=('harmonic','harmonic','independent'):
-                    raise ValueError('Use the kinematics preset to choose cylinder families.')
-                path = initialize(args.output)
-            elif args.preset.startswith('external-stream-'):
+            if args.preset.startswith('external-stream-'):
                 from .presets import initialize_v3
                 path=initialize_v3(args.output,args.small,args.large,mode=args.preset.removeprefix('external-stream-'))
             else:
                 from .presets import initialize_v2
-                path=initialize_v2(args.output,args.small,args.large,coupling=args.coupling,champion=args.preset=='structured-c2-3952')
+                path=initialize_v2(args.output,args.small,args.large,coupling=args.coupling)
             print(f'Created {path} and {path.with_suffix(".basis.json")}. Next: dada-research validate {path}')
         elif args.command == 'validate':
             study = load_study(args.study)
             definition = compile_study(study)
             validation = dict(valid=True, study_id=study.study_id, protocol=study.data['study']['protocol'],
-                fixed=getattr(study,'fixed_parameters',study.data.get('fixed',{})), parameters=study.data['parameters'], backend=definition.numerical_settings['wall_backend'],
+                fixed=study.fixed_parameters, parameters=study.data['parameters'], backend=definition.numerical_settings['wall_backend'],
                 integration_started=False)
             if args.json:
                 print(json.dumps(validation, indent=2))
             else:
                 print(f"Valid study: {study.data['study']['name']}\nStudy: {study.study_id}")
-                if study.data['schema_version']==1:
-                    print(f"Fixed six-bar pair; air inlets {study.data['fixed']['cold_air_inlet_K']} / {study.data['fixed']['hot_air_inlet_K']} K; no integration started.")
-                else:
-                    print(f"Families: {study.settings['small']['family']} / {study.settings['large']['family']}; {len(study.space.parameters)} active coordinates; no integration started.")
+                print(f"Families: {study.settings['small']['family']} / {study.settings['large']['family']}; {len(study.space.parameters)} active coordinates; no integration started.")
                 for p in study.data['parameters']:
                     description=f"fixed {p['value']}" if 'value' in p else f"choices {p['choices']}; initial {p['initial']}" if p.get('kind')=='choice' else f"{p['lower']} .. {p['upper']}; initial {p['initial']}"
                     print(f"  {p['name']} [{p['unit']}]: {description}")
@@ -161,12 +134,11 @@ def main(argv=None):
                 if not args.directory.is_dir():
                     raise ValueError(f'Campaign directory not found: {args.directory}. Start it with run STUDY.toml first, or provide an existing campaign directory.')
                 definition = CampaignDefinition.resume(args.directory)
-                if not hasattr(definition,'study'): raise ValueError('Use dada-optimize to resume a legacy campaign.')
+                if not hasattr(definition,'study'): raise ValueError('Use dada-optimize to resume an optimization campaign.')
                 campaign = OptimizationCampaign(definition,args.directory)
             budget = parse_budget(args.budget or definition.study.data['execution']['default_budget'])
             from .progress import CLIProgress
-            # Retire the historical 16-attempt Research default without editing snapshots.
-            limit = 512 if args.max_candidates is None and definition.maximum_candidates == 16 else args.max_candidates
+            limit = args.max_candidates
             with CLIProgress(scientific=definition.study.scientific) as progress:
                 campaign.run(budget, maximum_candidates=limit, progress_callback=progress,
                              retry_incomplete=getattr(args,'retry_incomplete',False))
@@ -179,7 +151,7 @@ def main(argv=None):
             path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)
             print(f'Created {path} and {path.with_suffix(".basis.json")}. Constraints remain unchanged; evaluate to verify scaling.')
         elif args.command == 'evaluate':
-            record = evaluate(args.study, args.output, assignments=args.set, reference=args.reference, budget=args.budget)
+            record = evaluate(args.study, args.output, assignments=args.set, budget=args.budget)
             print(f"{record['candidate_id']} {record['status']}; saved {args.output}")
             print(json.dumps(record['metrics'],indent=2))
         else:

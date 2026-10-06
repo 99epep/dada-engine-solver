@@ -189,7 +189,8 @@ class CompiledWallRHS:
     def __init__(self,wrapper,dispatcher,profile=False):
         from dada_solver.dynamics import ThermodynamicModel
         from dada_solver.fluids import CaloricallyPerfectGas
-        from dada_solver.exchangers.air_wall import AirWallMotor,AirWallExchanger
+        from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
+        from dada_solver.exchangers.air_wall import AirWallExchanger
         from dada_solver.exchangers.external_stream import ExternalStreamWallExchanger
         from dada_solver.exchangers.hardware import TubeHalfLink
         from dada_solver.exchangers.gas_transport import DiluteGasTransport
@@ -205,7 +206,7 @@ class CompiledWallRHS:
         if self.table is not None and self.table.ideal_reference is None:
             raise TypeError('No compiled hydraulic kernel is validated for this non-ideal table.')
         hydraulic_gas = require_ideal_hydraulics(model.gas)
-        if (type(wrapper) is not AirWallMotor or type(model) is not ThermodynamicModel or
+        if (type(wrapper) is not ExternalStreamWallMachine or type(model) is not ThermodynamicModel or
                 type(hydraulic_gas) is not CaloricallyPerfectGas or not model.continuous_ideal_diodes):
             raise TypeError('Compiled backend requires the built-in ideal-diode air-wall model.')
         def checked(gas_model):

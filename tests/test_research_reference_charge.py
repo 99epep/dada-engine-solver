@@ -145,7 +145,7 @@ def test_inventory_reaches_evaluator_and_report(configured, monkeypatch, warm):
         if warm: np.testing.assert_allclose(state[:8],old[:8]/4,rtol=2e-15)
         return SimpleNamespace(status='interrupted',message='bounded test',history=(),
             last_complete_state=None,converged=False,backend_statistics={})
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',solve)
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',solve)
     result=MachineEvaluator(definition).evaluate_with_control(candidate_for_values(definition,{}),
         EvaluationControl(previous_records=previous))
     assert result['derived']['charge']==d.charge_diagnostics
@@ -204,7 +204,7 @@ def test_derived_policy_rescale_keeps_mass_derived(configured,monkeypatch,tmp_pa
     from dada_solver.research.rescale import rescale
     from dada_solver.research.report import inspect,render_html
     path,raw=configured; study=write(path,raw)
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',lambda *a,**k:
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',lambda *a,**k:
         SimpleNamespace(status='interrupted',message='bounded test',history=(),
                         last_complete_state=None,converged=False,backend_statistics={}))
     output=tmp_path/'evaluation.json'; record=evaluate(path,output)

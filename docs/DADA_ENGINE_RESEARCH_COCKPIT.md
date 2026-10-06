@@ -143,10 +143,8 @@ last gzip member can be preserved as `history_torn_tail_*.bin` and truncated bac
 to the last complete member. CRC corruption of a complete member is an error,
 not an interrupted append; non-final corruption is not silently repaired.
 
-Legacy `history.jsonl` and `candidates/*.json` remain readable/recoverable.
-An existing plain journal continues in plain format; there is no automatic
-migration or deletion. Simultaneous `history.jsonl` and `history.jsonl.gz` files
-are rejected as ambiguous history.
+Campaign persistence requires `history.jsonl.gz` and the single `recovery.json`
+completion slot. Plain journals and per-candidate recovery layouts are rejected.
 
 Interruptions preserve pending work for controlled resume. `--retry-incomplete`
 explicitly retries unresolved deadline-limited work. Execution compatibility is

@@ -5,7 +5,7 @@ import pytest
 from dada_solver.exchangers.wall_iteration import (
     MassConservingCoordinates, PeriodicMapPair, AndersonAccelerationSettings,
     anderson_proposal, MASS_INDICES, AdaptiveWallAccelerationSettings)
-from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor,WallCycleNumericalSettings
+from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine,WallCycleNumericalSettings
 from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
 from dada_solver.integration import IntegrationInterrupted
 
@@ -50,7 +50,7 @@ class LinearWrapper:
 
 
 def solve(w,acceleration=None,budget=300,callback=None):
-    return solve_periodic_wall_motor(w,w.c.reconstruct(np.linspace(.1,-.1,9)),maximum_cycles=budget,
+    return solve_periodic_wall_machine(w,w.c.reconstruct(np.linspace(.1,-.1,9)),maximum_cycles=budget,
         settings=WallCycleNumericalSettings(accelerate_walls=False),anderson_acceleration=acceleration,
         cycle_callback=callback)
 
@@ -126,7 +126,7 @@ def test_last_budget_and_mutually_exclusive_modes():
     assert r.anderson_statistics['proposal_count']==0
     np.testing.assert_array_equal(r.last_complete_state,w.ends[-1])
     with pytest.raises(ValueError,match='mutually exclusive'):
-        solve_periodic_wall_motor(w,ANCHOR,maximum_cycles=2,
+        solve_periodic_wall_machine(w,ANCHOR,maximum_cycles=2,
             adaptive_acceleration=AdaptiveWallAccelerationSettings(),anderson_acceleration=AndersonAccelerationSettings())
 
 
@@ -158,7 +158,7 @@ def test_fixed_wall_extrapolation_is_suppressed():
     a=LinearWrapper();b=LinearWrapper();initial=a.c.reconstruct(np.linspace(.1,-.1,9))
     settings=AndersonAccelerationSettings(memory=4,damping=1)
     x=solve(a,settings)
-    y=solve_periodic_wall_motor(b,initial,maximum_cycles=300,
+    y=solve_periodic_wall_machine(b,initial,maximum_cycles=300,
         settings=WallCycleNumericalSettings(accelerate_walls=True),anderson_acceleration=settings)
     assert x.history==y.history
     np.testing.assert_array_equal(x.last_complete_state,y.last_complete_state)

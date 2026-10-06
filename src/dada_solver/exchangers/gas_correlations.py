@@ -153,7 +153,7 @@ class MicrotubeFlowDiagnostics:
 
 @dataclass(frozen=True)
 class MicrotubeGasModel:
-    """Production internal-gas settings; None in HardwareInputs selects legacy.
+    """Production internal-gas settings; None in HardwareInputs selects constant-property screening.
 
     Domain policy 'report' explicitly permits exploratory extrapolation while
     retaining an INVALID verdict. The default rejects unsupported closures.

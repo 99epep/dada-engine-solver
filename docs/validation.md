@@ -22,9 +22,9 @@ use frozen CoolProp oracle data and do not require CoolProp at runtime.
 | Conservative equations | Ideal-state reconstruction, closed adiabatic `P V^gamma`, donor outflow relation, internal mass/enthalpy cancellation, integrated mass/energy residuals |
 | Integration and valves | Event-state continuity, passive directionality, hysteresis where supported, periodic endpoints, refinement and interruption |
 | Kinematics/mechanisms | Dense-grid volumes/derivatives, branch/closure diagnostics, family parity and scale conventions; `tests/test_research_kinematics_v2.py`, `tests/test_research_v2_thermodynamics.py` |
-| Microtube geometry | Derived pitch/sections, circular-frustum hold-up, legacy compatibility, no double-counting; `tests/test_microtube_circular.py`, `tests/test_microtube_geometry.py` |
+| Microtube geometry | Derived pitch/sections, circular-frustum hold-up, square/triangular packing, no double-counting; `tests/test_microtube_circular.py`, `tests/test_microtube_geometry.py` |
 | Transport/correlations | Temperature domains, frozen oracle, transition boundaries, Mach/pressure-drop/Kn guards; [microtube evidence](EXCHANGER_VALIDATION.md) |
-| External thermal boundary | Signed wall/stream balance, refrigeration performance and legacy air parity; `tests/test_external_stream_v3.py` |
+| External thermal boundary | Signed wall/stream balance, refrigeration performance and air/stream parity; `tests/test_external_stream_v3.py` |
 | Compiled execution | RHS parity, actual backend/fallback, exact-angle reuse and replay; [numerical execution](SOLVER_PERFORMANCE.md) |
 | Campaign/reports | IDs, cache, recovery, torn tails, Sobol/local resume, constraints, historical inspection and plotting; Research/campaign tests |
 

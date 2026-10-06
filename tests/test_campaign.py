@@ -130,9 +130,6 @@ def test_duplicate_cache_uses_preexisting_exact_candidate(tmp_path,definition):
     # Isolated fixture journal: this is not a production history rewrite.
     import gzip
     history.path.write_bytes(gzip.compress((json.dumps(record)+'\n').encode(),mtime=0))
-    for p in (tmp_path/'candidates').glob('*.json'): p.unlink()
-    (tmp_path/'candidates').mkdir(exist_ok=True)
-    atomic_json(tmp_path/'candidates'/f'{candidate.candidate_id}.json',record)
     resumed=Evaluator(clock)
     result=OptimizationCampaign.resume(tmp_path,evaluator=resumed,clock=clock).run(100,maximum_candidates=1)
     assert not resumed.calls
@@ -275,10 +272,10 @@ def test_microtube_adapter_keeps_geometry_derived():
 
 def test_four_bar_family_adapter(definition):
     from dada_solver.campaign.adapters import FamilyDesignAdapter, PreflightRejection
-    from dada_solver.four_bar import FourBarKinematics
+    from dada_solver.four_bar import SharedCrankFourBarVolumeKinematics
     adapter=FamilyDesignAdapter(definition.configuration,{'kinematics':'four_bar','exchanger':'reservoir'}, {})
     design=adapter.build({'four_bar.crank_ratio':.4})
-    assert isinstance(design.kinematics,FourBarKinematics)
+    assert isinstance(design.kinematics,SharedCrankFourBarVolumeKinematics)
     with pytest.raises(PreflightRejection) as error:adapter.build({'four_bar.crank_ratio':-1})
     assert error.value.status=='invalid_kinematics'
 
@@ -324,8 +321,8 @@ def test_microtube_campaign_builds_dynamic_wall_and_snapshots_hardware(tmp_path)
     definition=CampaignDefinition(campaign_file(tmp_path / 'inputs', microtube=True))
     physical=definition.space.decode(definition.space.initial_coordinates)
     design=definition.adapter.build(physical)
-    from dada_solver.exchangers.air_wall import AirWallMotor
-    assert isinstance(design.build(),AirWallMotor)
+    from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
+    assert isinstance(design.build(),ExternalStreamWallMachine)
     changed=dict(physical);changed['microtube.heat_in.tube_length_m']*=1.05
     assert definition.adapter.build(changed).heat_in.build().gas_volume_m3 != design.heat_in.build().gas_volume_m3
     OptimizationCampaign(definition,tmp_path,evaluator=Evaluator(Clock()))
@@ -384,7 +381,7 @@ def test_deadline_control_uses_injected_clock_and_grace(tmp_path,definition):
 
 
 def test_wall_solver_retains_only_last_complete_cycle_on_interrupt():
-    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor
+    from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine
     from dada_solver.integration import IntegrationInterrupted
     class Wrapper:
         heat_in=type('Heat',(),{'wall_capacity_j_k':1})()
@@ -396,7 +393,7 @@ def test_wall_solver_retains_only_last_complete_cycle_on_interrupt():
             trajectory=np.zeros((15,2));trajectory[:10,0]=state
             trajectory[:10,1]=np.asarray(state)+1
             return np.array([0.,2*np.pi]),trajectory
-    result=solve_periodic_wall_motor(Wrapper(),np.ones(10),maximum_cycles=5)
+    result=solve_periodic_wall_machine(Wrapper(),np.ones(10),maximum_cycles=5)
     assert result.status=='interrupted' and len(result.history)==1
     assert result.last_complete_state==pytest.approx(np.full(10,2.))
 

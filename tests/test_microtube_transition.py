@@ -78,7 +78,7 @@ def test_other_guards_remain():
     with pytest.raises(MicrotubeDomainError): MODEL.require(diagnostic(3000,p1=1.5e6))
     assert numeric.thermal_kind(3000,.7) == 3
     assert not numeric.laminar_diagnostics(3000*BANK.tube_flow_area_m2*MODEL.transport.viscosity(350)/BANK.inner_diameter_m,1e6,1e6,350,.00077,.8,
-        BANK.tube_flow_area_m2,.3,.2,True,0)[0]  # The legacy laminar-only diagnostic remains available.
+        BANK.tube_flow_area_m2,.3,.2,True,0)[0]  # The laminar-only diagnostic rejects transition states.
 
 
 def test_cycle_transition_weights():

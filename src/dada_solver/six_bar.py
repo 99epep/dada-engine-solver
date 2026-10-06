@@ -5,10 +5,8 @@ extra cylinder phase, or motor-direction reversal is inferred here.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
-import json
+from dataclasses import dataclass, fields, field
 import math
-from pathlib import Path
 
 import numpy as np
 from scipy.optimize import brentq
@@ -217,35 +215,3 @@ class IndependentSixBarVolumeKinematics:
         s, ds = self._volume(self.small, self.small_volume_limits, theta)
         l, dl = self._volume(self.large, self.large_volume_limits, theta)
         return s, l, ds, dl
-
-
-def load_six_bar_mechanism(path: str | Path, *, restart: int | None = None,
-                           second_branch: int | None = None) -> SixBarCylinderMechanism:
-    """Select a Stage 2F/L1 global best or one explicit restart/branch pair.
-
-    Stored primary and secondary branches are used verbatim. A requested
-    candidate that is missing is an error, never a fallback to another winner.
-    """
-    data = json.loads(Path(path).read_text())
-    if data.get('length_unit') != 'crank_radius':
-        raise ValueError('Six-bar synthesis lengths must use crank_radius units.')
-    if (restart is None) != (second_branch is None):
-        raise ValueError('Specify both restart and second_branch, or neither.')
-    if restart is None:
-        candidate = data.get('best')
-    else:
-        matches = [r for r in data.get('runs', []) if r.get('restart') == restart
-                   and r.get('second_branch') == second_branch]
-        if len(matches) != 1:
-            raise ValueError('Requested six-bar restart/branch is absent or ambiguous.')
-        candidate = matches[0].get('best_dense')
-    if not candidate or candidate.get('feasible') is not True:
-        raise ValueError('Selected six-bar candidate is missing or infeasible.')
-    parameters = {key.lower(): value for key, value in candidate['parameters'].items()}
-    names = [f.name for f in fields(SixBarCylinderMechanism)
-             if f.init and f.name not in ('primary_branch', 'second_branch')]
-    return SixBarCylinderMechanism(
-        **{name: float(parameters[name]) for name in names},
-        primary_branch=candidate['primary']['assembly_branch'],
-        second_branch=candidate['second_branch'],
-    )

@@ -29,8 +29,6 @@ def test_non_positive_effective_area_is_rejected() -> None:
 
 def test_validity_thresholds_are_explicit_and_positive() -> None:
     thresholds = ValidityThresholds(
-        maximum_pressure_equalization_error=0.05,
-        maximum_mach_number=0.2,
         maximum_compressibility_deviation=0.01,
         maximum_cp_variation=0.02,
     )

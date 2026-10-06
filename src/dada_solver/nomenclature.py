@@ -1,10 +1,8 @@
-"""Study names for display; legacy Python/TOML identifiers remain readable."""
+"""Display names for the current hydraulic port identifiers."""
 
 
 def study_name(identifier: str) -> str:
     return {
-        "C": "H_i",
-        "H": "H_o",
         "small_to_cold": "S_to_H_i",
         "large_to_hot": "L_to_H_o",
         "cold_to_large": "H_i_to_L",

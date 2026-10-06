@@ -14,9 +14,8 @@ reductions in the study are analytical references only.
 
 The eight gas states are `(m_S,U_S,m_L,U_L,m_Hi,U_Hi,m_Ho,U_Ho)`.
 Dynamic-wall models add two wall energies. Heat/work quadratures are accounting
-variables, not additional physical storage states. Legacy C/cold and H/hot
-names remain readable; they identify branches, not necessarily external cold/hot
-reservoirs in both operating modes.
+variables, not additional physical storage states. H_i/H_o identify the heat-input
+and heat-output branches, independently of reservoir temperature ordering.
 
 Branch circulation is S → H_i → L → H_o → S. Each exchanger may place its
 passive valve upstream or downstream; the other half-link is bidirectional.
@@ -152,8 +151,7 @@ remain approximation checks. Constant Cp and Z=1 yielding zero deviations do
 not independently validate real air at every state.
 
 Pressure inequality remains a diagnostic, never a thermodynamic-validity veto.
-Legacy pressure-equalization and Mach configuration keys load as ignored
-compatibility inputs. Historical saved verdicts are not
+Historical saved verdicts are not
 rewritten; changed source identity prevents unsafe resume/cache reuse.
 
 ## Inventory, periodic convergence and diagnostics

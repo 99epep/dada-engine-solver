@@ -34,10 +34,10 @@ def _base_configuration():
 def _diagnostics() -> CycleDiagnostics:
     return CycleDiagnostics(
         pressure_extrema={
-            name: Extrema(1.0e5, 1.2e5) for name in ("S", "L", "C", "H")
+            name: Extrema(1.0e5, 1.2e5) for name in ("S", "L", "H_i", "H_o")
         },
         temperature_extrema={
-            name: Extrema(280.0, 300.0) for name in ("S", "L", "C", "H")
+            name: Extrema(280.0, 300.0) for name in ("S", "L", "H_i", "H_o")
         },
         mass_flow_extrema={
             "small_to_cold": Extrema(-5.0e-5, 1.0e-4),

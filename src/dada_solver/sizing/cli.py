@@ -106,7 +106,7 @@ def main(arguments: list[str] | None = None) -> int:
                 validity_text = "unavailable" if validity is None else validity.verdict.value
                 cold_minimum = (
                     "unavailable" if diagnostics is None
-                    else f"{diagnostics.temperature_extrema['C'].minimum:.12e}"
+                    else f"{diagnostics.temperature_extrema['H_i'].minimum:.12e}"
                 )
                 maximum_temperature = (
                     "unavailable" if diagnostics is None

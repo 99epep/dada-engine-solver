@@ -28,12 +28,13 @@ def atomic_text(path, text):
 
 
 def journal_path(directory):
-    """Existing plain journals keep their format; new journals use gzip members."""
-    directory=Path(directory)
-    plain=directory/'history.jsonl'; compressed=directory/'history.jsonl.gz'
-    if plain.exists() and compressed.exists():
-        raise ValueError('Both plain and compressed journals exist; refusing an ambiguous history.')
-    return plain if plain.exists() else compressed
+    """Use the compressed journal; reject unsupported persistence layouts."""
+    directory = Path(directory)
+    if (directory / 'history.jsonl').exists():
+        raise ValueError('Uncompressed campaign journals are unsupported.')
+    if any((directory / 'candidates').glob('*.json')):
+        raise ValueError('Per-candidate recovery files are unsupported.')
+    return directory / 'history.jsonl.gz'
 
 
 def read_journal(path):
@@ -43,19 +44,10 @@ def read_journal(path):
     interrupted writes. Only an incomplete final member may be recovered.
     """
     path=Path(path)
+    if path.suffix != '.gz':
+        raise ValueError('Campaign journals must use the compressed format.')
     data=path.read_bytes() if path.exists() else b''
     records=[];offset=0
-    if path.suffix!='.gz':
-        for line in data.splitlines(keepends=True):
-            try:
-                record=json.loads(line)
-                if not line.endswith(b'\n'): raise ValueError('Incomplete final journal line.')
-            except (ValueError,UnicodeDecodeError):
-                if offset+len(line)!=len(data):
-                    raise ValueError('Corrupt non-final history record; manual recovery is required.')
-                return records,data,offset
-            records.append(record);offset+=len(line)
-        return records,data,None
     while offset<len(data):
         start=offset;decoder=zlib.decompressobj(31);chunks=[]
         while offset<len(data) and not decoder.eof:
@@ -156,10 +148,10 @@ def verify_record(record):
 
 
 def recovery_records(directory):
-    """Read the single completion slot and legacy files without modifying either."""
+    """Read the single durable completion slot without modifying it."""
     directory = Path(directory)
     recovery = directory/'recovery.json'
-    paths = ([recovery] if recovery.exists() else []) + sorted((directory/'candidates').glob('*.json'))
+    paths = [recovery] if recovery.exists() else []
     for path in paths:
         try: text = path.read_text()
         except FileNotFoundError:

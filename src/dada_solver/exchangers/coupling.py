@@ -220,14 +220,14 @@ class CoupledExchangerSizer:
             cold_point = conservative_port_flow_operating_point(
                 diagnostics,
                 ExchangerSide.COLD,
-                representative_pressure=diagnostics.pressure_extrema["C"].minimum,
-                representative_temperature=diagnostics.temperature_extrema["C"].maximum,
+                representative_pressure=diagnostics.pressure_extrema["H_i"].minimum,
+                representative_temperature=diagnostics.temperature_extrema["H_i"].maximum,
             )
             hot_point = conservative_port_flow_operating_point(
                 diagnostics,
                 ExchangerSide.HOT,
-                representative_pressure=diagnostics.pressure_extrema["H"].minimum,
-                representative_temperature=diagnostics.temperature_extrema["H"].maximum,
+                representative_pressure=diagnostics.pressure_extrema["H_o"].minimum,
+                representative_temperature=diagnostics.temperature_extrema["H_o"].maximum,
             )
             flows = (cold_point.absolute_mass_flow_rate, hot_point.absolute_mass_flow_rate)
             flow_change = math.inf

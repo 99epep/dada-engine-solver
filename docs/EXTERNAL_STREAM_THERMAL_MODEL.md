@@ -80,16 +80,15 @@ research evaluate outputs/my_cooling/study.toml --output outputs/my_cooling/refe
 research report outputs/my_cooling/reference.json --html outputs/my_cooling/report.html
 ```
 
-`external-stream-motor` is also available. Both presets accept V2 `--small` and
+`external-stream-motor` is also available. Both presets accept `--small` and
 `--large` families, including `structured_c2_15p`. The preset is a small thermal
 boundary validation fixture, not a human-cell design. The harmonic refrigerator
 uses 0.2 Hz, 30% clearance ratios, 278.15/298.15 K streams, declared Cp 4180
 J/(kg K), 0.05 kg/s and 150 W/K on each side. The increased clearances keep the
-startup compression/expansion inside the existing gas-transport domain. The historical higher-compression preliminary fixture failed the then-active
-200 K transport limit. Current species-dependent domains are documented in the
+startup compression/expansion inside the existing gas-transport domain. Current species-dependent domains are documented in the
 [microtube reference](MICROTUBE_GAS_MODEL.md); this fixture is not a domain definition.
 
-Schema 3 reuses schema 2 ownership, adapters, candidates, history, exact caches,
+Schema 3 defines parameter ownership, adapters, candidates, history, exact caches,
 Sobol and reporting. Its portable `.basis.json` defines exchangers with
 `family = "external_stream_wall"` and `inputs.external_stream`. Operation is
 selected by the existing signed `configuration.angular_speed`; an active
@@ -135,20 +134,13 @@ rate, conductance, external cycle heat and average power. Refrigeration tables
 make cooling power, indicated input and COP visible. Constraint margins remain
 explicit. The cockpit separates stored scientific evidence from deterministic inspection/continuation actions.
 
-## Compatibility and evidence
+## Verification
 
-`AirWallExchanger` retains its constructor, dataclass fields, rate dictionary
-keys and historical equations. Read-only neutral properties bridge old inputs.
-`AirWallMotor` aliases `ExternalStreamWallMachine`;
-`solve_periodic_wall_motor` remains available alongside
-`solve_periodic_wall_machine`. Historical report keys remain readable. Schema 1
-and 2 still serialize their original scientific inputs; schema 3 names its new
-physical family explicitly. Old histories are never rewritten. Source/runtime
-changes intentionally prevent execution resume; offline inspection still works.
-
-The frozen local pre-V3 source trajectory is in
-`tests/data/pre_v3_air_wall.json`, generated from the committed pre-V3 source,
-not a post-refactor result. Regression checks cover rates, wall states, outlets,
-cycle trajectories and boundary work/heat. The existing stored rank01 test also
-checks periodic convergence, efficiency and heat/work at its original tight
-numerical tolerances.
+`AirWallExchanger` describes the explicitly declared air-film model;
+`ExternalStreamWallExchanger` describes the generic external stream.
+Both expose neutral external heat/outlet diagnostics to
+`ExternalStreamWallMachine` and `solve_periodic_wall_machine`.
+`tests/test_external_stream_v3.py` verifies their instantaneous thermal parity,
+finite-capacity boundaries and signed conservative accounting.
+Source/runtime changes prevent incompatible execution resume; stored results are
+not rewritten.

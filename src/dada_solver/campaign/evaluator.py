@@ -7,10 +7,10 @@ from types import SimpleNamespace
 import numpy as np
 
 from dada_solver.campaign.adapters import PreflightRejection
-from dada_solver.exchangers.air_wall import AirWallMotor
+from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
 from dada_solver.exchangers.gas_transport import TransportDomainError
 from dada_solver.exchangers.wall_cycle import (WallDiagnosticCycle,
-    convergence_summary, solve_periodic_wall_motor, wall_cycle_performance)
+    convergence_summary, solve_periodic_wall_machine, wall_cycle_performance)
 from dada_solver.factory import build_initial_state, initial_valve_topology
 from dada_solver.integration import IntegrationInterrupted
 from dada_solver.kinematics import KinematicConstraintViolation
@@ -180,14 +180,14 @@ class MachineEvaluator:
             return rejected('invalid_kinematics', str(error), [asdict(d) for d in error.diagnostics])
         except TransportDomainError: raise
         except (ValueError, ArithmeticError) as error: return rejected('invalid_exchanger', str(error))
-        model = built.model if isinstance(built, AirWallMotor) else built
+        model = built.model if isinstance(built, ExternalStreamWallMachine) else built
         derived = dict(small_volume_limits=asdict(model.machine_volumes.small_cylinder),
             large_volume_limits=asdict(model.machine_volumes.large_cylinder),
             heat_in_gas_volume_m3=model.machine_volumes.cold_heat_exchanger,
             heat_out_gas_volume_m3=model.machine_volumes.hot_heat_exchanger,
             small_physical_stroke_m=model.kinematics.small_physical_stroke,
             large_physical_stroke_m=model.kinematics.large_physical_stroke)
-        if isinstance(built, AirWallMotor):
+        if isinstance(built, ExternalStreamWallMachine):
             from dada_solver.exchangers.microtube_geometry import MicrotubeBank
             banks = [getattr(x, 'bank', None) for x in (design.heat_in, design.heat_out)]
             if all(isinstance(bank, MicrotubeBank) for bank in banks):
@@ -203,7 +203,7 @@ class MachineEvaluator:
         kinematic_metrics=getattr(design.kinematics,'mechanical_metrics',())
         if kinematic_metrics:
             derived['kinematic_metrics']=list(kinematic_metrics)
-        if isinstance(built, AirWallMotor):
+        if isinstance(built, ExternalStreamWallMachine):
             result=self._wall(candidate, design, built, derived, direction, control)
         else:
             result=self._reservoir(candidate, design, built, derived, direction, control)
@@ -307,7 +307,7 @@ class MachineEvaluator:
             if record['phase']=='rhs_backend': backend_last.update(record)
             if control.statistics_callback is not None: control.statistics_callback(record)
         def solve(initial):
-            return control.measure('periodic_integration', solve_periodic_wall_motor, wrapper, initial,
+            return control.measure('periodic_integration', solve_periodic_wall_machine, wrapper, initial,
                 maximum_cycles=design.configuration.numerical.maximum_cycles,
                 progress_callback=control.check,
                 settings=self.definition.wall_numerical_settings,
@@ -438,7 +438,7 @@ class MachineEvaluator:
                         capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
                         air[side] = dict(peak_internal_mass_flow_kg_s=peak,
                             external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
-                            maximum_external_air_temperature_change_k=max(abs(s.walls[i].air_heat_w)/capacity for s in replay.samples),
+                            maximum_external_air_temperature_change_k=max(abs(s.walls[i].external_heat_w)/capacity for s in replay.samples),
                             scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
                     result['derived']['external_air_capacity_diagnostics'] = air
                 result['derived']['local_reflux'] = dict(
@@ -505,7 +505,7 @@ class MachineEvaluator:
                 heat_out_w=p.heat_out_power, indicated_thermal_efficiency=p.thermal_efficiency,
                 useful_mechanical_power_w=None, mechanical_losses='unknown', conservation=asdict(p.conservation),
                 validity=json_values(asdict(evaluation.validity)))
-            if getattr(self.definition,'identity',{}).get('definition_kind') in ('research_v2','research_v3'):
+            if getattr(self.definition,'identity',{}).get('definition_kind') == 'research_v3':
                 from dada_solver.research.schema_v2 import COOLING_OBJECTIVES
                 cooling=self.definition.objective.name in COOLING_OBJECTIVES
                 metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,

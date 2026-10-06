@@ -137,7 +137,7 @@ class ThermodynamicFluid(Protocol):
 
 
 def require_ideal_hydraulics(fluid):
-    """Guard every historical ideal-density/constant-gamma hydraulic closure.
+    """Guard every ideal-density/constant-gamma hydraulic closure.
 
     The only additional accepted model is a table verified against a declared
     calorically perfect reference. A table's label alone is never sufficient.

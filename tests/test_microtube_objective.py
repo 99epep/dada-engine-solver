@@ -78,7 +78,7 @@ def test_composite_score_objective_unavailability_and_ranking():
     ranked = elite_records([
         score('A', 1.5, 0.40),
         score('B', 2.2, 0.30),
-        score('C', 3.0, 0.15),
+        score('H_i', 3.0, 0.15),
     ])
     assert ranked[0]['candidate_id'] == 'B'
 
@@ -179,16 +179,16 @@ def test_report_and_progress_cooling_classification(tmp_path):
     assert 'COP×Qcold/microtube=3.0 W/microtube' in report.text_report(data)
 
 
-def test_offline_legacy_metric_uses_fixed_and_active_without_replay(tmp_path, monkeypatch):
+def test_offline_metric_uses_fixed_and_active_without_replay(tmp_path, monkeypatch):
     import json
     path = initialize_v3(tmp_path/'study.toml')
     definition = compile_study(load_study(path))
-    # No search is needed to inspect an old standalone evaluation artifact.
+    # No search is needed to inspect a standalone evaluation artifact.
     candidate = candidate_for_values(definition, {})
     record = dict(candidate.payload, candidate_id=candidate.candidate_id,
                   evaluation_number=0, status='feasible', objective=dict(name='maximize_cooling_cop', value=-2., available=True),
                   constraints=[], metrics=dict(cooling_power_w=450., cooling_cop=2.), derived={})
-    artifact = dict(artifact_type='research_evaluation_v1', name='Legacy',
+    artifact = dict(artifact_type='research_evaluation_v1', name='Standalone evaluation',
                     definition=dict(definition.identity, definition_id=definition.definition_id), record=record)
     source = tmp_path/'evaluation.json'
     source.write_text(json.dumps(artifact))

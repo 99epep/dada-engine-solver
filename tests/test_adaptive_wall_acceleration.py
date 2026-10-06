@@ -6,7 +6,7 @@ import pytest
 
 from dada_solver.exchangers.wall_iteration import (
     AdaptiveWallAccelerationSettings, adaptive_wall_proposal)
-from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor, WallCycleNumericalSettings
+from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine, WallCycleNumericalSettings
 from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
 from dada_solver.integration import IntegrationInterrupted
 
@@ -80,7 +80,7 @@ class ContractingWrapper:
 
 
 def solve(wrapper,maximum_cycles=30,**kwargs):
-    return solve_periodic_wall_motor(wrapper,np.r_[np.ones(8),100,100],maximum_cycles=maximum_cycles,
+    return solve_periodic_wall_machine(wrapper,np.r_[np.ones(8),100,100],maximum_cycles=maximum_cycles,
         settings=WallCycleNumericalSettings(accelerate_walls=True),
         adaptive_acceleration=AdaptiveWallAccelerationSettings(),**kwargs)
 

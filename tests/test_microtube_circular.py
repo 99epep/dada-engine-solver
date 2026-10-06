@@ -131,7 +131,7 @@ def test_parameter_bounds_and_identity(tmp_path):
     with pytest.raises(ValueError,match='between 0 and 90'):load_study(path)
 
 
-def test_external_stream_legacy_cda_is_ignored_and_reported(tmp_path):
+def test_external_stream_supplied_cda_is_replaced_and_reported(tmp_path):
     path=circular_study(tmp_path/'study.toml')
     d=compile_study(load_study(path));design=d.adapter.build(d.fixed_parameters)
     gas=design.configuration.gas

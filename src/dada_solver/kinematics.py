@@ -58,10 +58,6 @@ class SmoothKinematicsModel(KinematicsModel, Protocol):
     def large_cylinder_volume_second_derivative(self, theta: float) -> float: ...
 
 
-# Backward-compatible public name.
-VolumeKinematics = KinematicsModel
-
-
 @dataclass(frozen=True, slots=True)
 class ReversedVolumeKinematics:
     """Evaluate V(-phi), with increasing cycle progress phi = |omega| t.
@@ -70,7 +66,7 @@ class ReversedVolumeKinematics:
     positions are transformed as well as volumes; time never runs backwards.
     """
 
-    forward: VolumeKinematics
+    forward: KinematicsModel
 
     def small_cylinder_volume(self, theta: float) -> float:
         return self.forward.small_cylinder_volume(-theta)

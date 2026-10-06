@@ -22,7 +22,7 @@ def test_bennett_author_octave_reference(row):
     assert n.bennett_mean_nusselt(1000,pr,1/(1000*pr*z))==pytest.approx(row['nusselt'],rel=3e-14)
 
 
-def test_limits_and_old_entry_boundary():
+def test_limits_and_entry_boundary():
     assert n.bennett_mean_nusselt(0,.7,1)==3.66
     assert n.bennett_mean_nusselt(1000,.7,1e-12)==pytest.approx(3.66,rel=1e-10)
     assert n.bennett_mean_nusselt(1000,.7,.1)>n.bennett_mean_nusselt(1000,.7,.01)>3.66
@@ -122,7 +122,7 @@ def test_developing_full_rhs_without_fallback(hi,ho):
     w=replace(w,model=m,heat_in=wall(w.heat_in),heat_out=wall(w.heat_out))
     rhs=WallRHS(w,WallBackendSettings('numba'))
     for delta in (-.0001,.0001):
-        x=values(w,pressure=1e6);x[:2]*=1+delta
+        x=values(w,pressure=1e6);x[4:6]*=1+delta
         expected=w.derivative(0.,x)
         ds=[d for wall,context in zip((w.heat_in,w.heat_out),w.flow_contexts(0.,x))
             for d in wall.gas_film.evaluate(350.,350.,context)[1]]

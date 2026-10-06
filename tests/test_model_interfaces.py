@@ -1,3 +1,4 @@
+from tests.synthetic_machine import connect_microtube_machine
 """Interchangeability and regression checks at construction boundaries."""
 from tests.synthetic_machine import configuration as synthetic_configuration
 from dataclasses import dataclass, replace
@@ -7,11 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 from dada_solver.factory import build_model, build_initial_state, initial_valve_topology
-from dada_solver.four_bar import FourBarKinematics, shared_crank_rocker_kinematics
+from dada_solver.four_bar import SharedCrankFourBarVolumeKinematics, shared_crank_rocker_kinematics
 from dada_solver.kinematics import KinematicsModel
 from dada_solver.exchangers.base import ExchangerComponents, ExchangerModel, connect_exchangers
 from dada_solver.exchangers.microtube import MicrotubeExchanger
-from dada_solver.exchangers.hardware import build_exchanger, connect_hardware
+from dada_solver.exchangers.hardware import build_exchanger
 from dada_solver.heat_transfer import ReservoirHeatTransfer
 from dada_solver.hydraulics import CompressibleOrifice
 from dada_solver.state import ThermodynamicState
@@ -23,21 +24,21 @@ def config():
     return synthetic_configuration('shared_crank_rocker', motor=True)
 
 
-def test_four_bar_protocol_matches_legacy_trajectory_and_branches():
+def test_four_bar_protocol_matches_builder_trajectory_and_branches():
     c = config()
-    legacy = shared_crank_rocker_kinematics(c.shared_four_bar_design,
+    reference = shared_crank_rocker_kinematics(c.shared_four_bar_design,
         c.machine_volumes.small_cylinder, c.machine_volumes.large_cylinder,
         ground_distance=c.four_bar_ground_distance,
         crank_angle_offset=math.radians(c.four_bar_crank_angle_offset_degrees),
         crank_direction=-c.four_bar_crank_direction)
     current = build_model(c).kinematics
-    assert isinstance(current, FourBarKinematics)
+    assert isinstance(current, SharedCrankFourBarVolumeKinematics)
     assert isinstance(current, KinematicsModel)
     for theta in np.linspace(-2*math.pi, 4*math.pi, 361):
         np.testing.assert_array_equal(current.cylinder_volumes_and_derivatives(theta),
-                                      legacy.cylinder_volumes_and_derivatives(theta))
-        assert current.slider_states(theta) == legacy.slider_states(theta)
-    assert current.small_physical_stroke == legacy.small_physical_stroke
+                                      reference.cylinder_volumes_and_derivatives(theta))
+        assert current.slider_states(theta) == reference.slider_states(theta)
+    assert current.small_physical_stroke == reference.small_physical_stroke
 
 
 @dataclass(frozen=True)
@@ -73,7 +74,7 @@ class NonlinearTestWall:
     def rates(self, gas_temperature_k, wall_energy_j):
         difference = wall_energy_j/self.wall_capacity_j_k-gas_temperature_k
         gas_heat = .001*difference**3
-        return dict(gas_heat_w=gas_heat, air_heat_w=0., wall_energy_rate_w=-gas_heat)
+        return dict(gas_heat_w=gas_heat, external_heat_w=0., wall_energy_rate_w=-gas_heat)
 
 
 @dataclass(frozen=True)
@@ -97,7 +98,7 @@ def test_microtube_connector_and_dynamic_rhs_preserve_previous_equations():
     from tests.synthetic_machine import hardware
     bank, hi = hardware()
     ho = replace(hi, air_inlet_temperature_k=300.)
-    wrapper, report = connect_hardware(base, bank, bank, hi, ho,
+    wrapper, report = connect_microtube_machine(base, bank, bank, hi, ho,
         heat_in_valve_cda_m2=c.hydraulics.cold_to_large_valve_cda,
         heat_out_valve_cda_m2=c.hydraulics.hot_to_small_valve_cda)
     thermal, original_report = build_exchanger(bank, hi)

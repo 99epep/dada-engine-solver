@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dada_solver.research.schema_v2 import POLICIES, POLICIES_V3
+from dada_solver.research.schema_v2 import POLICIES_V3
 from dada_solver.research.charge import POLICY as CHARGE_POLICY, METHOD as CHARGE_METHOD
 from dada_solver.research.margins import PHYSICAL_CONSTRAINTS
 from dada_solver.campaign.parameters import ContinuousParameter, IntegerParameter, ChoiceParameter
@@ -24,13 +24,13 @@ def test_reference_has_current_role():
 
 def test_supported_schema_generations_are_documented():
     content = text()
-    for version in (1, 2, 3):
-        assert f"schema {version}" in content.lower() or f"schema-{version}" in content.lower()
+    assert "`schema_version = 3`" in content
+    assert "performs no automatic schema conversion" in content
 
 
 def test_current_policy_values_are_documented():
     content = text()
-    for value in set(POLICIES.values()) | set(POLICIES_V3.values()):
+    for value in set(POLICIES_V3.values()):
         assert f"`{value}`" in content
     assert f"`{CHARGE_POLICY}`" in content
     assert f"`{CHARGE_METHOD}`" in content

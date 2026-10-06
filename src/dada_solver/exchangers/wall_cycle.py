@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import numpy as np
 
 from dada_solver.dynamics import ValveTopology
-from dada_solver.exchangers.air_wall import AirWallMotor
+from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
 from dada_solver.integration import IntegrationInterrupted
 from dada_solver.wall_backend import WallBackendSettings, WallRHS
 from dada_solver.performance import ConservationReport, CyclePerformance, OperatingMode
@@ -58,7 +58,7 @@ class WallCycleResult:
         return self.status == 'converged'
 
 
-def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_cycles,
+def solve_periodic_wall_machine(wrapper: ExternalStreamWallMachine, initial_state, *, maximum_cycles,
         progress_callback=None, settings=WallCycleNumericalSettings(), cycle_callback=None,
         statistics_callback=None, measure_rhs_time=False,
         adaptive_acceleration=None, backend=WallBackendSettings(), exact_kinematics_cache=True,
@@ -85,7 +85,7 @@ def solve_periodic_wall_motor(wrapper: AirWallMotor, initial_state, *, maximum_c
         raise TypeError('Expected WallBackendSettings.')
     from dada_solver.kinematics_cache import prepare_exact_kinematics, ExactAngleKinematics
     cache = None
-    if exact_kinematics_cache and isinstance(wrapper, AirWallMotor):
+    if exact_kinematics_cache and isinstance(wrapper, ExternalStreamWallMachine):
         prepared = prepare_exact_kinematics(wrapper.model.kinematics)
         if isinstance(prepared, ExactAngleKinematics):
             cache = prepared
@@ -336,6 +336,3 @@ def convergence_summary(history):
         last_normalized_periodic_error=errors[-1] if errors else None,
         normalized_periodic_error_ratio=(errors[-1]/errors[0] if errors and errors[0] else None),
         improving=bool(len(errors) >= 2 and errors[-1] < errors[0]), history=list(history))
-
-# Neutral entry point; the historical name remains import-compatible.
-solve_periodic_wall_machine = solve_periodic_wall_motor

@@ -1,4 +1,4 @@
-"""Bounded, named campaign coordinates independent of the legacy sizing enum."""
+"""Bounded, named campaign coordinates independent of the sizing enum."""
 from dataclasses import dataclass
 import math
 

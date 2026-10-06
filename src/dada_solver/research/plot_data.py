@@ -97,12 +97,12 @@ def replay_thermal(study, record, *, notify=lambda message: None):
             from dada_solver.integration import IntegrationInterrupted
             raise IntegrationInterrupted('Report replay budget exhausted.')
     notify(f"Thermodynamic replay {record['candidate_id'][:12]}: one cycle from the saved periodic state (no optimization).")
-    from dada_solver.exchangers.air_wall import AirWallMotor
-    if isinstance(built,AirWallMotor):
+    from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
+    if isinstance(built,ExternalStreamWallMachine):
         if state.shape != (10,): raise ValueError('Expected a saved ten-state wall cycle.')
-        from dada_solver.exchangers.wall_cycle import solve_periodic_wall_motor,WallDiagnosticCycle
+        from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine,WallDiagnosticCycle
         from dada_solver.diagnostic_replay import replay_wall_trajectory
-        replay = solve_periodic_wall_motor(built,state,maximum_cycles=1,progress_callback=check,
+        replay = solve_periodic_wall_machine(built,state,maximum_cycles=1,progress_callback=check,
             settings=replace(definition.wall_numerical_settings,accelerate_walls=False),backend=definition.wall_backend)
         if replay.trajectory is None: raise ValueError(f'Report cycle unavailable: {replay.message}')
         cycle = WallDiagnosticCycle(replay.angles,replay.trajectory)

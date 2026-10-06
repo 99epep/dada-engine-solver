@@ -77,7 +77,7 @@ class CampaignDefinition:
             from dada_solver.exchangers.wall_iteration import AdaptiveWallAccelerationSettings
             self.adaptive_wall_acceleration = AdaptiveWallAccelerationSettings(**adaptive)
             # Opt-in numerical policy is part of exact campaign/cache identity.
-            # Omitted settings preserve the historical identity schema.
+            # Absent opt-in settings do not add identity fields.
             self.numerical_settings['adaptive_wall_acceleration'] = asdict(self.adaptive_wall_acceleration)
         self.free_settings = raw.get('free', {})
         self.fixed_parameters = dict(raw.get('fixed_parameters', {}))
@@ -109,8 +109,7 @@ class CampaignDefinition:
                 FreeMotionDefinition.from_shape_coordinates(self.free_settings[side+'_coordinates'],
                     limits.minimum, limits.maximum, **self.free_settings.get(side+'_limits', {}))
         self.objective = _load_objective(raw['objective'])
-        self.constraints = tuple(_load_constraint(x, None) for x in raw.get('constraints', [])
-            if x.get('type') != 'maximum_pressure_equalization_error')
+        self.constraints = tuple(_load_constraint(x, None) for x in raw.get('constraints', []))
         if len({x.name for x in self.constraints}) != len(self.constraints):
             raise ValueError('Constraint names must be unique.')
         self.adapter = FamilyDesignAdapter(self.configuration, self.families, self.free_settings,
@@ -140,7 +139,9 @@ class CampaignDefinition:
     def resume(cls, directory):
         directory = Path(directory)
         recorded = json.loads((directory/'definition.json').read_text())
-        if recorded.get('definition_kind') in ('research_v1','research_v2','research_v3'):
+        if recorded.get('definition_kind') is not None and recorded['definition_kind'] != 'research_v3':
+            raise ValueError('Research resume requires the current research_v3 definition.')
+        if recorded.get('definition_kind') == 'research_v3':
             from dada_solver.research.schema import load_study, compile_study
             definition = compile_study(load_study(directory/'study.toml', basis_path=directory/'basis.json',artifact_directory=directory))
             if recorded['definition_id'] != definition.definition_id:

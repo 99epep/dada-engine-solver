@@ -9,7 +9,7 @@ DOC = Path(__file__).resolve().parents[1] / 'docs/DADA_ENGINE_RESEARCH_CAPACITY.
 def test_capacity_role_and_current_contract():
     text = DOC.read_text()
     assert text.startswith('# Capacity scaling')
-    for token in ('V2/V3', 'local_regions_v1', 'strictly positive',
+    for token in ('schema-3', 'local_regions_v1', 'strictly positive',
                   'Constraints remain unchanged', 'ties to even', "N' L' = s N L", 'fixed_global_bounds',
                   'not geometric similarity', 'Factor `1`', 'new scientific identity'):
         assert token in text

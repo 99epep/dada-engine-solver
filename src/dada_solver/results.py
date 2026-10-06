@@ -112,7 +112,7 @@ def extract_cycle_diagnostics(
             cold_heat_rates[index], hot_heat_rates[index] = heat_rate_provider(
                 index, float(angle), state)
 
-    names = ("S", "L", "C", "H")
+    names = ("S", "L", "H_i", "H_o")
     flow_names = ("large_to_hot", "small_to_cold", "hot_to_small", "cold_to_large")
     event_diagnostics = []
     for event in cycle.events:

@@ -30,8 +30,8 @@ def test_guide_preserves_report_anchor_and_reference_ownership():
 def test_guide_has_no_historical_dependencies_or_legacy_workflow():
     text = DOC.read_text(encoding="utf-8")
     for token in (
-        "../outputs/", "examples/", "Historical V1 walkthrough",
-        "research init sixbar-thermo5d", "research init structured-c2-3952",
+        "../outputs/", "examples/", "Historical V1 walkthrough", "sixbar-thermo5d",
+        "research init structured-c2-3952",
         "candidate 3952", "candidate 501", "research_kinematics_v2/comparison",
         "DADA_ENGINE_RESEARCH_MIGRATION_MATRIX.md",
     ):

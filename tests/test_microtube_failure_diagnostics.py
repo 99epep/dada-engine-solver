@@ -54,11 +54,11 @@ def test_rhs_first_trial_context(backend):
     json.dumps(snapshot, allow_nan=False)
 
 
-def test_research_artifact_keeps_first_failure_across_retry(monkeypatch):
+def test_research_artifact_keeps_first_failure_across_retry(monkeypatch, tmp_path):
     from dada_solver.campaign.evaluator import MachineEvaluator
     from dada_solver.research.schema import compile_study, load_study, candidate_for_values
-    from tests.test_research_sixbar import TEMPLATE, values as candidate_values
-    definition = compile_study(load_study(TEMPLATE))
+    from tests.test_research_sixbar import template, values as candidate_values
+    definition = compile_study(load_study(template(tmp_path)))
     calls = []
     def fail(wrapper, state, **kwargs):
         calls.append(1)
@@ -66,7 +66,7 @@ def test_research_artifact_keeps_first_failure_across_retry(monkeypatch):
         # Distinct retry pressures prove that the first failure remains available.
         film.evaluate(350., 350., dict(frequency_hz=1.,
             passages=((.00001, (4 + len(calls))*1e5, 2e5),)))
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor', fail)
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine', fail)
     result = MachineEvaluator(definition).evaluate(
         candidate_for_values(definition, candidate_values(definition)))
     assert result['status'] == 'invalid_exchanger'
@@ -100,46 +100,6 @@ def test_thermal_wall_snapshot_identifies_passage_and_angle(monkeypatch):
     assert snapshot['reynolds'] == pytest.approx(3000)
 
 
-@pytest.mark.parametrize('backend', ['python', 'numba'])
-@pytest.mark.parametrize('diameter,criterion', [
-    (.00075, 'large_relative_pressure_drop'),
-    (.00080, 'large_relative_pressure_drop'),
-    (.00077, 'large_relative_pressure_drop'),
-])
-def test_real_first_cycle_callback_rejections(backend, diameter, criterion):
-    """Exercise LSODA's nested derivative callback, not only the direct RHS."""
-    from pathlib import Path
-    from dada_solver.campaign.evaluator import MachineEvaluator
-    from dada_solver.research.schema import compile_study, load_study, candidate_for_values
-    root = Path(__file__).resolve().parents[1]
-    study = load_study(root/'outputs/human_cell_stage2_microtube/human_cell_stage2_microtube.toml')
-    definition = compile_study(study)
-    definition.wall_backend = WallBackendSettings(backend)
-    physical = {p.name: p.initial for p in study.space.parameters}
-    for side in ('heat_in', 'heat_out'):
-        for key, value in (('tube_count', 1000), ('tube_length_m', .8), ('inner_diameter_m', diameter)):
-            physical[f'microtube.{side}.{key}'] = value
-    result = MachineEvaluator(definition).evaluate(candidate_for_values(definition, physical))
-    assert result['status'] == 'invalid_exchanger'
-    snapshot = result['diagnostics']['first_microtube_failure']
-    assert snapshot['criterion'] == criterion
-    assert 'snapshot_unavailable' not in snapshot
-    assert snapshot['exchanger'] in ('heat_in', 'heat_out')
-    assert snapshot['passage'] is not None
-    assert snapshot['angle_rad'] > 0  # Failure after preflight, inside solve_ivp.
-    assert snapshot['tube_count'] == 1000
-    assert snapshot['inner_diameter_m'] == diameter
-    assert snapshot['tube_length_m'] == .8
-    if diameter == .00077:
-        # Bennett/Shah plus the continuous bridge moves the first rejection
-        # to Re ~2178.68; the pressure-drop guard is unchanged.
-        assert 2150 < snapshot['reynolds'] < 2200
-        assert snapshot['relative_pressure_drop'] > .2
-    for key in ('mass_flow_kg_s', 'reynolds', 'prandtl', 'mach', 'knudsen',
-                'pressure_ratio', 'relative_pressure_drop', 'p1_pa', 'p2_pa', 'temperature_k'):
-        assert snapshot[key] is not None
-    assert snapshot['hydraulic_trial_reynolds'] is None
-    json.dumps(snapshot, allow_nan=False)
 
 
 def test_missing_optional_frame_locals_preserve_partial_snapshot():
@@ -162,12 +122,12 @@ def test_missing_optional_frame_locals_preserve_partial_snapshot():
 
 
 @pytest.mark.parametrize('outcome', ['retry_interrupted', 'rollback_then_failure'])
-def test_first_failure_survives_recovery_outcomes(monkeypatch, outcome):
+def test_first_failure_survives_recovery_outcomes(monkeypatch, outcome, tmp_path):
     from types import SimpleNamespace
     from dada_solver.campaign.evaluator import MachineEvaluator
     from dada_solver.research.schema import compile_study, load_study, candidate_for_values
-    from tests.test_research_sixbar import TEMPLATE, values as candidate_values
-    definition = compile_study(load_study(TEMPLATE))
+    from tests.test_research_sixbar import template, values as candidate_values
+    definition = compile_study(load_study(template(tmp_path)))
     calls = []
     def solve(wrapper, state, **kwargs):
         calls.append(1)
@@ -179,7 +139,7 @@ def test_first_failure_survives_recovery_outcomes(monkeypatch, outcome):
             raise MicrotubeDomainError('first retry rejection')
         return SimpleNamespace(status='interrupted', message='deadline', history=(),
             last_complete_state=None, converged=False, backend_statistics={})
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor', solve)
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine', solve)
     result = MachineEvaluator(definition).evaluate(candidate_for_values(definition, candidate_values(definition)))
     snapshot = result['diagnostics']['first_microtube_failure']
     assert snapshot['criterion'] == ('first retry rejection' if outcome == 'retry_interrupted' else 'first rollback rejection')

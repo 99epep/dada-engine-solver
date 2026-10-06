@@ -12,7 +12,7 @@ class MachineDesign:
 
     Injected kinematics uses study angle, before the single operation reversal.
     If absent, configuration selects kinematics as before. With exchanger designs,
-    their derived closures replace the legacy configuration's exchanger seeds.
+    their derived closures replace the configuration's exchanger seeds.
     Campaigns must vary the designs, not those superseded seed quantities.
     """
     configuration: SimulationConfiguration

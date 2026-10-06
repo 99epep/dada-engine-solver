@@ -38,7 +38,7 @@ def flow_case(re, species='air', cda_ratio=0., header=0.):
         extra=numeric.shah_entry_excess(bank.tube_length_m/(2*d*2300))*d/(bank.tube_length_m/2)
         f=numeric.transition_friction(re,1.,extra)
     cda = area*cda_ratio
-    # Invert tube + header + optional legacy valve losses at mean ideal density.
+    # Invert tube + header + optional finite-CdA valve losses at mean ideal density.
     coefficient = f*(bank.tube_length_m/2)/d/(2*area**2) + header/(4*area**2)
     if cda: coefficient += 1/(2*cda**2)
     pout = 1e7
@@ -69,7 +69,7 @@ def test_compiled_flow_and_film_endpoints(compiled, re, species):
 
 
 @pytest.mark.parametrize('header,cda',[(0.,0.),(1.2,0.),(1.2,1.),(3.,.7)])
-def test_header_and_legacy_valve_losses(compiled, header, cda):
+def test_header_and_finite_cda_valve_losses(compiled, header, cda):
     fn,_=compiled
     _,_,gas,link,p,pin,pout,t,_=flow_case(3000.,cda_ratio=cda,header=header)
     ok, actual = fn(pin,pout,t,p,gas.gas_constant,gas.heat_capacity_ratio)
@@ -101,7 +101,7 @@ def test_full_rhs_placements_without_python(compiled, hi, ho, tabulated):
     rhs=WallRHS(w,WallBackendSettings('numba'))
     exercised=False
     for delta in np.linspace(.001,.2,60):
-        x=values(w,pressure=1e6);x[:2]*=1+delta
+        x=values(w,pressure=1e6);x[4:6]*=1-delta
         try: expected=w.derivative(0.,x)
         except MicrotubeDomainError:continue
         contexts=w.flow_contexts(0.,x)

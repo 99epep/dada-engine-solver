@@ -67,14 +67,15 @@ def load_sizing_problem(path: str | Path) -> LoadedSizingProblem:
         objective = _load_objective(data["objective"])
         constraints = tuple(
             _load_constraint(item, scenario) for item in data.get("constraints", [])
-            if item.get("type") != "maximum_pressure_equalization_error"
         )
         optimizer = data["optimizer"]
         scales = {
             str(name): float(value)
             for name, value in optimizer["constraint_scales"].items()
-            if name != "maximum_pressure_equalization_error"
         }
+        unknown_scales = set(scales) - {constraint.name for constraint in constraints}
+        if unknown_scales:
+            raise ValueError(f"Unknown constraint scales: {sorted(unknown_scales)}.")
         settings = OptimizationSettings(
             objective_scale=float(optimizer["objective_scale"]),
             constraint_scales=scales,

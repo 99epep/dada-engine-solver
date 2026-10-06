@@ -8,7 +8,7 @@ from dataclasses import dataclass, replace
 import math
 import tomllib
 
-from dada_solver.exchangers.air_wall import AirWallExchanger, AirWallMotor
+from dada_solver.exchangers.air_wall import AirWallExchanger
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.hydraulics import CompressibleOrifice, FlowResult
 from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError, compressible_poiseuille, darcy_smooth, transition_darcy
@@ -35,7 +35,7 @@ def load_hardware_definition(source: str, gas_heat_capacity_cp: float):
         from dada_solver.exchangers.gas_correlations import GasSurfaceAccommodation, SecondOrderSlip
         settings = dict(data['gas_model'])
         mode = settings.pop('mode', 'variable_properties')
-        if mode != 'variable_properties': raise ValueError('gas_model.mode must be variable_properties; omit the section for legacy.')
+        if mode != 'variable_properties': raise ValueError('gas_model.mode must be variable_properties; omit the section for constant-property screening.')
         transport = DiluteGasTransport(settings.pop('species', 'air'),
             **{name:settings.pop(name) for name in ('minimum_temperature','maximum_temperature','correlation_version') if name in settings})
         accommodation = GasSurfaceAccommodation(**settings.pop('accommodation', {}))
@@ -96,7 +96,7 @@ class TubeHalfLink:
 
         Each link owns its physical axial half and half the total header K.
         Shah entrance excess uses the local mean density, once per tube, and
-        is not multiplied by the historical core-loss multiplier. Slip retains
+        is not multiplied by the core-loss multiplier. Slip retains
         its existing fully developed hydraulic closure (thermal slip unsupported).
         The minor-loss terms
         remain mean-density closures, explicitly separate from tube friction.
@@ -178,7 +178,7 @@ class HardwareInputs:
     def __post_init__(self):
         nonnegative = {'extra_wall_capacity_j_k', 'air_minor_loss_coefficient', 'header_loss_coefficient'}
         if self.gas_model is not None and not isinstance(self.gas_model, MicrotubeGasModel):
-            raise ValueError('gas_model must be MicrotubeGasModel or None (legacy).')
+            raise ValueError('gas_model must be MicrotubeGasModel or None (constant-property screening).')
         for key, value in vars(self).items():
             if key == 'gas_model': continue
             if not math.isfinite(value) or (value < 0 if key in nonnegative else value <= 0):
@@ -220,20 +220,6 @@ def build_exchanger(bank: MicrotubeBank, inputs: HardwareInputs):
         fan_electrical_power_w=pressure_drop*inputs.air_mass_flow_kg_s/inputs.air_density_kg_m3/inputs.fan_total_efficiency,
         assumptions='constant_properties_and_Nusselt; equivalent_laminar_air_passage; not_Doty_calibrated')
     if inputs.gas_model is not None:
-        report['assumptions'] = 'variable_internal_transport; quasi_steady_gas_film; lumped_wall; legacy_external_air_film; not_Doty_calibrated'
-        report['static_conductance_role'] = 'Legacy reference only; dynamic internal conductance comes from instantaneous flow'
+        report['assumptions'] = 'variable_internal_transport; quasi_steady_gas_film; lumped_wall; declared_external_air_film; not_Doty_calibrated'
+        report['static_conductance_role'] = 'Static screening reference; dynamic internal conductance comes from instantaneous flow'
     return exchanger, report
-
-
-def connect_hardware(model, heat_in_bank, heat_out_bank, heat_in_inputs, heat_out_inputs, *, heat_in_valve_cda_m2, heat_out_valve_cda_m2):
-    # Compatibility constructor; geometry-specific assembly stays at this boundary.
-    from dada_solver.exchangers.microtube import MicrotubeExchanger
-    from dada_solver.exchangers.base import connect_exchangers
-    incoming = MicrotubeExchanger(heat_in_bank, heat_in_inputs, heat_in_valve_cda_m2,
-        getattr(model, 'heat_in_valve_placement', 'downstream'))
-    outgoing = MicrotubeExchanger(heat_out_bank, heat_out_inputs, heat_out_valve_cda_m2,
-        getattr(model, 'heat_out_valve_placement', 'downstream'))
-    hi_report = dict(incoming.build().metadata)
-    ho_report = dict(outgoing.build().metadata)
-    return connect_exchangers(model, incoming, outgoing), dict(H_i=hi_report, H_o=ho_report,
-        total_fan_electrical_power_w=hi_report['fan_electrical_power_w']+ho_report['fan_electrical_power_w'])

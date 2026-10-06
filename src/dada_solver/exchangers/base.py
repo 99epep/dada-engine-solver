@@ -10,7 +10,7 @@ class LumpedWallThermalModel(Protocol):
     """Optional one-wall-energy capability of the current dynamic integrator.
 
     Rates are heat into gas, heat from external source, and wall energy change
-    in W. The legacy air_heat_w key denotes external-source heat, not a required
+    in W. The external_heat_w key denotes external-source heat, not a required
     external fluid. Models with more storage states need a later integrator.
     """
     wall_capacity_j_k: float
@@ -64,8 +64,8 @@ def connect_exchangers(model, heat_in: ExchangerModel, heat_out: ExchangerModel)
         cold_large_valve=replace(model.cold_large_valve, flow_model=incoming.outlet),
         hot_small_valve=replace(model.hot_small_valve, flow_model=outgoing.outlet))
     if incoming.wall_thermal is not None and outgoing.wall_thermal is not None:
-        from dada_solver.exchangers.air_wall import AirWallMotor
-        return AirWallMotor(changed, incoming.wall_thermal, outgoing.wall_thermal)
+        from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
+        return ExternalStreamWallMachine(changed, incoming.wall_thermal, outgoing.wall_thermal)
     if incoming.heat_transfer is not None and outgoing.heat_transfer is not None:
         return replace(changed, cold_heat_transfer=incoming.heat_transfer,
                        hot_heat_transfer=outgoing.heat_transfer)

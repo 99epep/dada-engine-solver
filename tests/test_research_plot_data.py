@@ -56,7 +56,7 @@ def test_default_targets_best_two_and_explicit_escapes_html_cap(tmp_path,monkeyp
 
 def test_missing_state_is_explained_without_integration(tmp_path,monkeypatch):
     study=load_study(initialize_v3(tmp_path/'study.toml'))
-    monkeypatch.setattr('dada_solver.exchangers.wall_cycle.solve_periodic_wall_motor',lambda *a,**k:pytest.fail('integration'))
+    monkeypatch.setattr('dada_solver.exchangers.wall_cycle.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('integration'))
     row={'candidate_id':'a'*64,'physical':{}}
     result=candidate_plots(study,row,('pressures',))
     assert 'No saved final periodic state' in result['pressures']['unavailable']

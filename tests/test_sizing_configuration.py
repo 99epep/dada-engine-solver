@@ -5,7 +5,7 @@ from dada_solver.sizing.design import DesignParameter
 from dada_solver.sizing.objectives import MinimizeTotalSweptVolume
 
 
-def test_sizing_configuration_resolves_relative_base_and_ignores_pressure_veto(tmp_path):
+def test_sizing_configuration_resolves_relative_base(tmp_path):
     base = tmp_path / "machine.toml"
     base.write_bytes((Path(__file__).parent / "data" / "sizing_machine.toml").read_bytes())
     path = tmp_path / "sizing.toml"
@@ -21,9 +21,6 @@ type = "minimize_total_swept_volume"
 [[constraints]]
 type = "maximum_pressure"
 limit = 200000.0
-[[constraints]]
-type = "maximum_pressure_equalization_error"
-limit = 0.01
 [optimizer]
 objective_scale = 0.001
 unavailable_objective_penalty = 1000.0
@@ -32,7 +29,6 @@ maximum_iterations = 5
 function_tolerance = 0.000001
 [optimizer.constraint_scales]
 maximum_pressure = 100000.0
-maximum_pressure_equalization_error = 0.01
 ''')
 
     loaded = load_sizing_problem(path)

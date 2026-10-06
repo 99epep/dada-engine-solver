@@ -1,7 +1,7 @@
 """Structured C2 15-coordinate law and its validated scalar polynomial path.
 
 Extracted from the source16 fitting and thermodynamic 260 K lineage.
-The historical motor-time definition maps to study angle t = -theta/(2*pi).
+The motor-time definition maps to study angle t = -theta/(2*pi).
 """
 import math
 import numpy as np
@@ -251,7 +251,7 @@ class _FastPPoly:
 
 
 class StructuredKinematics15:
-    """Solver-compatible adapter around StructuredMotion15.
+    """Solver adapter around StructuredMotion15.
 
     Vector paths use the validated BPoly representation.
     Scalar RHS paths use preconverted power-basis polynomials and manual Horner

@@ -138,7 +138,7 @@ def test_mechanical_preflight_records_margin_before_integration(tmp_path,monkeyp
     path=initialize_v2(tmp_path/'study.toml','slider_crank','harmonic');raw=tomllib.loads(path.read_text())
     row=activate(raw,'kinematics.small.rod_over_crank',.1);row['lower']=.5
     study=rewrite(path,raw);d=compile_study(study)
-    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_motor',lambda *a,**k:pytest.fail('integration must not start'))
+    monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('integration must not start'))
     result=MachineEvaluator(d).evaluate(candidate_for_values(d,{'kinematics.small.rod_over_crank':.5}))
     assert result['status']=='invalid_kinematics' and not result['integrated']
     assert any(c['name']=='small.geometry' and c['state']=='violated' for c in result['constraints'])
@@ -177,7 +177,7 @@ def test_cli_all_fixed_is_evaluation_not_search(path,tmp_path,monkeypatch,capsys
     assert error.value.code==2
     assert 'No active parameters' in capsys.readouterr().err
     assert not (tmp_path/'run').exists()
-    with pytest.raises(ValueError,match='V1'):evaluate(path,tmp_path/'bad.json',reference=True)
+    with pytest.raises(TypeError):evaluate(path,tmp_path/'bad.json',reference=True)
 
 
 def test_reports_show_constraint_evidence_without_solver(path,tmp_path,monkeypatch):

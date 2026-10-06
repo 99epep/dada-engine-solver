@@ -58,7 +58,7 @@ def enrich_constraints(records, declarations):
             entry=margin_record(row['name'],value,limit,relation,unit)
         elif not field:
             entry=margin_record(row['name'],row['satisfied'] if available else None,True,'equal','1',method='categorical verdict')
-            # Preserve historical categorical +/-1 convention, never pretend SI margin.
+            # Preserve categorical +/-1 margin convention, never pretend SI margin.
             entry['margin']=margin
         else:
             entry=margin_record(row['name'],None,limit,relation,unit)
@@ -102,7 +102,7 @@ def limiting_evidence(record, scientific):
     failure=(record.get('diagnostics') or {}).get('first_microtube_failure')
     # A retained first trial is history, not a boundary of a recovered cycle.
     # A retry can also fail for a different reason; do not attribute that final
-    # outcome to the first snapshot. Legacy rejection records may omit reason.
+    # outcome to the first snapshot. Partial rejection records may omit reason.
     reason=record.get('reason') or ''
     same_cause=bool(failure) and (not reason or any(
         issue.strip() in reason for issue in (failure.get('criterion') or '').split(';') if issue.strip()))

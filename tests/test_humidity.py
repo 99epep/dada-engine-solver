@@ -37,9 +37,9 @@ def test_static_cycle_below_dew_point_reports_phase_change_risk(
     # 50% RH has an unchanged water mole fraction above saturation at 300 K.
     assert report.verdict is MoistureScreeningVerdict.CONDENSATION_OR_FROST_RISK
     assert report.initial_water_mole_fraction is not None
-    assert math.isfinite(report.control_volumes["C"].maximum_saturation_ratio)
-    assert report.control_volumes["C"].first_saturated_angle_degrees is not None
-    assert report.control_volumes["C"].first_predicted_phase == "liquid_condensation"
+    assert math.isfinite(report.control_volumes["H_i"].maximum_saturation_ratio)
+    assert report.control_volumes["H_i"].first_saturated_angle_degrees is not None
+    assert report.control_volumes["H_i"].first_predicted_phase == "liquid_condensation"
 
 
 def test_missing_humidity_is_reported_as_unavailable(

@@ -577,7 +577,7 @@ def published_f65_opposed_kinematics(
     crank_direction: int = 1,
     extrema_scan_count: int = 721,
 ) -> SharedCrankFourBarVolumeKinematics:
-    """Build the historically opposed F65 pair with parallel slider axes.
+    """Build the opposed F65 pair with parallel slider axes.
 
     The four-bar ratios and coupler point are published. The ground distance,
     finite-rod ratio, and centering of each slider axis are explicit modelling
@@ -723,4 +723,3 @@ def slider_rod_sensitivity(
 
 
 # Family-facing name; retain the original concrete type for animation/sizing.
-FourBarKinematics = SharedCrankFourBarVolumeKinematics

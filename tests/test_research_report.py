@@ -1,5 +1,6 @@
 """Reports remain offline, escaped and read-only even with interrupted journals."""
 import json
+import gzip
 
 import pytest
 
@@ -46,7 +47,11 @@ def test_report_escapes_labels_and_preserves_missing_values(tmp_path):
 def test_changed_study_comparison_has_no_combined_ranking(tmp_path):
     d=definition(tmp_path); clock=Clock()
     a=OptimizationCampaign(d,tmp_path/'a',evaluator=Evaluator(clock),clock=clock); a.run(100,maximum_candidates=1)
-    source=tmp_path/'study.toml'; source.write_text(source.read_text().replace('required_power = 25.0','required_power = 30.0'))
+    source=tmp_path/'study.toml'
+    from dada_solver.research.study_io import dumps
+    raw=d.study.data
+    raw['objective']=dict(type='maximize_motor_power', unit='W')
+    source.write_text(dumps(raw))
     from dada_solver.research.schema import compile_study,load_study
     b=OptimizationCampaign(compile_study(load_study(source)),tmp_path/'b',evaluator=Evaluator(clock),clock=clock); b.run(100,maximum_candidates=1)
     data=compare([tmp_path/'a',tmp_path/'b'])
@@ -59,7 +64,7 @@ def test_inspection_rejects_corrupted_scientific_identity(tmp_path):
     c=OptimizationCampaign(d,tmp_path/'run',evaluator=Evaluator(clock),clock=clock)
     c.run(100,maximum_candidates=1)
     path=tmp_path/'run'/'definition.json'
-    raw=json.loads(path.read_text()); raw['scientific']['fixed']['hot_air_inlet_K']=598.15
+    raw=json.loads(path.read_text()); raw['scientific']['study']['purpose']='changed scientific purpose'
     path.write_text(json.dumps(raw))
     with pytest.raises(ValueError,match='definition does not match'): inspect(tmp_path/'run')
 
@@ -70,8 +75,8 @@ def test_exchanger_total_volume_and_comparison_fields(tmp_path):
     path=initialize_v3(tmp_path/'study.toml')
     _,definition,record=snapshot(path,tmp_path/'source')
     record['derived']={'heat_in_gas_volume_m3':.001,'heat_out_gas_volume_m3':.002}
-    journal=tmp_path/'source'/'history.jsonl'
-    journal.write_text(json.dumps(record)+'\n');before=journal.read_bytes()
+    journal=tmp_path/'source'/'history.jsonl.gz'
+    journal.write_bytes(gzip.compress((json.dumps(record)+'\n').encode()));before=journal.read_bytes()
     data=inspect(tmp_path/'source')
     assert data['records'][0]['derived']['total_exchanger_gas_volume_m3']==pytest.approx(.003)
     assert journal.read_bytes()==before
@@ -85,5 +90,5 @@ def test_exchanger_total_volume_and_comparison_fields(tmp_path):
     assert comparison.index('for(const name of active)parameter(name)') < comparison.index("kinematic family")
     assert "cooling_cop_times_power_per_total_microtube_w:'W/microtube'" in comparison
     record['derived'].pop('heat_out_gas_volume_m3')
-    journal.write_text(json.dumps(record)+'\n')
+    journal.write_bytes(gzip.compress((json.dumps(record)+'\n').encode()))
     assert inspect(tmp_path/'source')['records'][0]['derived']['total_exchanger_gas_volume_m3'] is None
