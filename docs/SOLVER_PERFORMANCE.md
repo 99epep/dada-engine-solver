@@ -89,12 +89,8 @@ RHS parity, complete trajectories and sampled diagnostics separately: agreement
 in aggregate power alone is insufficient. Never loosen tolerances or model-domain
 checks to improve a benchmark.
 
-Two bounded tools remain available from a source checkout:
+The bounded benchmark is available from a source checkout:
 
-- [Property-backend benchmark](../examples/benchmark_research_v3_backends.py):
-  uses a packaged reference state to compare ideal, ideal-generated table and
-  Python RHS calls. It is a fixed-state microbenchmark, not a campaign-speed or
-  real-fluid validation test.
 - [Saved-state RHS benchmark](../tools/benchmark_microtube_transition_backend.py):
   accepts a compatible study, raw candidate record and trajectory containing
   `angles` and `trajectory`. It warms the exercised paths, checks Python parity
@@ -102,11 +98,10 @@ Two bounded tools remain available from a source checkout:
   Input compatibility is the caller's responsibility.
 
 ```sh
-PYTHONPATH=src python3 examples/benchmark_research_v3_backends.py --output /tmp/fluid-benchmark.json
 PYTHONPATH=src python3 tools/benchmark_microtube_transition_backend.py --help
 ```
 
-Use a new output destination. These tools generate measurements; their outputs
+Use a new output destination. The benchmark generates measurements; its outputs
 are not normative speed guarantees. The [validation map](validation.md) owns
 current test instructions. Focused execution checks include
 `tests/test_wall_backend.py`, `tests/test_wall_backend_cache.py`,
