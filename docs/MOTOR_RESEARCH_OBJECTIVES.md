@@ -37,10 +37,9 @@ search is best-found evidence, not a universal design law.
 ## New-study boundary
 
 For a new temperature/geometry campaign, define its own filling policy. The
-current reference-pressure policy uses maximum **simultaneous total gas volume**;
-it must not silently inherit the old temperature-map angle-zero rule. Keep
-hardware-derived hold-up, conductance and capacity coupled. External stream
-inputs and excluded auxiliary losses remain explicit.
+reference-pressure policy uses the maximum **simultaneous total gas volume** of
+the assembled machine. Keep hardware-derived hold-up, conductance and capacity
+coupled. External stream inputs and excluded auxiliary losses remain explicit.
 
 Slider-crank, four-bar and six-bar are the immediate mechanism classes. Solenoid
 actuation and complete mechanical-loss/inertia models remain separate work.

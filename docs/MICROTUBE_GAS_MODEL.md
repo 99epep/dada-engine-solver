@@ -466,36 +466,24 @@ is not `single_phase_domain`: no condensation, mixture phase equilibrium or
 real-gas nonideality check is added. A future `(T,p)` phase/nonideality layer remains
 necessary. Tube transport is still quasi-steady in a pulsed machine.
 
-### Frozen oracle and measured changes
+### Frozen transport oracle and regression tolerances
 
 `tools/generate_coolprop_transport_reference.py` requires optional CoolProp 8.x
 only to regenerate `tests/data/coolprop8_dilute_transport.json`. Runtime and normal
 tests do not import CoolProp. The oracle uses `(T,Dmass)` at `1e-10 kg/m³` and
 checks density reduction to `1e-11 kg/m³` to bound residual contamination.
 
-On the requested 19 temperature points (air 100–1000 K, He 50–1000 K), maximum
-relative errors versus CoolProp 8.0.0 are:
+`tests/test_transport_species_domains.py` compares viscosity, conductivity and
+Cp against the frozen oracle. Relative tolerances are `2e-11` for directly ported
+mu/k, `0.8%` for approximate air Cp and `0.01%` for helium Cp using rounded R.
+The test also bounds the oracle's density-reduction sensitivity. These tolerances
+measure agreement with the oracle, not experimental accuracy of CoolProp or
+validation of the complete physical model.
 
-| Species | mu | k | Cp |
-|---|---:|---:|---:|
-| Air | 7.31e-14 | 3.18e-13 | 0.007061 |
-| Helium | 3.17e-13 | 3.67e-13 | 0.00007881 |
-
-Tests allow 2e-11 for directly ported mu/k, 0.8% for approximate air Cp, and 0.01%
-for helium Cp using unchanged rounded R. These are oracle agreement tolerances,
-not experimental accuracy claims.
-
-Compared with the prior formulas on a 1 K grid from 200 to 1000 K:
-
-| Species | mu relative change | k relative change |
-|---|---:|---:|
-| Air | +0.1566% to +4.0740% | -0.6811% to +3.0224% |
-| Helium | -0.5200% to +0.2476% | -0.5684% to +0.2922% |
-| Nitrogen / argon | 0 | 0 |
-
-Transport Cp is unchanged for all four species. Frozen legacy samples are retained
-in `tests/data/legacy_dilute_transport_v1.json`. The Doty He variable-flow regression
-shifts by about +0.248%; its tolerance and experimental comparison remain unchanged.
+`tests/data/legacy_dilute_transport_v1.json` is also consumed by that test file
+for a legacy-reference regression: Cp equality and species-specific bounds on
+viscosity/conductivity differences. It does not select a legacy transport law
+at runtime. The regression bounds belong to the tests.
 
 ### Domain failures and campaign isolation
 
@@ -509,23 +497,18 @@ Only this typed property-domain error is intercepted; programming errors are not
 swallowed in the runner. Compiled temperature guards fall back to Python, which
 raises the same typed error. No CoolProp property call occurs inside the RHS.
 
-### Historical machine replays under the changed transport law
+### Versioned transport-law regression reference
 
-`tools/generate_transport_v2_thermal_reference.py` performs four bounded fixed-input
-DADA evaluations (no search) and writes a separate versioned test reference.
-`tests/data/transport_v2_thermal_reference.json` does not replace historical result
-artifacts. On those machines the measured indicated-power / efficiency changes are:
+`tools/generate_transport_v2_thermal_reference.py` performs bounded fixed-input
+DADA evaluations without search or optimization and writes
+`tests/data/transport_v2_thermal_reference.json`. This transport-law reference
+is not currently consumed by the test suite; integrated thermal regressions use
+`tests/data/developing_entry_thermal_reference.json`, as described in
+[validation](validation.md#current-regression-evidence).
 
-| Historical geometry | Periodic cycles | Indicated-power change | Efficiency change |
-|---|---:|---:|---:|
-| Fourier C2 | 4 | -0.13685% | -0.09601% |
-| Free spline | 3 | -0.11267% | -0.10866% |
-| Six-bar | 13 | -0.09318% | -0.06692% |
-| Structured C2 15p | 3 | -0.11506% | -0.11116% |
-
-The existing numerical comparison tolerances are retained against these new-law
-references; comparing to the old-law numbers with roundoff tolerances would test
-a different physical model. Historical constant-transport cases are unchanged.
+Regression tolerances belong to the tests and apply to the versioned reference
+for the selected physical model. A deliberate physical-model revision requires
+a distinct reference rather than roundoff-level parity with a superseded model.
 
 ### Triangular tube banks and internal header volume
 
@@ -546,8 +529,8 @@ hold-up adds tube bore volume and `additional_internal_volume_m3` exactly once.
 No external-fluid interstitial volume is calculated. These are internal header
 dimensions; vessel walls and extra fabrication clearances are not modeled.
 
-Compatibility is explicit: old `pitch_m` inputs retain the historical square
-packing and `columns*pitch_m` by `rows*pitch_m` envelope. Do not supply both pitch
+Compatibility is explicit: legacy `pitch_m` inputs retain square packing and
+the `columns*pitch_m` by `rows*pitch_m` envelope. Do not supply both pitch
 forms. Existing bases, examples and histories are not migrated implicitly.
 Selecting `pitch_ratio` changes header hold-up and scientific study identity;
 start a new campaign rather than resuming a square-packing history.
@@ -588,10 +571,10 @@ collector wall storage or conduit length is invented.
 
 For this geometry, both `MicrotubeExchanger` and
 `ExternalStreamMicrotubeExchanger` derive the reported valve CdA from
-`conduit_area`. A supplied historical outlet CdA is replaced, not clamped.
+`conduit_area`. A supplied finite outlet CdA is replaced, not clamped.
 The ideal diode acts only through the production network's direction logic:
 no valve orifice loss is passed to either `TubeHalfLink`. In particular,
-merely enlarging a CdA would not suffice, because the old link also adds a
+merely enlarging a CdA would not suffice, because the finite-CdA link also adds a
 quadratic valve resistance. Both that resistance and the smaller-valve sonic
 cap are absent. The **tube-area** compressible cap, tube friction, transport
 and gas-model validity guards remain. Upstream/downstream valve placement
@@ -600,10 +583,10 @@ legacy finite-CdA links are unchanged.
 
 `header_loss_coefficient` remains the existing lumped loss coefficient referred
 to total tube-passage velocity, divided between the two links. It is independent
-of cone angle and has not become a distribution, separation or pressure-recovery
+of cone angle and is not a distribution, separation or pressure-recovery
 correlation for conical manifolds. For legacy external-air thermal models only,
-the existing equivalent-passage screen now uses the circular face area and
-perimeter; no new empirical correlation is claimed. Declared external-stream
+the equivalent-passage screen uses the circular face area and
+perimeter; no empirical correlation is implied. Declared external-stream
 conductances are unchanged.
 
 Reports expose the geometry model, bundle area/diameter, actual pitch, total
@@ -611,11 +594,11 @@ bore area, conduit area/diameter/ratio, cone angle/height, both header and total
 gas volumes, derived valve area, and loss-model scope. These values also appear
 in Research candidate comparisons when present in the recorded hardware data.
 
-**Compatibility:** no file or history is silently migrated. Without a cone-angle
-input, square-pitch and rectangular staggered legacy envelopes retain their old
+**Compatibility:** existing files and histories are not silently migrated. Without a cone-angle
+input, square-pitch and rectangular staggered legacy envelopes retain their stored
 header volumes and finite-CdA hydraulic behavior. Selecting the circular model
 changes geometry and valve physics, hence scientific identity; use a new study/
-campaign. Exact reconstruction of historical inputs is still possible, subject
+campaign. Exact reconstruction of legacy inputs remains possible, subject
 to the existing runtime compatibility checks.
 
 ## Combined laminar entry (2026-10-04)

@@ -1,8 +1,8 @@
 # Current physical decisions
 
-This is the current model handoff, consolidated on 2026-10-03. Explicit later
-user decisions override it. Earlier decisions and superseded requirements remain
-available in Git history; this document is the current source of truth.
+This document describes the current physical decisions. Explicit later user
+decisions override them. Earlier decisions and superseded requirements remain
+available in Git history.
 
 ## Conservative state and hydraulic topology
 
@@ -83,7 +83,7 @@ Do not independently optimize those derived quantities as unrelated UA, volume
 and loss coordinates. Declared external conductance is a separate scenario input
 for the generic external-stream family; it is not a universal liquid correlation.
 
-The new circular family uses triangular-cell face area, `pitch_ratio > 1`,
+The circular family uses triangular-cell face area, `pitch_ratio > 1`,
 `conduit_area_ratio >= 1` and two coaxial conical-frustum collectors. Only tube
 bores, collector interiors and explicit additional internal volume enter gas
 hold-up. The external interstitial space does not. Independent valve CdA is
@@ -91,10 +91,10 @@ replaced by the conduit area and a lossless directional diode; tube losses and
 sonic/domain guards remain. Header K is still a disclosed lumped assumption,
 not a loss correlation derived from cone angle.
 
-Old square/staggered rectangular banks retain their stored geometry and valve
-loss assumptions. Selecting circular collectors changes the scientific study;
-it is not a transparent resume of an old campaign. Formulas, compatibility and
-uncertainty are in [the microtube reference](MICROTUBE_GAS_MODEL.md).
+Square/staggered rectangular banks retain their stored geometry and valve
+loss assumptions. Changing geometry family changes the study scientific identity;
+a study using a different family cannot resume transparently. Formulas,
+compatibility and uncertainty are in [the microtube reference](MICROTUBE_GAS_MODEL.md).
 
 At fixed external capacity rate, increasing transfer area has diminishing benefit;
 large air flow suppresses outlet-temperature change but does not remove film
@@ -128,11 +128,11 @@ pressure density at upstream temperature; header losses remain separate.
 Exact equations and domains: [microtube ledger](MICROTUBE_GAS_MODEL.md#combined-laminar-entry-2026-10-04).
 
 Supported laminar hydrodynamic development is informational, not a rejection.
-The user subsequently authorized a continuous transition over all of
-Re=2300–4000: Bennett Nu and the complete Shah-corrected segment friction
-at 2300 are linearly joined to the existing turbulent endpoints at 4000.
+The model uses a continuous transition over Re=2300–4000: Bennett Nu and the
+complete Shah-corrected segment friction at 2300 are linearly joined to the
+existing turbulent endpoints at 4000.
 There is no overlap of validated Reynolds domains; this engineering bridge
-retains explicit transition uncertainty and the previous entry guards.
+retains explicit transition uncertainty and the existing entry guards.
 It is not a validated developing-transition correlation. Do not weaken Mach, relative
 pressure drop, Knudsen/slip or transport guards. Pulsating use remains
 quasi-steady; no empirical pulse multiplier or axial transient field is added.
@@ -146,15 +146,13 @@ quasi-steady; no empirical pulse multiplier or axial transient field is added.
 | Search bound | Region explored, not a validity statement | Parameter bounds, local-region radius |
 | Numerical setting | Accuracy/execution policy | ODE tolerances, periodic scales, sampling |
 
-Generic Research does not impose historical 25 W, 1.2 MPa, 850 K, 0.08 kg/s or
-66 L campaign guards. Explicit supported study constraints remain available.
 Microtube Mach validity uses the chosen exchanger model's domain; a stricter
 study Mach ceiling is separate. Cp variation and compressibility deviation
 remain approximation checks. Constant Cp and Z=1 yielding zero deviations do
 not independently validate real air at every state.
 
 Pressure inequality remains a diagnostic, never a thermodynamic-validity veto.
-Isothermality excursion metrics/constraints have been removed. Old configuration
+Isothermality excursion metrics/constraints have been removed. Legacy configuration
 keys load as ignored compatibility inputs. Historical saved verdicts are not
 rewritten; changed source identity prevents unsafe resume/cache reuse.
 
@@ -202,7 +200,5 @@ model converts gas work into shaft performance. Distributed exchange, actual
 valve losses, mechanics, experimental calibration and real-fluid hydraulics
 require separate evidence and decisions.
 
-The application-specific motor demonstrator brief (about 100 W useful output, 2–10 Hz,
-25/325 °C sources, 66 L ceiling) describes that application only. Cooling-cell
-loads and new Research studies have their own explicit boundaries. See
-[validation](validation.md) and [research objectives](MOTOR_RESEARCH_OBJECTIVES.md).
+See [validation](validation.md) for evidence boundaries and
+[research objectives](MOTOR_RESEARCH_OBJECTIVES.md) for current research questions.
