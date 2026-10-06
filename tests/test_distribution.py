@@ -15,29 +15,34 @@ APPLICATION_DIRECTORY = 'exam' + 'ples'
 EXCLUDED_DIRECTORIES = {APPLICATION_DIRECTORY, 'outputs'}
 
 
-@pytest.fixture(scope='module')
-def distributions(tmp_path_factory):
+@pytest.fixture(scope='module', params=('clean', 'stale_cache'))
+def distributions(tmp_path_factory, request):
     stage = tmp_path_factory.mktemp('distribution')
     for name in ('src', 'docs', 'tests'):
         shutil.copytree(ROOT / name, stage / name,
-                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '*.egg-info'))
     for name in ('LICENSE', 'README.md', 'pyproject.toml', 'MANIFEST.in'):
         shutil.copy2(ROOT / name, stage / name)
-    # Exclusions must work even with files present and a stale manifest cache.
+    # Build both from a clean checkout and with a deliberately stale cache.
     cached_sources = stage / 'src/dada_engine_solver.egg-info/SOURCES.txt'
-    cached_sources.parent.mkdir(exist_ok=True)
-    with cached_sources.open('a') as stream:
-        for directory in EXCLUDED_DIRECTORIES:
-            target = stage / directory / 'distribution_sentinel.py'
-            target.parent.mkdir(exist_ok=True)
-            target.write_text('# Not a distribution resource.\n')
-            stream.write(f'\n{target.relative_to(stage).as_posix()}\n')
+    assert not cached_sources.parent.exists()
+    for directory in EXCLUDED_DIRECTORIES:
+        target = stage / directory / 'distribution_sentinel.py'
+        target.parent.mkdir(exist_ok=True)
+        target.write_text('# Not a distribution resource.\n')
+        if request.param == 'stale_cache':
+            cached_sources.parent.mkdir(exist_ok=True)
+            with cached_sources.open('a') as stream:
+                stream.write(f'{target.relative_to(stage).as_posix()}\n')
     result = subprocess.run(
         [sys.executable, '-c',
          'from setuptools.build_meta import build_sdist; build_sdist("dist")'],
         cwd=stage, capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+    for name in ('PKG-INFO', 'SOURCES.txt', 'entry_points.txt',
+                 'requires.txt', 'top_level.txt'):
+        assert (cached_sources.parent / name).is_file()
     sdist = next((stage / 'dist').glob('*.tar.gz'))
     unpacked = stage / 'unpacked'
     with tarfile.open(sdist) as archive:
