@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from dada_solver.research.charge import POLICY, maximum_total_volume
-from dada_solver.research.presets import initialize_v2, initialize_v3
+from dada_solver.research.presets import initialize_kinematics, initialize_external_stream
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
 from dada_solver.research.study_io import dumps
 
@@ -34,7 +34,7 @@ def design(study, **updates):
 
 @pytest.fixture
 def configured(tmp_path):
-    path = initialize_v2(tmp_path/'study.toml','harmonic','harmonic')
+    path = initialize_kinematics(tmp_path/'study.toml','harmonic','harmonic')
     raw = tomllib.loads(path.read_text())
     derived(raw)
     return path, raw
@@ -42,7 +42,7 @@ def configured(tmp_path):
 
 @pytest.mark.parametrize('version', [2,3])
 def test_explicit_inventory_unchanged(tmp_path, version):
-    path = (initialize_v2 if version==2 else initialize_v3)(tmp_path/'study.toml')
+    path = (initialize_kinematics if version==2 else initialize_external_stream)(tmp_path/'study.toml')
     study = load_study(path); before = study.study_id
     built = design(study)
     assert built.charge_diagnostics is None
@@ -167,7 +167,7 @@ def test_additional_hx_volume_replaces_basis_seed(configured):
 @pytest.mark.parametrize('family',['slider_crank','four_bar','six_bar','free_spline','fourier_c2',
     'structured_c2_15p','ideal_piecewise','four_stage','independent_four_stage','hybrid_compact'])
 def test_supported_families_use_same_reference_method(tmp_path,family):
-    path=initialize_v2(tmp_path/'study.toml',family,family)
+    path=initialize_kinematics(tmp_path/'study.toml',family,family)
     raw=tomllib.loads(path.read_text()); derived(raw)
     d=design(write(path,raw)); w=d.build(); model=getattr(w,'model',w)
     c=d.charge_diagnostics

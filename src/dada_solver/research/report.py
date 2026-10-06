@@ -234,7 +234,7 @@ def render_html(data, destination):
     ranked=chosen[:2] if data.get('comparison_compatible',True) else []
     def brief(record):
         return {k:record.get(k) for k in ('candidate_id','objective','metrics')} if record else None
-    from .schema_v2 import COOLING_OBJECTIVES
+    from .study_schema import COOLING_OBJECTIVES
     data=dict(data,cooling_objective=data['scientific']['objective']['type'] in COOLING_OBJECTIVES,
         selected=chosen,comparison_default_ids=[r['candidate_id'] for r in ranked],
         html_selection=dict(policy='best_distinct_feasible_tenth_v1',attempts=attempts,

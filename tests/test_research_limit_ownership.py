@@ -9,9 +9,9 @@ from dada_solver.configuration import ValidityThresholds
 from dada_solver.campaign.evaluator import finalize_microtube_validity
 from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
-from dada_solver.research.presets import initialize_v2, initialize_v3
+from dada_solver.research.presets import initialize_kinematics, initialize_external_stream
 from dada_solver.research.schema import load_study, compile_study
-from dada_solver.research.schema_v2 import V2Adapter
+from dada_solver.research.study_schema import StudyAdapter
 from dada_solver.research.study_io import dumps
 from dada_solver.sizing.configuration import load_sizing_problem
 from dada_solver.sizing.constraints import MaximumMachNumber, RequireValidThermodynamicModel
@@ -19,7 +19,7 @@ from dada_solver.validity import assess_cycle_validity, ValidityVerdict
 from tests.test_periodic import create_static_cycle
 
 
-@pytest.mark.parametrize('initializer',[initialize_v2,initialize_v3])
+@pytest.mark.parametrize('initializer',[initialize_kinematics,initialize_external_stream])
 def test_generic_presets_do_not_inherit_motor_design_guards(tmp_path,initializer):
     study=load_study(initializer(tmp_path/'study.toml'))
     forbidden={'minimum_motor_power','maximum_pressure','maximum_temperature','maximum_absolute_mass_flow'}
@@ -29,7 +29,7 @@ def test_generic_presets_do_not_inherit_motor_design_guards(tmp_path,initializer
 
 
 def test_explicit_motor_constraints_are_available(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml');raw=tomllib.loads(path.read_text())
     raw['constraints'] += [dict(type='minimum_motor_power',required_power=25.,unit='W'),
         dict(type='maximum_pressure',limit=1.2e6,unit='Pa'),dict(type='maximum_temperature',limit=850.,unit='K'),
         dict(type='maximum_absolute_mass_flow',limit=.08,unit='kg/s'),dict(type='maximum_mach_number',limit=.2,unit='1')]
@@ -44,10 +44,10 @@ def test_explicit_motor_constraints_are_available(tmp_path):
 
 
 def test_optional_motor_volume_ceiling_may_exceed_66_litres(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml');raw=tomllib.loads(path.read_text())
     raw['screening']['maximum_large_enclosed_volume_m3']=.2
     path.write_text(dumps(raw));study=load_study(path)
-    V2Adapter(study).build(study.fixed_parameters)
+    StudyAdapter(study).build(study.fixed_parameters)
     raw['screening'].pop('maximum_large_enclosed_volume_m3');path.write_text(dumps(raw))
     assert load_study(path).study_id!=study.study_id
 
@@ -77,7 +77,7 @@ def test_microtube_own_mach_domain_and_independent_design_limit(ideal_gas,mach,v
 
 @pytest.mark.parametrize('family',['four_bar','six_bar'])
 def test_mechanical_quality_limits_belong_to_new_study_not_seed(tmp_path,family):
-    path=initialize_v2(tmp_path/'study.toml',family,family);study=load_study(path)
+    path=initialize_kinematics(tmp_path/'study.toml',family,family);study=load_study(path)
     assert study.mechanical_constraints
     artifact_paths=list(tmp_path.glob('*.mechanism.json'))
     before={p:p.read_bytes() for p in artifact_paths}
@@ -95,7 +95,7 @@ def test_mechanical_quality_limits_belong_to_new_study_not_seed(tmp_path,family)
 
 def test_historical_embedded_mechanical_constraints_still_apply(tmp_path):
     from dada_solver.research.artifacts import MechanismArtifact
-    path=initialize_v2(tmp_path/'study.toml','six_bar','six_bar');study=load_study(path)
+    path=initialize_kinematics(tmp_path/'study.toml','six_bar','six_bar');study=load_study(path)
     raw=study.data
     for side in ('small','large'):
         old=study.artifacts[side]
@@ -131,7 +131,7 @@ def test_caloric_and_eos_approximation_checks_remain_active(ideal_gas,monkeypatc
 def test_kinematic_metrics_survive_without_any_mechanical_limit(tmp_path,monkeypatch):
     from dada_solver.campaign.evaluator import MachineEvaluator,EvaluationControl,rejected
     from dada_solver.research.schema import candidate_for_values
-    study=load_study(initialize_v2(tmp_path/'study.toml','slider_crank','slider_crank'))
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','slider_crank'))
     assert not study.mechanical_constraints
     definition=compile_study(study)
     def stop_before_integration(self,candidate,design,wrapper,derived,direction,control):

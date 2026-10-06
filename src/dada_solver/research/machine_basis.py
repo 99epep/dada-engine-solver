@@ -138,7 +138,7 @@ def build_machine(basis, configuration, physical, policies):
             exchanger=replace(source,bank=replace(source.bank,**bank),inputs=replace(source.inputs,**inputs),outlet_valve_cda_m2=cda)
             exchanger.build(); exchangers.append(exchanger)
         except (ValueError,ArithmeticError) as error: raise PreflightRejection('invalid_exchanger',str(error)) from error
-    if basis.data['schema_version']==3 and all(x is not None and hasattr(x.inputs,'external_stream') for x in exchangers):
+    if all(x is not None and hasattr(x.inputs,'external_stream') for x in exchangers):
         inlet,outlet=(x.inputs.external_stream.inlet_temperature_k for x in exchangers)
         # The reservoir closures remain diagnostic references when walls supply heat.
         # Keep those references consistent with the actually declared boundaries.

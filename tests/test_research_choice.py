@@ -8,7 +8,7 @@ from dada_solver.campaign.strategy import SobolStrategy
 from dada_solver.campaign.scheduled_search import ScheduledSobol
 from dada_solver.campaign.runner import OptimizationCampaign
 from dada_solver.research.schema import load_study, compile_study
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.study_io import dumps
 from dada_solver.research.refine import refine
 from dada_solver.research.report import inspect, render_html
@@ -23,7 +23,7 @@ def rows():
 
 @pytest.fixture
 def study_path(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','harmonic','harmonic')
+    path=initialize_kinematics(tmp_path/'study.toml','harmonic','harmonic')
     raw=tomllib.loads(path.read_text()); raw['parameters'].extend(rows())
     path.write_text(dumps(raw))
     return path

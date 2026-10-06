@@ -7,7 +7,7 @@ import pytest
 from dada_solver.geometry import CylinderVolumeLimits
 from dada_solver.hybrid_compact_kinematics import HybridCompactKinematics
 from dada_solver.research.families import FAMILIES,build_side,available_metrics
-from dada_solver.research.presets import initialize_v2,initialize_v3
+from dada_solver.research.presets import initialize_kinematics,initialize_external_stream
 from dada_solver.research.schema import load_study,compile_study,candidate_for_values
 from dada_solver.research.study_io import dumps
 
@@ -62,7 +62,7 @@ def test_historical_domain_guards(key,value):
 
 def test_all_nine_coordinates_owned_independently_and_active(tmp_path):
     assert len(FAMILIES)==11 and FAMILIES[-1]=='hybrid_compact'
-    path=initialize_v2(tmp_path/'study.toml','hybrid_compact','hybrid_compact')
+    path=initialize_kinematics(tmp_path/'study.toml','hybrid_compact','hybrid_compact')
     raw=tomllib.loads(path.read_text())
     for row in raw['parameters']:
         if not row['name'].startswith('kinematics.'): continue
@@ -80,7 +80,7 @@ def test_all_nine_coordinates_owned_independently_and_active(tmp_path):
 
 @pytest.mark.parametrize('small,large',[('hybrid_compact','harmonic'),('slider_crank','hybrid_compact')])
 def test_mixed_family_and_v3_schema(tmp_path,small,large):
-    path=initialize_v3(tmp_path/'study.toml',small,large)
+    path=initialize_external_stream(tmp_path/'study.toml',small,large)
     study=load_study(path)
     assert study.settings['small']['family']==small
     assert study.settings['large']['family']==large

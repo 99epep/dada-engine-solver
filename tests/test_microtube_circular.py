@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.exchangers.microtube import MicrotubeExchanger
-from dada_solver.research.presets import initialize_v2,initialize_v3
+from dada_solver.research.presets import initialize_kinematics,initialize_external_stream
 from dada_solver.research.schema import load_study,compile_study
 from dada_solver.research.study_io import dumps
 from tests.test_exchanger_hardware import inputs
@@ -83,7 +83,7 @@ def test_diode_does_not_add_loss_or_restrict_area(ideal_gas,placement):
 
 
 def circular_study(path,version=3):
-    path=(initialize_v3 if version==3 else initialize_v2)(path)
+    path=(initialize_external_stream if version==3 else initialize_kinematics)(path)
     raw=tomllib.loads(path.read_text())
     raw['parameters']=[r for r in raw['parameters'] if not r['name'].endswith(('.pitch_m','.header_depth_m'))]
     raw['policies']['outlet_valve_cda']='geometry_conduit_area_v1'

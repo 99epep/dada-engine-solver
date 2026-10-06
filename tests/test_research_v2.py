@@ -10,7 +10,7 @@ from dada_solver.campaign.candidate import Candidate
 from dada_solver.campaign.evaluator import MachineEvaluator
 from dada_solver.campaign.runner import OptimizationCampaign
 from dada_solver.research.cli import main, evaluate
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
 from dada_solver.research.study_io import dumps
 from dada_solver.research.synthesis import release_coordinates
@@ -31,12 +31,12 @@ def activate(raw,name,span=.01):
 
 
 @pytest.fixture
-def path(tmp_path): return initialize_v2(tmp_path/'study.toml')
+def path(tmp_path): return initialize_kinematics(tmp_path/'study.toml')
 
 
 @pytest.mark.parametrize('family',['harmonic','slider_crank','four_bar','six_bar','free_spline','fourier_c2','structured_c2_15p','ideal_piecewise','four_stage','independent_four_stage'])
 def test_all_presets_and_fixed_evaluation_identity(tmp_path,family):
-    path=initialize_v2(tmp_path/'study.toml',family,family)
+    path=initialize_kinematics(tmp_path/'study.toml',family,family)
     study=load_study(path); d=compile_study(study)
     assert not study.space.parameters
     c=candidate_for_values(d,{})
@@ -47,7 +47,7 @@ def test_all_presets_and_fixed_evaluation_identity(tmp_path,family):
 
 @pytest.mark.parametrize('small,large',[('four_bar','six_bar'),('structured_c2_15p','free_spline'),('slider_crank','harmonic')])
 def test_independent_mixed_sides(tmp_path,small,large):
-    path=initialize_v2(tmp_path/'study.toml',small,large); study=load_study(path)
+    path=initialize_kinematics(tmp_path/'study.toml',small,large); study=load_study(path)
     data=sample_motion(study,samples=19)
     assert len(data['sides']['small']['volume_m3'])==19
     assert data['coupling']=='independent'
@@ -88,7 +88,7 @@ def test_fixed_and_active_share_one_candidate_vector(path):
 @pytest.mark.parametrize('stage,sides,count',[('primary_discovery',('large',),6),('downstream_fit',('large',),9),
     ('full_local_polish',('small',),15),('paired_thermodynamic',('small','large'),30)])
 def test_schema_can_release_hierarchical_coordinate_groups(tmp_path,stage,sides,count):
-    path=initialize_v2(tmp_path/'study.toml','six_bar','six_bar');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml','six_bar','six_bar');raw=tomllib.loads(path.read_text())
     for name in release_coordinates(stage,sides): activate(raw,name,.00001)
     study=rewrite(path,raw); d=compile_study(study)
     assert len(d.space.parameters)==count
@@ -98,12 +98,12 @@ def test_schema_can_release_hierarchical_coordinate_groups(tmp_path,stage,sides,
 
 
 def test_active_branch_rejected(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','six_bar','six_bar');raw=tomllib.loads(path.read_text());activate(raw,'kinematics.small.primary_branch')
+    path=initialize_kinematics(tmp_path/'study.toml','six_bar','six_bar');raw=tomllib.loads(path.read_text());activate(raw,'kinematics.small.primary_branch')
     with pytest.raises(ValueError,match='must remain fixed'): rewrite(path,raw)
 
 
 def test_fixed_spline_controls_or_nonredundant_active_shape(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','free_spline','harmonic');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml','free_spline','harmonic');raw=tomllib.loads(path.read_text())
     invalid=copy.deepcopy(raw);activate(invalid,'kinematics.small.control_0')
     with pytest.raises(ValueError,match='must remain fixed'): rewrite(path,invalid)
     raw['parameters']=[r for r in raw['parameters'] if not r['name'].startswith('kinematics.small.control_')]
@@ -118,7 +118,7 @@ def test_fixed_spline_controls_or_nonredundant_active_shape(tmp_path):
 
 
 def test_shared_crank_has_explicit_single_phase_and_direction(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','four_bar','four_bar',coupling='shared_crank');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml','four_bar','four_bar',coupling='shared_crank');raw=tomllib.loads(path.read_text())
     activate(raw,'kinematics.shared.phase_rad')
     study=rewrite(path,raw);d=compile_study(study);p=dict(d.fixed_parameters,**{r.name:r.initial for r in d.space.parameters});kin=d.adapter.build(p).kinematics
     assert kin.small.model.crank_angle_offset==kin.large.model.crank_angle_offset
@@ -130,12 +130,12 @@ def test_shared_crank_has_explicit_single_phase_and_direction(tmp_path):
 def test_geometry_and_family_change_scientific_identity(path,tmp_path):
     a=load_study(path);raw=tomllib.loads(path.read_text());next(r for r in raw['parameters'] if r['name']=='kinematics.small.phase_rad')['value']+=.001
     b=rewrite(path,raw);assert a.study_id!=b.study_id
-    c=load_study(initialize_v2(tmp_path/'other.toml','slider_crank','harmonic'));assert c.study_id!=a.study_id
+    c=load_study(initialize_kinematics(tmp_path/'other.toml','slider_crank','harmonic'));assert c.study_id!=a.study_id
     raw['study']['name']='Only a label';raw['execution']['default_budget']='5m';assert rewrite(path,raw).study_id==b.study_id
 
 
 def test_mechanical_preflight_records_margin_before_integration(tmp_path,monkeypatch):
-    path=initialize_v2(tmp_path/'study.toml','slider_crank','harmonic');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml','slider_crank','harmonic');raw=tomllib.loads(path.read_text())
     row=activate(raw,'kinematics.small.rod_over_crank',.1);row['lower']=.5
     study=rewrite(path,raw);d=compile_study(study)
     monkeypatch.setattr('dada_solver.campaign.evaluator.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('integration must not start'))
@@ -160,7 +160,7 @@ def test_constraint_screen_rejects_violation(path,monkeypatch):
 
 
 def test_resume_uses_portable_mechanism_snapshots(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','four_bar','six_bar');raw=tomllib.loads(path.read_text());activate(raw,'kinematics.small.phase_rad')
+    path=initialize_kinematics(tmp_path/'study.toml','four_bar','six_bar');raw=tomllib.loads(path.read_text());activate(raw,'kinematics.small.phase_rad')
     d=compile_study(rewrite(path,raw));clock=Clock()
     whole=OptimizationCampaign(d,tmp_path/'whole',evaluator=Evaluator(clock),clock=clock);whole.run(100,maximum_candidates=4)
     split=OptimizationCampaign(d,tmp_path/'split',evaluator=Evaluator(clock),clock=clock);result=split.run(100,maximum_candidates=2)
@@ -214,7 +214,7 @@ def test_refrigeration_objective_and_human_input_constraint_compile(path):
 
 
 def test_minimal_artifact_reference_loads_its_complete_settings(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','four_bar','six_bar');raw=tomllib.loads(path.read_text())
+    path=initialize_kinematics(tmp_path/'study.toml','four_bar','six_bar');raw=tomllib.loads(path.read_text())
     for side in ('small','large'):
         raw['kinematics'][side]={k:v for k,v in raw['kinematics'][side].items() if k in ('family','artifact','sha256')}
     study=rewrite(path,raw)
@@ -224,7 +224,7 @@ def test_minimal_artifact_reference_loads_its_complete_settings(tmp_path):
 
 
 def test_slider_frames_reuse_the_motion_geometry(tmp_path):
-    path=initialize_v2(tmp_path/'study.toml','slider_crank','harmonic');study=load_study(path)
+    path=initialize_kinematics(tmp_path/'study.toml','slider_crank','harmonic');study=load_study(path)
     data=sample_motion(study,samples=13)['sides']['small']
     rod=study.fixed_parameters['kinematics.small.rod_over_crank']
     for b,p in zip(data['joints']['B'],data['joints']['P']):assert math.dist(b,p)==pytest.approx(rod)

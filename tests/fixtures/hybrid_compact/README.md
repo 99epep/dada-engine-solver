@@ -17,8 +17,7 @@ inventory, following the historical search script. Its initial wall state is
 from the champion's recorded nearest warm-start candidate, not its final state.
 This is necessary to compare the periodic count and stored result exactly.
 
-The original implementation generated the frozen arrays; production code did
-not generate its own expected values. The current example reexports the
-production class and cannot serve as an independent motion oracle anymore.
-Tests compare against these frozen data and the previously stored champion
-metrics. No historical output/history is changed.
+The source implementation generated the frozen arrays independently of the
+production class. Tests use these data as a motion oracle; the recorded thermal
+basis and champion metrics are provenance, not the current thermal regression
+reference.

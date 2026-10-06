@@ -1,11 +1,11 @@
-"""V3 uses V2 ownership and the same persistent campaign/evaluation engine."""
+"""Schema 3 uses the current ownership and persistent campaign/evaluation engine."""
 from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
 import tomllib
 import pytest
-from dada_solver.research.presets import initialize_v3
+from dada_solver.research.presets import initialize_external_stream
 from dada_solver.research.schema import load_study,compile_study,candidate_for_values
 from dada_solver.research.study_io import dumps
 from dada_solver.campaign.evaluator import MachineEvaluator
@@ -27,7 +27,7 @@ def change_basis(path,transform):
 
 @pytest.fixture
 def study(tmp_path):
-    return initialize_v3(tmp_path/'study.toml')
+    return initialize_external_stream(tmp_path/'study.toml')
 
 
 def test_schema_ownership_and_table_identity(study):
@@ -65,7 +65,7 @@ def test_schema_rejects_incompatible_scientific_declarations(study,mutation):
 
 @pytest.fixture(scope='module')
 def refrigerator(tmp_path_factory):
-    path=initialize_v3(tmp_path_factory.mktemp('refrigerator')/'study.toml')
+    path=initialize_external_stream(tmp_path_factory.mktemp('refrigerator')/'study.toml')
     definition=compile_study(load_study(path))
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
     return path,definition,result
@@ -99,13 +99,13 @@ def test_cooling_power_objective_and_structured_setup(study,refrigerator,tmp_pat
     from dada_solver.performance import OperatingMode
     value=definition.objective.evaluate(SimpleNamespace(performance=SimpleNamespace(operating_mode=OperatingMode.REFRIGERATION,cooling_power=5.)))
     assert value.value==-5. and value.available
-    structured=initialize_v3(tmp_path/'structured.toml','structured_c2_15p','structured_c2_15p')
+    structured=initialize_external_stream(tmp_path/'structured.toml','structured_c2_15p','structured_c2_15p')
     assert load_study(structured).settings['small']['family']=='structured_c2_15p'
 
 
 def test_table_refrigeration_cycle_parity(refrigerator,tmp_path):
     source,definition,reference=refrigerator
-    path=initialize_v3(tmp_path/'tabulated.toml')
+    path=initialize_external_stream(tmp_path/'tabulated.toml')
     table=ideal_validation_table(definition.configuration.gas,rho_axis=(.01,.1,.5,1.,2.,5.,20.,50.))
     change_basis(path,lambda b:b['configuration'].update(gas=table.to_data()))
     d=compile_study(load_study(path))

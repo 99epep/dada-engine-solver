@@ -413,34 +413,20 @@ class MachineEvaluator:
                     total_mass_kg=float(periodic.trajectory[:8:2,-1].sum()))
                 result['diagnostics'] = json_values(asdict(diagnostics))
                 result['derived']['hardware'] = dict(heat_in=dict(design.heat_in.build().metadata), heat_out=dict(design.heat_out.build().metadata))
-                if self.definition.study.data['schema_version']==3:
-                    streams={}
-                    for i,(side,exchanger) in enumerate((('heat_in',wrapper.heat_in),('heat_out',wrapper.heat_out))):
-                        stream=exchanger.external_stream
-                        outlets=[s.walls[i].external_outlet_temperature_k for s in replay.samples]
-                        streams[side]=dict(asdict(stream),capacity_rate_w_k=stream.capacity_rate_w_k,
-                            outlet_minimum_k=min(outlets) if all(v is not None for v in outlets) else None,
-                            outlet_maximum_k=max(outlets) if all(v is not None for v in outlets) else None,
-                            heat_into_machine_per_cycle_j=performance.heat_in_per_cycle if i==0 else performance.heat_out_per_cycle,
-                            mean_heat_into_machine_w=performance.heat_in_power if i==0 else performance.heat_out_power,
-                            external_loop_losses='excluded; hydraulics and pump/fan consumption unmodelled')
-                    result['derived']['external_streams']=streams
-                    result['metrics'].update(operating_mode=performance.operating_mode.value,
-                        heating_power_w=performance.heating_power,heating_cop=performance.heating_cop)
-                    result['rhs_backend']=periodic.backend_statistics
-                else:
-                    result['derived']['air_inlet_temperatures_k'] = dict(heat_in=wrapper.heat_in.external_inlet_temperature_k, heat_out=wrapper.heat_out.external_inlet_temperature_k)
-                    air = {}
-                    for i, (side, exchanger, ports) in enumerate((
-                            ('heat_in',wrapper.heat_in,('small_to_cold','cold_to_large')),
-                            ('heat_out',wrapper.heat_out,('large_to_hot','hot_to_small')))):
-                        peak = max(max(abs(diagnostics.mass_flow_extrema[p].minimum),abs(diagnostics.mass_flow_extrema[p].maximum)) for p in ports)
-                        capacity = exchanger.air_mass_flow_kg_s * exchanger.air_cp_j_kg_k
-                        air[side] = dict(peak_internal_mass_flow_kg_s=peak,
-                            external_to_peak_internal_capacity_rate_ratio=capacity/(peak*design.configuration.gas.heat_capacity_cp) if peak else None,
-                            maximum_external_air_temperature_change_k=max(abs(s.walls[i].external_heat_w)/capacity for s in replay.samples),
-                            scope='sampled_cycle; fixed_external_flow; finite_film_resistance_retained')
-                    result['derived']['external_air_capacity_diagnostics'] = air
+                streams={}
+                for i,(side,exchanger) in enumerate((('heat_in',wrapper.heat_in),('heat_out',wrapper.heat_out))):
+                    stream=exchanger.external_stream
+                    outlets=[s.walls[i].external_outlet_temperature_k for s in replay.samples]
+                    streams[side]=dict(asdict(stream),capacity_rate_w_k=stream.capacity_rate_w_k,
+                        outlet_minimum_k=min(outlets) if all(v is not None for v in outlets) else None,
+                        outlet_maximum_k=max(outlets) if all(v is not None for v in outlets) else None,
+                        heat_into_machine_per_cycle_j=performance.heat_in_per_cycle if i==0 else performance.heat_out_per_cycle,
+                        mean_heat_into_machine_w=performance.heat_in_power if i==0 else performance.heat_out_power,
+                        external_loop_losses='excluded; hydraulics and pump/fan consumption unmodelled')
+                result['derived']['external_streams']=streams
+                result['metrics'].update(operating_mode=performance.operating_mode.value,
+                    heating_power_w=performance.heating_power,heating_cop=performance.heating_cop)
+                result['rhs_backend']=periodic.backend_statistics
                 result['derived']['local_reflux'] = dict(
                     threshold_kg_s=1e-8,
                     detected=any(v.minimum < -1e-8 for v in diagnostics.mass_flow_extrema.values()),
@@ -506,7 +492,7 @@ class MachineEvaluator:
                 useful_mechanical_power_w=None, mechanical_losses='unknown', conservation=asdict(p.conservation),
                 validity=json_values(asdict(evaluation.validity)))
             if getattr(self.definition,'identity',{}).get('definition_kind') == 'research_v3':
-                from dada_solver.research.schema_v2 import COOLING_OBJECTIVES
+                from dada_solver.research.study_schema import COOLING_OBJECTIVES
                 cooling=self.definition.objective.name in COOLING_OBJECTIVES
                 metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,
                                indicated_mechanical_input_power_w=p.mechanical_input_power if cooling else None)

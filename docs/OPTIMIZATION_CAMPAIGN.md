@@ -1,7 +1,7 @@
 # Campaign internals
 
 For day-to-day work, use [Research](DADA_ENGINE_RESEARCH.md). This is the
-lower-level implementation reference, also used by the historical `dada-optimize`
+lower-level implementation reference, also used by the `dada-optimize`
 CLI. Research snapshots have their own filenames described in its reference.
 
 ## Scope
@@ -15,7 +15,7 @@ correlation, four-bar mathematics or periodic stopping tolerance is replaced.
 No mechanical efficiency is assumed; indicated power remains distinct from
 unknown useful mechanical output.
 
-New code lives in `dada_solver.campaign`:
+The implementation lives in `dada_solver.campaign`:
 
 - `parameters`: immutable continuous, integer and choice parameters and parameter spaces;
 - `candidate`: canonical JSON and SHA-256 candidate identities;
@@ -38,8 +38,7 @@ for normalization, round-robin allocation and resume semantics.
 ## Kinematics injection
 
 `MachineDesign(configuration=..., kinematics=..., heat_in=..., heat_out=...)`
-now accepts a `KinematicsModel` directly. Existing positional exchanger
-arguments remain compatible; injection is an optional additional field.
+accepts a `KinematicsModel` directly through its optional `kinematics` field.
 `build_model(configuration, kinematics=...)` skips the family selector when
 an implementation is supplied, checks its cylinder ranges and calls its
 optional feasibility validator. Without injection, the existing configuration
@@ -48,7 +47,7 @@ and `kinematics_type` path is unchanged.
 **Inject study-angle motion, before the operation-direction transformation.**
 For negative-speed motor operation, the construction boundary reverses it
 exactly once. Existing four-bar objects retain their concrete type through
-the historical crank-direction replacement; other implementations use the
+crank-direction replacement; other implementations use the
 generic reversal wrapper. Do not inject a kinematics object extracted from an
 already motor-transformed model. Explicit `ReversedVolumeKinematics` injection
 is rejected to catch that mistake. A future mechanism can be injected without
@@ -77,8 +76,7 @@ Integer parameters use the shared encode/decode convention; choice parameters
 store explicit categories, not scientific numeric distances. Candidate physical
 values may therefore be strings.
 
-Old global studies without `evaluate_initial` retain the historical Sobol-only
-start. Research studies can explicitly evaluate their initial point first; local
+Global studies without `evaluate_initial` start with Sobol. Research studies can explicitly evaluate their initial point first; local
 regions always evaluate their embedded centres before Sobol. Each local region
 has its own Sobol index and deterministic round-robin allocation. Search-origin
 metadata does not alter physical candidate identity. The study's search definition
@@ -126,7 +124,7 @@ tolerance, fifteen-component absolute-tolerance vector, maximum angle step,
 periodic relative/absolute scales, progress interval and bounded Aitken option.
 The method and angle step default from unambiguous generic numerical settings;
 wall-specific values remain explicit. These values are stored in candidate
-payloads and the immutable campaign identity. Historical defaults remain LSODA,
+payloads and the immutable campaign identity. Defaults are LSODA,
 relative tolerance 1e-8, the established componentwise absolute tolerances and
 maximum step pi/360.
 
@@ -295,6 +293,5 @@ cache, interruption and deterministic local/global continuation. `dada-optimize`
 accepts a campaign TOML for creation or an existing campaign directory for resume.
 Use Research for new declarative multi-family studies.
 
-No test-count snapshot or old smoke performance is a guarantee for a changed
-property model. See [validation](validation.md) and
-[current limit ownership](PHYSICS_DECISIONS.md) before interpreting old verdicts.
+See [validation](validation.md) and
+[current limit ownership](PHYSICS_DECISIONS.md) for evidence and model boundaries.

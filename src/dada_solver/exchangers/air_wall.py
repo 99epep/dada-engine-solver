@@ -6,17 +6,6 @@ capacity are explicit inputs; Doty's overall UA does not identify their split.
 from dataclasses import dataclass
 import math
 from dada_solver import numerical_primitives as numeric
-import time
-
-import numpy as np
-from scipy.integrate import solve_ivp
-
-from dada_solver.dynamics import ThermodynamicModel
-from dada_solver.exchangers.base import LumpedWallThermalModel
-from dada_solver.state import ThermodynamicState
-from dada_solver.dynamics import ValveTopology
-from dada_solver.valves import ValveState
-from dada_solver.integration import IntegrationInterrupted
 
 
 @dataclass(frozen=True, slots=True)

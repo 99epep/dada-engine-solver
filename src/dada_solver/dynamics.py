@@ -45,7 +45,7 @@ class InstantaneousPoint:
     """Exact evaluation-local geometry, primitives and signed hydraulic flows.
 
     Prepared for one trial state only; never cached by angle or across states.
-    The primitive arrays are read-only and ordered S, L, C, H.
+    The primitive arrays are read-only and ordered S, L, H_i, H_o.
     """
 
     theta: float

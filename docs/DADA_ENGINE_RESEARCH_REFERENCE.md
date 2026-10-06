@@ -191,7 +191,7 @@ The external boundary requires:
 | `external_pump_fan_consumption` | `excluded_from_balance` |
 
 An external fluid label does not provide a pump or hydraulic model. Excluded losses are
-not asserted to be physically zero. `POLICIES_V3` in `research.schema_v2`
+not asserted to be physically zero. `POLICIES_V3` in `research.study_schema`
 define the supported base policy sets.
 
 ## Warm starts and domain retry

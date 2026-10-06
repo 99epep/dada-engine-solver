@@ -5,7 +5,7 @@ import json
 from types import SimpleNamespace as NS
 import tomllib
 import pytest
-from dada_solver.research.presets import initialize_v2, initialize_v3
+from dada_solver.research.presets import initialize_kinematics, initialize_external_stream
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.study_io import dumps
 from dada_solver.research.margins import limiting_evidence, margin_record
@@ -18,7 +18,7 @@ from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 from dada_solver.validity import ValidityVerdict
 
 
-@pytest.mark.parametrize('initializer',[initialize_v2,initialize_v3])
+@pytest.mark.parametrize('initializer',[initialize_kinematics,initialize_external_stream])
 def test_new_presets_have_no_flow_cap_but_accept_explicit_one(tmp_path,initializer):
     path=initializer(tmp_path/'study.toml');original=load_study(path)
     assert not any(c['type']=='maximum_absolute_mass_flow' for c in original.data['constraints'])
@@ -29,7 +29,7 @@ def test_new_presets_have_no_flow_cap_but_accept_explicit_one(tmp_path,initializ
 
 
 def test_assessment_exceeds_008_without_optional_cap_and_preserves_rejections(tmp_path):
-    definition=compile_study(load_study(initialize_v2(tmp_path/'study.toml')))
+    definition=compile_study(load_study(initialize_kinematics(tmp_path/'study.toml')))
     @dataclass
     class Conservation: residual:float=0.
     @dataclass

@@ -1,7 +1,6 @@
 """Configure, evaluate, search and compare traceable research studies."""
 import argparse
 from datetime import datetime, timezone
-from importlib.resources import files
 import json
 from pathlib import Path
 import time
@@ -97,11 +96,11 @@ def main(argv=None):
     try:
         if args.command == 'init':
             if args.preset.startswith('external-stream-'):
-                from .presets import initialize_v3
-                path=initialize_v3(args.output,args.small,args.large,mode=args.preset.removeprefix('external-stream-'))
+                from .presets import initialize_external_stream
+                path=initialize_external_stream(args.output,args.small,args.large,mode=args.preset.removeprefix('external-stream-'))
             else:
-                from .presets import initialize_v2
-                path=initialize_v2(args.output,args.small,args.large,coupling=args.coupling)
+                from .presets import initialize_kinematics
+                path=initialize_kinematics(args.output,args.small,args.large,coupling=args.coupling)
             print(f'Created {path} and {path.with_suffix(".basis.json")}. Next: dada-research validate {path}')
         elif args.command == 'validate':
             study = load_study(args.study)

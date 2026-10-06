@@ -140,9 +140,9 @@ def test_nearly_equal_pressures_do_not_lose_root_bracket():
 
 @pytest.mark.parametrize('placement', ['downstream','upstream'])
 def test_external_stream_production_assigns_physical_halves(tmp_path,placement):
-    from dada_solver.research.presets import initialize_v3
+    from dada_solver.research.presets import initialize_external_stream
     from dada_solver.research.schema import compile_study,load_study
-    d=compile_study(load_study(initialize_v3(tmp_path/'study.toml')))
+    d=compile_study(load_study(initialize_external_stream(tmp_path/'study.toml')))
     design=d.adapter.build(dict(d.fixed_parameters))
     for exchanger in (design.heat_in,design.heat_out):
         parts=replace(exchanger,valve_placement=placement).build()

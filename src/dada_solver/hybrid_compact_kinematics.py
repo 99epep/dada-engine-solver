@@ -1,9 +1,9 @@
-"""Nine-coordinate compact hybrid C2 law extracted from the historical motor study.
+"""Nine-coordinate compact hybrid C2 motion law.
 
 Rounded linear BP branches and two-quintic HP kinks are distinct from the
 structured C2 15p representation. The large maximum fixes the motor-angle gauge
 at zero; study angle is minus motor angle. Physical stroke remains unspecified.
-The historical scalar path, vector path and sampled monotonicity guard are kept.
+Scalar and vector evaluation share the sampled monotonicity guard.
 """
 from dataclasses import dataclass, field
 import math
@@ -387,21 +387,3 @@ class HybridCompactKinematics:
         sv, ds = self._pair(theta, True)
         lv, dl = self._pair(theta, False)
         return sv, lv, ds, dl
-
-
-def params_to_kinematics(limits, p):
-    return HybridCompactKinematics(
-        limits.small_cylinder,
-        limits.large_cylinder,
-        float(p["small_max_deg"]) % 360.0,
-        float(p["small_down_duration_deg"]),
-        float(p["large_down_duration_deg"]),
-        float(p["large_down_rounding"]),
-        float(p["small_up_rounding"]),
-        float(p["small_down_kink_u"]),
-        float(p["small_down_kink_q"]),
-        float(p["large_up_kink_u"]),
-        float(p["large_up_kink_q"]),
-    )
-
-

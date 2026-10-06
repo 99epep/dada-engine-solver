@@ -181,11 +181,11 @@ def test_html_cockpit_commands_and_no_external_dependencies(tmp_path):
 
 
 def test_new_and_rescaled_execution_defaults_are_512(tmp_path):
-    from dada_solver.research.presets import initialize_v3
+    from dada_solver.research.presets import initialize_external_stream
     from dada_solver.research.schema import load_study
     from dada_solver.research.rescale import rescale
     from tests.test_research_rescale import snapshot
-    path=initialize_v3(tmp_path/'study.toml')
+    path=initialize_external_stream(tmp_path/'study.toml')
     study=load_study(path)
     assert study.data['execution']['default_max_candidates']==512
     _,_,r=snapshot(path,tmp_path/'run')

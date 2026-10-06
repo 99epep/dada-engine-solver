@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field, replace
 import math
 import time
-from types import SimpleNamespace
 import numpy as np
 
 from dada_solver.dynamics import ValveTopology

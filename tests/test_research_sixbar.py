@@ -9,11 +9,11 @@ import pytest
 from dada_solver.campaign.evaluator import MachineEvaluator, EvaluationControl
 from dada_solver.exchangers.gas_correlations import MicrotubeDomainError
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 
 ROOT = Path(__file__).resolve().parents[1]
 def template(directory):
-    path = initialize_v2(directory/'study.toml', 'six_bar', 'six_bar')
+    path = initialize_kinematics(directory/'study.toml', 'six_bar', 'six_bar')
     raw = load_study(path).data
     for row in raw['parameters']:
         if row['name'] == 'operation.frequency_hz':

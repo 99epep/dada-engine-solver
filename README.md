@@ -23,8 +23,7 @@ research --help
   model boundaries and deliberate omissions.
 
 The local study, portable basis, source version and result artifacts define a
-calculation. Historical examples are reproducibility cases, not universal design
-requirements. No useful shaft power is inferred from indicated gas work.
+calculation. No useful shaft power is inferred from indicated gas work.
 
 ## Install and verify
 

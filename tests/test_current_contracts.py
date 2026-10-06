@@ -7,7 +7,7 @@ import pytest
 from dada_solver.configuration import ValidityThresholds, load_simulation_configuration
 from dada_solver.campaign.history import CampaignHistory, read_journal
 from dada_solver.research.cli import main
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.schema import load_study
 from dada_solver.research.study_io import dumps
 from dada_solver.sizing.configuration import load_sizing_problem
@@ -44,7 +44,7 @@ def test_sizing_rejects_unowned_pressure_controls(tmp_path, location):
 
 @pytest.mark.parametrize('version', [1, 2])
 def test_research_rejects_superseded_schema(tmp_path, version):
-    path = initialize_v2(tmp_path / 'study.toml')
+    path = initialize_kinematics(tmp_path / 'study.toml')
     raw = load_study(path).data
     raw['schema_version'] = version
     path.write_text(dumps(raw))
@@ -54,6 +54,7 @@ def test_research_rejects_superseded_schema(tmp_path, version):
 
 @pytest.mark.parametrize('module,name', [
     ('dada_solver.kinematics', 'VolumeKinematics'),
+    ('dada_solver.hybrid_compact_kinematics', 'params_to_kinematics'),
     ('dada_solver.four_bar', 'FourBarKinematics'),
     ('dada_solver.six_bar', 'load_six_bar_mechanism'),
     ('dada_solver.exchangers.air_wall', 'AirWallMotor'),

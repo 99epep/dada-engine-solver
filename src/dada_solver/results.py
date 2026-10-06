@@ -34,9 +34,9 @@ class CycleDiagnostics:
     temperature_extrema: dict[str, Extrema]
     mass_flow_extrema: dict[str, Extrema]
     cold_heat_rate_extrema: Extrema
-    """Heat rate into working gas C/H_i from its exchanger boundary."""
+    """Heat rate into working gas H_i from its exchanger boundary."""
     hot_heat_rate_extrema: Extrema
-    """Heat rate into working gas H/H_o from its exchanger boundary."""
+    """Heat rate into working gas H_o from its exchanger boundary."""
     valve_events: tuple[ValveEventDiagnostic, ...]
     topology: CycleTopologyDiagnostic
     orifice_pressure_regularization: float = 0.0

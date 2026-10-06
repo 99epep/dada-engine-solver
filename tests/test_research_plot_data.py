@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from dada_solver.research import report
 from dada_solver.research.plot_data import plot_names, candidate_plots, replay_thermal, kinematic_plots
-from dada_solver.research.presets import initialize_v2, initialize_v3
+from dada_solver.research.presets import initialize_kinematics, initialize_external_stream
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
 from tests.test_research_cockpit import campaign
 from tests.test_research_v3 import refrigerator
@@ -24,7 +24,7 @@ def test_plot_names():
 
 @pytest.mark.parametrize('family',['harmonic','slider_crank','four_bar','six_bar'])
 def test_motion_and_mechanism_samples(tmp_path,family):
-    study=load_study(initialize_v2(tmp_path/'study.toml',family,family))
+    study=load_study(initialize_kinematics(tmp_path/'study.toml',family,family))
     data=kinematic_plots(study,{'physical':{}},('positions','velocity','acceleration','mechanisms'))
     for series in data['positions']['series']:
         assert min(series['values'])>=-1e-10 and max(series['values'])<=1+1e-10
@@ -55,7 +55,7 @@ def test_default_targets_best_two_and_explicit_escapes_html_cap(tmp_path,monkeyp
 
 
 def test_missing_state_is_explained_without_integration(tmp_path,monkeypatch):
-    study=load_study(initialize_v3(tmp_path/'study.toml'))
+    study=load_study(initialize_external_stream(tmp_path/'study.toml'))
     monkeypatch.setattr('dada_solver.exchangers.wall_cycle.solve_periodic_wall_machine',lambda *a,**k:pytest.fail('integration'))
     row={'candidate_id':'a'*64,'physical':{}}
     result=candidate_plots(study,row,('pressures',))
@@ -85,7 +85,7 @@ def test_real_wall_replay_and_cache(refrigerator,tmp_path,monkeypatch):
 
 
 def test_cache_identity_includes_state_and_runtime(tmp_path,monkeypatch):
-    study=load_study(initialize_v3(tmp_path/'study.toml'))
+    study=load_study(initialize_external_stream(tmp_path/'study.toml'))
     calls=[]
     def replay(study,row,**kwargs):
         calls.append(row['candidate_id']);return {'pressures':{'series':[]}}

@@ -72,7 +72,7 @@ field or resolved conjugate wall conduction.
 
 `ExternalStreamWallMachine.thermal_rates(angle, state)` supplies the actual instantaneous
 film to integration and diagnostics. A contextual wall refuses `rates()` without
-its flow context, preventing silent substitution of the old static UA. At a
+its flow context, preventing silent substitution of static UA. At a
 closed valve with zero flow, the blocked port pressure jump is not treated as
 an axial tube pressure gradient: the stagnant tube is evaluated at its gas-node
 pressure. The raw blocked-port ratio is retained in the context separately.
@@ -100,7 +100,7 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
 
 - Equation: `x(T)=x0*(T/T0)^1.5*(T0+S)/(T+S)`, separately for mu and k.
 - Meaning: dilute-gas transport temperature dependence, not a fitted DADA loss.
-- Geometry/boundary: bulk property, geometry independent; N2 and Ar. Historical air used this law; current air uses the dilute correlation below.
+- Geometry/boundary: bulk property, geometry independent; N2 and Ar. Air uses the dilute correlation below.
 - Re/Pr/Ma/Kn: not property-law fit coordinates. Pressure: dilute-gas limit.
   Temperature: implementation restricted to 200–1000 K; this is an application
   envelope, not a universal accuracy guarantee from the table.
@@ -119,8 +119,6 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
   100–500 / 500–2000 K branches; [O2 table](https://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Mask=11),
   100–700 / 700–2000 K branches. Air transport cp uses a disclosed approximate
   79/21 mole N2/O2 mixture. The solver's calorically perfect cp/cv are unchanged.
-- Historical He mu/k used NIST table interpolation (200–1000 K); the current
-  dilute Arp / Hands-Arp formulas below replace it.
 - Meaning/type: thermochemical reference fits and calculated reference transport
   data, not microtube experiments. Geometry/boundary/Re/Pr/Ma/Kn: not applicable
   to the property fits; pressure: ideal/dilute gas.

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dada_solver.research.schema_v2 import POLICIES_V3
+from dada_solver.research.study_schema import POLICIES_V3
 from dada_solver.research.charge import POLICY as CHARGE_POLICY, METHOD as CHARGE_METHOD
 from dada_solver.research.margins import PHYSICAL_CONSTRAINTS
 from dada_solver.campaign.parameters import ContinuousParameter, IntegerParameter, ChoiceParameter

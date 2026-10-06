@@ -101,7 +101,7 @@ def test_wheel_can_be_installed_and_load_entry_points(distributions, tmp_path):
          'import sys; sys.path.insert(0, sys.argv[1]); '
          'from importlib.metadata import distribution; '
          'from importlib.resources import files; '
-         'assert files("dada_solver.research").joinpath("data/machine_basis_v2.json").is_file(); '
+         'assert files("dada_solver.research").joinpath("data/machine_basis.json").is_file(); '
          '[entry.load() for entry in distribution("dada-engine-solver").entry_points]',
          str(target)], cwd=tmp_path, capture_output=True, text=True,
     )

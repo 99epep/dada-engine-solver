@@ -5,12 +5,11 @@ read on 2026-09-08; especially sections 1, 2.1, 3, 6.5 and 8.
 
 Plots and reports use `H_i`/`H_o` throughout current cycle plots, pressure and
 temperature reports, valve and flow labels, moisture displays and coupled
-exchanger reports. Historical artifacts retain their original labels; Python and TOML retain
-hydraulic port field names.
+exchanger reports. Python and TOML use the hydraulic port field names below.
 
 ## Scientific mapping
 
-The study now names the exchangers by physical function. Their branch circulation and
+The study names the exchangers by physical function. Their branch circulation and
 hardware are independent of which external reservoir is connected:
 
 | Study | Existing code and TOML branch name | Hydraulic path |
@@ -67,11 +66,11 @@ progress coordinate: `sum(P*dV/dphi)`. Their product with `|omega|` is gas power
 To express torque conjugate to the study angle, multiply by the study direction.
 These remain thermodynamic pressure loads, without friction or inertia.
 
-The origin is preserved, not silently rephased. Harmonic and ideal-piecewise
-examples start at `V_L,max` as in the study. Historical four-bar files expose
-their own configured angular offsets, some slightly away from the exact large
-cylinder maximum. Changing those offsets with pressure-defined filling would
-also change inventory; this update deliberately retains that existing behavior.
+The configured crank origin is preserved. Harmonic and ideal-piecewise laws
+start at `V_L,max`; four-bar laws use their declared angular offsets.
+With pressure-defined filling at the initial angle, changing the origin can
+change inventory. The reference-pressure policy instead uses maximum
+simultaneous total gas volume.
 
 For the external-stream wall family, stream inlet conditions are declared on
 each exchanger in the basis; they are not automatically swapped by editing a

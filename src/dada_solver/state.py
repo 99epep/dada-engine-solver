@@ -88,7 +88,7 @@ class ThermodynamicState:
         return float(np.sum(self.energies))
 
     def temperatures(self, gas: CaloricallyPerfectGas, volumes=None) -> NDArray[np.float64]:
-        """Return temperatures ordered as S, L, C, H in K."""
+        """Return temperatures ordered as S, L, H_i, H_o in K."""
 
         if type(gas) is not CaloricallyPerfectGas:
             if volumes is None: raise ValueError('General fluid temperature reconstruction requires volumes.')
@@ -101,7 +101,7 @@ class ThermodynamicState:
         gas: CaloricallyPerfectGas,
         volumes: InstantaneousVolumes,
     ) -> NDArray[np.float64]:
-        """Return pressures ordered as S, L, C, H in Pa."""
+        """Return pressures ordered as S, L, H_i, H_o in Pa."""
 
         _, pressures = self.temperatures_and_pressures(gas, volumes)
         return pressures

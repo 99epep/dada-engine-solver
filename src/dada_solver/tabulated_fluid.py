@@ -45,7 +45,7 @@ def _frozen_array(value, dtype=float):
 class TabulatedFluid:
     """Runtime table with immutable storage and a canonical scientific artifact.
 
-    V1 uses positive internal-energy reference and complete-cell validity. This
+    Schema 1 uses positive internal-energy reference and complete-cell validity. This
     is not a phase detector: a data provider must certify its single-phase cells.
     Optional caloric/sound fields are presently required for this prototype.
     """

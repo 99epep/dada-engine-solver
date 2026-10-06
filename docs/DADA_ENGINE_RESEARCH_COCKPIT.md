@@ -166,9 +166,7 @@ arguments, tolerances, validity limits or retry rules.
 ## Execution limits are not scientific criteria
 
 Generated and capacity-rescaled studies default to 512 attempts per invocation.
-The CLI interprets the historical configured default 16 as 512 without rewriting
-snapshots; explicit `--max-candidates 16` still requests 16. Other configured caps
-remain effective. This is not a total campaign-size limit.
+The CLI uses the configured attempt cap unless `--max-candidates` overrides it. This is not a total campaign-size limit.
 
 The attempt cap, invocation time budget and individual evaluation deadline have
 different scheduling roles. None establishes physical validity or convergence.

@@ -99,13 +99,13 @@ The following existing closures assume ideal density and/or constant gamma:
 
 - `CompressibleOrifice`: ideal isentropic pressure ratio, sonic/choked mass flow;
 - `QuasiSteadyCompressibleDuct`: mean ideal density and ideal sonic cap;
-- `SeriesDuctOrifice` and historical continuation blends: their component laws;
+- `SeriesDuctOrifice` and continuation blends: their component laws;
 - `TubeHalfLink`: ideal-density losses, compressible ideal-gas Poiseuille flow,
   pressure-squared form, turbulent loss reconstruction and ideal sonic cap;
 - microtube diagnostics/transport: ideal density, dilute-gas sound speed,
   pressure/mean-free-path and Mach/Knudsen assumptions.
 
-`require_ideal_hydraulics` guards historical production flow closures and the
+`require_ideal_hydraulics` guards production flow closures and the
 model composition. Only the existing ideal gas or a **verified ideal-reference
 table** may use them. This validation does not certify real-helium choking.
 `StateHydraulicFlowModel.flow_from_states(first, second, fluid, one_way=...)`

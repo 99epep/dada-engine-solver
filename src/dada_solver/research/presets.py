@@ -7,11 +7,11 @@ from pathlib import Path
 from .artifacts import MechanismArtifact
 from .families import parameter_specs, PHYSICAL_FAMILIES
 from .machine_basis import load_machine_basis, machine_parameters
-from .schema_v2 import POLICIES_V3
+from .study_schema import POLICIES_V3
 from .study_io import dumps
 
 
-def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='independent', champion=False):
+def initialize_kinematics(output, small='harmonic', large='harmonic', *, coupling='independent', champion=False):
     output=Path(output)
     if output.suffix!='.toml': raise ValueError('Study output must end in .toml.')
     resources=files('dada_solver.research').joinpath('data')
@@ -20,7 +20,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     artifact_paths={side:output.with_name(output.stem+'.'+side+'.mechanism.json') for side in ('small','large')}
     if any(p.exists() for p in (output,basis_file,*artifact_paths.values())): raise ValueError('Study or associated input already exists; choose a new output name.')
     if champion: small=large='structured_c2_15p'
-    basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis_v2.json').read_text()
+    basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis.json').read_text()
     basis_data=json.loads(basis_text)
     basis_text=json.dumps(basis_data,indent=2)+'\n'
     digest=hashlib.sha256(basis_text.encode()).hexdigest()
@@ -87,15 +87,15 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     return output
 
 
-def initialize_v3(output, small='harmonic', large='harmonic', *, mode='refrigeration'):
+def initialize_external_stream(output, small='harmonic', large='harmonic', *, mode='refrigeration'):
     """Bounded thermal-boundary fixture, not a human-cell optimized design.
 
     Liquid Cp and conductance are explicit scenario inputs, not correlations.
-    The selected V2 motion coordinates remain separately editable.
+    The selected motion coordinates remain separately editable.
     """
     import tempfile
     import tomllib
-    from .schema_v2 import POLICIES_V3
+    from .study_schema import POLICIES_V3
     from .sixbar import exchanger_from_data
     from .schema import load_study
     output=Path(output)
@@ -105,7 +105,7 @@ def initialize_v3(output, small='harmonic', large='harmonic', *, mode='refrigera
     if mode not in ('motor','refrigeration'): raise ValueError('Unknown operating mode.')
     with tempfile.TemporaryDirectory() as temporary:
         directory=Path(temporary); path=directory/output.name
-        initialize_v2(path,small,large)
+        initialize_kinematics(path,small,large)
         raw=tomllib.loads(path.read_text()); basis=json.loads(path.with_suffix('.basis.json').read_text())
         raw['schema_version']=basis['schema_version']=3
         raw['study'].update(name='External-stream '+mode+' validation',purpose='bounded_thermal_boundary_validation')
@@ -131,7 +131,7 @@ def initialize_v3(output, small='harmonic', large='harmonic', *, mode='refrigera
                 inlet_temperature_k=(278.15 if side=='heat_in' else 298.15) if mode=='refrigeration' else thermal.air_inlet_temperature_k,
                 mass_flow_kg_s=.05,cp_j_kg_k=4180.,wall_conductance_w_k=150.)
             old['family']='external_stream_wall';old['inputs']=inputs
-        # Rebuild owned defaults, retaining all selected V2 motion coordinates.
+        # Rebuild owned defaults, retaining all selected motion coordinates.
         text=json.dumps(basis,indent=2)+'\n';digest=hashlib.sha256(text.encode()).hexdigest()
         path.with_suffix('.basis.json').write_text(text)
         specs,defaults=machine_parameters(load_machine_basis(path.with_suffix('.basis.json'),digest))

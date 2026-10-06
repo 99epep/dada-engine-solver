@@ -39,7 +39,7 @@ capacity. They do not automatically invent a new external G correlation.
 External pressure drop, pump/fan consumption, liquid-side Nusselt correlations,
 fluid phase change, and liquid-loop dynamics are **not modeled** by this family.
 Exclusion from the balance does not mean zero physical loss. The historic air
-hardware family still computes its old optional fan estimates; V3 does not
+hardware family still computes its optional fan estimates; V3 does not
 reinterpret these as liquid-loop estimates.
 
 ## Operating direction and signed performance

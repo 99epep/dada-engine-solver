@@ -100,10 +100,10 @@ assert r.snapshot()['reason']=='numba_unavailable'
 
 
 def test_research_backend_is_identity_owned(tmp_path):
-    from dada_solver.research.presets import initialize_v3
+    from dada_solver.research.presets import initialize_external_stream
     from dada_solver.research.schema import load_study, compile_study
     from tests.test_research_v3 import rewrite
-    path = initialize_v3(tmp_path/'study.toml')
+    path = initialize_external_stream(tmp_path/'study.toml')
     rewrite(path, lambda raw: raw['numerical'].update(backend='python'))
     reference = compile_study(load_study(path))
     rewrite(path, lambda raw: raw['numerical'].update(backend='numba'))

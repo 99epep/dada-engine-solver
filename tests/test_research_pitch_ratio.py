@@ -1,13 +1,13 @@
 """Explicit ratio ownership selects physical packing."""
 import tomllib
 import pytest
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.study_io import dumps
 
 
 def test_ratio_parameter_with_square_basis(tmp_path):
-    path = initialize_v2(tmp_path/'study.toml', 'harmonic', 'harmonic')
+    path = initialize_kinematics(tmp_path/'study.toml', 'harmonic', 'harmonic')
     raw = tomllib.loads(path.read_text())
     raw['parameters'] = [r for r in raw['parameters'] if not r['name'].endswith('.pitch_m')]
     for side in ('heat_in','heat_out'):

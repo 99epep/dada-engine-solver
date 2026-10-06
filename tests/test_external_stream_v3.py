@@ -1,11 +1,10 @@
-"""External boundaries preserve historical algebra and signed cycle accounting."""
+"""External boundaries share current algebra and signed cycle accounting."""
 from dataclasses import replace, asdict
 import json
 from pathlib import Path
 import numpy as np
 import pytest
 from dada_solver.exchangers.air_wall import AirWallExchanger
-from dada_solver.exchangers.external_stream import ExternalStreamWallMachine
 from dada_solver.exchangers.external_stream import (ExternalFluidStream, ExternalStreamWallExchanger,
     ExternalStreamWallMachine)
 from dada_solver.exchangers.wall_cycle import solve_periodic_wall_machine, wall_cycle_performance
@@ -28,7 +27,8 @@ def test_declared_air_instantaneous_parity(flow,conductance):
         for name in ('gas_heat_w','external_heat_w','wall_energy_rate_w','external_outlet_temperature_k','wall_temperature_k'):
             assert getattr(a,name)==getattr(b,name)
         assert b.external_heat_w-b.gas_heat_w==b.wall_energy_rate_w
-        assert 'external_heat_w' in new.rates(t,35000.)
+        assert set(new.rates(t,35000.)) == {'gas_heat_w', 'external_heat_w',
+            'wall_energy_rate_w', 'external_outlet_temperature_k'}
     assert 'external_heat_w' in old.rates(300.,35000.)
 
 

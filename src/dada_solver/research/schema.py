@@ -22,13 +22,13 @@ def load_study(path, *, basis_path=None, artifact_directory=None):
     raw = tomllib.loads(path.read_text())
     if type(raw.get('schema_version')) is not int or raw['schema_version'] != 3:
         raise ValueError('Only study schema_version = 3 is supported.')
-    from .schema_v2 import load_study_v2
-    return load_study_v2(path, basis_path=basis_path, artifact_directory=artifact_directory)
+    from .study_schema import load_current_study
+    return load_current_study(path, basis_path=basis_path, artifact_directory=artifact_directory)
 
 
 def compile_study(study):
-    from .schema_v2 import ResearchDefinitionV2
-    return ResearchDefinitionV2(study)
+    from .study_schema import ResearchDefinition
+    return ResearchDefinition(study)
 
 
 def candidate_for_values(definition, values):

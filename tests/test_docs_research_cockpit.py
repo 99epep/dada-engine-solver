@@ -13,6 +13,8 @@ def test_current_cockpit_role_and_links():
     for token in ('TTY', 'Non-TTY', 'derived', '`bounds`', '`filter`'):
         assert token in text
     assert 'never executes' in text
+    assert 'The CLI uses the configured attempt cap' in text
+    assert 'interprets the historical configured default 16' not in text
 
 
 def test_journal_documentation_matches_current_path_selection(tmp_path):

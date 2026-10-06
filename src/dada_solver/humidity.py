@@ -228,7 +228,7 @@ def moisture_saturation_ratio_history(
     charge_temperature: float,
     charge_pressure: float,
 ) -> np.ndarray:
-    """Return S/L/C/H saturation-ratio histories, with NaN when unavailable."""
+    """Return S/L/H_i/H_o saturation-ratio histories, with NaN when unavailable."""
 
     initial_pressure = saturation_vapor_pressure(
         charge_temperature, over_ice=charge_temperature < 273.16

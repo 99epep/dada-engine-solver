@@ -1,21 +1,17 @@
 """Versioned current-physics thermal regression at fixed inputs."""
-import hashlib
 import json
 from pathlib import Path
-import tomllib
 import pytest
-from dada_solver.research.presets import initialize_v2
+from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.schema import load_study,compile_study,candidate_for_values
-from dada_solver.research.study_io import dumps
 from dada_solver.campaign.evaluator import MachineEvaluator
 
-FIXTURES=Path(__file__).parent/'fixtures/research_v2'
 METRICS=('indicated_power_w','indicated_thermal_efficiency','heat_input_w','maximum_pressure_pa','maximum_temperature_k','maximum_absolute_mass_flow_kg_s')
 
 
 @pytest.mark.parametrize('family',['six_bar','structured_c2_15p'])
 def test_packaged_current_physics_reference(tmp_path,family):
-    path=initialize_v2(tmp_path/'study.toml',family,family,champion=family=='structured_c2_15p')
+    path=initialize_kinematics(tmp_path/'study.toml',family,family,champion=family=='structured_c2_15p')
     definition=compile_study(load_study(path))
     if not definition.numerical_settings['wall_backend'].get('numba_available'):pytest.skip('Stored reference uses Numba.')
     result=MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))

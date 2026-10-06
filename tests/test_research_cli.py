@@ -7,7 +7,7 @@ import pytest
 from dada_solver.campaign.definition import CampaignDefinition
 from dada_solver.campaign.runner import OptimizationCampaign
 from dada_solver.research.cli import main
-from dada_solver.research.presets import initialize_v2 as initialize
+from dada_solver.research.presets import initialize_kinematics as initialize
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.report import inspect
 from tests.test_campaign import Clock, Evaluator
@@ -75,7 +75,7 @@ def test_incompatible_source_refuses_resume_but_remains_inspectable(tmp_path,mon
     d=definition(tmp_path); clock=Clock()
     c=OptimizationCampaign(d,tmp_path/'run',evaluator=Evaluator(clock),clock=clock)
     c.run(100,maximum_candidates=1)
-    monkeypatch.setattr('dada_solver.research.schema_v2.runtime_identity',lambda:dict(changed=True))
+    monkeypatch.setattr('dada_solver.research.study_schema.runtime_identity',lambda:dict(changed=True))
     with pytest.raises(ValueError,match='runtime changed'): CampaignDefinition.resume(tmp_path/'run')
     assert len(inspect(tmp_path/'run')['records'])==1
     source=tmp_path/'run'/'basis.json'; source.write_text(source.read_text()+' ')

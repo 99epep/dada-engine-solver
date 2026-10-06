@@ -19,9 +19,6 @@ from dada_solver.valves import ValveState
 from dada_solver.integration import IntegrationInterrupted
 
 
-def external_heat(rates):
-    return rates["external_heat_w"] if "external_heat_w" in rates else rates["air_heat_w"]
-
 
 @dataclass(frozen=True)
 class ExternalStreamWallMachine:
@@ -47,7 +44,7 @@ class ExternalStreamWallMachine:
         rates = self.model.assemble_rates(point, incoming['gas_heat_w'], outgoing['gas_heat_w'])
         return np.r_[rates.state_derivative,
                      incoming['wall_energy_rate_w'], outgoing['wall_energy_rate_w'],
-                     external_heat(incoming), external_heat(outgoing),
+                     incoming["external_heat_w"], outgoing["external_heat_w"],
                      incoming['gas_heat_w'], outgoing['gas_heat_w'], rates.gas_work_rate] / self.model.angular_speed
 
     def flow_contexts(self, angle, values):

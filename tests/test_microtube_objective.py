@@ -11,9 +11,9 @@ from dada_solver.campaign.objectives import (
 )
 from dada_solver.campaign.evaluator import MachineEvaluator
 from dada_solver.performance import OperatingMode, ConservationReport
-from dada_solver.research.presets import initialize_v3
+from dada_solver.research.presets import initialize_external_stream
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
-from dada_solver.research.schema_v2 import OBJECTIVE_UNITS
+from dada_solver.research.study_schema import OBJECTIVE_UNITS
 from dada_solver.research.study_io import dumps
 from dada_solver.research.progress import metric_parts
 from dada_solver.research import report
@@ -86,7 +86,7 @@ def test_composite_score_objective_unavailability_and_ranking():
 @pytest.mark.parametrize('objective,unit', OBJECTIVE_UNITS.items())
 def test_schema_objective_units_and_direction(tmp_path, objective, unit):
     motor = objective in ('maximize_motor_power', 'maximize_thermal_efficiency')
-    path = initialize_v3(tmp_path/'study.toml', mode='motor' if motor else 'refrigeration')
+    path = initialize_external_stream(tmp_path/'study.toml', mode='motor' if motor else 'refrigeration')
     raw = tomllib.loads(path.read_text())
     raw['objective'] = dict(type=objective, unit=unit)
     path.write_text(dumps(raw))
@@ -98,7 +98,7 @@ def test_schema_objective_units_and_direction(tmp_path, objective, unit):
 
 @pytest.mark.parametrize('objective', [NAME, COMPOSITE_NAME])
 def test_motor_rejects_productivity(tmp_path, objective):
-    path = initialize_v3(tmp_path/'study.toml', mode='motor')
+    path = initialize_external_stream(tmp_path/'study.toml', mode='motor')
     raw = tomllib.loads(path.read_text())
     raw['objective'] = dict(type=objective, unit='W/microtube')
     path.write_text(dumps(raw))
@@ -108,7 +108,7 @@ def test_motor_rejects_productivity(tmp_path, objective):
 @pytest.mark.parametrize('active_sides', [(), ('heat_in',), ('heat_in', 'heat_out')])
 @pytest.mark.parametrize('objective', [NAME, COMPOSITE_NAME, 'maximize_cooling_cop'])
 def test_built_counts_include_fixed_coordinates(tmp_path, monkeypatch, active_sides, objective):
-    path = initialize_v3(tmp_path/'study.toml')
+    path = initialize_external_stream(tmp_path/'study.toml')
     raw = tomllib.loads(path.read_text())
     raw['objective'] = dict(type=objective, unit=OBJECTIVE_UNITS[objective])
     for row in raw['parameters']:
@@ -181,7 +181,7 @@ def test_report_and_progress_cooling_classification(tmp_path):
 
 def test_offline_metric_uses_fixed_and_active_without_replay(tmp_path, monkeypatch):
     import json
-    path = initialize_v3(tmp_path/'study.toml')
+    path = initialize_external_stream(tmp_path/'study.toml')
     definition = compile_study(load_study(path))
     # No search is needed to inspect a standalone evaluation artifact.
     candidate = candidate_for_values(definition, {})

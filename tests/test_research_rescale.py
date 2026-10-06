@@ -9,7 +9,7 @@ import tomllib
 import numpy as np
 import pytest
 
-from dada_solver.research.presets import initialize_v3, initialize_v2
+from dada_solver.research.presets import initialize_external_stream, initialize_kinematics
 from dada_solver.research.schema import load_study, compile_study, candidate_for_values
 from dada_solver.research.study_io import dumps
 from dada_solver.research.rescale import rescale, scaled_microtube_dimensions
@@ -17,7 +17,9 @@ from dada_solver.research import report
 
 
 def snapshot(path, directory, values=None):
-    study = load_study(path); definition = compile_study(study)
+    study = load_study(path)
+    assert study.data['schema_version'] == study.basis.data['schema_version'] == 3
+    definition = compile_study(study)
     directory.mkdir()
     definition.write_snapshots(directory)
     (directory/'definition.json').write_text(json.dumps(dict(definition.identity, definition_id=definition.definition_id)))
@@ -32,7 +34,7 @@ def snapshot(path, directory, values=None):
 
 @pytest.fixture
 def source(tmp_path):
-    path = initialize_v3(tmp_path/'source.toml')
+    path = initialize_external_stream(tmp_path/'source.toml')
     raw = tomllib.loads(path.read_text())
     raw['policies']['outlet_valve_cda'] = 'fixed_source_cda'
     for row in raw['parameters']:
@@ -120,7 +122,7 @@ def test_refuses_overwrite_and_invalid_selector(source,tmp_path):
 
 
 def test_count_ratio_policy_scales_once_and_artifacts_are_portable(tmp_path):
-    path=initialize_v2(tmp_path/'physical.toml','six_bar','six_bar')
+    path=initialize_kinematics(tmp_path/'physical.toml','six_bar','six_bar')
     study,d,r=snapshot(path,tmp_path/'source')
     old=d.adapter.build(dict(study.fixed_parameters,**r['physical']))
     output=rescale(tmp_path/'source',r['candidate_id'],5,tmp_path/'scaled'/'study.toml')
@@ -169,7 +171,7 @@ def test_standalone_evaluation_reconstruction(source,tmp_path):
 
 def test_volume_sampling_motor_uses_production_direction_once(tmp_path):
     from dada_solver.research.visualization import sample_report_volumes
-    path=initialize_v2(tmp_path/'motor.toml','hybrid_compact','hybrid_compact')
+    path=initialize_kinematics(tmp_path/'motor.toml','hybrid_compact','hybrid_compact')
     study=load_study(path);d=compile_study(study)
     design=d.adapter.build(study.fixed_parameters)
     model=design.build().model
@@ -236,7 +238,7 @@ def test_quantization_ties_and_invalid_dimensions():
 
 
 def test_quantized_collapsed_bounds_rejected_before_publication(tmp_path):
-    path = initialize_v3(tmp_path/'source.toml')
+    path = initialize_external_stream(tmp_path/'source.toml')
     raw = tomllib.loads(path.read_text())
     row = next(r for r in raw['parameters'] if r['name']=='microtube.heat_in.tube_count')
     row.pop('value')
@@ -245,4 +247,16 @@ def test_quantized_collapsed_bounds_rejected_before_publication(tmp_path):
     _, _, record = snapshot(path,tmp_path/'source')
     with pytest.raises(ValueError,match='bounds.*collapse'):
         rescale(tmp_path/'source',record['candidate_id'],.25,tmp_path/'scaled.toml')
+    assert not list(tmp_path.glob('scaled.*'))
+
+
+@pytest.mark.parametrize('version', [1, 2, True, '3'])
+def test_rescale_requires_current_schema_before_reconstruction(tmp_path, monkeypatch, version):
+    import importlib
+    module = importlib.import_module('dada_solver.research.rescale')
+    monkeypatch.setattr(module, 'inspect', lambda source: dict(scientific=dict(schema_version=version)))
+    monkeypatch.setattr(module, 'stored_study', lambda data: pytest.fail('reconstruction'))
+    output = tmp_path / 'scaled.toml'
+    with pytest.raises(ValueError, match='requires a schema-3 machine study'):
+        rescale('source', 'best', 1, output)
     assert not list(tmp_path.glob('scaled.*'))

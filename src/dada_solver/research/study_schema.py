@@ -1,7 +1,6 @@
 """Research schema 3: independently owned fixed/active coordinates and motion families."""
 from dataclasses import dataclass, asdict, replace
 import copy
-import json
 import math
 from pathlib import Path
 import tomllib
@@ -43,7 +42,7 @@ POLICIES_V3 = dict(volume_partition='total_swept_and_clearance_ratios', charge='
     external_loop_hydraulics='unmodelled', external_pump_fan_consumption='excluded_from_balance')
 
 @dataclass(frozen=True)
-class StudyV2:
+class StudyDefinition:
     path: Path
     source: str
     basis: object
@@ -59,13 +58,13 @@ class StudyV2:
     def data(self): return tomllib.loads(self.source)
 
 
-def load_study_v2(path, *, basis_path=None, artifact_directory=None):
+def load_current_study(path, *, basis_path=None, artifact_directory=None):
     path=Path(path); source=path.read_text(); raw=tomllib.loads(source); canonical_json(raw)
     keys(raw,('schema_version','study','sources','kinematics','parameters','policies','objective','constraints',
               'mechanical_constraints','screening','search','numerical','warm_start','execution'),'study schema_version = 3',('charge_reference',))
     if type(raw['schema_version']) is not int or raw['schema_version'] != 3: raise ValueError('Expected schema_version = 3.')
     keys(raw['study'],('name','protocol','purpose'),'study',('parent_candidate_id',))
-    if raw['study']['protocol']!='machine_design': raise ValueError('V2 protocol must be machine_design.')
+    if raw['study']['protocol']!='machine_design': raise ValueError('Study protocol must be machine_design.')
     if any(not isinstance(x,str) or not x for x in raw['study'].values()): raise ValueError('Study labels must be nonempty strings.')
     keys(raw['sources'],('machine',),'sources'); ref=raw['sources']['machine']
     keys(ref,('path','sha256'),'sources.machine')
@@ -76,7 +75,7 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     policy=raw['policies']
     from .charge import POLICY as REFERENCE_CHARGE
     if dict(policy,outlet_valve_cda=expected_policy['outlet_valve_cda'],charge='explicit_inventory')!=expected_policy or policy.get('charge') not in ('explicit_inventory',REFERENCE_CHARGE) or policy.get('outlet_valve_cda') not in ('source_cda_times_count_ratio_v1','fixed_source_cda','geometry_conduit_area_v1'):
-        raise ValueError('Unsupported V2 physical policy.')
+        raise ValueError('Unsupported physical policy.')
     if policy['outlet_valve_cda']=='geometry_conduit_area_v1' and any(f'microtube.{side}.collector_half_angle_deg' not in specs for side in ('heat_in','heat_out')):
         raise ValueError('geometry_conduit_area_v1 requires circular collectors on both exchangers.')
     if policy['charge']==REFERENCE_CHARGE:
@@ -201,13 +200,13 @@ def load_study_v2(path, *, basis_path=None, artifact_directory=None):
     for side,artifact in artifacts.items():
         scientific['kinematics'][side].pop('artifact')
         scientific['kinematics'][side]['mechanism']=artifact.scientific
-    study=StudyV2(path,source,basis,space,content_hash(scientific),scientific,fixed,artifacts,settings,tuple(mechanical))
+    study=StudyDefinition(path,source,basis,space,content_hash(scientific),scientific,fixed,artifacts,settings,tuple(mechanical))
     # Configuration validation constructs and screens once, never integrates.
-    V2Adapter(study).build(dict(fixed,**{p.name:p.initial for p in active})).build()
+    StudyAdapter(study).build(dict(fixed,**{p.name:p.initial for p in active})).build()
     return study
 
 
-class V2Adapter:
+class StudyAdapter:
     def __init__(self,study,configuration=None):
         self.study=study; self.configuration=configuration or study.basis.configuration
 
@@ -251,13 +250,13 @@ class V2Adapter:
         return design
 
 
-class ResearchDefinitionV2(CampaignDefinition):
+class ResearchDefinition(CampaignDefinition):
     def __init__(self,study):
         self.study=study; raw=study.data
         self.path,self.source=study.path,study.source; self.space=study.space
         self.fixed_parameters=study.fixed_parameters
         self.configuration=replace(study.basis.configuration,numerical=replace(study.basis.configuration.numerical,maximum_cycles=raw['numerical']['maximum_cycles']))
-        self.adapter=V2Adapter(study,self.configuration)
+        self.adapter=StudyAdapter(study,self.configuration)
         self.families={side:study.settings[side]['family'] for side in ('small','large')}
         self.families.update(kinematics='composed',exchanger='microtube' if study.basis.heat_in is not None else 'reservoir')
         from dada_solver.campaign.objectives import (
@@ -284,14 +283,13 @@ class ResearchDefinitionV2(CampaignDefinition):
         for name in ('initial_evaluation_seconds','deadline_grace_seconds'): setattr(self,name,raw['execution'][name])
         self.maximum_candidates=raw['execution']['default_max_candidates']
         self.identity=dict(schema_version=raw['schema_version'],definition_kind='research_v'+str(raw['schema_version']),study_id=study.study_id,scientific=study.scientific,runtime=runtime_identity(),wall_backend=backend_identity(self.wall_backend))
-        if raw['schema_version']==3:
-            self.families['exchanger']='external_stream_wall' if study.basis.heat_in is not None and hasattr(study.basis.heat_in.inputs,'external_stream') else self.families['exchanger']
-            fluid=self.configuration.gas
-            if hasattr(fluid,'identity'):
-                self.identity['fluid']=fluid.identity
-                self.numerical_settings['fluid']=fluid.identity
-                self.identity['compiled_kernel']='tabulated_rho_u_wall_v1'
-            else: self.identity['compiled_kernel']='calorically_perfect_wall_v1'
+        self.families['exchanger']='external_stream_wall' if study.basis.heat_in is not None and hasattr(study.basis.heat_in.inputs,'external_stream') else self.families['exchanger']
+        fluid=self.configuration.gas
+        if hasattr(fluid,'identity'):
+            self.identity['fluid']=fluid.identity
+            self.numerical_settings['fluid']=fluid.identity
+            self.identity['compiled_kernel']='tabulated_rho_u_wall_v1'
+        else: self.identity['compiled_kernel']='calorically_perfect_wall_v1'
         self.definition_id=content_hash(self.identity)
 
     def write_snapshots(self,directory):

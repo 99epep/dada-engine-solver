@@ -6,7 +6,7 @@ from dada_solver.exchangers.gas_transport import DiluteGasTransport
 from dada_solver.exchangers.wall_cycle import WallCycleResult
 from dada_solver.campaign.runner import OptimizationCampaign
 from dada_solver.campaign.history import CampaignHistory
-from dada_solver.research.presets import initialize_v3
+from dada_solver.research.presets import initialize_external_stream
 from dada_solver.research.schema import load_study,compile_study
 from dada_solver.research.study_io import dumps
 from tests.test_research_v2 import activate
@@ -15,7 +15,7 @@ from tests.test_research_v2 import activate
 @pytest.mark.parametrize('temperature,category',[(99.9,'below'),(1000.1,'above')])
 @pytest.mark.parametrize('stage',['integration','replay','diagnostics'])
 def test_transport_rejection_then_next_candidate(tmp_path,monkeypatch,stage,temperature,category):
-    path=initialize_v3(tmp_path/'study.toml')
+    path=initialize_external_stream(tmp_path/'study.toml')
     raw=load_study(path).data;activate(raw,'volume.swept_ratio',.01)
     path.write_text(dumps(raw));definition=compile_study(load_study(path))
     calls=[]

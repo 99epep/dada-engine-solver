@@ -45,7 +45,7 @@ def scaled_microtube_dimensions(count, length, factor):
 
 
 def rescale(source, candidate, factor, output, *, mode='capacity'):
-    """Create a new portable V2/V3 study centered on a selected candidate.
+    """Create a new portable schema-3 study centered on a selected candidate.
 
     Active bounds follow the capacity rule; intensive bounds and all constraints
     stay unchanged. Microtube count and length share total-length growth.
@@ -58,8 +58,9 @@ def rescale(source, candidate, factor, output, *, mode='capacity'):
     if output.suffix != '.toml': raise ValueError('Study output must end in .toml.')
     basis_path = output.with_suffix('.basis.json')
     data = inspect(source)
-    if data['scientific']['schema_version'] not in (2, 3):
-        raise ValueError('Capacity rescale requires a V2/V3 machine study; V1 needs explicit migration first.')
+    version = data['scientific']['schema_version']
+    if type(version) is not int or version != 3:
+        raise ValueError('Capacity rescale requires a schema-3 machine study.')
     record, = select_records(data, [candidate])
     changes = []
     def scale(value, name):

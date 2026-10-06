@@ -71,8 +71,8 @@ def test_inspection_rejects_corrupted_scientific_identity(tmp_path):
 
 def test_exchanger_total_volume_and_comparison_fields(tmp_path):
     from tests.test_research_rescale import snapshot
-    from dada_solver.research.presets import initialize_v3
-    path=initialize_v3(tmp_path/'study.toml')
+    from dada_solver.research.presets import initialize_external_stream
+    path=initialize_external_stream(tmp_path/'study.toml')
     _,definition,record=snapshot(path,tmp_path/'source')
     record['derived']={'heat_in_gas_volume_m3':.001,'heat_out_gas_volume_m3':.002}
     journal=tmp_path/'source'/'history.jsonl.gz'

@@ -1,4 +1,4 @@
-"""Historical phase wrapper around production canonical periodic splines."""
+"""Independent-phase wrapper around production canonical periodic splines."""
 from dataclasses import dataclass
 import math
 import numpy as np
