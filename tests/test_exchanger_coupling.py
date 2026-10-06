@@ -27,7 +27,7 @@ from dada_solver.topology import (
 
 def _base_configuration():
     return load_simulation_configuration(
-        Path(__file__).parents[1] / "examples" / "harmonic_controlled_example.toml"
+        Path(__file__).parents[1] / "tests" / "data" / "sizing_machine.toml"
     )
 
 

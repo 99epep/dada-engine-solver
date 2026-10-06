@@ -3,15 +3,15 @@
 For the current circular gas-microtube production closure, see
 [MICROTUBE_GAS_MODEL.md](MICROTUBE_GAS_MODEL.md). It provides variable transport
 and thermal-entry Nu through the existing hardware/wall architecture. The
-rectangular-channel screening correlations described below retain their
-historical fully developed assumptions for compatibility.
+rectangular-channel screening correlations described below use fully developed
+flow assumptions.
 
 The exchanger module translates a real gas-passage geometry into quantities
 that the thermodynamic sizing problem can constrain. It is a low-order design
 tool, not a CFD solver and not an experimental calibration.
 
 Current displays use `H_i` for the heat-in exchanger and `H_o` for the heat-out
-exchanger. The historical `cold`/`C` and `hot`/`H` branch identifiers below are
+exchanger. The legacy `cold`/`C` and `hot`/`H` branch identifiers below are
 retained in Python and TOML for compatibility; their external reservoirs swap
 in motor operation. See [MOTOR_OPERATION.md](MOTOR_OPERATION.md).
 
@@ -89,8 +89,7 @@ The literature therefore supports the present steady-flow model as a screening
 baseline, but it does not provide one universal multiplier that converts it
 into a validated DADA exchanger. Published oscillatory effects can have either
 sign and depend on waveform, frequency, penetration depth, bypass and geometry.
-The example transport values are ordinary-air order-of-magnitude inputs; the
-configured `external_conductance` remains an assumed boundary value until the
+The configured `external_conductance` remains an assumed boundary value until the
 complete glycol-side or ambient-side geometry is specified.
 
 ## Moisture boundary
@@ -138,24 +137,23 @@ mean-density approximation, not a full compressible duct solution.
 
 ## Command line
 
-The illustrative configuration
-[`examples/exchanger_screening_example.toml`](../examples/exchanger_screening_example.toml)
-defines a finite design grid:
+The TOML configuration declares a finite design grid, gas and transport
+properties, thermal resistances and explicit screening requirements:
 
 ```console
-dada-exchanger examples/exchanger_screening_example.toml
+dada-exchanger path/to/exchanger_screening.toml
 ```
 
 The program reports all feasible geometries or returns a nonzero status when
-the supplied grid contains none. Inputs in that file are examples, not
-validated DADA exchanger properties.
+the supplied grid contains none. Declaring inputs does not establish experimental
+validation of an exchanger.
 
 ## Constrained geometry proposal
 
 The grid is also the deterministic starting set for a geometry optimizer:
 
 ```console
-dada-exchanger examples/exchanger_screening_example.toml \
+dada-exchanger path/to/exchanger_screening.toml \
     --optimize minimum_gas_volume
 ```
 
@@ -193,7 +191,7 @@ The coupled command alternates a complete periodic simulation and two
 independent constrained geometry searches:
 
 ```console
-dada-exchanger-coupled examples/exchanger_coupled_example.toml
+dada-exchanger-coupled path/to/exchanger_coupled.toml
 ```
 
 The coupled file references one thermodynamic configuration plus separate

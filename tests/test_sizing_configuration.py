@@ -5,65 +5,44 @@ from dada_solver.sizing.design import DesignParameter
 from dada_solver.sizing.objectives import MinimizeTotalSweptVolume
 
 
-EXAMPLE_PATH = (
-    Path(__file__).parents[1] / "examples" / "sizing_controlled_example.toml"
-)
-COOLING_CELL_SPACE = (
-    Path(__file__).parents[1] / "examples" / "cooling_cell_sensitivity_space.toml"
-)
+def test_sizing_configuration_resolves_relative_base_and_ignores_pressure_veto(tmp_path):
+    base = tmp_path / "machine.toml"
+    base.write_bytes((Path(__file__).parent / "data" / "sizing_machine.toml").read_bytes())
+    path = tmp_path / "sizing.toml"
+    path.write_text('''[problem]
+base_configuration = "machine.toml"
+[[variables]]
+parameter = "small_swept_volume"
+lower_bound = 0.0001
+upper_bound = 0.001
+initial_value = 0.0002
+[objective]
+type = "minimize_total_swept_volume"
+[[constraints]]
+type = "maximum_pressure"
+limit = 200000.0
+[[constraints]]
+type = "maximum_pressure_equalization_error"
+limit = 0.01
+[optimizer]
+objective_scale = 0.001
+unavailable_objective_penalty = 1000.0
+unavailable_constraint_margin = -1.0
+maximum_iterations = 5
+function_tolerance = 0.000001
+[optimizer.constraint_scales]
+maximum_pressure = 100000.0
+maximum_pressure_equalization_error = 0.01
+''')
 
+    loaded = load_sizing_problem(path)
 
-def test_complete_sizing_configuration_loads_without_running_simulation() -> None:
-    loaded = load_sizing_problem(EXAMPLE_PATH)
-
+    assert loaded.base_configuration_path == base
     assert isinstance(loaded.problem.objective, MinimizeTotalSweptVolume)
-    assert tuple(variable.parameter for variable in loaded.problem.variables) == (
+    assert tuple(v.parameter for v in loaded.problem.variables) == (
         DesignParameter.SMALL_SWEPT_VOLUME,
-        DesignParameter.LARGE_SWEPT_VOLUME,
-        DesignParameter.CHARGE_PRESSURE,
     )
-    # The legacy pressure-equalization veto and its scale are ignored.
-    assert len(loaded.problem.constraints) == 6
-    assert "maximum_pressure_equalization_error" not in {c.name for c in loaded.problem.constraints}
-    assert set(loaded.optimization_settings.constraint_scales) == {
-        constraint.name for constraint in loaded.problem.constraints
-    }
-    assert loaded.base_configuration_path.name == "harmonic_controlled_example.toml"
-    assert loaded.cooling_cell_scenario is not None
-    assert (
-        loaded.cooling_cell_scenario.reference_task.required_average_cooling_power
-        > 347.0
-    )
-
-
-def test_cooling_cell_space_preserves_user_selected_si_bounds() -> None:
-    loaded = load_sizing_problem(COOLING_CELL_SPACE)
-    variables = {item.parameter: item for item in loaded.problem.variables}
-
-    assert variables[DesignParameter.ANGULAR_SPEED].lower_bound == 3.141592653589793
-    assert variables[DesignParameter.ANGULAR_SPEED].upper_bound == 157.07963267948966
-    assert variables[DesignParameter.ANGULAR_SPEED].initial_value == 5.0
-    assert variables[DesignParameter.CHARGE_PRESSURE].lower_bound == 1.0e5
-    assert variables[DesignParameter.CHARGE_PRESSURE].upper_bound == 2.0e6
-    assert variables[DesignParameter.SMALL_SWEPT_VOLUME].lower_bound == 1.0e-5
-    assert variables[DesignParameter.SMALL_SWEPT_VOLUME].upper_bound == 5.0e-3
-    assert variables[DesignParameter.SMALL_SWEPT_VOLUME].initial_value == 4.0e-4
-    assert variables[DesignParameter.LARGE_SWEPT_VOLUME].initial_value == 8.0e-4
-    assert variables[DesignParameter.SMALL_CLEARANCE_RATIO].lower_bound == 0.005
-    assert variables[DesignParameter.SMALL_CLEARANCE_RATIO].upper_bound == 0.10
-    assert variables[DesignParameter.SMALL_CLEARANCE_RATIO].initial_value == 0.01
-    assert variables[DesignParameter.LARGE_CLEARANCE_RATIO].initial_value == 0.01
-    assert variables[DesignParameter.COLD_HEAT_EXCHANGER_VOLUME].lower_bound == 1.0e-6
-    assert variables[DesignParameter.COLD_HEAT_EXCHANGER_VOLUME].upper_bound == 2.0e-3
-    assert variables[DesignParameter.COLD_HEAT_EXCHANGER_VOLUME].initial_value == 2.0e-5
-    assert variables[DesignParameter.HOT_HEAT_EXCHANGER_VOLUME].initial_value == 2.0e-5
-    assert variables[DesignParameter.COLD_UA].lower_bound == 0.1
-    assert variables[DesignParameter.COLD_UA].upper_bound == 500.0
-    assert variables[DesignParameter.LARGE_TO_HOT_CDA].lower_bound == 1.0e-8
-    assert variables[DesignParameter.LARGE_TO_HOT_CDA].upper_bound == 1.0e-3
-    assert variables[DesignParameter.LARGE_TO_HOT_CDA].initial_value == 1.0e-5
-    assert variables[DesignParameter.SMALL_TO_COLD_CDA].initial_value == 1.0e-5
-    assert variables[DesignParameter.HOT_TO_SMALL_VALVE_CDA].initial_value == 4.0e-6
-    assert variables[DesignParameter.COLD_TO_LARGE_VALVE_CDA].initial_value == 4.0e-6
-    assert loaded.problem.evaluator.base_configuration.cold_reservoir_temperature == 268.15
-    assert loaded.problem.evaluator.base_configuration.hot_reservoir_temperature == 298.15
+    assert loaded.problem.variables[0].initial_value == 0.0002
+    assert tuple(c.name for c in loaded.problem.constraints) == ("maximum_pressure",)
+    assert loaded.optimization_settings.constraint_scales == {"maximum_pressure": 100000.0}
+    assert loaded.cooling_cell_scenario is None

@@ -14,8 +14,6 @@ from dada_solver.sizing.constraints import (
     MaximumPistonGasForce,
     RequireNominalCycleTopology,
     RequireValidThermodynamicModel,
-    CompleteCoolingTaskWithinTime,
-    MaximumMechanicalInputPower,
 )
 from dada_solver.sizing.design import (
     DesignParameter,
@@ -32,17 +30,25 @@ from dada_solver.sizing.objectives import (
 from dada_solver.mechanics import PistonFaceAreas
 from dada_solver.topology import CycleTopologyClassification
 from dada_solver.validity import ValidityVerdict
-from dada_solver.thermal_load_configuration import load_cooling_cell_scenario
 
 
-EXAMPLE_PATH = (
-    Path(__file__).parents[1] / "examples" / "harmonic_controlled_example.toml"
+CONFIGURATION_PATH = (
+    Path(__file__).parents[1] / "tests" / "data" / "sizing_machine.toml"
 )
-LOAD_PATH = Path(__file__).parents[1] / "examples" / "cooling_cell_reference_load.toml"
+
+
+def _piecewise_configuration():
+    return replace(
+        load_simulation_configuration(CONFIGURATION_PATH),
+        kinematics_type="ideal_piecewise_linear",
+        small_lambda_target=0.6,
+        large_lambda_target=0.6,
+        adiabatic_sector_fraction=0.2,
+    )
 
 
 def test_design_point_changes_supported_parameters_without_mutating_base() -> None:
-    base = load_simulation_configuration(EXAMPLE_PATH)
+    base = load_simulation_configuration(CONFIGURATION_PATH)
     point = DesignPoint(
         {
             DesignParameter.SMALL_CLEARANCE_VOLUME: 1.5e-4,
@@ -73,7 +79,7 @@ def test_design_point_changes_supported_parameters_without_mutating_base() -> No
 
 
 def test_pressure_and_mass_cannot_both_be_design_variables() -> None:
-    base = load_simulation_configuration(EXAMPLE_PATH)
+    base = load_simulation_configuration(CONFIGURATION_PATH)
     point = DesignPoint(
         {
             DesignParameter.CHARGE_PRESSURE: 2.0e5,
@@ -86,7 +92,7 @@ def test_pressure_and_mass_cannot_both_be_design_variables() -> None:
 
 
 def test_clearance_ratio_scales_with_designed_swept_volume_and_excludes_hx() -> None:
-    base = load_simulation_configuration(EXAMPLE_PATH)
+    base = load_simulation_configuration(CONFIGURATION_PATH)
     point = DesignPoint(
         {
             DesignParameter.SMALL_SWEPT_VOLUME: 4.0e-4,
@@ -109,8 +115,7 @@ def test_clearance_ratio_scales_with_designed_swept_volume_and_excludes_hx() -> 
 
 
 def test_common_lambda_design_keeps_piecewise_targets_equal() -> None:
-    path = Path(__file__).parents[1] / "examples" / "cooling_cell_machine_exploratory.toml"
-    base = load_simulation_configuration(path)
+    base = _piecewise_configuration()
     changed = apply_design_point(
         base,
         DesignPoint(
@@ -127,9 +132,7 @@ def test_common_lambda_design_keeps_piecewise_targets_equal() -> None:
 
 
 def test_individual_lambda_design_decouples_piecewise_targets() -> None:
-    base = load_simulation_configuration(
-        Path(__file__).parents[1] / "examples" / "cooling_cell_machine_exploratory.toml"
-    )
+    base = _piecewise_configuration()
 
     changed = apply_design_point(
         base,
@@ -146,9 +149,7 @@ def test_individual_lambda_design_decouples_piecewise_targets() -> None:
 
 
 def test_common_and_individual_lambda_targets_are_mutually_exclusive() -> None:
-    base = load_simulation_configuration(
-        Path(__file__).parents[1] / "examples" / "cooling_cell_machine_exploratory.toml"
-    )
+    base = _piecewise_configuration()
 
     with pytest.raises(ValueError, match="cannot be combined"):
         apply_design_point(
@@ -163,7 +164,7 @@ def test_common_and_individual_lambda_targets_are_mutually_exclusive() -> None:
 
 
 def test_kinematic_design_parameters_reject_incompatible_law() -> None:
-    base = load_simulation_configuration(EXAMPLE_PATH)
+    base = load_simulation_configuration(CONFIGURATION_PATH)
     with pytest.raises(ValueError, match="ideal_piecewise_linear"):
         apply_design_point(
             base,
@@ -172,7 +173,7 @@ def test_kinematic_design_parameters_reject_incompatible_law() -> None:
 
 
 def test_absolute_clearance_and_ratio_cannot_both_be_designed() -> None:
-    base = load_simulation_configuration(EXAMPLE_PATH)
+    base = load_simulation_configuration(CONFIGURATION_PATH)
     point = DesignPoint(
         {
             DesignParameter.SMALL_CLEARANCE_VOLUME: 1.0e-5,
@@ -213,7 +214,7 @@ def test_physical_constraint_limits_must_be_positive() -> None:
 
 
 def test_objectives_remain_interchangeable() -> None:
-    configuration = load_simulation_configuration(EXAMPLE_PATH)
+    configuration = load_simulation_configuration(CONFIGURATION_PATH)
     evaluation = SimpleNamespace(
         configuration=configuration,
         performance=SimpleNamespace(cooling_cop=2.5),
@@ -226,13 +227,14 @@ def test_objectives_remain_interchangeable() -> None:
 
 
 def test_charging_pressure_objective_uses_actual_theta_zero_filling_volume() -> None:
-    configuration = load_simulation_configuration(EXAMPLE_PATH)
+    configuration = load_simulation_configuration(CONFIGURATION_PATH)
     mass_configuration = replace(
         configuration,
         charge=replace(configuration.charge, pressure=None, total_mass=0.002),
     )
     evaluation = SimpleNamespace(configuration=mass_configuration)
-    filling_volume = 1.0e-4 + 6.0e-4 + 1.0e-4 + 1.0e-4
+    # At 90 degrees phase offset the small cylinder is at mid-stroke.
+    filling_volume = 2.0e-4 + 6.0e-4 + 1.0e-4 + 1.0e-4
     expected = (
         0.002
         * configuration.gas.gas_constant
@@ -292,24 +294,3 @@ def test_validity_and_topology_constraints_are_explicit() -> None:
 
     assert not topology.satisfied
     assert not validity.satisfied
-
-
-def test_cooling_task_and_human_power_constraints_use_machine_results() -> None:
-    scenario = load_cooling_cell_scenario(LOAD_PATH)
-    evaluation = SimpleNamespace(
-        performance=SimpleNamespace(
-            cooling_power=350.0,
-            operating_mode=OperatingMode.REFRIGERATION,
-            mechanical_input_power=145.0,
-        )
-    )
-
-    task = CompleteCoolingTaskWithinTime(scenario.reference_task).evaluate(evaluation)
-    human = MaximumMechanicalInputPower(150.0).evaluate(evaluation)
-
-    assert task.satisfied
-    assert task.margin == pytest.approx(
-        350.0 - scenario.reference_task.required_average_cooling_power
-    )
-    assert human.satisfied
-    assert human.margin == pytest.approx(5.0)

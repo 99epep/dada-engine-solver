@@ -1,30 +1,22 @@
 from dataclasses import dataclass
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-from dada_solver.configuration import load_simulation_configuration
 from dada_solver.sizing.constraints import ConstraintValue
-from dada_solver.sizing.design import DesignParameter, DesignPoint, DesignVariable, apply_design_point
+from dada_solver.sizing.design import DesignParameter, DesignPoint, DesignVariable
 from dada_solver.sizing.objectives import ObjectiveValue
 from dada_solver.sizing.optimizer import OptimizationSettings, SlsqpSizingOptimizer
 from dada_solver.sizing.problem import SizingProblem
 
 
-EXAMPLE_PATH = (
-    Path(__file__).parents[1] / "examples" / "harmonic_controlled_example.toml"
-)
-
-
 class AlgebraicEvaluator:
-    def __init__(self) -> None:
-        self.base = load_simulation_configuration(EXAMPLE_PATH)
-
     def evaluate(self, point: DesignPoint):
         return SimpleNamespace(
             point=point,
-            configuration=apply_design_point(self.base, point),
+            configuration=SimpleNamespace(
+                cold_thermal_conductance=point.values[DesignParameter.COLD_UA]
+            ),
             usable=True,
         )
 

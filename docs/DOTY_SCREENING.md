@@ -63,8 +63,9 @@ and 5500 Pa. Doty notes flow maldistribution as a possible explanation for the
 lower measured losses; it is not used here as a fitted correction.
 
 The project also performs an independent reproduction of Eq. 7 rather than
-using the Table 2 calculated column as an input. This deliberately retained reconstruction uses a historical property convention,
-not the current production helium transport closure. Its assumptions are:
+using the Table 2 calculated column as an input. This check uses an explicit
+NIST/ideal-gas property convention, separate from the production helium transport
+closure. Its assumptions are:
 
 - 309 tubes, 0.33 mm internal diameter and 127 mm length;
 - representative tube temperature `(T3 + T4) / 2`;
@@ -82,8 +83,8 @@ require exact numerical reproduction of its calculated column.
 
 `MicrotubeBank.laminar_tube_loss()` reproduces the algebraic form of Doty's
 Eq. 7, but the independent absolute predictions remain above the measured
-helium losses. No empirical multiplier forces agreement. The detailed absolute
-error table and its interpretation belong to
+helium losses. No empirical multiplier forces agreement. Reconstruction
+assumptions and validation limits are described in
 [exchanger validation](EXCHANGER_VALIDATION.md#doty-hydraulic-comparison).
 
 ### Relative scaling between helium measurements
@@ -125,6 +126,6 @@ helium reconstruction without running a cycle campaign.
 - [Exchanger validation](EXCHANGER_VALIDATION.md): absolute discrepancies and
   the absence of independent shell-side thermal validation.
 - [Microtube model](MICROTUBE_GAS_MODEL.md): current production equations,
-  transport and domains, separate from the historical interpolation above.
+  transport and domains, separate from the NIST reconstruction above.
 - [External streams](EXTERNAL_STREAM_THERMAL_MODEL.md): finite-stream and wall
   boundaries; they are not supplied by `scale_bank`.

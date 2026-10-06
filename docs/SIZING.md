@@ -91,10 +91,8 @@ The SLSQP adapter is one local constrained-search strategy. The same
 
 ## TOML and command line
 
-[`examples/sizing_controlled_example.toml`](../examples/sizing_controlled_example.toml)
-shows the complete file structure for variables, one selected objective,
-constraints, scales and optimizer termination settings. It is a controlled and
-potentially infeasible example, not a validated design case.
+The TOML file declares a base simulation configuration, variables, one selected
+objective, constraints, scales and optimizer termination settings.
 
 After package installation, a configured run is started with:
 
@@ -116,11 +114,6 @@ necessarily failed.
 Each function evaluation may require many complete thermodynamic cycles. The
 command therefore does not silently loosen periodic tolerances or replace
 failed points with plausible thermodynamic results.
-
-The controlled example's initial point converges periodically but is
-infeasible when it does not provide the required positive cooling power.
-Its obsolete pressure-equalization limit is ignored. This is a diagnostic example,
-not tuned into a favorable design.
 
 ## Pareto comparison
 

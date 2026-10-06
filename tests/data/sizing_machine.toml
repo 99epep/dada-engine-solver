@@ -1,0 +1,51 @@
+# Minimal configuration for sizing transformations and configuration loaders.
+[metadata]
+example_data = true
+[working_gas]
+gas_constant = 287.0
+heat_capacity_cp = 1004.5
+heat_capacity_cv = 717.5
+[geometry]
+small_cylinder_minimum_volume = 0.0001
+small_cylinder_maximum_volume = 0.0003
+large_cylinder_minimum_volume = 0.0002
+large_cylinder_maximum_volume = 0.0006
+cold_heat_exchanger_volume = 0.0001
+hot_heat_exchanger_volume = 0.0001
+[reservoirs]
+cold_temperature = 280.0
+hot_temperature = 300.0
+[heat_transfer]
+cold_ua = 5.0
+hot_ua = 5.0
+[operation]
+angular_speed = 10.0
+[charge]
+temperature = 290.0
+pressure = 100000.0
+[hydraulics]
+large_to_hot_cda = 0.000001
+small_to_cold_cda = 0.000001
+hot_to_small_valve_cda = 0.000001
+cold_to_large_valve_cda = 0.000001
+[valves.hot_to_small]
+opening_pressure_difference = 10.0
+closing_pressure_difference = 0.0
+[valves.cold_to_large]
+opening_pressure_difference = 10.0
+closing_pressure_difference = 0.0
+[validity]
+maximum_compressibility_deviation = 0.01
+maximum_cp_variation = 0.02
+[numerical]
+integration_relative_tolerance = 0.000001
+integration_absolute_tolerance = 0.000000001
+maximum_step_angle_degrees = 5.0
+maximum_valve_events_per_cycle = 100
+maximum_cycles = 10
+periodic_relative_tolerance = 0.000001
+periodic_mass_absolute_tolerance = 0.000000001
+periodic_energy_absolute_tolerance = 0.000001
+[kinematics]
+type = "harmonic_example"
+small_phase_offset_degrees = 90.0
