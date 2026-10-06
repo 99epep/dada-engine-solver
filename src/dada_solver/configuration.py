@@ -52,9 +52,9 @@ class HydraulicNetworkConfiguration:
 
 @dataclass(frozen=True, slots=True, init=False)
 class ValidityThresholds:
-    """Approximation checks; legacy pressure/temperature/Mach keys are ignored.
+    """Caloric/EOS approximation tolerances.
 
-    The old positional/keyword constructor is accepted for source compatibility.
+    Legacy pressure-equalization and Mach arguments are ignored.
     Only caloric/EOS approximation tolerances are retained or serialized. Mach
     domains belong to the selected exchanger, and design limits to the study.
     """
@@ -63,7 +63,7 @@ class ValidityThresholds:
     maximum_cp_variation: float
 
     def __init__(self, maximum_pressure_equalization_error=None,
-                 maximum_mach_number=None, maximum_isothermality_error=None,
+                 maximum_mach_number=None,
                  maximum_compressibility_deviation=None, maximum_cp_variation=None):
         for name, value in (("maximum_compressibility_deviation", maximum_compressibility_deviation),
                             ("maximum_cp_variation", maximum_cp_variation)):
@@ -284,6 +284,13 @@ def load_simulation_configuration(path: str | Path) -> SimulationConfiguration:
         hydraulic_data = data["hydraulics"]
         valve_data = data["valves"]
         validity_data = data["validity"]
+        allowed_validity = {
+            "maximum_compressibility_deviation", "maximum_cp_variation",
+            "maximum_pressure_equalization_error", "maximum_mach_number",
+        }
+        unknown_validity = set(validity_data) - allowed_validity
+        if unknown_validity:
+            raise ValueError(f"Unknown validity keys: {sorted(unknown_validity)}.")
         numerical_data = data["numerical"]
         kinematics_data = data["kinematics"]
         humidity_data = data.get("humidity")

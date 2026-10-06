@@ -67,13 +67,13 @@ def load_sizing_problem(path: str | Path) -> LoadedSizingProblem:
         objective = _load_objective(data["objective"])
         constraints = tuple(
             _load_constraint(item, scenario) for item in data.get("constraints", [])
-            if item.get("type") not in ("maximum_isothermality_error", "maximum_pressure_equalization_error")
+            if item.get("type") != "maximum_pressure_equalization_error"
         )
         optimizer = data["optimizer"]
         scales = {
             str(name): float(value)
             for name, value in optimizer["constraint_scales"].items()
-            if name not in ("maximum_isothermality_error", "maximum_pressure_equalization_error")
+            if name != "maximum_pressure_equalization_error"
         }
         settings = OptimizationSettings(
             objective_scale=float(optimizer["objective_scale"]),

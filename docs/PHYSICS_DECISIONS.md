@@ -152,8 +152,8 @@ remain approximation checks. Constant Cp and Z=1 yielding zero deviations do
 not independently validate real air at every state.
 
 Pressure inequality remains a diagnostic, never a thermodynamic-validity veto.
-Isothermality excursion metrics/constraints have been removed. Legacy configuration
-keys load as ignored compatibility inputs. Historical saved verdicts are not
+Legacy pressure-equalization and Mach configuration keys load as ignored
+compatibility inputs. Historical saved verdicts are not
 rewritten; changed source identity prevents unsafe resume/cache reuse.
 
 ## Inventory, periodic convergence and diagnostics

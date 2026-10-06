@@ -6,7 +6,7 @@ import tomllib
 
 import pytest
 
-from dada_solver.configuration import ValidityThresholds, load_simulation_configuration
+from dada_solver.configuration import ValidityThresholds
 from dada_solver.campaign.evaluator import finalize_microtube_validity
 from dada_solver.exchangers.gas_correlations import MicrotubeGasModel, MicrotubeDomainError
 from dada_solver.exchangers.microtube_geometry import MicrotubeBank
@@ -55,18 +55,18 @@ def test_optional_motor_volume_ceiling_may_exceed_66_litres(tmp_path):
 
 
 def test_legacy_validity_keys_are_ignored_not_serialized_and_pressure_is_observable(ideal_gas):
-    cfg=load_simulation_configuration('examples/motor_controlled_example.toml')
-    assert set(asdict(cfg.validity))=={'maximum_cp_variation','maximum_compressibility_deviation'}
+    thresholds=ValidityThresholds(maximum_pressure_equalization_error=.05,
+        maximum_mach_number=.2, maximum_compressibility_deviation=.01,maximum_cp_variation=.01)
+    assert set(asdict(thresholds))=={'maximum_cp_variation','maximum_compressibility_deviation'}
     model,_,cycle=create_static_cycle(ideal_gas)
     states=cycle.states.copy();states[7,-1]*=1.2
-    report=assess_cycle_validity(replace(cycle,states=states),model,cfg.validity)
+    report=assess_cycle_validity(replace(cycle,states=states),model,thresholds)
     assert report.maximum_pressure_equalization_error>.05
     assert not report.failed_criteria
-    assert not any('isothermality' in key for key in asdict(report))
     final=finalize_microtube_validity(report,500.,.24,requires_laminar=False)
     assert RequireValidThermodynamicModel().evaluate(NS(validity=final)).satisfied
     # Obsolete values cannot reject even if a historical file used tiny limits.
-    limits=ValidityThresholds(1e-12,1e-12,1e-12,.01,.01)
+    limits=ValidityThresholds(1e-12,1e-12,.01,.01)
     assert assess_cycle_validity(replace(cycle,states=states),model,limits).failed_criteria==()
 
 
@@ -84,7 +84,7 @@ def test_microtube_own_mach_domain_and_independent_design_limit(ideal_gas,mach,v
     else:
         with pytest.raises(MicrotubeDomainError,match='high_mach'): model.require(diagnostic)
     thermo,_,cycle=create_static_cycle(ideal_gas)
-    generic=assess_cycle_validity(cycle,thermo,ValidityThresholds(.05,.2,.05,.01,.01))
+    generic=assess_cycle_validity(cycle,thermo,ValidityThresholds(.05,.2,.01,.01))
     final=finalize_microtube_validity(generic,diagnostic.reynolds,diagnostic.mach,
         requires_laminar=False,domain_failures=diagnostic.issues)
     assert (final.verdict is ValidityVerdict.VALID)==valid
@@ -116,12 +116,9 @@ def test_obsolete_sizing_constraints_and_scales_load_but_are_inactive(tmp_path):
     raw=tomllib.loads(source.read_text())
     for key in ('base_configuration','cooling_load_configuration'):
         raw['problem'][key]=str((source.parent/raw['problem'][key]).resolve())
-    raw['constraints'].append(dict(type='maximum_isothermality_error',limit=.001))
-    raw['optimizer']['constraint_scales']['maximum_isothermality_error']=.001
     path=tmp_path/'sizing.toml';path.write_text(dumps(raw))
     loaded=load_sizing_problem(path)
-    assert not any(c.name in ('maximum_isothermality_error','maximum_pressure_equalization_error') for c in loaded.problem.constraints)
-    assert 'maximum_isothermality_error' not in loaded.optimization_settings.constraint_scales
+    assert all(c.name != "maximum_pressure_equalization_error" for c in loaded.problem.constraints)
     assert 'maximum_pressure_equalization_error' not in loaded.optimization_settings.constraint_scales
 
 

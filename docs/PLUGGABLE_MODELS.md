@@ -140,8 +140,7 @@ retains the same tube/header loss allocation, wall capacity, thermal resistance
 and external-air assumptions. `connect_hardware` remains a compatibility
 constructor with its former return shape and report keys.
 
-`HeatTransferModel` needs only `heat_rate(Tgas)`. Reservoir-normalized
-isothermality diagnostics were removed on 2026-09-30; no reservoir reference is
+`HeatTransferModel` needs only `heat_rate(Tgas)`; no reservoir reference is
 needed for validity. Existing reservoir closures retain their numerical results.
 The one-wall integrator consumes already evaluated heat/storage rates instead
 of rebuilding a hard-coded linear film. The equations and numerical values for

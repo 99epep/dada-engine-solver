@@ -22,7 +22,7 @@ def initialize_v2(output, small='harmonic', large='harmonic', *, coupling='indep
     if champion: small=large='structured_c2_15p'
     basis_text=resources.joinpath('structured3952_machine_basis.json' if champion else 'hybrid_compact_machine_basis.json' if small==large=='hybrid_compact' else 'machine_basis_v2.json').read_text()
     basis_data=json.loads(basis_text)
-    for key in ('maximum_pressure_equalization_error','maximum_isothermality_error','maximum_mach_number'):
+    for key in ('maximum_pressure_equalization_error','maximum_mach_number'):
         basis_data['configuration']['validity'].pop(key,None)
     basis_text=json.dumps(basis_data,indent=2)+'\n'
     digest=hashlib.sha256(basis_text.encode()).hexdigest()

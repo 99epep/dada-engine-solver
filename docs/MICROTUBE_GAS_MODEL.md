@@ -422,8 +422,7 @@ Research imposes no universal absolute mass-flow ceiling. Hydraulic admissibilit
 depends on geometry, local state and the selected model; these determine velocity,
 Reynolds, Mach, pressure drop and heat transfer. Peak absolute mass flow is an
 observable and an optional explicit study constraint. Pressure inequality is
-diagnostic-only, not an implicit thermodynamic-validity veto. Isothermality
-excursion is neither reported nor constrained.
+diagnostic-only, not an implicit thermodynamic-validity veto.
 See [current physics decisions](PHYSICS_DECISIONS.md).
 
 

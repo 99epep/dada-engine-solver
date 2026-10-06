@@ -146,15 +146,3 @@ def test_machine_composes_independent_families_without_a_registry():
     assert model.kinematics.small_physical_stroke is None
     with pytest.raises(ValueError, match='both'):
         MachineDesign(c, StaticTestExchanger(4e-5, 598.15))
-
-
-def test_generic_closure_does_not_need_obsolete_reservoir_diagnostic(ideal_gas):
-    from tests.test_periodic import create_static_cycle
-    from dada_solver.heat_transfer import PrescribedHeatRate
-    from dada_solver.validity import assess_cycle_validity
-    from types import SimpleNamespace
-    model, _, cycle = create_static_cycle(ideal_gas)
-    model = replace(model, cold_heat_transfer=PrescribedHeatRate(0), hot_heat_transfer=PrescribedHeatRate(0))
-    report = assess_cycle_validity(cycle, model, config().validity)
-    assert not hasattr(report,"cold_isothermality_error")
-    assert not hasattr(report,"hot_isothermality_error")

@@ -19,7 +19,7 @@ POLICIES = dict(volume_partition='fixed_total_swept_and_clearance_ratios_v1',
     charge='fixed_inventory_v1', outlet_valve_cda='source_cda_times_count_ratio_v1',
     valve_scaling_reference='reference.geometry', external_air='source_finite_mass_flow_and_film_v1',
     external_air_aerodynamic_losses='excluded_from_balance', fan_consumption='excluded_from_balance',
-    mechanical_losses='unknown', useful_power='unavailable', isothermality='diagnostic_only', local_reflux='retain_signed_flows')
+    mechanical_losses='unknown', useful_power='unavailable', local_reflux='retain_signed_flows')
 CONSTRAINTS = {'minimum_motor_power': ('required_power', 'W'), 'maximum_pressure': ('limit', 'Pa'),
                'maximum_temperature': ('limit', 'K'), 'maximum_absolute_mass_flow': ('limit', 'kg/s'),
                'valid_thermodynamic_model': (None, '1')}

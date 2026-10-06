@@ -110,7 +110,7 @@ class CampaignDefinition:
                     limits.minimum, limits.maximum, **self.free_settings.get(side+'_limits', {}))
         self.objective = _load_objective(raw['objective'])
         self.constraints = tuple(_load_constraint(x, None) for x in raw.get('constraints', [])
-            if x.get('type') not in ('maximum_isothermality_error','maximum_pressure_equalization_error'))
+            if x.get('type') != 'maximum_pressure_equalization_error')
         if len({x.name for x in self.constraints}) != len(self.constraints):
             raise ValueError('Constraint names must be unique.')
         self.adapter = FamilyDesignAdapter(self.configuration, self.families, self.free_settings,

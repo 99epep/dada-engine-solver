@@ -198,3 +198,22 @@ slider_rod_ratio = 5.0
     assert model.kinematics.crank_radius == pytest.approx(0.04)
     assert model.kinematics.small_assembly.loop.coupler_length == pytest.approx(0.1)
     assert model.kinematics.large_assembly.loop.coupler_length == pytest.approx(0.102)
+
+
+def test_validity_loader_uses_only_declared_keys(tmp_path):
+    import tomllib
+    from dada_solver.research.study_io import dumps
+
+    data = tomllib.loads(EXAMPLE_PATH.read_text())
+    data["validity"] = {
+        "maximum_compressibility_deviation": 0.01,
+        "maximum_cp_variation": 0.02,
+    }
+    path = tmp_path / "configuration.toml"
+    path.write_text(dumps(data))
+    configuration = load_simulation_configuration(path)
+    assert configuration.validity.maximum_cp_variation == 0.02
+    data["validity"]["unexpected_validity_field"] = 0.03
+    path.write_text(dumps(data))
+    with pytest.raises(ValueError, match="Unknown validity keys"):
+        load_simulation_configuration(path)

@@ -8,7 +8,7 @@ are preserved. The conversation with the user may remain in French.
 Read `docs/PHYSICS_DECISIONS.md` before changing the physical model. Current user
 decisions override historical project decisions. Motor efficiency is the primary
 objective under explicit power and size constraints; ideal chronology remains
-the target. Isothermality is diagnostic-only for the current motor work.
+the target.
 
 The motor is a small experimental demonstrator, not a commercial product.
 Keep its name independent of the changeable reservoir temperature difference.
