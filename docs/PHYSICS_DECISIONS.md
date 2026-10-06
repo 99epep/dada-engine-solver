@@ -125,7 +125,7 @@ existing compressible Poiseuille term. The two physical half-segments take
 successive differences of that excess, mirrored on reversal, never a new
 entrance at the gas-storage node. The excess alone uses arithmetic mean
 pressure density at upstream temperature; header losses remain separate.
-Exact equations and domains: [microtube ledger](MICROTUBE_GAS_MODEL.md#combined-laminar-entry-2026-10-04).
+Exact equations and domains: [microtube ledger](MICROTUBE_GAS_MODEL.md#combined-laminar-entry).
 
 Supported laminar hydrodynamic development is informational, not a rejection.
 The model uses a continuous transition over Re=2300–4000: Bennett Nu and the

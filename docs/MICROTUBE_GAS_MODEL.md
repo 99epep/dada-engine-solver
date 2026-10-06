@@ -186,7 +186,7 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
 Production continuum laminar heat transfer uses Bennett (2020a), average
 constant-wall-temperature circular-tube closure, throughout the supported
 laminar range. The exact equations, source oracle and applicability are in
-[Combined laminar entry](#combined-laminar-entry-2026-10-04) below. Thermal
+[Combined laminar entry](#combined-laminar-entry) below. Thermal
 conductance always uses the **full physical tube length**. The storage node
 at the tube midpoint is not a fresh entrance.
 
@@ -608,7 +608,7 @@ changes geometry and valve physics, hence scientific identity; use a new study/
 campaign. Exact reconstruction of legacy inputs remains possible, subject
 to the existing runtime compatibility checks.
 
-## Combined laminar entry (2026-10-04)
+## Combined laminar entry
 
 Scientific inputs authorized for this revision: Bennett (2020a), DOI
 [10.1115/1.4047834](https://doi.org/10.1115/1.4047834), average constant-wall-temperature
@@ -680,10 +680,9 @@ is not validated by this no-slip correction and thermal slip remains rejected.
 
 ### Regime boundaries and remaining limitations
 
-The user explicitly authorized revising transition to join the new laminar
-endpoints continuously, after a bounded DD13 replay exposed switching between
-the discontinuous old/new branches. The boundaries remain 2300 and 4000, and
-all existing entry/Mach/pressure-drop/slip/transport guards remain. There is no
+The transition joins the Bennett/Shah laminar endpoints continuously to the
+turbulent endpoints between Reynolds 2300 and 4000. Existing
+entry/Mach/pressure-drop/slip/transport guards remain. There is no
 superposition of validated Reynolds domains: the bridge is marked as transition
 uncertainty, with its time/heat fractions retained in reports.
 
