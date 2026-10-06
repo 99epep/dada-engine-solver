@@ -9,7 +9,7 @@ for finite external streams see [the thermal boundary](EXTERNAL_STREAM_THERMAL_M
 - [Circular bundle and conical collectors](#circular-bundles-and-conical-collectors-circular_triangular_frustum_v1).
 - [Species-dependent transport](#species-dependent-dilute-transport-version-dilute_species_v2).
 - [Equation provenance](#equation-provenance-and-applicability-ledger).
-- [Transition closure](#gas-transition-endpoint-interpolation-revised-2026-10-04).
+- [Transition closure](#gas-transition-endpoint-interpolation).
 - [Diagnostics](#diagnostics-and-interpretation) and [rejected trials](#first-rejected-trial-state-diagnostics).
 
 ## Architecture and selection
@@ -224,9 +224,9 @@ axial transient field or empirical pulse multiplier is introduced.
   input, not the DADA lumped-wall boundary. No quantitative Yang enhancement
   was implemented from the abstract. Rough-tube extensions remain unavailable.
 
-### GAS-TRANSITION-ENDPOINT-INTERPOLATION (revised 2026-10-04)
+### Gas transition endpoint interpolation
 
-The user-authorized transition closure removes the unavailable-correlation gap,
+The transition closure removes the unavailable-correlation gap,
 not the laminar Reynolds limit. For `2300 <= Re < 4000`, use
 `w=(Re-2300)/1700` and
 `Nu=(1-w)*Nu_Bennett(2300,Pr,D/L)+w*Nu_Gnielinski(4000,Pr)`.
@@ -538,7 +538,7 @@ dimensions; vessel walls and extra fabrication clearances are not modeled.
 
 Compatibility is explicit: legacy `pitch_m` inputs retain square packing and
 the `columns*pitch_m` by `rows*pitch_m` envelope. Do not supply both pitch
-forms. Existing bases, examples and histories are not migrated implicitly.
+forms.
 Selecting `pitch_ratio` changes header hold-up and scientific study identity;
 start a new campaign rather than resuming a square-packing history.
 
@@ -610,7 +610,7 @@ to the existing runtime compatibility checks.
 
 ## Combined laminar entry
 
-Scientific inputs authorized for this revision: Bennett (2020a), DOI
+Scientific sources: Bennett (2020a), DOI
 [10.1115/1.4047834](https://doi.org/10.1115/1.4047834), average constant-wall-temperature
 branch; [author HeatLib](https://sites.me.ucsb.edu/~bennett/heatlib/conv/index.html),
 `LamPipeEntryNuT`, `LamEntryNuL`, `GrtzNuL`, `LevNuL`, `mLevNuL`, `InvGz`.

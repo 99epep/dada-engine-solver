@@ -81,5 +81,5 @@ not real-helium thermodynamics/hydraulics.
 
 Current evidence is documented in the references above and in
 [numerical execution](SOLVER_PERFORMANCE.md). Earlier application results and
-artifacts may remain in Git history, `outputs/`, `examples/` or their original
-sources; they do not define current validation status.
+artifacts may remain in Git history or their original sources; they do not define
+current validation status.
