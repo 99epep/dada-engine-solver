@@ -10,11 +10,11 @@ from dada_solver.exchangers.microtube_geometry import MicrotubeBank
 
 DATA_N2 = (
     Path(__file__).resolve().parents[1]
-    / "examples/data/doty_1991_nitrogen_reference.csv"
+    / "tests/data/doty_1991_nitrogen_reference.csv"
 )
 DATA_HE = (
     Path(__file__).resolve().parents[1]
-    / "examples/data/doty_1991_helium_reference.csv"
+    / "tests/data/doty_1991_helium_reference.csv"
 )
 
 

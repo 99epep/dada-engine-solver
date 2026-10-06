@@ -34,8 +34,8 @@ are in the [slip reference](MICROTUBE_GAS_MODEL.md#gas-knudsen-hs-and-gas-slip-s
 
 Source: [Doty et al. (1991)](https://dotynmr.com/download/pubs/1991_HTE_Doty_HeatExchanger.pdf),
 Eq. 7 and Tables 1–2. SI measurements and reported uncertainties are retained in
-[the nitrogen data](../examples/data/doty_1991_nitrogen_reference.csv) and
-[the helium data](../examples/data/doty_1991_helium_reference.csv).
+[the nitrogen data](../tests/data/doty_1991_nitrogen_reference.csv) and
+[the helium data](../tests/data/doty_1991_helium_reference.csv).
 
 The table is the **recorded September 2026 comparison**, not a fresh prediction
 with the current transport model. It uses 309 equal-flow tubes, 0.33 mm internal

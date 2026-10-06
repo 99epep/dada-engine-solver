@@ -20,9 +20,14 @@ The three transcribed nitrogen anchors at 322 kPa remain separate: their
 boundary temperatures differ. The three helium measurements span 749–825 kPa
 and 79–213 mg/s flow. The reported uncertainties are retained in the source CSV;
 the screening factors below are not statistical confidence bounds. The SI
-transcriptions are [nitrogen](../examples/data/doty_1991_nitrogen_reference.csv)
-and [helium](../examples/data/doty_1991_helium_reference.csv). Their columns retain
+transcriptions are [nitrogen](../tests/data/doty_1991_nitrogen_reference.csv)
+and [helium](../tests/data/doty_1991_helium_reference.csv). Their columns retain
 the source sensor names, measurements and reported uncertainties.
+Both CSVs transcribe Tables 1–2, printed page 38 (PDF page 8), converting
+mg/s to kg/s, kPa to Pa, degrees Celsius to kelvin and percentages to fractions.
+Uncertainty columns reproduce the reported ± values without inferring a
+confidence level or statistical distribution; temperature uncertainties are
+not transcribed.
 
 ## Screening model
 
@@ -114,9 +119,7 @@ a pulsed application.
 
 ## Limits and related references
 
-The [example script](../examples/doty_bank_screening.py) illustrates API sensitivity
-calculations; its outputs are not measurements or model validation. Unit tests
-in `tests/test_doty.py` check source transcription, scaling and the explicit
+Unit tests in `tests/test_doty.py` check source transcription, scaling and the explicit
 helium reconstruction without running a cycle campaign.
 
 - [Exchanger validation](EXCHANGER_VALIDATION.md): absolute discrepancies and

@@ -104,7 +104,7 @@ def test_transport_properties_change_with_temperature(species):
 
 
 def check_doty(fluid):
-    rows=validate_gas_hydraulics(ROOT/f'examples/data/doty_1991_{fluid}_reference.csv')
+    rows=validate_gas_hydraulics(ROOT/f'tests/data/doty_1991_{fluid}_reference.csv')
     assert len(rows)==6
     for r in rows:
         assert abs(r['inverse_flow_residual_kg_s'])<1e-15
