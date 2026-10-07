@@ -1,5 +1,6 @@
 """Immutable periodic motion targets in study angle, independent of source family."""
 from dataclasses import dataclass
+from contextlib import contextmanager
 import json
 import math
 from pathlib import Path
@@ -226,6 +227,34 @@ def load_motion_target(source, *, candidate=None, samples=721):
             if candidate is not None:
                 raise ValueError('A motion target does not accept a candidate selector.')
             return MotionTarget.from_data(data)
+    with research_motion_source(source, candidate=candidate) as (study, values, identity):
+        target = target_from_study(study, values, samples=samples)
+    raw = target.scientific
+    raw['source'].update(identity)
+    return MotionTarget.create(raw['angles_rad'], raw['sides'], source=raw['source'], provenance=target.data['provenance'])
+
+
+@contextmanager
+def research_motion_source(source, *, candidate=None):
+    """Reconstruct a complete current Research input, never invent a machine.
+
+    MotionTarget alone deliberately does not provide this context. Returned
+    coordinates are exact configured/selected values, not decoded approximations.
+    """
+    source = Path(source)
+    if source.suffix == '.toml':
+        if candidate is not None:
+            raise ValueError('Candidate selectors require a stored Research result.')
+        from .schema import load_study, compile_study, candidate_for_values
+        study = load_study(source)
+        values = {p.name:p.initial for p in study.space.parameters}
+        definition = compile_study(study)
+        chosen = candidate_for_values(definition,values)
+        yield study, values, dict(study_id=study.study_id,candidate_id=chosen.candidate_id,
+                                 source_definition_id=definition.definition_id)
+        return
+    if source.is_file() and json.loads(source.read_text()).get('artifact_type') == 'motion_target':
+        raise ValueError('A MotionTarget alone cannot generate a machine study; use --report only or a Research source.')
     from .report import inspect, select_records
     from .snapshots import stored_study
     data = inspect(source)
@@ -234,9 +263,8 @@ def load_motion_target(source, *, candidate=None, samples=721):
             raise ValueError('A stored campaign requires an explicit candidate selector.')
         record = data['records'][0]
     else:
-        record, = select_records(data, [candidate])
+        record, = select_records(data,[candidate])
     with stored_study(data) as study:
-        target = target_from_study(study, record['physical'], samples=samples)
-    raw = target.scientific
-    raw['source'].update(candidate_id=record['candidate_id'], source_definition_id=data.get('definition_id'))
-    return MotionTarget.create(raw['angles_rad'], raw['sides'], source=raw['source'], provenance=target.data['provenance'])
+        study.space.encode(record['physical'])
+        yield study, record['physical'], dict(study_id=data['study_id'],candidate_id=record['candidate_id'],
+                                             source_definition_id=data['definition_id'])

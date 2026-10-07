@@ -125,3 +125,13 @@ def test_motion_target_family_protocols_and_interactive_boundary_are_documented(
     assert 'not implemented' in content
     assert 'FuncAnimation' in content
     assert 'global_discovery' in content
+
+
+def test_refit_is_current_geometric_initialization_and_study_handoff():
+    content = text()
+    for token in ('MotionRefitResult', 'to_shape_coordinates()', '28 spline coordinates',
+                  'q(theta - phase_rad)', 'uniform nodes', 'excluded pole',
+                  'reference-pressure', '--report', '--shape-radius'):
+        assert token in content
+    assert 'refit\nengine are not implemented' not in content
+    assert 'No thermodynamic integration' in content

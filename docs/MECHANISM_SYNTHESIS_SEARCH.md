@@ -109,11 +109,15 @@ mechanism family, evidence, provenance and artifact hash for human selection.
 Selected families can subsequently be polished or adapted using the actual
 Research thermodynamic objective.
 
-The immediate abstract-refit boundary is `free_spline` with **15 points per
-piston**. `MotionRefitRequest` validates it but does not implement the
-`hybrid_compact` initializer. Exact hybrid extrema, rounding intervals, cadence
-joins and kink/branch descriptors can be carried by the target; selecting spline
-nodes and kink neighborhoods remains a separate scientific implementation step.
+The abstract-motion refit operator uses `free_spline` with **15 points per
+piston**. `MotionRefitRequest` fits position using uniform nodes, feature-aware
+sample weights and a phase search over one node spacing. Exact hybrid extrema,
+rounding intervals, cadence joins and kink/branch descriptors guide this geometric
+initialization; target acceleration is not fitted. The resulting shape coordinates
+and independent phases initialize a motion-only Research study. This does not
+implement mechanical synthesis or judge thermodynamic performance. See the
+[refit contract](DADA_ENGINE_RESEARCH_KINEMATICS.md#feature-aware-motion-refit) for
+numerical policy, topology checks, diagnostics and study generation.
 
 ---
 

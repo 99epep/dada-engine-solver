@@ -83,6 +83,23 @@ class FreeMotionDefinition:
             basis[j+1,j] = -(j+1) / math.sqrt((j+1)*(j+2))
         return cls(tuple(basis @ sphere), minimum_volume, maximum_volume, **limits)
 
+    def to_shape_coordinates(self):
+        """Invert the production sphere chart; reject its numerically excluded pole.
+
+        Positive affine control offset/amplitude are already removed by this
+        definition's canonicalization. No rotation or pole substitution occurs.
+        """
+        n = len(self.control_values)
+        basis = np.zeros((n, n-1))
+        for j in range(n-1):
+            basis[:j+1,j] = 1 / math.sqrt((j+1)*(j+2))
+            basis[j+1,j] = -(j+1) / math.sqrt((j+1)*(j+2))
+        sphere = basis.T @ np.asarray(self.control_values)
+        denominator = 1-float(sphere[-1])
+        if denominator <= 64*np.finfo(float).eps:
+            raise ValueError('Control shape is at the excluded stereographic pole.')
+        return tuple(float(x) for x in sphere[:-1]/denominator)
+
 
 @dataclass(frozen=True, slots=True)
 class FreeKinematicsConfiguration:
@@ -132,6 +149,8 @@ class _PeriodicMotion:
         if not np.all(np.isfinite(angle)):
             raise ValueError('Cycle angle must be finite.')
         wrapped = np.remainder(angle, TAU)
+        # A tiny negative angle can round to TAU after remainder, its periodic zero.
+        wrapped = np.where(wrapped == TAU, 0., wrapped)
         index = np.searchsorted(self._knots, wrapped, side='right') - 1
         dx = wrapped - np.asarray(self._knots)[index]
         a, b, c, d = np.asarray(self._coefficients)[:, index]
@@ -146,6 +165,35 @@ class _PeriodicMotion:
         result = ((value-self._minimum)*self._scale+self.definition.minimum_volume
                   if order == 0 else value*self._scale)
         return float(result) if result.ndim == 0 else result
+
+    def stationary_points(self):
+        """All isolated derivative roots, classified analytically between roots.
+
+        Identically stationary polynomial intervals are rejected rather than
+        represented as a finite set of extrema. Angles use [0, 2*pi).
+        """
+        from scipy.interpolate import PPoly
+        polynomial = PPoly(np.asarray(self._coefficients), self._knots)
+        derivative = polynomial.derivative()
+        if np.any(np.all(derivative.c == 0., axis=0)):
+            raise ValueError('Spline has a stationary interval, not isolated extrema.')
+        roots = derivative.roots(extrapolate=False)
+        roots = sorted(float(x % TAU) for x in roots if np.isfinite(x) and 0 <= x <= TAU)
+        unique = []
+        for root in roots:
+            if not unique or root-unique[-1] > 1e-10:
+                unique.append(root)
+        if len(unique) > 1 and unique[0]+TAU-unique[-1] <= 1e-10:
+            unique.pop()
+        result = []
+        for i, root in enumerate(unique):
+            previous = unique[i-1] if i else unique[-1]-TAU
+            following = unique[i+1] if i+1 < len(unique) else unique[0]+TAU
+            left = self.evaluate((previous+root)/2, 1)
+            right = self.evaluate((root+following)/2, 1)
+            kind = 'maximum' if left > 0 > right else 'minimum' if left < 0 < right else 'stationary'
+            result.append(dict(angle_rad=root, kind=kind, volume=self.evaluate(root)))
+        return tuple(result)
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,6 +234,12 @@ class FreeKinematics:
     def require_feasible(self):
         if not all(d.feasible for d in self.diagnostics):
             raise KinematicConstraintViolation('Free kinematics violates configured derivative limits; inspect diagnostics.', self.diagnostics)
+
+    def stationary_points(self, side):
+        """Expose continuous production spline topology, without a sampling grid."""
+        if side not in ('small', 'large'):
+            raise ValueError('Choose SMALL or LARGE.')
+        return getattr(self, '_'+side).stationary_points()
 
     def small_cylinder_volume(self, theta):
         return self._small.evaluate(theta)

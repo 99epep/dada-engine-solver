@@ -114,7 +114,7 @@ def test_unavailable_derivatives_are_not_fabricated_and_events_are_extensible():
         MotionTarget.create([0, 1, 2], raw['sides'], source=raw['source'])
 
 
-def test_study_extraction_features_and_future_refit(tmp_path):
+def test_study_extraction_features_and_refit_contract(tmp_path):
     from dada_solver.research.presets import initialize_kinematics
     from dada_solver.research.schema import load_study
     path = initialize_kinematics(tmp_path/'study.toml', 'hybrid_compact', 'hybrid_compact')
@@ -138,8 +138,6 @@ def test_study_extraction_features_and_future_refit(tmp_path):
         assert raw['second_derivative'] is None
     request = MotionRefitRequest(target)
     assert request.points_per_piston == 15
-    with pytest.raises(NotImplementedError, match='feature-aware'):
-        request.execute()
     for count in (6, 8, 10, 20, 24, True):
         with pytest.raises(ValueError, match='15'):
             MotionRefitRequest(target, points_per_piston=count)

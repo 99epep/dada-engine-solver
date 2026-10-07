@@ -88,11 +88,17 @@ def main(argv=None):
     target.add_argument('--candidate')
     target.add_argument('--samples', type=int, default=721)
     target.add_argument('--output', type=Path, required=True)
-    refit = commands.add_parser('motion-refit', help='Validate the prepared free-spline refit contract; no initializer yet')
+    refit = commands.add_parser('motion-refit', help='Fit a feature-aware 15-control spline and create a motion-only Research study')
     refit.add_argument('source', type=Path)
     refit.add_argument('--candidate')
     refit.add_argument('--count', type=int, default=15)
     refit.add_argument('--validate-only', action='store_true')
+    refit.add_argument('--output', type=Path, help='New schema-3 study TOML; requires a complete Research source')
+    refit.add_argument('--report', type=Path, help='Stable geometric refit report; sufficient for MotionTarget-only sources')
+    refit.add_argument('--shape-radius', type=float, default=.15, help='Local canonical-control spherical-cap radius in radians (search policy)')
+    refit.add_argument('--phase-radius-fraction', type=float, default=.5, help='Phase search half-width as a fraction of 24 degrees')
+    refit.add_argument('--plot', action='store_true', help='Open static target/refit comparison with events and spline nodes')
+    refit.add_argument('--no-show', action='store_true')
     mechanism = commands.add_parser('mechanism', help='Validate synthesis protocols and inspect physical artifacts')
     mechanical = mechanism.add_subparsers(dest='mechanism_command', required=True)
     synthesize = mechanical.add_parser('synthesize', help='Validate a family-owned synthesis plan; search operators not implemented')
@@ -183,18 +189,40 @@ def main(argv=None):
         elif args.command in ('motion-target', 'motion-refit'):
             from .motion_target import load_motion_target
             target = load_motion_target(args.source, candidate=args.candidate,
-                                        samples=getattr(args, 'samples', 721))
+                                        samples=getattr(args, 'samples', 1441))
             if args.command == 'motion-target':
                 target.save(args.output)
                 print(f'Motion target {target.content_hash}; saved {args.output}; no integration started.')
             else:
                 from .motion_refit import MotionRefitRequest
                 request = MotionRefitRequest(target, points_per_piston=args.count)
-                if not args.validate_only:
-                    request.execute()
-                print(json.dumps(dict(target_hash=target.content_hash, family=request.destination_family,
-                                      points_per_piston=request.points_per_piston, implemented=False,
-                                      integration_started=False)))
+                if args.validate_only:
+                    print(json.dumps(dict(target_hash=target.content_hash,family=request.destination_family,
+                                          points_per_piston=request.points_per_piston,implemented=True,integration_started=False)))
+                else:
+                    if args.output is None and args.report is None:
+                        raise ValueError('Motion refit requires --output STUDY.toml or --report REFIT.json.')
+                    if args.report is not None and args.report.exists():
+                        raise ValueError('Refit report already exists; choose a new path.')
+                    if args.output is not None:
+                        from .refit_study import refit_study
+                        path,result = refit_study(args.source,args.output,candidate=args.candidate,report=args.report,
+                            shape_radius=args.shape_radius,phase_radius_fraction=args.phase_radius_fraction)
+                        print(f'Created {path} and {path.with_suffix(".basis.json")}; 28 active spline coordinates; no integration started.')
+                    else:
+                        result = request.execute()
+                        result.save(args.report)
+                    for side,fitted in result.data['scientific']['sides'].items():
+                        d,n = fitted['diagnostics'],fitted['naive']['diagnostics']
+                        print(f"{side.upper()}: position RMS {n['position_rms']:.6g} -> {d['position_rms']:.6g}; max {d['maximum_absolute_position_error']:.6g}; {d['extrema_count']} extrema; phase {fitted['phase_rad']:.6g} rad")
+                    if args.report is not None: print(f'Refit report: {args.report}')
+                    if args.plot:
+                        from .motion_refit import plot_refit
+                        import matplotlib.pyplot as plt
+                        figure = plot_refit(result)
+                        if args.no_show:
+                            figure.canvas.draw(); plt.close(figure)
+                        else: plt.show()
         elif args.command == 'mechanism':
             from .artifacts import MechanismArtifact, MechanismLibrary
             if args.mechanism_command == 'synthesize':
