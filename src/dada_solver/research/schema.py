@@ -19,11 +19,14 @@ def positive(value, name):
 
 def load_study(path, *, basis_path=None, artifact_directory=None):
     path = Path(path)
-    raw = tomllib.loads(path.read_text())
-    if type(raw.get('schema_version')) is not int or raw['schema_version'] != 3:
-        raise ValueError('Only study schema_version = 3 is supported.')
-    from .study_schema import load_current_study
-    return load_current_study(path, basis_path=basis_path, artifact_directory=artifact_directory)
+    from .validation_errors import validation_location
+    with validation_location(path):
+        raw = tomllib.loads(path.read_text())
+        with validation_location(path,('schema_version',)):
+            if type(raw.get('schema_version')) is not int or raw['schema_version'] != 3:
+                raise ValueError('Only study schema_version = 3 is supported.')
+        from .study_schema import load_current_study
+        return load_current_study(path, basis_path=basis_path, artifact_directory=artifact_directory)
 
 
 def compile_study(study):

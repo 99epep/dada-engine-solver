@@ -19,12 +19,21 @@ class MechanismModel:
     def __post_init__(self):
         raw = self.artifact.scientific
         self.family = raw['settings']['family']
-        self.law, self.geometry = build_side(raw['settings'], raw['geometry'], 'small', CylinderVolumeLimits(1., 2.))
+        self.primary = raw['settings'].get('component') == 'primary'
+        if self.primary:
+            from .synthesis_six_bar import PrimaryProjection
+            self.geometry = self.artifact.reconstruct()
+            self.law = PrimaryProjection(self.geometry)
+        else:
+            self.law, self.geometry = build_side(raw['settings'], raw['geometry'], 'small', CylinderVolumeLimits(1., 2.))
 
     def state(self, angle_rad):
         if not math.isfinite(angle_rad):
             raise ValueError('Mechanism angle must be finite.')
-        if self.family == 'four_bar':
+        if self.primary:
+            joints = self.geometry.joint_state(angle_rad)['joints']
+            links = [('A','B'), ('B','C'), ('C','D'), ('B','E'), ('C','E')]
+        elif self.family == 'four_bar':
             joints = self.law.model.joint_state(angle_rad, self.law.side)['joints']
             output = self.artifact.scientific['settings']['output']
             links = [('A','B'), ('B','C'), ('C','D'), ('H','P')]
@@ -41,6 +50,7 @@ class MechanismModel:
         except NotImplementedError:
             second = None
         return dict(angle_rad=angle_rad, joints=joints, links=links,
+                    comparison_role='E projection; not piston P' if self.primary else 'piston',
                     position=self.law.value(angle_rad)-1.,
                     first_derivative=self.law.value(angle_rad, 1), second_derivative=second,
                     length_unit='crank_radius', angle_domain='study_angle_before_operation_transform')
@@ -58,6 +68,9 @@ def _samples(artifact, target, side, samples):
         raise ValueError('At least three angle samples are required.')
     angles = np.asarray(target.scientific['angles_rad']) if target else np.linspace(0., 2*math.pi, samples)
     model = MechanismModel(artifact)
+    if model.primary and target:
+        from .synthesis_six_bar import primary_evidence, PrimaryProjection
+        model.law=PrimaryProjection(model.geometry,axis=primary_evidence(artifact,target,side)['primary_projection']['axis'])
     states = [model.state(float(t)) for t in angles]
     return angles, states
 
@@ -72,7 +85,8 @@ def plot_motion_comparison(artifact, target, *, side='small', samples=361, axes=
         figure = axes[0].figure
     position = np.array([s['position'] for s in states])
     velocity = np.array([s['first_derivative'] for s in states])
-    axes[0].plot(angles, position, label='Mechanism')
+    label='E projection (not piston)' if artifact.scientific['settings'].get('component')=='primary' else 'Mechanism'
+    axes[0].plot(angles, position, label=label)
     axes[1].plot(angles, velocity, label='Mechanism')
     if target:
         reference = target.scientific['sides'][side]
@@ -118,12 +132,17 @@ def _view(artifact, target, side, samples, thermodynamic):
     drawing.set_ylabel('Local y / crank radius')
     cursors = [ax.axvline(0., color='black', alpha=.5) for ax in axes]
     if target:
-        evidence = assess_mechanism(artifact, target, side)
+        if artifact.scientific['settings'].get('component')=='primary':
+            from .synthesis_six_bar import primary_evidence
+            evidence=primary_evidence(artifact,target,side)
+            evidence=dict(evidence,fit=evidence['primary_projection'])
+        else:
+            evidence = assess_mechanism(artifact, target, side)
         metrics = evidence['mechanical']['metrics']
-        heading = f"Position RMS {evidence['fit']['position_rms']:.4g}; max {evidence['fit']['position_maximum_error']:.4g}"
+        heading = ('E projection (not piston): ' if artifact.scientific['settings'].get('component')=='primary' else '')+f"Position RMS {evidence['fit']['position_rms']:.4g}; max {evidence['fit']['position_maximum_error']:.4g}"
     else:
         model = MechanismModel(artifact)
-        metrics = side_metrics(artifact.scientific['settings'], model.law, model.geometry, 1440)
+        metrics = model.law.metrics if model.primary else side_metrics(artifact.scientific['settings'], model.law, model.geometry, 1440)
         heading = 'Target fit unavailable'
     display = ('stroke_over_crank', 'minimum_primary_transmission_sine', 'minimum_secondary_transmission_sine',
                'minimum_transmission_sine', 'minimum_rod_axis_cosine')

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy.optimize import brentq
+from scipy.interpolate import CubicSpline, CubicHermiteSpline
 
 from dada_solver.campaign.candidate import canonical_json, content_hash
 from dada_solver.campaign.history import atomic_json
@@ -268,3 +269,50 @@ def research_motion_source(source, *, candidate=None):
         study.space.encode(record['physical'])
         yield study, record['physical'], dict(study_id=data['study_id'],candidate_id=record['candidate_id'],
                                              source_definition_id=data['definition_id'])
+
+
+class PeriodicTargetSide:
+    """Periodic interpolation of frozen samples, enriched by exact source events.
+
+    Hermite interpolation uses available source first derivatives. With position
+    only, a periodic cubic interpolant is used, but no target velocity is claimed.
+    Target acceleration is never read.
+    """
+    def __init__(self, target, side):
+        raw = target.scientific
+        self.data = raw['sides'][side]
+        self.events = self.data['events']
+        self.has_velocity = self.data['first_derivative'] is not None
+        samples = {float(t): [float(q), None if not self.has_velocity else float(v)]
+                   for t, q, v in zip(raw['angles_rad'], self.data['position'],
+                                      self.data['first_derivative'] or [None]*len(raw['angles_rad']))}
+        for event in self.events:
+            m = event['metadata']
+            if 'normalized_position' in m and (not self.has_velocity or 'first_derivative_per_rad' in m):
+                t = float(event['angle_rad'])
+                near = next((old for old in samples if abs(old-t) < 1e-12), None)
+                if near is not None: del samples[near]
+                samples[t] = [float(m['normalized_position']), m.get('first_derivative_per_rad')]
+        angles = sorted(samples)
+        q = [samples[t][0] for t in angles]
+        if self.has_velocity:
+            self.interpolant = CubicHermiteSpline(angles, q, [samples[t][1] for t in angles])
+        else:
+            self.interpolant = CubicSpline(angles, q, bc_type='periodic')
+
+    def position(self, angles):
+        return self.interpolant(np.asarray(angles) % PERIOD)
+
+    def velocity(self, angles):
+        if not self.has_velocity:
+            return None
+        return self.interpolant(np.asarray(angles) % PERIOD, 1)
+
+    def extrema_angles(self):
+        known = {e['kind']:e['angle_rad'] for e in self.events if e['kind'] in ('maximum','minimum')}
+        if set(known) == {'maximum','minimum'}: return known
+        roots = self.interpolant.derivative().roots(extrapolate=False)
+        roots = roots[np.isfinite(roots) & (roots >= 0) & (roots < PERIOD)]
+        if not len(roots): raise ValueError('Target has no resolved extrema.')
+        values = self.position(roots)
+        return dict(maximum=float(roots[np.argmax(values)]), minimum=float(roots[np.argmin(values)]))

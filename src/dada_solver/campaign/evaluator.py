@@ -290,10 +290,14 @@ class MachineEvaluator:
             new_caps = np.array([wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k])
             state = rescale_wall_state(old, target[:8:2].sum(), saved['wall_capacities_j_k'], new_caps)
         elif external:
-            # The fixed-inventory reference preserves the original gas state
-            # bit for bit. Only wall energies scale with changed wall capacity.
-            state = np.asarray(external['values'], dtype=float).copy()
-            state[8:10] *= np.asarray(caps)/np.asarray(external['wall_capacities_j_k'])
+            # Preserve the exact source gas state at the original inventory;
+            # other inventories use the same initial-guess rescaling as cache
+            # warm starts. Integrated states are never renormalized.
+            if design.configuration.charge.total_mass == self.definition.configuration.charge.total_mass:
+                state = np.asarray(external['values'], dtype=float).copy()
+                state[8:10] *= np.asarray(caps)/np.asarray(external['wall_capacities_j_k'])
+            else:
+                state = rescale_wall_state(external['values'],target[:8:2].sum(),external['wall_capacities_j_k'],caps)
         backend_last = {}
         first_microtube_failure = None
         def retain_failure(result):

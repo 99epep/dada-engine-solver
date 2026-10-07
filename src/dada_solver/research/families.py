@@ -114,6 +114,8 @@ def validate_settings(settings, side):
 
 def build_side(settings, parameters, side, limits):
     """Select one cylinder of an existing production backend without changing its law."""
+    if settings.get('component')=='primary':
+        raise ValueError('An incomplete primary has no piston law; synthesize its downstream linkage first.')
     family=settings['family']; p=parameters; backend_side=side; stroke=None; geometry=None
     if family=='harmonic':
         # Reuse the production small-side phase convention for either cylinder.
@@ -157,13 +159,17 @@ def build_side(settings, parameters, side, limits):
 def side_metrics(settings, law, geometry, samples):
     family=settings['family']
     angles=np.linspace(0,2*math.pi,samples,endpoint=False)
-    velocity=np.array([law.value(float(t),1) for t in angles])
-    position=np.array([law.value(float(t)) for t in angles])
+    if family in ('slider_crank','four_bar','six_bar','free_spline'):
+        velocity=np.asarray(law.value(angles,1)); position=np.asarray(law.value(angles))
+    else:
+        velocity=np.array([law.value(float(t),1) for t in angles])
+        position=np.array([law.value(float(t)) for t in angles])
     limits=law.limits
     if np.min(position)<limits.minimum-1e-9*limits.swept or np.max(position)>limits.maximum+1e-9*limits.swept:
         raise ValueError('Motion exceeds its declared cylinder volume limits; no clipping is performed.')
     result=dict(zero_crossing_count=zero_crossings(velocity),maximum_absolute_first_derivative=float(np.max(np.abs(velocity))))
-    try: result['maximum_absolute_second_derivative']=max(abs(float(law.value(float(t),2))) for t in angles)
+    try:
+        result['maximum_absolute_second_derivative']=float(np.max(abs(law.value(angles,2)))) if family in ('slider_crank','free_spline') else max(abs(float(law.value(float(t),2))) for t in angles)
     except (AttributeError,NotImplementedError): pass
     if family=='free_spline':
         d=law.model.diagnostics[0]

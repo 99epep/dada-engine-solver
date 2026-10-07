@@ -161,7 +161,7 @@ def test_synthesis_evidence_artifact_and_diversity(family):
     assert scaled['mechanical']['metrics']['maximum_absolute_first_derivative'] > 0
     member = plan.member('scaled', {'small':a}, volume_limits={'small':CylinderVolumeLimits(.1,.3)})
     assert member['metadata']['evidence']['small']['mechanical']['volume_limits_m3'] == [.1,.3]
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(ValueError):
         plan.execute()
     with pytest.raises(ValueError, match='identity'):
         SynthesisPlan(target, SynthesisRequest('wrong',family,'design_exploitation',('full_local_polish',)))

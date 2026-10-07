@@ -95,13 +95,31 @@ def main(argv=None):
     refit.add_argument('--validate-only', action='store_true')
     refit.add_argument('--output', type=Path, help='New schema-3 study TOML; requires a complete Research source')
     refit.add_argument('--report', type=Path, help='Stable geometric refit report; sufficient for MotionTarget-only sources')
-    refit.add_argument('--shape-radius', type=float, default=.15, help='Local canonical-control spherical-cap radius in radians (search policy)')
-    refit.add_argument('--phase-radius-fraction', type=float, default=.5, help='Phase search half-width as a fraction of 24 degrees')
+    from .refit_study import DEFAULT_SHAPE_RADIUS, DEFAULT_PHASE_RADIUS_FRACTION
+    refit.add_argument('--shape-radius', type=float, default=DEFAULT_SHAPE_RADIUS, help='Joint canonical-control radius in radians (default: 0.02; search policy)')
+    refit.add_argument('--phase-radius-fraction', type=float, default=DEFAULT_PHASE_RADIUS_FRACTION, help='Phase search half-width as a fraction of 24 degrees (default: 0.02, or 0.48 degrees)')
     refit.add_argument('--plot', action='store_true', help='Open static target/refit comparison with events and spline nodes')
     refit.add_argument('--no-show', action='store_true')
     mechanism = commands.add_parser('mechanism', help='Validate synthesis protocols and inspect physical artifacts')
     mechanical = mechanism.add_subparsers(dest='mechanism_command', required=True)
-    synthesize = mechanical.add_parser('synthesize', help='Validate a family-owned synthesis plan; search operators not implemented')
+    adapt = mechanical.add_parser('adapt', help='Generate a local paired thermodynamic study; no integration')
+    adapt.add_argument('source', type=Path, help='Research study, evaluation, or campaign')
+    adapt.add_argument('--candidate', help='Required for a campaign source')
+    adapt.add_argument('--library', type=Path, required=True)
+    adapt.add_argument('--family-id', required=True, help='Selected complete SMALL/LARGE member')
+    adapt.add_argument('--output', type=Path, required=True, help='New portable study TOML')
+    adapt.add_argument('--radius', type=float, default=.1, help='Local normalized Sobol radius in (0, 0.5]; default 0.1')
+    retune = mechanical.add_parser('retune', help='Generate a local hardware study with the adapted mechanical pair fixed; no integration')
+    retune.add_argument('source', type=Path, help='Paired thermodynamic Research study, evaluation, campaign or retuning descendant')
+    retune.add_argument('--candidate', help='Exact ID, prefix or best; required for campaign sources')
+    retune.add_argument('--scope', choices=['source-active'], default=None, help='Reopen originally active non-kinematic parameters (default when no targeted selection)')
+    from .hardware_retuning import GROUPS
+    retune.add_argument('--group', choices=tuple(GROUPS), action='append', default=[])
+    retune.add_argument('--parameter', action='append', default=[], metavar='NAME')
+    retune.add_argument('--radius', type=float, default=.1, help='Radius in original normalized parameter domains, in (0, 1]; default 0.1')
+    retune.add_argument('--source-study', type=Path, help='Original Research source if its domains were not recorded; scientific identity is checked')
+    retune.add_argument('--output', type=Path, required=True)
+    synthesize = mechanical.add_parser('synthesize', help='Discover or polish physical mechanism families without thermodynamic integration')
     synthesize.add_argument('source', type=Path)
     synthesize.add_argument('--candidate')
     from .families import PHYSICAL_FAMILIES
@@ -109,6 +127,14 @@ def main(argv=None):
     synthesize.add_argument('--stage', action='append', required=True)
     synthesize.add_argument('--side', choices=['small','large','both'], default='large')
     synthesize.add_argument('--validate-only', action='store_true')
+    synthesize.add_argument('--output',type=Path,help='New MechanismLibrary JSON')
+    synthesize.add_argument('--html',type=Path,help='Standalone human catalogue (default: beside library JSON)')
+    synthesize.add_argument('--library',type=Path,help='Input library for downstream, polish or opposite-piston stages')
+    synthesize.add_argument('--family-id',action='append',default=[],help='Retained parent member; repeat to preserve several families')
+    synthesize.add_argument('--config',type=Path,help='TOML search policy, bounds, categories and mechanical constraints')
+    synthesize.add_argument('--budget',help='Cooperative geometry-search budget, e.g. 2m; not a thermodynamic budget')
+    for option in ('islands','population','generations','seed','max-evaluations'):
+        synthesize.add_argument('--'+option,type=int,default=None)
     visual = mechanical.add_parser('visualize', help='Open interactive production geometry and motion, without integration')
     visual.add_argument('artifact', type=Path)
     visual.add_argument('--family-id', help='Required when inspecting a library')
@@ -225,19 +251,59 @@ def main(argv=None):
                         else: plt.show()
         elif args.command == 'mechanism':
             from .artifacts import MechanismArtifact, MechanismLibrary
-            if args.mechanism_command == 'synthesize':
+            if args.mechanism_command == 'adapt':
+                from .mechanism_adaptation import paired_thermodynamic
+                output = paired_thermodynamic(args.source,args.library,args.family_id,args.output,
+                                               candidate=args.candidate,radius=args.radius)
+                generated = load_study(output)
+                print(f'Created {output} with {len(generated.space.parameters)} active mechanical coordinates; no integration started.')
+            elif args.mechanism_command == 'retune':
+                from .hardware_retuning import hardware_retuning
+                output=hardware_retuning(args.source,args.output,candidate=args.candidate,scope=args.scope,
+                    groups=args.group,parameters=args.parameter,radius=args.radius,source_study=args.source_study)
+                generated=load_study(output)
+                print(f'Created {output} with {len(generated.space.parameters)} active hardware parameters and 0 active mechanism coordinates; no integration started.')
+            elif args.mechanism_command == 'synthesize':
                 from .motion_target import load_motion_target
                 from .synthesis import SynthesisRequest, SynthesisPlan, release_coordinates
-                target = load_motion_target(args.source, candidate=args.candidate)
-                request = SynthesisRequest(target.content_hash, args.family, 'design_exploitation', tuple(args.stage))
-                plan = SynthesisPlan(target, request)
-                sides = ('small','large') if args.side == 'both' else (args.side,)
-                released = {stage: release_coordinates(stage, sides, family=args.family) for stage in args.stage}
-                if not args.validate_only:
-                    plan.execute()
-                print(json.dumps(dict(target_hash=target.content_hash, family=args.family,
-                                      stages=args.stage, released_coordinates=released,
-                                      implemented=False, integration_started=False)))
+                target=load_motion_target(args.source,candidate=args.candidate)
+                from .synthesis_search import SearchPolicy
+                import tomllib
+                settings={} if args.config is None else tomllib.loads(args.config.read_text())
+                constraints=tuple(settings.pop('mechanical_constraints',()))
+                declared_limits=settings.pop('volume_limits',{})
+                from dada_solver.geometry import CylinderVolumeLimits
+                if set(declared_limits)-{'small','large'} or any(set(row)!={'minimum','maximum'} for row in declared_limits.values()):
+                    raise ValueError('Volume limits require small/large sides and exactly minimum/maximum.')
+                limits={side:CylinderVolumeLimits(row['minimum'],row['maximum']) for side,row in declared_limits.items()}
+                for option in ('islands','population','generations','seed','max_evaluations'):
+                    value=getattr(args,option)
+                    if value is not None: settings[option]=value
+                if args.budget is not None: settings['budget_seconds']=parse_budget(args.budget)
+                policy=SearchPolicy(**settings)
+                request=SynthesisRequest(target.content_hash,args.family,'design_exploitation',tuple(args.stage),
+                                         retained_family_ids=tuple(args.family_id),mechanical_constraints=constraints)
+                plan=SynthesisPlan(target,request)
+                sides=('small','large') if args.side=='both' else (args.side,)
+                released={stage:release_coordinates(stage,sides,family=args.family) for stage in args.stage}
+                supported=(args.family in ('slider_crank','four_bar') and tuple(args.stage) in (('global_discovery',),('full_local_polish',))) or (args.family=='six_bar' and len(args.stage)==1 and args.stage[0] in ('primary_discovery','downstream_fit','full_local_polish','mirror_initialization','opposite_local_adaptation'))
+                if args.validate_only:
+                    policy.coordinates(args.family); policy.choices(args.family)
+                    print(json.dumps(dict(target_hash=target.content_hash,family=args.family,
+                        stages=args.stage,released_coordinates=released,implemented=supported,integration_started=False)))
+                else:
+                    if not supported: plan.execute(policy=policy,sides=sides)
+                    if args.output is None: raise ValueError('Synthesis requires --output for its MechanismLibrary.')
+                    catalogue=args.html if args.html is not None else args.output.with_suffix('.html')
+                    if args.output.exists() or catalogue.exists() or args.output.resolve()==catalogue.resolve():
+                        raise ValueError('Synthesis library/catalogue paths must be distinct and must not exist.')
+                    library=None if args.library is None else MechanismLibrary.load(args.library)
+                    import matplotlib  # Verify the catalogue dependency before starting search.
+                    result=plan.execute(policy=policy,sides=sides,library=library,volume_limits=limits)
+                    from .synthesis_catalogue import render_synthesis_catalogue
+                    render_synthesis_catalogue(result,target,catalogue)
+                    result.save(args.output)
+                    print(f'Created {args.output} and {catalogue}; {len(result.members)} retained families; no thermodynamic integration started.')
             elif args.mechanism_command == 'catalogue':
                 from .synthesis import mechanism_catalogue
                 library = MechanismLibrary.load(args.library)

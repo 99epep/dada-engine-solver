@@ -8,13 +8,12 @@ import math
 from pathlib import Path
 
 import numpy as np
-from scipy.interpolate import CubicSpline, CubicHermiteSpline
 from scipy.optimize import least_squares
 
 from dada_solver.free_kinematics import FreeMotionDefinition, _PeriodicMotion
 from dada_solver.campaign.candidate import canonical_json, content_hash
 from dada_solver.campaign.history import atomic_json
-from .motion_target import MotionTarget, PERIOD
+from .motion_target import MotionTarget, PERIOD, PeriodicTargetSide
 
 COUNT = 15
 STEP = PERIOD/COUNT
@@ -41,52 +40,6 @@ class RefitPolicy:
         if not math.isfinite(self.position_tie_mse) or not 0 <= self.position_tie_mse <= 1e-10:
             raise ValueError('Position tie tolerance must be finite and at most 1e-10.')
 
-
-class _TargetSide:
-    """Periodic interpolation of frozen samples, enriched by exact source events.
-
-    Hermite interpolation uses available source first derivatives. With position
-    only, a periodic cubic interpolant is used, but no target velocity is claimed.
-    Target acceleration is never read.
-    """
-    def __init__(self, target, side):
-        raw = target.scientific
-        self.data = raw['sides'][side]
-        self.events = self.data['events']
-        self.has_velocity = self.data['first_derivative'] is not None
-        samples = {float(t): [float(q), None if not self.has_velocity else float(v)]
-                   for t, q, v in zip(raw['angles_rad'], self.data['position'],
-                                      self.data['first_derivative'] or [None]*len(raw['angles_rad']))}
-        for event in self.events:
-            m = event['metadata']
-            if 'normalized_position' in m and (not self.has_velocity or 'first_derivative_per_rad' in m):
-                t = float(event['angle_rad'])
-                near = next((old for old in samples if abs(old-t) < 1e-12), None)
-                if near is not None: del samples[near]
-                samples[t] = [float(m['normalized_position']), m.get('first_derivative_per_rad')]
-        angles = sorted(samples)
-        q = [samples[t][0] for t in angles]
-        if self.has_velocity:
-            self.interpolant = CubicHermiteSpline(angles, q, [samples[t][1] for t in angles])
-        else:
-            self.interpolant = CubicSpline(angles, q, bc_type='periodic')
-
-    def position(self, angles):
-        return self.interpolant(np.asarray(angles) % PERIOD)
-
-    def velocity(self, angles):
-        if not self.has_velocity:
-            return None
-        return self.interpolant(np.asarray(angles) % PERIOD, 1)
-
-    def extrema_angles(self):
-        known = {e['kind']:e['angle_rad'] for e in self.events if e['kind'] in ('maximum','minimum')}
-        if set(known) == {'maximum','minimum'}: return known
-        roots = self.interpolant.derivative().roots(extrapolate=False)
-        roots = roots[np.isfinite(roots) & (roots >= 0) & (roots < PERIOD)]
-        if not len(roots): raise ValueError('Target has no resolved extrema.')
-        values = self.position(roots)
-        return dict(maximum=float(roots[np.argmax(values)]), minimum=float(roots[np.argmin(values)]))
 
 
 def _feature_mesh(source, policy):
@@ -198,7 +151,7 @@ def _diagnostics(motion, phase, source, policy, angles, weights, blocks):
 
 
 def _fit_side(target, side, policy):
-    source = _TargetSide(target,side)
+    source = PeriodicTargetSide(target,side)
     angles, weights, blocks = _feature_mesh(source,policy)
     reference = source.position(angles)
     sqrt_weights = np.sqrt(weights)
@@ -322,7 +275,7 @@ def plot_refit(result):
     for row,side in enumerate(('small','large')):
         fitted = raw['sides'][side]
         phase = fitted['phase_rad']
-        source = _TargetSide(target,side)
+        source = PeriodicTargetSide(target,side)
         motion = _motion(fitted['shape_coordinates'])
         naive = _FitMotion(FreeMotionDefinition(tuple(fitted['naive']['controls']),1.,2.))
         q = motion.evaluate(angles-phase)

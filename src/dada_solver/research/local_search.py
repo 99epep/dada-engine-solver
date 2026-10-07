@@ -9,14 +9,16 @@ from .schema import keys
 def validate_search(search, space):
     common=('type','seed','scramble','domain')
     local=search.get('domain')=='local_regions_v1'
-    keys(search,common,'search',('radius_fraction','allocation','evaluate_centers','regions') if local else ('evaluate_initial',))
+    keys(search,common,'search',('radius_fraction','allocation','evaluate_centers','regions','choice_scope') if local else ('evaluate_initial',))
     if search['type']!='sobol' or search['domain'] not in ('fixed_global_bounds','local_regions_v1') or type(search['seed']) is not int or search['seed']<0 or type(search['scramble']) is not bool:
         raise ValueError('Use explicit bounded Sobol settings.')
     if not local:
         if type(search.get('evaluate_initial',False)) is not bool: raise ValueError('evaluate_initial must be boolean.')
         return
-    if set(search)!=set(common)|{'radius_fraction','allocation','evaluate_centers','regions'}:
+    if set(search)-{'choice_scope'}!=set(common)|{'radius_fraction','allocation','evaluate_centers','regions'}:
         raise ValueError('Local regions require radius_fraction, allocation, evaluate_centers and regions.')
+    if 'choice_scope' in search and search['choice_scope']!='declared_choices':
+        raise ValueError('Local choice_scope must be declared_choices.')
     radius=search['radius_fraction']
     if isinstance(radius,bool) or not isinstance(radius,(int,float)) or not math.isfinite(radius) or not 0<radius<=1:
         raise ValueError('Local radius_fraction must be finite and in (0, 1].')

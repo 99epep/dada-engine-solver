@@ -4,6 +4,7 @@ Lengths use crank-radius units; phase is theta + phase_rad.
 """
 from dataclasses import dataclass
 import math
+import numpy as np
 from dada_solver.geometry import CylinderVolumeLimits
 
 @dataclass(frozen=True)
@@ -22,8 +23,9 @@ class SliderMotion:
     def normalized(self, theta):
         l,e=self.rod_over_crank,self.offset_over_crank
         a=theta+self.phase_rad
-        z=e-math.sin(a); root=math.sqrt(l*l-z*z)
-        x=math.cos(a)+root; dx=-math.sin(a)+z*math.cos(a)/root
+        operations = np if np.ndim(theta) else math
+        z=e-operations.sin(a); root=operations.sqrt(l*l-z*z)
+        x=operations.cos(a)+root; dx=-operations.sin(a)+z*operations.cos(a)/root
         low=math.sqrt((l-1)**2-e*e); high=math.sqrt((l+1)**2-e*e)
         q=(x-low)/(high-low); dq=dx/(high-low)
         return (q,dq) if self.volume_increases_with_coordinate else (1-q,-dq)
@@ -36,11 +38,20 @@ class SliderMotion:
     def normalized_second_derivative(self, theta):
         l,e=self.rod_over_crank,self.offset_over_crank
         a=theta+self.phase_rad
-        z=e-math.sin(a); c=math.cos(a); s=math.sin(a)
-        root=math.sqrt(l*l-z*z)
+        operations = np if np.ndim(theta) else math
+        z=e-operations.sin(a); c=operations.cos(a); s=operations.sin(a)
+        root=operations.sqrt(l*l-z*z)
         ddx=-c+(-c*c-z*s)/root-z*z*c*c/root**3
         value=ddx/self.stroke_over_crank
         return value if self.volume_increases_with_coordinate else -value
+
+    def stationary_points(self):
+        """The two exact collinear crank/rod dead centers in study angle."""
+        maximum = (math.asin(self.offset_over_crank/(self.rod_over_crank+1))-self.phase_rad) % (2*math.pi)
+        minimum = (math.pi+math.asin(self.offset_over_crank/(self.rod_over_crank-1))-self.phase_rad) % (2*math.pi)
+        points = [dict(angle_rad=maximum,kind='maximum' if self.volume_increases_with_coordinate else 'minimum'),
+                  dict(angle_rad=minimum,kind='minimum' if self.volume_increases_with_coordinate else 'maximum')]
+        return tuple(sorted(points,key=lambda p:p['angle_rad']))
 
     def joint_state(self, theta):
         """Original coordinate convention, reconstructed from the normalized law."""

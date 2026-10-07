@@ -507,15 +507,183 @@ Current Research can construct, screen, evaluate and Sobol-search declared
 thermo-mechanical coordinates, persist/resume campaigns and compare actual
 thermodynamic results.
 
-It does not yet generically execute automatic primary-family discovery,
-clustering, target-position cadence fitting, downstream-dyad fitting, local
-polish, mirror/adaptation operators, synthesis-stage scheduling or fresh-island
-saturation. Declared stages do not imply implemented synthesis operators.
+`SynthesisPlan.execute()` runs direct `global_discovery` and `full_local_polish`
+for slider-crank and four-bar, writing diverse `MechanismLibrary` members.
+The shared `SearchPolicy` controls independent deterministic islands, bounds,
+discrete categories, sampling, clustering and budgets. Each artifact retains
+its target identity, search origin and separate evidence; polish additionally
+records its parent family and artifact. Six-bar `primary_discovery`,
+`downstream_fit`, `full_local_polish`, `mirror_initialization` and
+`opposite_local_adaptation` execute independently through the same engine.
+Fresh-primary saturation is not implemented by this geometric operator.
+Paired thermodynamics and hardware retuning generate ordinary Research studies
+through `mechanism adapt` and `mechanism retune`, using explicit complete Research
+sources rather than a geometric proxy objective.
 
-`SynthesisPlan` binds a request to a target identity. Its `artifact()` creates the
-existing `MechanismArtifact` format from submitted production geometry, while
-`member()` retains per-piston evidence for a `MechanismLibrary`. It does not
-perform a geometric search. `assess_mechanism()` keeps three levels separate:
+### Paired thermodynamic study generation
+
+`paired_thermodynamic()` in `research.mechanism_adaptation` accepts a source
+study at its declared initials, a stored evaluation, or a campaign with an
+explicit candidate selector. A complete selected `MechanismLibrary` member
+supplies SMALL and LARGE. A `MotionTarget` alone cannot supply the machine.
+The source may use `hybrid_compact` directly; no spline intermediate is required.
+
+```console
+dada-research mechanism adapt path/to/source-campaign --candidate best \
+  --library path/to/mechanical-pair.json --family-id FAMILY_ID \
+  --output path/to/thermodynamic/study.toml --radius 0.1
+dada-research validate path/to/thermodynamic/study.toml
+dada-research run path/to/thermodynamic/study.toml
+```
+
+Generation writes a portable machine basis and two unchanged `MechanismArtifact`
+files referenced by relative path and scientific hash. It screens geometry but
+never starts integration. Only continuous mechanical coordinates are active:
+**6 for slider-crank, 22 for four-bar, 30 for six-bar**. Each side retains its
+fixed categories, branches, output and orientation. Mixed-family pairs are also
+allowed, with the sum of their respective coordinate counts.
+
+All other coordinates are fixed at the exact selected source values. Objectives,
+thermodynamic constraints, numerical settings and execution budgets are retained.
+Reference-pressure filling is explicitly converted to fixed selected inventory:
+changing motion must not refill the machine. This policy change is recorded.
+Source mechanical constraints and artifact constraints both apply; overlapping
+bounds use their stricter conjunction, and incompatible equalities are rejected.
+An unavailable family-specific source metric fails validation rather than being
+silently dropped. Exactly two piston reversals are required on each side.
+Production analytic-velocity root refinement screens topology before integration;
+four-/six-bar root sampling is refined at increasing resolution, not claimed as
+a mathematical continuous-domain proof.
+
+The `centered_mechanical_local_regions_v1` search policy uses the existing
+`refine` center-first Sobol scheduler (`local_regions_v1`). Each coordinate's
+reference box is centered on the selected geometry with the width of the
+versioned synthesis default bounds; positive-length half-widths are capped at
+half the current value. Periodic angles remain unwrapped about the initial angle.
+`--radius` defaults to 0.1, in (0, 0.5], and specifies the normalized half-width
+inside that box. Thus positive lengths move by at most 10% by default when their
+half-width cap applies, and phase windows have a default half-width of 36 degrees.
+These are configurable **search bounds**, not physical domains. The exact pair is
+evaluated first; hardware is never active.
+
+The basis records source study/definition/candidate IDs, source assessment when
+available, library and artifact hashes, selected family lineage, initial geometry,
+effective reference boxes and warm-start decisions. Compatible selected-candidate
+wall states use the standard `source_exact` initial-guess path, with the source's
+safe-retry policy unchanged. Without one, the source initialization policy is
+retained. No periodic solution is assumed for the new motion. This provenance
+supports comparison with the source and adapted Research results without any
+COP/fit composite objective.
+
+### Hardware retuning with fixed mechanisms
+
+`hardware_retuning()` in `research.hardware_retuning` generates a study after
+paired thermodynamic adaptation. Its source is an exact paired candidate, an
+evaluation, a study at its declared initials, or a retuning descendant. It never
+starts integration and releases **zero mechanism coordinates** for all three
+physical families. Geometry comes from the selected candidate's effective values,
+not merely the initial artifact still linked by the paired study. Unchanged
+geometry retains its artifact hash and provenance; changed geometry gets its
+correct scientific hash and an explicit link to the parent artifact/candidate.
+Branches, output, orientation, scale and mechanical constraints remain fixed.
+
+```console
+dada-research mechanism retune path/to/paired-campaign --candidate best \
+  --scope source-active --radius 0.1 --output path/to/retuning/study.toml
+dada-research mechanism retune path/to/paired-campaign --candidate CANDIDATE_ID \
+  --group exchangers --group volumes --output path/to/retuning-hx/study.toml
+dada-research validate path/to/retuning/study.toml
+dada-research run path/to/retuning/study.toml
+```
+
+`source-active` (also the default without a targeted selection) restores only
+originally active, still available **non-kinematic** parameters. `mechanism adapt`
+records their complete Research declarations and a domain content hash in its
+portable machine basis; no original file path is required afterward. If that
+snapshot is absent, `--source-study` supplies the original source and its study ID
+is verified. An empty immediate source domain can also use an explicitly supplied
+source identified in `motion_refit` provenance; no change to motion refit or
+invention of bounds is involved. Fixed original parameters cannot be reopened.
+
+Targeted selection is the union of repeated `--group` and `--parameter NAME`.
+It cannot be combined with explicit `--scope source-active`. Groups only filter
+parameters actually active in the original source:
+
+| Group | Existing parameter namespaces |
+|---|---|
+| `exchangers` | `microtube.*`, `thermal.*` |
+| `volumes` | `volume.*` |
+| `frequency` | `operation.frequency_hz` |
+| `charge` | `charge.*` |
+| `valves` | `valve.*` |
+| `external-stream` | `external_stream.*` |
+
+Unavailable source parameters are excluded and recorded; explicitly requesting
+one is an error. An empty selection is rejected. All unselected coordinates stay
+fixed at the current candidate, and every reopened initial value must lie in its
+original source domain. No exchanger scaling or capacity transformation occurs;
+this operation is independent of `rescale`.
+
+The `source_active_hardware_local_regions_v1` policy retains original declarations,
+units, continuous transforms, integer encodings and choice sets. The existing
+center-first `local_regions_v1` Sobol scheduler clips each numeric interval to
+`[max(0, center-radius), min(1, center+radius)]` in the **original normalized
+domain**. `--radius` defaults to 0.1 and lies in (0, 1]. Effective physical bounds
+are recorded, including nearest-even integer decoding; no domain extrapolation
+occurs. Choice order is not a geometric metric: explicit
+`choice_scope = "declared_choices"` keeps every original category eligible,
+independently of numeric radius. The exact current candidate is evaluated first.
+
+Objectives, thermodynamic and mechanical constraints, charge policy, numerical
+settings and safe-retry policy come from the current scientific source. Explicit
+inventory is not changed back into reference-pressure filling. Charge can be
+reopened only if originally active and selected. Compatible current wall guesses
+use standard `source_exact` initialization: original-inventory gas states are
+preserved, other inventories use the same initial-guess rescaling as cached
+Research states, and wall energies follow current capacities. Integrated mass is
+never renormalized and convergence criteria remain unchanged.
+
+Provenance retains the abstract/domain source, paired study and candidate IDs,
+frozen mechanism hashes, current parent candidate, parameter selection, radius,
+effective bounds, warm-start decisions and preceding retuning passes. A later
+pass can reopen volumes plus exchangers after an exchanger-only pass using the
+same original domains and the new current candidate. Ordinary `report`/`compare`
+identities and source assessments support the before/after comparisons; no
+additional score or reporting system is introduced.
+
+The [direct-operator reference](MECHANISM_SYNTHESIS_SEARCH.md#direct-slider-crank-and-four-bar-operators)
+defines default search bounds, the position-dominant score, progressive mechanical
+screens, circular geometry distance and category-stratified retention. These
+numerical search policies do not redefine any mechanical domain. A target may
+come from any current kinematic family, including `free_spline`.
+
+Discovery and polish write a standalone sortable HTML catalogue, defaulting to
+the library path with an `.html` suffix. It exposes IDs, linkage views, point
+paths, target/motion curves, fit errors, categories and individual mechanical
+metrics. No thermodynamic performance is inferred. Selected members use the
+same production joints in interactive `mechanism visualize` animations.
+
+```console
+dada-research mechanism synthesize path/to/target.json --family slider_crank \
+    --stage global_discovery --side both --budget 2m --output path/to/slider-library.json
+dada-research mechanism synthesize path/to/target.json --family four_bar \
+    --stage global_discovery --side both --islands 8 --seed 1234 \
+    --budget 2m --output path/to/fourbar-library.json
+dada-research mechanism synthesize path/to/target.json --family four_bar \
+    --stage full_local_polish --side large --library path/to/fourbar-library.json \
+    --family-id large-family-003 --output path/to/polished-library.json
+```
+
+`--config` overrides the versioned search policy with explicit bounds, categories
+and mechanical constraints; CLI search options override matching config fields.
+`--max-evaluations` is reproducible under a fixed numerical runtime; cooperative
+wall budgets stop at machine-dependent points. `--validate-only` does no search.
+Dimensional derivative constraints require explicit cylinder volume limits.
+Polish preserves all parent settings, categories and embedded constraints and
+optimizes each selected family independently, without reducing them to one winner.
+
+`SynthesisPlan.artifact()` and `member()` also accept submitted production geometry.
+`assess_mechanism()` keeps three levels separate:
 
 - angle-weighted RMS and maximum position error, and optional velocity RMS;
 - production mechanical metrics and individual constraint margins;
@@ -529,6 +697,37 @@ physical machine volume or crank scale. `mechanism_catalogue()` preserves all
 members and their order, with family IDs, mechanism family, fit, mechanical
 metrics, provenance, artifact hash and optional thermodynamic evidence.
 
+### Hierarchical six-bar synthesis
+
+The [executable six-bar reference](MECHANISM_SYNTHESIS_SEARCH.md#executable-hierarchical-six-bar-operators)
+owns the versioned bounds, structured initialization, score terms and CLI chain.
+The hierarchy is strictly six-dimensional primary discovery, nine-dimensional
+fixed-primary downstream discovery, then fifteen-dimensional **local** polish.
+No global fifteen-dimensional fit is provided.
+
+Intermediate primaries use the existing `MechanismArtifact` format with
+`family = "six_bar", component = "primary"`; they store only the six primary
+coordinates and `primary_branch`. `SixBarPrimaryMechanism` supplies the same
+production A–B–C–D/E closure used by complete six-bars. It has no piston law.
+Primary evidence labels a principal-axis E projection as a chronology opportunity,
+not a P fit; downstream constraints remain explicitly deferred until applicable.
+Both primary branches and both downstream branches are explored categorically.
+
+Each stage consumes explicit retained family IDs, produces a reusable
+`MechanismLibrary` and shared HTML catalogue, and keeps parent family/artifact
+hashes in provenance. Downstream cannot merge different primary parents.
+Fit, mechanical constraints, intermediate preferences and thermodynamics remain
+separate. Effective parent-relative bounds and seeds make geometric searches
+inspectable and reproducible under the same numerical runtime.
+
+`mirror_initialization` selects one destination side, reflects the source and
+aligns the destination maximum to its target. It retains the first side artifact
+unchanged. `opposite_local_adaptation` locally releases the destination's fifteen
+coordinates, preserving its branches and leaving the first side untouched;
+the pair has no implicit symmetry coupling. SMALL or LARGE may be synthesized
+first. All intermediate and complete artifacts use the ordinary interactive
+`mechanism visualize` path; no renderer or geometry is duplicated.
+
 ### Feature-aware motion refit
 
 `MotionRefitRequest.execute()` geometrically fits a `MotionTarget` to
@@ -536,8 +735,8 @@ metrics, provenance, artifact hash and optional thermodynamic evidence.
 13 `shape_coordinates` and an independent `phase_rad` for each piston.
 `MotionRefitResult` retains the target identity, canonical controls, coordinates,
 phases, per-event errors and numerical policy (`uniform15_feature_position_phase_v1`).
-It contains no thermodynamic result. Mechanical synthesis search operators remain
-not implemented; refit is an abstract-motion initialization, not a mechanism fit.
+It contains no thermodynamic result. Refit is an abstract-motion initialization,
+not a mechanism fit.
 
 The production phase convention is `q(theta - phase_rad)` in study angle before
 operation transformation. Nodes therefore occur at `phase_rad + j*2*pi/15`.
@@ -605,14 +804,22 @@ family-specific mechanical constraint is rejected, never silently removed.
 A reference-pressure filling policy is converted to explicit inventory using the
 selected candidate's computed mass, so changing motion does not refill the machine.
 
-The configurable local shape search region starts from a spherical cap of radius
-0.15 radians in canonical control space. Its stereographic image is a ball;
-the study uses that ball's coordinate bounding box. Joint box corners can exceed
-the cap radius: this is a search-region policy, not a uniform physical-distance
-bound. A cap touching the excluded pole is rejected. The report in machine-basis
-provenance records the construction and the box's distance from the pole.
-The phase search half-width defaults to half a node spacing (12 degrees).
-`--shape-radius` and `--phase-radius-fraction` change these search policies.
+The default motion-only search is deliberately narrow around the refitted law.
+The joint canonical-control angular radius is **0.02 radians**. Its stereographic
+image is a ball; the study uses a box centered exactly on the fitted coordinates,
+contained in that ball. Each coordinate half-width is the initial point's distance
+to the ball boundary divided by `sqrt(13)`. Even simultaneous changes at box
+corners therefore stay inside the canonical cap. This prevents the 13 independent
+shape coordinates from collectively expanding the requested neighborhood.
+
+This is a search-region policy, not a uniform physical displacement bound or a
+claim that the source motion is optimal. A cap touching the excluded pole is
+rejected. Machine-basis provenance records the policy, cap, box half-width and
+pole distance. The independent phase search half-width defaults to **0.48 degrees**,
+2% of a node spacing. `--shape-radius` and `--phase-radius-fraction` can explicitly
+widen or narrow these local search policies. These bounds do not change the refit
+itself or its one-cell phase exploration. They apply only to newly generated
+studies; existing studies and campaign identities are not rewritten.
 Other active design coordinates are not inherited. The initial refit is evaluated
 before ordinary Sobol sampling when the new study is subsequently run.
 

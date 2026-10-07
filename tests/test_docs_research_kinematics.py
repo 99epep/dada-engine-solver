@@ -127,6 +127,16 @@ def test_motion_target_family_protocols_and_interactive_boundary_are_documented(
     assert 'global_discovery' in content
 
 
+def test_paired_thermodynamic_and_hardware_generation_use_real_research():
+    content=text()
+    for token in ('mechanism adapt', 'paired_thermodynamic()', 'local_regions_v1',
+                  '6 for slider-crank, 22 for four-bar, 30 for six-bar',
+                  'source_exact', 'hardware_retuning()', 'mechanism retune',
+                  'source-active', 'zero mechanism coordinates', 'choice_scope'):
+        assert token in content
+    assert 'paired thermodynamics and hardware retuning are\nnot implemented' not in content
+
+
 def test_refit_is_current_geometric_initialization_and_study_handoff():
     content = text()
     for token in ('MotionRefitResult', 'to_shape_coordinates()', '28 spline coordinates',
@@ -135,3 +145,21 @@ def test_refit_is_current_geometric_initialization_and_study_handoff():
         assert token in content
     assert 'refit\nengine are not implemented' not in content
     assert 'No thermodynamic integration' in content
+
+
+def test_refit_search_defaults_are_tight_joint_bounds():
+    content = text()
+    assert '**0.02 radians**' in content
+    assert '**0.48 degrees**' in content
+    assert 'sqrt(13)' in content
+    assert 'corners therefore stay inside the canonical cap' in content
+    assert 'existing studies and campaign identities are not rewritten' in content
+
+
+def test_executable_six_bar_hierarchy_and_independent_pair_are_documented():
+    content=text()
+    for token in ('SixBarPrimaryMechanism','component = "primary"','primary_discovery',
+                  'downstream_fit','opposite_local_adaptation','first side untouched',
+                  'no implicit symmetry coupling','No global fifteen-dimensional fit'):
+        assert token in content
+    assert 'Six-bar hierarchy, fresh-primary' not in content

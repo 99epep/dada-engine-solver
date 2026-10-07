@@ -1,6 +1,7 @@
 """Deterministic center-first Sobol scheduling in the unchanged global space."""
 from .candidate import canonical_json
 from .strategy import SobolStrategy
+from .parameters import ChoiceParameter
 
 
 class ScheduledSobol:
@@ -40,7 +41,9 @@ class ScheduledSobol:
             if self.local:
                 radius = self.settings['radius_fraction']
                 center = self.space.encode(region['center'])
-                u = tuple(max(0.,z-radius)+x*(min(1.,z+radius)-max(0.,z-radius)) for z,x in zip(center,u))
+                u = tuple(x if isinstance(p,ChoiceParameter) and self.settings.get('choice_scope')=='declared_choices'
+                          else max(0.,z-radius)+x*(min(1.,z+radius)-max(0.,z-radius))
+                          for p,z,x in zip(self.space.parameters,center,u))
             physical = self.space.decode(u)
         # Canonical physical encoding makes integer duplicates (and identical
         # overlaps across regions) share identity; center floats stay exact.

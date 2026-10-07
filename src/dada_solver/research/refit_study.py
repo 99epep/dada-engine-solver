@@ -15,12 +15,17 @@ from .machine_basis import machine_parameters
 from .study_io import dumps
 
 
-def shape_bounds(controls, angular_radius=.15):
-    """Chart bounding box of a spherical cap in canonical control space.
+DEFAULT_SHAPE_RADIUS = .02
+DEFAULT_PHASE_RADIUS_FRACTION = .02
+
+
+def shape_bounds(controls, angular_radius=DEFAULT_SHAPE_RADIUS):
+    """Centered chart box contained in a canonical-control spherical cap.
 
     The cap radius is a configurable search-region policy, not a physical domain.
-    Its stereographic image is a ball. This returns the ball's coordinate box;
-    joint box corners can exceed the cap radius, which is reported explicitly.
+    Its stereographic image is a ball. The centered box uses the distance from
+    the initial point to the ball boundary, divided by sqrt(shape dimension).
+    Thus simultaneous coordinate changes, including box corners, stay in the cap.
     """
     if isinstance(angular_radius,bool) or not math.isfinite(angular_radius) or not 0 < angular_radius < math.pi/2:
         raise ValueError('Canonical shape search radius must lie in (0, pi/2) radians.')
@@ -33,17 +38,19 @@ def shape_bounds(controls, angular_radius=.15):
         raise ValueError('Shape search cap touches the excluded chart pole; choose a smaller radius.')
     center = sphere[:-1]/denominator
     radius = math.sin(angular_radius)/denominator
-    lower, upper = center-radius, center+radius
+    half_width = (radius-float(np.linalg.norm(center-z)))/math.sqrt(len(z))
+    lower, upper = z-half_width, z+half_width
     if not (np.all(np.isfinite(lower)) and np.all(np.isfinite(upper)) and np.all(lower < z) and np.all(z < upper)):
         raise ValueError('Shape search box is numerically unresolved.')
     corner_norm = float(np.linalg.norm(np.maximum(abs(lower),abs(upper))))
-    return lower, upper, dict(method='stereographic image of canonical spherical cap, coordinate envelope',
+    return lower, upper, dict(method='centered coordinate box inscribed in stereographic canonical cap',
+        search_region_policy='canonical_cap_inscribed_box_v2',
         canonical_angular_radius_rad=angular_radius,chart_ball_center=center.tolist(),chart_ball_radius=radius,
-        box_is_cap=False,minimum_box_angle_from_excluded_pole_rad=2*math.atan2(1.,corner_norm))
+        chart_box_half_width=half_width,box_is_cap=False,box_inside_cap=True,minimum_box_angle_from_excluded_pole_rad=2*math.atan2(1.,corner_norm))
 
 
 def refit_study(source, output, *, candidate=None, report=None, policy=None,
-                shape_radius=.15, phase_radius_fraction=.5):
+                shape_radius=DEFAULT_SHAPE_RADIUS, phase_radius_fraction=DEFAULT_PHASE_RADIUS_FRACTION):
     """Fit geometry, freeze the exact source machine, validate and write a study.
 
     A reference-pressure source inventory is frozen to its computed candidate

@@ -185,23 +185,38 @@ class FourBarSliderAssembly:
         crank_pin: np.ndarray,
         crank_pin_derivative: np.ndarray,
     ) -> SliderState:
-        pin_x, pin_y = float(crank_pin[0]), float(crank_pin[1])
-        pin_dx, pin_dy = (
-            float(crank_pin_derivative[0]),
-            float(crank_pin_derivative[1]),
-        )
+        return self._evaluate_components(float(crank_pin[0]),float(crank_pin[1]),
+                                         float(crank_pin_derivative[0]),float(crank_pin_derivative[1]))
+
+    def evaluate_many(self, crank_pins, crank_derivatives, *, primary_only=False):
+        """Vectorized poses from the same closure as evaluate(), never a drawing solver.
+
+        Every input pose must close. Tuple-valued joint fields contain coordinate
+        arrays; coordinate and derivative fields are arrays along the input grid.
+        Primary-only output screens the loop/output before constructing the rod.
+        """
+        pins, derivatives = np.asarray(crank_pins), np.asarray(crank_derivatives)
+        if (pins.ndim != 2 or pins.shape[1] != 2 or derivatives.shape != pins.shape
+                or not np.all(np.isfinite(pins)) or not np.all(np.isfinite(derivatives))):
+            raise ValueError('Pose arrays must be finite (N, 2) coordinates and derivatives.')
+        return self._evaluate_components(pins[:,0],pins[:,1],derivatives[:,0],derivatives[:,1],
+                                         vectorized=True,primary_only=primary_only)
+
+    def _evaluate_components(self, pin_x, pin_y, pin_dx, pin_dy, *, vectorized=False, primary_only=False):
+        operations = np if vectorized else math
+        bad = np.any if vectorized else bool
         pivot_x = self.loop.rocker_pivot_x
         pivot_y = self.loop.rocker_pivot_y
         delta_x = pivot_x - pin_x
         delta_y = pivot_y - pin_y
-        distance = math.hypot(delta_x, delta_y)
-        scale = max(self.loop.coupler_length, self.loop.rocker_length, distance)
+        distance = operations.hypot(delta_x, delta_y)
+        scale = np.maximum(max(self.loop.coupler_length, self.loop.rocker_length), distance) if vectorized else max(self.loop.coupler_length, self.loop.rocker_length, distance)
         tolerance = self.loop.singularity_tolerance * scale
-        if distance <= tolerance:
+        if bad(distance <= tolerance):
             raise ValueError("Four-bar circle centers coincide or nearly coincide.")
-        if distance > self.loop.coupler_length + self.loop.rocker_length + tolerance:
+        if bad(distance > self.loop.coupler_length + self.loop.rocker_length + tolerance):
             raise ValueError("Four-bar loop cannot close: links are too short.")
-        if distance < abs(self.loop.coupler_length - self.loop.rocker_length) - tolerance:
+        if bad(distance < abs(self.loop.coupler_length - self.loop.rocker_length) - tolerance):
             raise ValueError("Four-bar loop cannot close: one link contains the other.")
 
         direction_x = delta_x / distance
@@ -212,9 +227,9 @@ class FourBarSliderAssembly:
             + distance**2
         ) / (2.0 * distance)
         height_squared = self.loop.coupler_length**2 - along**2
-        if height_squared <= tolerance**2:
+        if bad(height_squared <= tolerance**2):
             raise ValueError("Four-bar loop is at or too close to a toggle singularity.")
-        height = math.sqrt(height_squared)
+        height = operations.sqrt(height_squared)
         branch = self.loop.assembly_branch
         joint_x = pin_x + along * direction_x - branch * height * direction_y
         joint_y = pin_y + along * direction_y + branch * height * direction_x
@@ -224,7 +239,7 @@ class FourBarSliderAssembly:
         rocker_x = joint_x - pivot_x
         rocker_y = joint_y - pivot_y
         determinant = coupler_x * rocker_y - coupler_y * rocker_x
-        if abs(determinant) <= tolerance * scale:
+        if bad(abs(determinant) <= tolerance * scale):
             raise ValueError("Four-bar velocity closure is singular.")
         velocity_rhs = coupler_x * pin_dx + coupler_y * pin_dy
         joint_dx = velocity_rhs * rocker_y / determinant
@@ -265,6 +280,11 @@ class FourBarSliderAssembly:
             + normal_offset * output_unit_dx
         )
 
+        if primary_only:
+            return dict(crank_pin=(pin_x,pin_y),coupler_joint=(joint_x,joint_y),
+                        output_point=(output_x,output_y),output_derivative=(output_dx,output_dy),
+                        four_bar_cross_product=determinant)
+
         axis_x = math.cos(self.slider.axis_angle)
         axis_y = math.sin(self.slider.axis_angle)
         relative_x = output_x - self.slider.axis_origin_x
@@ -274,9 +294,9 @@ class FourBarSliderAssembly:
         transverse_derivative = -output_dx * axis_y + output_dy * axis_x
         longitudinal_derivative = output_dx * axis_x + output_dy * axis_y
         margin_squared = self.slider.connecting_rod_length**2 - transverse**2
-        if margin_squared <= tolerance**2:
+        if bad(margin_squared <= tolerance**2):
             raise ValueError("Slider connecting rod is at or beyond a toggle singularity.")
-        margin = math.sqrt(margin_squared)
+        margin = operations.sqrt(margin_squared)
         slider_branch = self.slider.assembly_branch
         coordinate = longitudinal + slider_branch * margin
         coordinate_derivative = (
@@ -338,13 +358,10 @@ class SharedCrankFourBarVolumeKinematics:
                 self.small_assembly, self.small_volume_increases_with_coordinate
             ),
         )
-        object.__setattr__(
-            self,
-            "_large",
-            self._normalize(
-                self.large_assembly, self.large_volume_increases_with_coordinate
-            ),
-        )
+        large = self._small if (self.large_assembly is self.small_assembly and
+            self.large_volume_increases_with_coordinate == self.small_volume_increases_with_coordinate) else self._normalize(
+                self.large_assembly, self.large_volume_increases_with_coordinate)
+        object.__setattr__(self,"_large",large)
 
     def _crank(self, theta: float) -> tuple[np.ndarray, np.ndarray]:
         angle = self.crank_direction * theta + self.crank_angle_offset
@@ -355,6 +372,56 @@ class SharedCrankFourBarVolumeKinematics:
             * np.array((-math.sin(angle), math.cos(angle)))
         )
         return pin, derivative
+
+    def _crank_many(self, theta):
+        angles = self.crank_direction*np.asarray(theta)+self.crank_angle_offset
+        pins = self.crank_radius*np.column_stack((np.cos(angles),np.sin(angles)))
+        derivatives = self.crank_direction*self.crank_radius*np.column_stack((-np.sin(angles),np.cos(angles)))
+        return pins, derivatives
+
+    def stationary_points(self, side="small", *, samples=1440):
+        """Refined analytic-velocity roots on successively doubled periodic grids.
+
+        This is a resolution-checked numerical screen, not a certified global
+        root count. Tangencies are screened at local velocity-magnitude minima.
+        """
+        from scipy.optimize import minimize_scalar
+        if side not in ("small","large") or type(samples) is not int or samples < 360:
+            raise ValueError('Choose a cylinder side and at least 360 root-screen samples.')
+        normalized = getattr(self,'_'+side)
+        def velocity(t): return self._volume_and_derivative(t,normalized,getattr(self,side+'_volume_limits'))[1]
+        previous = None
+        for count in (samples,2*samples,4*samples):
+            angles = np.linspace(0.,2*math.pi,count+1)
+            values = velocity(angles)
+            roots = []
+            scale = max(float(np.max(abs(values))),1e-15)
+            for i in np.flatnonzero(values[:-1]*values[1:] < 0):
+                roots.append(brentq(velocity,angles[i],angles[i+1],xtol=1e-13) % (2*math.pi))
+            roots.extend(angles[:-1][abs(values[:-1]) < 1e-13*scale])
+            magnitude = abs(values[:-1])
+            local_minima = np.flatnonzero((magnitude < np.roll(magnitude,1)) & (magnitude < np.roll(magnitude,-1)))
+            for i in local_minima:
+                left,right = angles[i]-2*math.pi/count,angles[i]+2*math.pi/count
+                if velocity(left)*velocity(right) <= 0: continue
+                fit = minimize_scalar(lambda t:abs(velocity(t)),bounds=(left,right),method='bounded',options={'xatol':1e-13})
+                if fit.fun < 1e-10*scale: roots.append(fit.x % (2*math.pi))
+            roots = sorted(float(t) for t in roots)
+            unique = []
+            for root in roots:
+                if not unique or root-unique[-1] > 1e-8: unique.append(root)
+            if len(unique)>1 and unique[0]+2*math.pi-unique[-1]<1e-8: unique.pop()
+            if previous is not None and len(previous)==len(unique) and np.allclose(previous,unique,atol=1e-8,rtol=0):
+                break
+            previous=unique
+        result=[]
+        for i,root in enumerate(unique):
+            left=(unique[i-1] if i else unique[-1]-2*math.pi)
+            right=(unique[i+1] if i+1<len(unique) else unique[0]+2*math.pi)
+            vleft,vright=velocity((left+root)/2),velocity((root+right)/2)
+            kind='maximum' if vleft>0>vright else 'minimum' if vleft<0<vright else 'stationary'
+            result.append(dict(angle_rad=root,kind=kind,volume=self._volume_and_derivative(root,normalized,getattr(self,side+'_volume_limits'))[0]))
+        return tuple(result)
 
     def slider_states(self, theta: float) -> tuple[SliderState, SliderState]:
         pin, derivative = self._crank(theta)
@@ -382,13 +449,8 @@ class SharedCrankFourBarVolumeKinematics:
         self, assembly: FourBarSliderAssembly, increases: bool
     ) -> _NormalizedAssembly:
         angles = np.linspace(0.0, 2.0 * math.pi, self.extrema_scan_count, endpoint=False)
-        values = np.empty(angles.size)
-        derivatives = np.empty(angles.size)
-        for index, angle in enumerate(angles):
-            pin, pin_derivative = self._crank(float(angle))
-            state = assembly.evaluate(pin, pin_derivative)
-            values[index] = state.coordinate
-            derivatives[index] = state.coordinate_derivative
+        state = assembly.evaluate_many(*self._crank_many(angles))
+        values, derivatives = state.coordinate, state.coordinate_derivative
         roots: list[float] = []
         for index, angle in enumerate(angles):
             next_index = (index + 1) % angles.size
@@ -424,7 +486,8 @@ class SharedCrankFourBarVolumeKinematics:
         normalized: _NormalizedAssembly,
         limits: CylinderVolumeLimits,
     ) -> tuple[float, float]:
-        state = normalized.assembly.evaluate(*self._crank(theta))
+        state = (normalized.assembly.evaluate_many(*self._crank_many(theta)) if np.ndim(theta)
+                 else normalized.assembly.evaluate(*self._crank(theta)))
         fraction = (
             state.coordinate - normalized.minimum_coordinate
         ) / normalized.stroke

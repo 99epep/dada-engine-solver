@@ -197,8 +197,12 @@ define the supported base policy sets.
 ## Warm starts and domain retry
 
 Schema 3 `warm_start.initial_source` accepts `uniform` or `source_exact`.
-`source_exact` requires a stored compatible source state and its original fixed
-inventory. It is incompatible with geometry-derived reference-pressure charge. A warm
+`source_exact` requires a stored compatible source state and its original
+inventory at the study initial point. Explicit inventory can be active: candidate
+guesses at other inventories use the existing cached-state rescaling, preserving
+specific gas energies; original-inventory gas states remain exact. Wall energies
+follow current capacities. Integrated states are never renormalized.
+It is incompatible with geometry-derived reference-pressure charge. A warm
 state is an initial guess, not proof of periodic convergence.
 
 `numerical.domain_error_retry` accepts `none` or
@@ -206,6 +210,16 @@ state is an initial guess, not proof of periodic convergence.
 initialization, not the physical model or validity limits. Earlier rejected trial
 evidence must remain distinct from final periodic-cycle constraint evidence;
 presentation belongs in the [cockpit](DADA_ENGINE_RESEARCH_COCKPIT.md).
+
+`dada-research mechanism retune` generates a hardware-only local study from a
+paired thermodynamic candidate or retuning descendant. Original non-kinematic
+active domains are restored from portable paired provenance, with exact current
+initials and fixed adapted mechanism artifacts. `--scope source-active` restores
+the full eligible set; `--group`/`--parameter` select a subset. Numeric radii use
+the original normalized domains; `search.choice_scope = "declared_choices"`
+keeps original categories eligible without interpreting their order as distance.
+See [hardware retuning](DADA_ENGINE_RESEARCH_KINEMATICS.md#hardware-retuning-with-fixed-mechanisms)
+for groups, artifact linkage, provenance and generation without integration.
 
 ## Scientific identity
 

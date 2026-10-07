@@ -164,14 +164,20 @@ def test_chart_search_envelope_is_a_policy_and_excludes_pole(spline_fit):
     low,high,metadata = shape_bounds(controls,.15)
     z = np.array(FreeMotionDefinition(tuple(controls),1.,2.).to_shape_coordinates())
     sphere = np.r_[2*z,z@z-1]/(1+z@z)
-    rng = np.random.default_rng(181)
-    for _ in range(40):
-        tangent = rng.normal(size=14)
-        tangent -= (tangent@sphere)*sphere
-        tangent /= np.linalg.norm(tangent)
-        point = math.cos(.15)*sphere+math.sin(.15)*tangent
-        chart = point[:-1]/(1-point[-1])
-        assert np.all(low <= chart) and np.all(chart <= high)
+    # Check every joint corner, not just independent one-coordinate changes.
+    import itertools
+    signs = np.array(list(itertools.product((-1.,1.),repeat=13)))
+    corners = z+signs*(high-low)/2
+    squared = np.sum(corners**2,axis=1)
+    points = np.column_stack((2*corners,squared-1))/(1+squared[:,None])
+    angles = np.arccos(np.clip(points@sphere,-1.,1.))
+    assert np.max(angles) <= .15+1e-12
+    np.testing.assert_allclose((low+high)/2,z,atol=1e-15)
+    assert metadata['box_inside_cap']
+    assert metadata['chart_box_half_width'] > 0
+    tighter_low,tighter_high,tighter = shape_bounds(controls)
+    assert tighter['canonical_angular_radius_rad'] == .02
+    assert np.all(tighter_low > low) and np.all(tighter_high < high)
     assert not metadata['box_is_cap']
     assert metadata['minimum_box_angle_from_excluded_pole_rad'] > 0
     with pytest.raises(ValueError): shape_bounds(controls,0.)
@@ -220,6 +226,14 @@ def test_selected_candidate_generates_portable_motion_only_study(tmp_path,monkey
     assert new.data['constraints'] == study.data['constraints']
     assert new.data['numerical'] == study.data['numerical']
     assert new.data['study']['parent_candidate_id'] == record['candidate_id']
+    for side in ('small','large'):
+        region = new.basis.data['provenance']['motion_refit']['search_regions'][side]
+        assert region['canonical_angular_radius_rad'] == .02
+        assert region['box_inside_cap']
+        assert region['phase_radius_rad'] == pytest.approx(math.radians(.48))
+        for p in new.space.parameters:
+            if p.name == f'kinematics.{side}.phase_rad':
+                assert p.upper-p.lower == pytest.approx(2*math.radians(.48))
     assert new.data['search']['evaluate_initial']
     assert result.data['scientific']['target']['scientific']['source']['candidate_id'] == record['candidate_id']
     from dada_solver.research.cli import main

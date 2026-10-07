@@ -33,11 +33,21 @@ def stored_study(data):
     raw['execution'] = dict(default_budget='3m', default_max_candidates=1,
         initial_evaluation_seconds=30., deadline_grace_seconds=5.)
     from .families import validate_settings
+    from .artifacts import MechanismArtifact
+    artifacts={}
     for side in ('small', 'large'):
         cfg = raw['kinematics'][side]
         if 'mechanism' in cfg:
-            raw['kinematics'][side] = cfg['mechanism']['settings']
-        specs = validate_settings(raw['kinematics'][side], side)
+            mechanism=cfg['mechanism']
+            artifact=MechanismArtifact.create(mechanism['settings']['family'],mechanism['geometry'],
+                settings=mechanism['settings'],constraints=mechanism['constraints'],
+                provenance=dict(reconstructed_from_evaluation_study_id=data['study_id']))
+            if 'sha256' in cfg and cfg['sha256']!=artifact.content_hash:
+                raise ValueError('Embedded evaluation mechanism hash mismatch.')
+            artifacts[side]=artifact
+            raw['kinematics'][side]=dict(family=mechanism['settings']['family'],
+                artifact=side+'.mechanism.json',sha256=artifact.content_hash)
+        specs = validate_settings(artifacts[side].scientific['settings'] if side in artifacts else raw['kinematics'][side], side)
         declared = {r['name'] for r in raw['parameters']}
         for key, spec in specs.items():
             name = f'kinematics.{side}.{key}'
@@ -47,6 +57,8 @@ def stored_study(data):
         root = Path(directory)
         text = json.dumps(basis, indent=2, allow_nan=False)+'\n'
         (root/'basis.json').write_text(text)
+        for side,artifact in artifacts.items():
+            (root/(side+'.mechanism.json')).write_text(json.dumps(artifact.data,indent=2)+'\n')
         raw['sources']['machine'] = dict(path='basis.json', sha256=hashlib.sha256(text.encode()).hexdigest())
         (root/'study.toml').write_text(dumps(raw))
         yield load_study(root/'study.toml')

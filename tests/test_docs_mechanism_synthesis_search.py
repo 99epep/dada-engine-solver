@@ -151,9 +151,22 @@ def test_method_describes_current_handoff_without_campaign_records():
     for stage in STAGES:
         assert f'`{stage}`' in text
     assert 'declarative stage and ownership contracts' in text
-    assert 'does not run\nan autonomous geometric fit' in text
+    for contract in ('GeometrySearch', 'direct_geometry_islands_v1', 'full_local_polish',
+                     'category round-robin', 'not a certified continuous root count',
+                     'standalone sortable HTML', 'max-evaluations'):
+        assert contract in text
     assert 'no injection of design candidates' in text
     assert 'declare the\nweights' in text
     for artifact in ('policy.toml', 'saturation_reference.toml',
                      '## 23. Reproducing', 'completed reference saturation experiment'):
         assert artifact not in text
+
+
+def test_six_bar_stages_are_real_hierarchical_operators():
+    text=DOC.read_text()
+    for token in ('hierarchical_six_bar_geometry_v1','SixBarPrimaryMechanism','component = "primary"',
+                  'E is not P','deferred','primary_linearity_weight','primary_topology_weight',
+                  'pivot_envelope_radius','minimum_trajectory_extent','parent lineages never merge',
+                  'q_mirror(theta) = q_source(-theta)','--stage opposite_local_adaptation'):
+        assert token in text
+    assert 'six-bar search remains an explicit implementation boundary' not in text

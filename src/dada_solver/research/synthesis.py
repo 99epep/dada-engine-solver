@@ -1,7 +1,7 @@
 """Family-owned synthesis protocols and separate candidate evidence.
 
-Geometric search operators are not implemented here. Thermodynamic adaptation
-uses the ordinary Research evaluator, never a kinematic proxy score.
+Geometric discovery and local polish use the shared search engine. Thermodynamic
+adaptation uses the ordinary Research evaluator, never a kinematic proxy score.
 """
 from dataclasses import dataclass
 import math
@@ -158,16 +158,22 @@ def assess_mechanism(artifact, target, side, *, mechanical_samples=1440, volume_
     if type(mechanical_samples) is not int or mechanical_samples < 360:
         raise ValueError('Mechanical screening requires at least 360 samples.')
     raw = artifact.scientific
+    if raw['settings'].get('component')=='primary':
+        from .synthesis_six_bar import primary_evidence
+        return primary_evidence(artifact,target,side,mechanical_samples)
     limits = volume_limits if volume_limits is not None else CylinderVolumeLimits(1., 2.)
     law, geometry = build_side(raw['settings'], raw['geometry'], side, limits)
     angles = np.asarray(target.scientific['angles_rad'])
     reference = target.scientific['sides'][side]
-    error = np.array([(law.value(float(t))-limits.minimum)/limits.swept for t in angles])-reference['position']
+    vectorized = raw['settings']['family'] in ('slider_crank','four_bar','six_bar')
+    positions = law.value(angles) if vectorized else np.array([law.value(float(t)) for t in angles])
+    error = (positions-limits.minimum)/limits.swept-reference['position']
     def rms(values):
         return float(np.sqrt(np.sum(np.diff(angles)*(values[:-1]**2+values[1:]**2)/2)/(2*math.pi)))
     velocity_error = None
     if reference['first_derivative'] is not None:
-        velocity_error = rms(np.array([law.value(float(t), 1)/limits.swept for t in angles])-reference['first_derivative'])
+        velocity = law.value(angles,1) if vectorized else np.array([law.value(float(t),1) for t in angles])
+        velocity_error = rms(velocity/limits.swept-reference['first_derivative'])
     fit = KinematicFit(rms(error), float(np.max(np.abs(error))), velocity_error, target.content_hash, side)
     mechanical = side_metrics(raw['settings'], law, geometry, mechanical_samples)
     if volume_limits is None:
@@ -223,8 +229,8 @@ def mechanism_catalogue(library):
 class SynthesisPlan:
     """Bind a family protocol to a target and retain submitted physical candidates.
 
-    This boundary validates and records externally obtained geometries; it does
-    not invent geometric search operators or run thermodynamics.
+    Geometry discovery and local polish never run thermodynamics. Six-bar
+    stages execute separately, preserving intermediate families and ownership.
     """
     target: object
     request: SynthesisRequest
@@ -250,5 +256,26 @@ class SynthesisPlan:
         return synthesis_member(family_id, mechanisms, self.target,
                                 provenance=provenance, thermodynamic=thermodynamic, volume_limits=volume_limits)
 
-    def execute(self):
-        raise NotImplementedError('Geometric synthesis search operators are not implemented; validate a plan or submit physical geometries.')
+    def execute(self, *, policy=None, sides=('large',), library=None, volume_limits=None,
+                source=None, candidate=None, output=None, radius=.1,
+                scope=None, groups=(), parameters=(), source_study=None):
+        if self.request.stages == ('hardware_retuning',):
+            if source is None or output is None:
+                raise ValueError('Hardware retuning requires an exact paired Research source and output; use mechanism retune.')
+            if self.request.mechanical_constraints:
+                raise ValueError('Hardware retuning preserves source mechanical constraints; additional synthesis constraints must be declared in the source study.')
+            from .hardware_retuning import hardware_retuning
+            return hardware_retuning(source,output,candidate=candidate,scope=scope,groups=groups,parameters=parameters,
+                radius=radius,source_study=source_study,expected_family=self.request.mechanism_family)
+        if self.request.stages == ('paired_thermodynamic',):
+            if source is None or output is None or library is None or len(self.request.retained_family_ids)!=1:
+                raise ValueError('Paired thermodynamics requires a Research source, output and one complete library member; use mechanism adapt.')
+            member=library.member(self.request.retained_family_ids[0])
+            if any(a['scientific']['settings']['family']!=self.request.mechanism_family for a in member['mechanisms'].values()):
+                raise ValueError('Selected pair does not match the requested synthesis family.')
+            from .mechanism_adaptation import paired_thermodynamic
+            return paired_thermodynamic(source,library,self.request.retained_family_ids[0],output,
+                                        candidate=candidate,radius=radius,
+                                        mechanical_constraints=self.request.mechanical_constraints)
+        from .synthesis_search import execute_synthesis
+        return execute_synthesis(self,policy=policy,sides=sides,library=library,volume_limits=volume_limits)

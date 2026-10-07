@@ -45,7 +45,10 @@ research evaluate outputs/my_study/study.toml \
 ```
 
 `validate` checks declarations, hashes and production geometry without integrating
-thermodynamics. `evaluate` integrates one exact configured point, using active
+thermodynamics. Invalid declarations report the source file, line, parameter or
+constraint, and the corresponding TOML excerpt. Coupled geometry failures identify
+the affected piston and its related parameters rather than blaming an arbitrary
+coordinate. `evaluate` integrates one exact configured point, using active
 initial values where applicable; it does not run a search. It never overwrites an
 existing result, so choose a new output filename for another evaluation.
 

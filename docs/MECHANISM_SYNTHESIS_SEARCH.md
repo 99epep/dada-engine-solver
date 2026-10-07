@@ -90,8 +90,8 @@ fixed scientific choices rather than continuous optimization coordinates.
 `MechanismArtifact` objects from submitted physical geometries, and records
 separate evidence in `MechanismLibrary` members. The library may retain mixed
 physical families and multiple basins of the same family. It never prunes to one
-winner automatically. Geometric search operators remain unimplemented; CLI plan
-validation is supported, and a search request fails explicitly.
+winner automatically. Direct slider-crank and four-bar discovery and polish are
+implemented, along with the five geometric six-bar stages described below.
 
 Fit, mechanical quality and thermodynamic performance are three distinct levels.
 Fit uses angle-weighted position RMS/max error and optional velocity RMS; it does
@@ -119,7 +119,274 @@ implement mechanical synthesis or judge thermodynamic performance. See the
 [refit contract](DADA_ENGINE_RESEARCH_KINEMATICS.md#feature-aware-motion-refit) for
 numerical policy, topology checks, diagnostics and study generation.
 
+### Direct slider-crank and four-bar operators
+
+`SynthesisPlan.execute()` implements `global_discovery` and `full_local_polish`
+for `slider_crank` and `four_bar`, using the shared `GeometrySearch` engine.
+Fresh-primary saturation is not implemented by this geometric operator.
+Paired adaptation and hardware retuning generate Research studies via
+`mechanism adapt` and `mechanism retune`, as described below. No geometric stage
+constructs or calls a thermodynamic evaluator.
+
+The versioned `SearchPolicy` is `direct_geometry_islands_v1`; its default bounds
+are `crank_normalized_direct_bounds_v1`. Lengths are in crank-radius units.
+These are **search bounds**, not physical domains or manufacturing limits:
+
+| Family | Coordinate | Default interval |
+|---|---|---|
+| Slider-crank | `rod_over_crank` | 1.2–12 |
+| Slider-crank | `offset_over_crank` | −4–4 |
+| Both | `phase_rad` | 0–`2*pi` |
+| Four-bar | `coupler`, `rocker` | 1.2–8 |
+| Four-bar | `ground_x`, `ground_y` | −6–6 |
+| Four-bar | `output_along` | −6–6 |
+| Four-bar | `output_normal` | −4–4 |
+| Four-bar | `rod_length` | 1.5–16 |
+| Four-bar | `slider_origin_x`, `slider_origin_y` | −8–8 |
+| Four-bar | `axis_angle` | −`pi`–`pi` |
+
+Discovery explicitly explores both slider-crank orientations and all 32 four-bar
+combinations of output (`rocker`/`coupler`), loop branch, slider branch, crank
+direction and volume orientation. Discretes remain separate categories, never
+continuous coordinates. The default is four independent islands per category
+and piston, population 16 and 24 generations. Every island starts with one
+phase-aligned generic geometry and independent random samples, not source
+mechanism dimensions. Differential evolution uses `rand/1/bin`, mutation factor
+uniform in 0.5–0.9 and crossover probability 0.8; populations are interleaved
+across categories, islands and pistons. Slider-crank uses the same small
+infrastructure in three dimensions. Discovery then locally polishes retained
+basins (24 least-squares iterations by default).
+
+Seeds derive deterministically from the root seed, piston, category and island.
+Fixed settings and evaluation counts reproduce identities in the same numerical
+runtime. A cooperative wall deadline is machine-dependent; its observed stopping
+point is not a promise of identical wall-budget replay. `--max-evaluations` caps
+actual geometry evaluations, including local finite differences. Final topology
+validation and HTML rendering occur after the search budget. Evidence records
+seeds, island progress, rejection stages, actual evaluations and policy.
+
+Geometry is rejected progressively: full crank-revolution loop closure,
+piston-rod closure, nondegenerate stroke/singularity, two reversals, declared
+mechanical constraints, then dense fit. Production closure and metrics are the
+authority. Vectorized poses share the scalar production equations. Slider-crank
+turnarounds use exact collinear dead centers. Four-bar acceptance refines roots
+of analytic velocity on doubled periodic grids and screens tangencies; this is
+a resolution-checked screen, **not a certified continuous root count**. No
+implicit transmission floor or auxiliary mechanical preference is imposed.
+
+The fit has 721 uniform cycle samples by default. Nine samples per recognized
+extremum, turnaround, cadence join, rounding or kink reinforce coverage; their
+combined weight is only 0.1 relative to the background weight 1. Directed events
+cover their interval; point events use a radius of `2*pi/36`. These configurable
+numerical policies prevent neglected intervals without requiring reproduction
+of fine abstract-motion features. Available target velocity is secondary;
+missing velocity stays absent and target acceleration is never used.
+
+The internal discovery score is weighted position MSE plus
+`0.001 * normalized_velocity_MSE / (1 + normalized_velocity_MSE)`. Velocity is
+normalized by target RMS velocity, bounded below by `1/(2*pi)`; its contribution
+is bounded by 0.001. Both terms are reported separately. `assess_mechanism()`
+independently reports cycle position RMS/max error, optional velocity RMS,
+mechanical metrics and individual constraint margins. None is thermodynamic
+performance. Dimensional volume-derivative constraints require explicit
+`volume_limits`; normalized geometry does not invent a cylinder size.
+
+Diversity uses RMS differences in normalized geometry, with shortest circular
+phase distance divided by `2*pi`. Four-bar descriptors remove common rigid
+frame rotation and axial slider-origin gauge; categories are compared separately.
+A score-ordered greedy archive retains representatives at distance at least
+0.05, with category round-robin retention and up to 64 members per piston by
+default. Bounds, threshold and retention are configurable. This direct-mechanism
+archive is distinct from the primary-loop connected-component saturation method
+below; its count is not an exhaustive geometric family count. Multiple basins
+survive; the catalogue never declares an absolute winner.
+
+`full_local_polish` requires explicit library family IDs. Each parent gets its
+own bounded least-squares search (80 iterations by default), within 10% of each
+configured coordinate range. Full-period angular windows wrap at the seam.
+Output, branches, direction, orientation, settings and embedded constraints are
+preserved. One improved artifact is retained per selected parent and piston,
+with parent family/artifact identity in provenance. It does not merge parents
+or select a global winner.
+
+```console
+dada-research mechanism synthesize path/to/target.json --family slider_crank \
+    --stage global_discovery --side both --seed 1234 --islands 4 \
+    --budget 2m --output path/to/slider-library.json
+dada-research mechanism synthesize path/to/target.json --family four_bar \
+    --stage global_discovery --side both --seed 1234 --islands 8 \
+    --budget 2m --output path/to/fourbar-library.json
+dada-research mechanism synthesize path/to/target.json --family four_bar \
+    --stage full_local_polish --side large --library path/to/fourbar-library.json \
+    --family-id large-family-003 --output path/to/fourbar-polished.json
+```
+
+Every execution writes a `MechanismLibrary` and a standalone sortable HTML
+catalogue beside it; `--html` selects another path. Install the optional `[plot]`
+dependencies. The catalogue provides family IDs, production linkage views and
+point paths, target/mechanism position and velocity, fit errors, mechanical
+metrics, categories and full evidence. Select a member for interactive animation:
+
+```console
+dada-research mechanism visualize path/to/fourbar-library.json \
+    --family-id large-family-003 --side large --target path/to/target.json
+```
+
+`--config` accepts a TOML `SearchPolicy`, with CLI flags overriding the matching
+fields. For example:
+
+```toml
+seed = 1234
+islands = 4
+population = 16
+generations = 24
+cluster_distance = 0.05
+retain_per_side = 64
+
+[bounds]
+rod_over_crank = [1.5, 10.0]
+
+[categories]
+volume_increases_with_coordinate = [true, false]
+
+[[mechanical_constraints]]
+metric = "minimum_rod_axis_cosine"
+relation = "minimum"
+limit = 0.5
+unit = "1"
+```
+
+Bounds and categories must belong to the requested family. Constraints are
+unscoped declarations applied to each selected piston. Optional
+`[volume_limits.small]` and `[volume_limits.large]` tables require `minimum` and
+`maximum` in cubic metres. Existing output files are not overwritten.
+`--validate-only` checks family protocol and policy without search or integration.
+The source can be a `MotionTarget`, study, evaluation or identified campaign
+candidate, including a spline source; no hybrid-specific synthesis path exists.
+
+
 ---
+
+### Executable hierarchical six-bar operators
+
+The `hierarchical_six_bar_geometry_v1` adapters reuse **the same**
+`GeometrySearch.discover()` differential evolution, archive, budget control and
+`GeometrySearch.polish()` bounded least-squares implementation. There is no
+15-dimensional global six-bar search and no thermodynamic integration.
+Execute one stage at a time and retain explicit `--family-id` parents.
+
+| Stage | Released geometry | Categories explored or preserved |
+|---|---|---|
+| `primary_discovery` | Six primary coordinates | Two primary branches |
+| `downstream_fit` | Nine downstream coordinates, primary fixed | Two second branches per selected primary |
+| `full_local_polish` | All fifteen coordinates locally | Both parent branches fixed |
+| `mirror_initialization` | No search | Branches transformed by the reflection |
+| `opposite_local_adaptation` | Fifteen coordinates on the destination side only | Destination branches fixed |
+
+A primary is a `MechanismArtifact` with settings
+`family = "six_bar", component = "primary"`, exactly the six primary coordinates
+and `primary_branch`. It reconstructs `SixBarPrimaryMechanism`, not a piston law;
+it cannot be injected into a machine until a downstream linkage exists.
+The existing `MechanismLibrary` retains these intermediate artifacts and their
+family IDs without inserting dummy slider or dyad dimensions.
+
+Primary discovery uses the principal-axis projection of the production E
+trajectory as an **intermediate chronology opportunity**. Both projection signs
+are examined. Normalized projection position MSE dominates; available target
+velocity contributes the same bounded secondary term as direct discovery.
+Two explicit, configurable preferences add
+`primary_linearity_weight * lateral_ratio**2 / (1 + lateral_ratio**2)` and
+`primary_topology_weight * max(0, projected_extrema_count - 2)`; both default
+weights are 0.001. These are ranking preferences, not validity limits.
+Additional E-projection reversals are not silently treated as piston reversals.
+The catalogue labels the projection as such: **E is not P**. Evidence exposes
+projection axis/span, lateral RMS, primary transmission and separate score
+terms. Piston fit is `null`. Constraints requiring downstream geometry are
+recorded as deferred, not satisfied; applicable primary constraints are enforced.
+
+Default primary search bounds, in crank-radius units except phase, are:
+`primary_ground` 1.2–10, `primary_coupler` 1.2–12,
+`primary_rocker` 1.2–10, `primary_e_along` −8–12,
+`primary_e_normal` −8–8 and `primary_phase` 0–`2*pi`.
+These are numerical search bounds, not new mechanical domains.
+
+Downstream bounds are derived separately from each parent's E trajectory.
+Let `d` be its bounding-box diagonal (floored by `minimum_trajectory_extent`, default 0.1 crank radius),
+`c` the bounding-box center, and `r = pivot_envelope_radius*d` (default 2d).
+G is searched in the coordinate box `c +/- r`; EF/GF span
+`link_extent_minimum*d` through `link_extent_maximum*d` (defaults 0.25d–4d).
+H coordinates span −1–2 along EF and −1–1 normal to EF.
+The rod spans 0.25d–`rod_extent_maximum*d` (default 8d);
+axis offset spans `+/-(norm(c)+r)`, and axis angle spans −`pi`–`pi`.
+All effective bounds are stored; `[bounds]` overrides take precedence.
+These relative-bound settings are configurable numerical search policies.
+Local stages inherit the effective parent bounds, including the primary bounds;
+mirrored seed regions are reflected and phase-centered consistently. Explicit
+configuration bounds override this inheritance.
+
+Structured downstream seeds place G around E's envelope, choose equal EF/GF
+lengths exceeding half the maximum E–G distance with an extent-based margin,
+place H on/near EF, and initialize the slider from H's principal axis.
+The rod exceeds the transverse excursion. Both axis directions are considered
+as seeds using the production closure. These heuristics supply starting points;
+they impose no equality, rod/stroke ceiling or transmission floor.
+The evaluation order checks primary, secondary and rod closure, stroke,
+piston topology, explicit mechanical constraints, then dense piston fit.
+Complete piston acceptance refines analytic velocity roots on doubled grids and
+screens tangencies: exactly one maximum and one minimum are required. This is
+resolution-checked, not a certified continuous proof.
+
+Clustering uses RMS coordinate differences divided by effective search widths;
+phase and axis-angle distances are circular. Primary discovery uses six primary
+coordinates; downstream uses nine downstream coordinates **within one parent**.
+Complete geometry balances primary and downstream group RMS equally.
+Categories and parent lineages never merge. The configurable default distance
+0.05 remains a normalized search-space distance, not a physical similarity law.
+Polish retains one result per selected parent rather than one global winner.
+Multiple selected parents receive fair shares of the remaining evaluation/time
+budget. A parent with no admissible descendants is recorded in
+`failed_parent_searches` and does not erase successful descendants from others.
+Seeds, actual bounds, evaluations and parent artifact hashes are retained.
+
+Mirroring reflects the local y geometry, reverses both branch signs and crank
+phase, giving `q_mirror(theta) = q_source(-theta)` before phase alignment.
+It aligns the destination maximum with its own target and retains the original
+side artifact verbatim. The resulting pair contains independently owned geometry.
+Opposite adaptation releases only the destination geometry; there is no mirror
+constraint. Both sides are selectable; neither is assumed restrictive.
+A local window is 10% of configured coordinate width by default, with periodic
+wrapping. `local_radius` and `polish_evaluations` configure this search region.
+
+Every stage writes a library and the shared sortable HTML catalogue. Primary
+views show A–B–C–D/E and the E path beside the target/projection; full views use
+production A–B–C–D–E–F–G–H–P states. Metrics, dimensions, categories, hashes and
+lineage remain inspectable, and each artifact works with `mechanism visualize`.
+Neither the catalogue nor mirroring infers thermodynamic performance.
+
+```console
+dada-research mechanism synthesize path/to/target.json --family six_bar \
+    --stage primary_discovery --side large --islands 12 --budget 5m \
+    --output path/to/primary-large.json
+dada-research mechanism synthesize path/to/target.json --family six_bar \
+    --stage downstream_fit --side large --library path/to/primary-large.json \
+    --family-id primary-L-001 --family-id primary-L-004 --budget 5m \
+    --output path/to/downstream-large.json
+dada-research mechanism synthesize path/to/target.json --family six_bar \
+    --stage full_local_polish --side large --library path/to/downstream-large.json \
+    --family-id primary-L-001/downstream_fit-001 --output path/to/polished-large.json
+dada-research mechanism synthesize path/to/target.json --family six_bar \
+    --stage mirror_initialization --side small --library path/to/polished-large.json \
+    --family-id primary-L-001/downstream_fit-001/full_local_polish-001 \
+    --output path/to/small-seed.json
+dada-research mechanism synthesize path/to/target.json --family six_bar \
+    --stage opposite_local_adaptation --side small --library path/to/small-seed.json \
+    --family-id primary-L-001/downstream_fit-001/full_local_polish-001/mirror-small \
+    --output path/to/pair.json
+```
+
+IDs above illustrate lineage; select the actual IDs from each catalogue.
+Paired thermodynamics, hardware retuning and fresh-primary saturation remain
+separate, non-executed operators.
 
 ## 2. Six-bar topology and variables
 
@@ -266,10 +533,69 @@ At this point the optimization objective changes fundamentally:
 The abstract target has served its purpose once it has led the search into a
 useful realizable basin.
 
+This stage is implemented for `slider_crank`, `four_bar` and `six_bar` by
+`paired_thermodynamic()` and the `mechanism adapt` command. It requires an explicit
+reconstructible Research source and one library member containing both pistons.
+The source may be a hybrid study/candidate directly. Geometry discovery is not
+repeated and no thermodynamic integration starts during generation.
+
+```console
+dada-research mechanism adapt path/to/source-campaign --candidate best \
+  --library path/to/pair.json --family-id FAMILY_ID \
+  --output path/to/adaptation/study.toml --radius 0.1
+dada-research validate path/to/adaptation/study.toml
+dada-research run path/to/adaptation/study.toml
+```
+
+The unchanged mechanism artifacts supply exact initial coordinates and fixed
+categories. The generated study releases 6, 22 or 30 continuous coordinates for
+the respective paired families, freezes all hardware and other machine coordinates
+at the source candidate, and reuses its objectives, constraints and numerical
+policies. Reference-pressure charge is explicitly frozen to the selected inventory.
+Source and artifact mechanical constraints remain jointly enforced, including
+production closure and refined two-reversal topology screens before integration.
+
+The existing center-first `local_regions_v1` Sobol policy explores a normalized
+radius (default 0.1) about the exact pair. Its centered reference boxes use synthesis
+default coordinate widths, capped at half the current value for positive lengths;
+angles remain unwrapped locally. This `centered_mechanical_local_regions_v1`
+policy is a configurable search region, not a mechanical domain. The
+[paired study reference](DADA_ENGINE_RESEARCH_KINEMATICS.md#paired-thermodynamic-study-generation)
+specifies bounds, compatible warm starts, immutable artifact linkage and recorded
+source/pair provenance. Fit remains diagnostic; ordinary Research evaluates the
+actual source objective without a COP/RMS score.
+
 ### 4.7 `hardware_retuning`
 
-Finally, freeze the chosen mechanisms and re-tune the small set of
-thermodynamic or exchanger coordinates for the realized mechanism.
+`hardware_retuning()` and `mechanism retune` implement this final stage for
+slider-crank, four-bar and six-bar. They freeze the exact adapted SMALL/LARGE
+mechanisms and reopen selected thermodynamic or exchanger coordinates. No
+mechanism coordinate is active and generation never integrates a thermal cycle.
+
+```console
+dada-research mechanism retune path/to/paired-campaign --candidate best \
+  --scope source-active --radius 0.1 --output path/to/retuning/study.toml
+dada-research validate path/to/retuning/study.toml
+dada-research run path/to/retuning/study.toml
+```
+
+The default source-active set restores only non-kinematic variables that were
+active in the original Research source. Their declarations are stored portably
+by paired adaptation, with their original domains and types. Initials come from
+the exact current candidate, not the abstract source. Numeric local intervals
+are clipped to the original normalized domain through the existing local Sobol
+scheduler; categorical choices keep their original declared set. No new hardware
+domain, capacity scaling or charge-policy conversion is introduced.
+
+Repeated `--group exchangers`, `--group volumes`, `--group frequency`,
+`--group charge`, `--group valves`, `--group external-stream`, and
+`--parameter NAME` filter this set without adding absent/fixed source parameters.
+Later passes can reopen additional groups using the original domains. Immutable
+artifacts describe the adapted geometry with correct hashes and parent lineage;
+mechanical constraints continue to apply when volume or other hardware changes.
+The current source supplies objectives, evaluation policies and compatible warm
+guesses. See the [hardware retuning reference](DADA_ENGINE_RESEARCH_KINEMATICS.md#hardware-retuning-with-fixed-mechanisms)
+for domain recovery, bounds, typed choices and complete provenance.
 
 This separates:
 
@@ -447,6 +773,11 @@ family in continuous parameter space.
 ---
 
 ## 9. Operational definition of a primary family
+
+For fresh-island saturation, use the connected-component definition below.
+Executable design-exploitation discovery instead uses the score-ordered archive
+and the `2*pi` circular scale specified above. Their family counts and distance
+thresholds must not be treated as interchangeable.
 
 Opposite primary assembly branches are always treated as different families.
 
@@ -856,11 +1187,10 @@ It records:
 - mirroring as initialization only;
 - the thermodynamic objective after paired release.
 
-These are declarative stage and ownership contracts. The module does not run
-an autonomous geometric fit, family-clustering search or fresh-island optimizer.
-Research evaluates explicitly declared coordinates through its current search
-engine; the hierarchical synthesis operators remain a separate implementation
-boundary.
+Fresh-island saturation retains declarative stage and ownership contracts.
+The five geometric six-bar stages, and direct slider-crank and four-bar discovery
+and local polish, execute through the shared geometric search engine described above. Thermodynamic evaluation remains
+an independent Research operation.
 
 ---
 

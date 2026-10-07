@@ -5,7 +5,7 @@ from pathlib import Path
 from dada_solver.campaign.candidate import content_hash, canonical_json
 from dada_solver.campaign.history import atomic_json
 from dada_solver.geometry import CylinderVolumeLimits
-from .families import PHYSICAL_FAMILIES, validate_settings, build_side
+from .families import PHYSICAL_FAMILIES, validate_settings, build_side, parameter_specs, PRIMARY_COORDINATES
 
 
 @dataclass(frozen=True)
@@ -24,11 +24,22 @@ class MechanismArtifact:
         settings=dict(settings or {},family=family)
         if family not in PHYSICAL_FAMILIES: raise ValueError('Artifact family must describe a physical mechanism.')
         if set(settings)&{'artifact','sha256'}: raise ValueError('Nested artifact references are not supported.')
-        specs=validate_settings(settings,'small')
+        primary = settings.get('component') == 'primary'
+        if primary:
+            if settings != dict(family='six_bar', component='primary'):
+                raise ValueError('A primary component requires exactly six_bar/primary settings.')
+            specs = {n:s for n,s in parameter_specs(dict(family=family),'small').items()
+                     if n in (*PRIMARY_COORDINATES, 'primary_branch')}
+        else:
+            specs=validate_settings(settings,'small')
         if set(geometry)!=set(specs): raise ValueError('Artifact geometry must contain every family coordinate exactly once.')
         for name,value in geometry.items(): specs[name].validate(value)
         # Construct production closure eagerly. No thermodynamics or optimizer.
-        build_side(settings,geometry,'small',CylinderVolumeLimits(1.,2.))
+        if primary:
+            from dada_solver.six_bar import SixBarPrimaryMechanism
+            SixBarPrimaryMechanism(**geometry)
+        else:
+            build_side(settings,geometry,'small',CylinderVolumeLimits(1.,2.))
         from .margins import validate_mechanical_constraint
         for row in constraints: validate_mechanical_constraint(row,family,scoped=False)
         scientific=dict(schema_version=1,settings=settings,geometry=geometry,
@@ -63,6 +74,9 @@ class MechanismArtifact:
 
     def reconstruct(self):
         raw=self.scientific
+        if raw['settings'].get('component') == 'primary':
+            from dada_solver.six_bar import SixBarPrimaryMechanism
+            return SixBarPrimaryMechanism(**raw['geometry'])
         return build_side(raw['settings'],raw['geometry'],'small',CylinderVolumeLimits(1.,2.))[1]
 
 
