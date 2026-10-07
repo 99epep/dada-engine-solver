@@ -1,316 +1,246 @@
-"""Deterministic feature-aware refit of periodic targets to production splines.
-
-This is geometric initialization only. It never evaluates thermodynamics.
-"""
+"""Deterministic position-led initialization of the structured C2 pair."""
 from dataclasses import dataclass, field, asdict
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
+from scipy.interpolate import PPoly
 from scipy.optimize import least_squares
 
-from dada_solver.free_kinematics import FreeMotionDefinition, _PeriodicMotion
+from dada_solver.structured_kinematics import StructuredMotion15, StructuredKinematics15
+from dada_solver.geometry import CylinderVolumeLimits
 from dada_solver.campaign.candidate import canonical_json, content_hash
 from dada_solver.campaign.history import atomic_json
+from .families import STRUCTURED_DEFAULTS
 from .motion_target import MotionTarget, PERIOD, PeriodicTargetSide
 
-COUNT = 15
-STEP = PERIOD/COUNT
-POLICY_VERSION = 'uniform15_feature_position_phase_v1'
+NAMES = tuple(STRUCTURED_DEFAULTS)
+POLICY_VERSION = 'structured_c2_position_multistart_v1'
 
 
 @dataclass(frozen=True)
 class RefitPolicy:
-    """Numerical fit policy, not a physical domain or thermodynamic objective."""
-    phase_samples: int = 32
+    """Numerical search settings, not physical domains."""
     dense_samples: int = 1440
-    feature_samples: int = 33
-    maximum_evaluations: int = 120
-    velocity_weight: float = 1e-4
-    position_tie_mse: float = 1e-12
+    maximum_evaluations: int = 200
+    velocity_weight: float = 1e-6
+    kink_width_starts: tuple = (.25, .65)
+    curvature_scales: tuple = (.7, 1., 1.4)
 
     def __post_init__(self):
-        for name, minimum in (('phase_samples',8), ('dense_samples',360), ('feature_samples',9), ('maximum_evaluations',30)):
-            value = getattr(self, name)
-            if type(value) is not int or value < minimum:
+        for name, minimum in (('dense_samples',360), ('maximum_evaluations',30)):
+            if type(getattr(self,name)) is not int or getattr(self,name)<minimum:
                 raise ValueError(f'{name} must be an integer >= {minimum}.')
-        if not math.isfinite(self.velocity_weight) or not 0 <= self.velocity_weight <= 1e-3:
-            raise ValueError('Velocity tie-break weight must be finite and between zero and 1e-3.')
-        if not math.isfinite(self.position_tie_mse) or not 0 <= self.position_tie_mse <= 1e-10:
-            raise ValueError('Position tie tolerance must be finite and at most 1e-10.')
+        if not math.isfinite(self.velocity_weight) or not 0<=self.velocity_weight<=1e-4:
+            raise ValueError('Velocity weight must lie in [0, 1e-4].')
+        if not self.kink_width_starts or any(not 0<w<2 for w in self.kink_width_starts):
+            raise ValueError('Kink-width starts must lie in (0, 2).')
+        if not self.curvature_scales or any(not math.isfinite(s) or s<=0 for s in self.curvature_scales):
+            raise ValueError('Curvature scales must be finite and positive.')
 
 
+def fit_bounds(seed):
+    """Finite numerical fitting boxes inside the existing structural domains."""
+    lo=[]; hi=[]
+    for n in NAMES:
+        if n=='small_max_deg': a,b=seed[n]-180.,seed[n]+180.
+        elif n.endswith('duration_deg'): a,b=.1,359.9
+        elif n.endswith('curvature'): a,b=1e-5,max(5000.,seed[n]*10.)
+        elif n.endswith('width_rel'): a,b=.005,1.995
+        else: a,b=.001,.999
+        lo.append(a);hi.append(b)
+    return np.array(lo),np.array(hi)
 
-def _feature_mesh(source, policy):
-    background = np.linspace(0., PERIOD, policy.dense_samples, endpoint=False)
-    blocks = []
-    masses = dict(maximum=2., minimum=2., turnaround=1., rounding=.5,
-                  cadence_change=.25, kink=1., periodic_seam=.1)
-    for index, event in enumerate(source.events):
-        kind, angle = event['kind'], event['angle_rad']
-        radius = STEP/4
-        rule = 'one quarter of spline spacing'
-        if kind == 'rounding' and event['end_angle_rad'] is not None:
-            width = (event['end_angle_rad']-angle) % PERIOD
-            if width == 0: raise ValueError('A rounding interval must have positive width.')
-            radius = min(STEP/8, width/4)
-            points = np.r_[angle+np.linspace(0.,width,policy.feature_samples),
-                           angle+np.linspace(-radius,0.,5), angle+width+np.linspace(0.,radius,5)]
-            rule = 'full directed interval; exterior radius min(spacing/8, interval/4)'
+
+def structured_model(parameters):
+    limits=CylinderVolumeLimits(1.,2.)
+    return StructuredKinematics15(SimpleNamespace(small_cylinder=limits,large_cylinder=limits),parameters)
+
+
+def monotonicity(motion):
+    """Minimum branch derivative at all polynomial critical points and endpoints.
+
+    This checks each complete continuous branch, rather than a velocity grid.
+    Each increasing helper has unit net rise and positive endpoint curvature;
+    nonnegative derivatives guarantee exactly the two physical reversals.
+    """
+    minima={}
+    for name in ('small_down','small_up','large_down','large_up'):
+        derivative=PPoly.from_bernstein_basis(getattr(motion,name)).derivative()
+        roots=derivative.derivative().roots(extrapolate=False)
+        points=np.r_[derivative.x,roots[np.isfinite(roots)&(roots>=0)&(roots<=1)]]
+        minima[name]=float(np.min(derivative(points)))
+    return dict(valid=all(v>=-1e-9 for v in minima.values()),minimum_branch_derivatives=minima,
+                method='piecewise polynomial derivative minima at endpoints and all critical roots')
+
+
+def _seed(target, sources, supplied):
+    p=dict(STRUCTURED_DEFAULTS)
+    for side in ('small','large'):
+        source=sources[side];ext=source.extrema_angles()
+        maximum_t=(-ext['maximum']/PERIOD)%1.
+        duration=((ext['maximum']-ext['minimum'])%PERIOD)/PERIOD
+        p[side+'_down_duration_deg']=360*duration
+        if side=='small':p['small_max_deg']=360*maximum_t
+        # Curvature is a local position-shape seed only, never an acceleration
+        # target in the objective. Time here is normalized motor time.
+        h=PERIOD/512
+        for kind,sign in (('maximum',-1.),('minimum',1.)):
+            a=ext[kind]
+            value=sign*(source.position(a+h)+source.position(a-h)-2*source.position(a))/(h/PERIOD)**2
+            p[side+('_max_curvature' if kind=='maximum' else '_min_curvature')]=max(.1,float(value))
+        if side=='small':
+            midpoint=ext['minimum']-PERIOD*(1-duration)/2
+            p['small_up_bp_mid_q']=float(source.position(midpoint))
         else:
-            if kind == 'kink':
-                m = event['metadata']
-                width = (m['branch_end_rad']-m['branch_start_rad']) % PERIOD if {'branch_start_rad','branch_end_rad'} <= set(m) else PERIOD
-                radius = min(STEP/2, width/8)
-                rule = 'min(one half spline spacing, one eighth directed branch length)'
-            elif kind == 'cadence_change':
-                radius = STEP/8
-                rule = 'one eighth of spline spacing'
-            points = angle+np.linspace(-radius,radius,policy.feature_samples)
-        points = np.r_[points, angle] % PERIOD
-        weights = np.full(len(points), masses.get(kind,.1)/len(points))
-        # Exact turnarounds receive half of this feature's position weight.
-        if kind in ('maximum','minimum','turnaround'):
-            weights *= .5
-            weights[-1] += masses[kind]/2
-        blocks.append(dict(event_index=index, kind=kind, angle_rad=angle,
-                          samples=points, weights=weights, radius_rad=radius, rule=rule))
-    angles = np.r_[background, *[b['samples'] for b in blocks]]
-    weights = np.r_[np.full(len(background),1/len(background)), *[b['weights'] for b in blocks]]
-    return angles, weights/weights.sum(), blocks
+            p['large_down_bp_mid_q']=float(1-source.position(-PERIOD*duration/2))
+        kink=next((e for e in source.events if e['kind']=='kink'),None)
+        if kink is not None:
+            start=ext['maximum'] if side=='small' else ext['minimum']
+            width=PERIOD*(duration if side=='small' else 1-duration)
+            prefix='small_down' if side=='small' else 'large_up'
+            p[prefix+'_kink_u']=float(((start-kink['angle_rad'])%PERIOD)/width)
+            p[prefix+'_kink_q']=float(1-source.position(kink['angle_rad']) if side=='small' else source.position(kink['angle_rad']))
+    for n,v in (supplied or {}).items():
+        if n in p:p[n]=float(v)
+    lo,hi=fit_bounds(p)
+    return dict(zip(NAMES,np.clip([p[n] for n in NAMES],lo+1e-8,hi-1e-8)))
 
 
-class _FitMotion:
-    def __init__(self, definition):
-        self.definition = definition
-        self.production = _PeriodicMotion(definition)
-        self.diagnostics = self.production.diagnostics
-
-    def evaluate(self, angle, order=0):
-        values = self.production.evaluate(angle,order)
-        return values-1. if order == 0 else values
-
-    def stationary_points(self):
-        return tuple(dict(p,volume=p['volume']-1.) for p in self.production.stationary_points())
-
-
-def _motion(coordinates):
-    return _FitMotion(FreeMotionDefinition.from_shape_coordinates(coordinates,1.,2.))
+def _mesh(source,policy):
+    base=np.linspace(0,PERIOD,policy.dense_samples,endpoint=False)
+    features=[]
+    for e in source.events:
+        # Nine points within 1/128 cycle of a feature; rounding also contributes
+        # its directed interior. Background always carries 90% of position mass.
+        points=e['angle_rad']+np.linspace(-PERIOD/128,PERIOD/128,9)
+        if e['kind']=='rounding' and e['end_angle_rad'] is not None:
+            points=np.r_[points,e['angle_rad']+np.linspace(0,(e['end_angle_rad']-e['angle_rad'])%PERIOD,9)]
+        features.extend(points%PERIOD)
+    angles=np.r_[base,features]
+    weights=np.r_[np.full(len(base),(.9 if features else 1.)/len(base)),
+                  np.full(len(features),.1/len(features)) if features else []]
+    return angles,np.sqrt(weights)
 
 
-def _simple_topology(motion):
-    try:
-        points = motion.stationary_points()
-    except ValueError:
-        return False
-    return len(points) == 2 and {p['kind'] for p in points} == {'maximum','minimum'}
-
-
-def _terms(motion, phase, source, angles, weights, policy):
-    error = motion.evaluate(angles-phase)-source.position(angles)
-    position = float(weights @ (error**2))
-    velocity = None
-    if source.has_velocity:
-        dv = STEP*(motion.evaluate(angles-phase,1)-source.velocity(angles))
-        velocity = float(weights @ (dv**2))
-    return dict(weighted_position_mse=position, normalized_velocity_mse=velocity,
-                velocity_term=0. if velocity is None else policy.velocity_weight*velocity,
-                selection_score=position+(0. if velocity is None else policy.velocity_weight*velocity))
-
-
-def _diagnostics(motion, phase, source, policy, angles, weights, blocks):
-    dense = np.linspace(0.,PERIOD,4*policy.dense_samples,endpoint=False)
-    error = motion.evaluate(dense-phase)-source.position(dense)
-    dv = None if not source.has_velocity else motion.evaluate(dense-phase,1)-source.velocity(dense)
-    points = [dict(angle_rad=(p['angle_rad']+phase) % PERIOD, kind=p['kind'], position=p['volume'])
-              for p in motion.stationary_points()]
-    expected = source.extrema_angles()
-    angular = {p['kind']: float((p['angle_rad']-expected[p['kind']]+math.pi) % PERIOD-math.pi)
-               for p in points if p['kind'] in expected}
-    features = []
-    for block in blocks:
-        local = block['samples']
-        e = motion.evaluate(local-phase)-source.position(local)
-        value = motion.evaluate(block['angle_rad']-phase)-source.position(block['angle_rad'])
-        features.append(dict(event_index=block['event_index'], kind=block['kind'], angle_rad=block['angle_rad'],
-            radius_rad=block['radius_rad'], sampling_rule=block['rule'], sample_count=len(local),
-            position_weight_mass=float(block['weights'].sum()), position_rms=float(np.sqrt(np.mean(e**2))),
-            maximum_absolute_position_error=float(np.max(abs(e))), position_error_at_event=float(value),
-            velocity_error_at_event=None if not source.has_velocity else float(motion.evaluate(block['angle_rad']-phase,1)-source.velocity(block['angle_rad']))))
-    feature_errors = np.concatenate([motion.evaluate(b['samples']-phase)-source.position(b['samples']) for b in blocks]) if blocks else None
-    return dict(position_rms=float(np.sqrt(np.mean(error**2))), maximum_absolute_position_error=float(np.max(abs(error))),
-                feature_position_rms=None if feature_errors is None else float(np.sqrt(np.mean(feature_errors**2))),
-                velocity_rms=None if dv is None else float(np.sqrt(np.mean(dv**2))), extrema=points,
-                extrema_count=len(points), extrema_angular_errors_rad=angular,
-                maximum_absolute_first_derivative=motion.diagnostics.maximum_absolute_first_derivative,
-                maximum_absolute_second_derivative=motion.diagnostics.maximum_absolute_second_derivative,
-                events=features, terms=_terms(motion,phase,source,angles,weights,policy),
-                error_evaluation=dict(method='uniform periodic samples of frozen target interpolant',samples=len(dense)),
-                target_acceleration_used=False)
-
-
-def _fit_side(target, side, policy):
-    source = PeriodicTargetSide(target,side)
-    angles, weights, blocks = _feature_mesh(source,policy)
-    reference = source.position(angles)
-    sqrt_weights = np.sqrt(weights)
-    naive_definition = FreeMotionDefinition(tuple(source.position(np.arange(COUNT)*STEP)),1.,2.)
-    naive_motion = _FitMotion(naive_definition)
-    candidates = []
-    exploration = []
-    for phase in np.linspace(0.,STEP,policy.phase_samples,endpoint=False):
-        seed = FreeMotionDefinition(tuple(source.position(phase+np.arange(COUNT)*STEP)),1.,2.).to_shape_coordinates()
-        def residual(z): return sqrt_weights*(_motion(z).evaluate(angles-phase)-reference)
-        fit = least_squares(residual,seed,method='lm',ftol=1e-11,xtol=1e-11,gtol=1e-11,max_nfev=policy.maximum_evaluations)
-        motion = _motion(fit.x)
-        valid = _simple_topology(motion)
-        terms = _terms(motion,float(phase),source,angles,weights,policy)
-        exploration.append(dict(phase_rad=float(phase),topology_valid=valid,converged=bool(fit.success),terms=terms))
-        if valid: candidates.append((motion,float(phase),fit.x))
-    if not candidates:
-        raise ValueError(f'No topology-preserving 15-control fit found for {side}; no study was produced.')
-    def choose(rows):
-        scores = [_terms(m,p,source,angles,weights,policy) for m,p,_ in rows]
-        best = min(s['weighted_position_mse'] for s in scores)
-        eligible = [i for i,s in enumerate(scores) if s['weighted_position_mse'] <= best+policy.position_tie_mse]
-        return rows[min(eligible,key=lambda i:(scores[i]['selection_score'],i))]
-    selected = choose(candidates)
-    motion, phase, z = selected
-    spacing = STEP/policy.phase_samples
-    def residual_pair(x): return sqrt_weights*(_motion(x[:-1]).evaluate(angles-x[-1])-reference)
-    polish = least_squares(residual_pair, np.r_[z,phase],
-        bounds=(np.r_[np.full(COUNT-2,-np.inf),phase-spacing],np.r_[np.full(COUNT-2,np.inf),phase+spacing]),
-        method='dogbox',ftol=1e-12,xtol=1e-12,gtol=1e-12,max_nfev=policy.maximum_evaluations)
-    polished = _motion(polish.x[:-1])
-    if _simple_topology(polished): candidates.append((polished,float(polish.x[-1]),polish.x[:-1]))
-    motion, phase, _ = choose(candidates)
-    # Moving by whole nodes changes only the control indexing, not the motion.
-    shift = math.floor(phase/STEP)
-    controls = np.roll(motion.definition.control_values,shift)
-    phase -= shift*STEP
-    definition = FreeMotionDefinition(tuple(controls),1.,2.)
-    motion = _FitMotion(definition)
-    coordinates = definition.to_shape_coordinates()
-    reconstructed = FreeMotionDefinition.from_shape_coordinates(coordinates,1.,2.)
-    if not np.allclose(reconstructed.control_values,definition.control_values,rtol=2e-13,atol=2e-13):
-        raise ValueError('Fitted control chart round-trip failed.')
-    final = _diagnostics(motion,phase,source,policy,angles,weights,blocks)
-    naive = _diagnostics(naive_motion,0.,source,policy,angles,weights,blocks)
-    return dict(controls=list(definition.control_values),shape_coordinates=list(coordinates),phase_rad=phase,
-                node_angles_rad=((phase+np.arange(COUNT)*STEP) % PERIOD).tolist(), diagnostics=final,
-                naive=dict(controls=list(naive_definition.control_values),phase_rad=0.,diagnostics=naive),
-                phase_exploration=exploration,polish_converged=bool(polish.success))
+def _diagnostics(model,side,source,policy):
+    theta=np.linspace(0,PERIOD,4*policy.dense_samples,endpoint=False)
+    q=getattr(model,side+'_cylinder_volume')(theta)-1
+    v=getattr(model,side+'_cylinder_volume_derivative')(theta)
+    error=q-source.position(theta)
+    p=model.params;maxangle=(-math.radians(p['small_max_deg']))%PERIOD if side=='small' else 0.
+    minangle=(maxangle-math.radians(p[side+'_down_duration_deg']))%PERIOD
+    expected=source.extrema_angles()
+    extrema=[dict(kind=k,angle_rad=a,position=1. if k=='maximum' else 0.) for k,a in (('maximum',maxangle),('minimum',minangle))]
+    events=[dict(kind=e['kind'],angle_rad=e['angle_rad'],position_error=float(getattr(model,side+'_cylinder_volume')(e['angle_rad'])-1-source.position(e['angle_rad']))) for e in source.events]
+    return dict(position_rms=float(np.sqrt(np.mean(error**2))),maximum_absolute_position_error=float(np.max(abs(error))),
+        velocity_rms=None if not source.has_velocity else float(np.sqrt(np.mean((v-source.velocity(theta))**2))),
+        extrema=extrema,extrema_count=2 if monotonicity(model.motion)['valid'] else None,extrema_angular_errors_rad={k:float((a-expected[k]+math.pi)%PERIOD-math.pi) for k,a in (('maximum',maxangle),('minimum',minangle))},
+        events=events,target_acceleration_used=False)
 
 
 @dataclass(frozen=True)
 class MotionRefitResult:
     payload_json: str
-
     @property
-    def data(self): return json.loads(self.payload_json)
+    def data(self):return json.loads(self.payload_json)
     @property
-    def content_hash(self): return self.data['content_hash']
-
+    def content_hash(self):return self.data['content_hash']
     def save(self,path):
-        path = Path(path)
-        if path.exists(): raise ValueError('Refit report already exists; choose a new path.')
-        path.parent.mkdir(parents=True,exist_ok=True)
-        atomic_json(path,self.data)
-
+        path=Path(path)
+        if path.exists():raise ValueError('Refit report already exists; choose a new path.')
+        path.parent.mkdir(parents=True,exist_ok=True);atomic_json(path,self.data)
     @classmethod
-    def load(cls,path):
-        return cls.from_data(json.loads(Path(path).read_text()))
-
+    def load(cls,path):return cls.from_data(json.loads(Path(path).read_text()))
     @classmethod
     def from_data(cls,data):
-        if (set(data) != {'artifact_type','schema_version','scientific','content_hash'}
-                or data['artifact_type'] != 'motion_refit' or type(data['schema_version']) is not int or data['schema_version'] != 1
-                or content_hash(data['scientific']) != data['content_hash']):
-            raise ValueError('Invalid refit report or content hash.')
+        if (set(data)!={'artifact_type','schema_version','scientific','content_hash'} or data['artifact_type']!='motion_refit'
+            or type(data['schema_version']) is not int or data['schema_version']!=2
+            or data['scientific']['destination_family']!='structured_c2_15p' or content_hash(data['scientific'])!=data['content_hash']):
+            raise ValueError('Invalid structured refit report or content hash.')
         return cls(canonical_json(data))
 
 
 @dataclass(frozen=True)
 class MotionRefitRequest:
     target: MotionTarget
-    destination_family: str = 'free_spline'
-    points_per_piston: int = COUNT
+    destination_family: str = 'structured_c2_15p'
     position_role: str = 'primary_synthesis_reference'
     acceleration_role: str = 'diagnostic_only'
     policy: RefitPolicy = field(default_factory=RefitPolicy)
+    initial_parameters: dict | None = None
 
     def __post_init__(self):
-        if not isinstance(self.target,MotionTarget): raise ValueError('Refit requires a MotionTarget.')
-        if self.destination_family != 'free_spline' or type(self.points_per_piston) is not int or self.points_per_piston != COUNT:
-            raise ValueError('Refit requires free_spline with 15 points per piston.')
-        if (self.position_role,self.acceleration_role) != ('primary_synthesis_reference','diagnostic_only'):
+        if not isinstance(self.target,MotionTarget):raise ValueError('Refit requires a MotionTarget.')
+        if self.destination_family!='structured_c2_15p':raise ValueError('Refit destination is structured_c2_15p.')
+        if (self.position_role,self.acceleration_role)!=('primary_synthesis_reference','diagnostic_only'):
             raise ValueError('Refit uses position as reference and acceleration as diagnostic only.')
-        if not isinstance(self.policy,RefitPolicy): raise ValueError('Refit requires an explicit valid numerical policy.')
+        if not isinstance(self.policy,RefitPolicy):raise ValueError('Refit requires a valid numerical policy.')
 
     def execute(self):
-        sides = {side:_fit_side(self.target,side,self.policy) for side in ('small','large')}
-        scientific = dict(target_hash=self.target.content_hash,target=self.target.data,
-            destination_family='free_spline',representation='shape_coordinates',count=COUNT,
-            angle_domain=self.target.scientific['angle_domain'],policy_version=POLICY_VERSION,
-            policy=asdict(self.policy),position_role=self.position_role,acceleration_role=self.acceleration_role,
-            selection_policy='minimum weighted position MSE; velocity score only within numerical position tie',sides=sides,
-            combined=dict(position_rms=math.sqrt(sum(s['diagnostics']['position_rms']**2 for s in sides.values())/2),
-                          maximum_absolute_position_error=max(s['diagnostics']['maximum_absolute_position_error'] for s in sides.values()),
-                          topology_valid=all(s['diagnostics']['extrema_count']==2 for s in sides.values())),
-            thermodynamic_evaluation=False)
-        return MotionRefitResult(canonical_json(dict(artifact_type='motion_refit',schema_version=1,
-                scientific=scientific,content_hash=content_hash(scientific))))
+        sources={s:PeriodicTargetSide(self.target,s) for s in ('small','large')}
+        seed=_seed(self.target,sources,self.initial_parameters)
+        low,high=fit_bounds(seed);meshes={s:_mesh(source,self.policy) for s,source in sources.items()}
+        def residual(x):
+            model=structured_model(dict(zip(NAMES,x)));parts=[]
+            for side,source in sources.items():
+                angles,w=meshes[side]
+                parts.append(w*(getattr(model,side+'_cylinder_volume')(angles)-1-source.position(angles)))
+                if source.has_velocity and self.policy.velocity_weight:
+                    parts.append(math.sqrt(self.policy.velocity_weight)*w*PERIOD*(getattr(model,side+'_cylinder_volume_derivative')(angles)-source.velocity(angles)))
+            parts.append(10*model.motion.monotonicity_penalty(n=48)/math.sqrt(192))
+            return np.concatenate(parts)
+        starts=[];accepted=[]
+        for width in self.policy.kink_width_starts:
+            for scale in self.policy.curvature_scales:
+                p=dict(seed)
+                for n in NAMES:
+                    if n.endswith('width_rel'):p[n]=width
+                    if n.endswith('curvature'):p[n]*=scale
+                x=np.clip([p[n] for n in NAMES],low+1e-8,high-1e-8)
+                fit=least_squares(residual,x,bounds=(low,high),x_scale='jac',ftol=1e-10,xtol=1e-10,gtol=1e-10,max_nfev=self.policy.maximum_evaluations)
+                parameters=dict(zip(NAMES,map(float,fit.x)));model=structured_model(parameters);mono=monotonicity(model.motion)
+                score=float(np.dot(residual(fit.x),residual(fit.x)))
+                starts.append(dict(initial_parameters=dict(zip(NAMES,map(float,x))),parameters=parameters,converged=bool(fit.success),
+                    status=int(fit.status),message=fit.message,evaluations=int(fit.nfev),monotonicity=mono,least_squares_cost=score))
+                if mono['valid']:accepted.append((score,len(starts)-1,parameters))
+        if not accepted:raise ValueError('No monotone structured C2 fit found; no study was produced.')
+        _,chosen,parameters=min(accepted,key=lambda r:(r[0],r[1]));model=structured_model(parameters)
+        sides={s:dict(diagnostics=_diagnostics(model,s,source,self.policy),initial_diagnostics=_diagnostics(structured_model(seed),s,source,self.policy)) for s,source in sources.items()}
+        x=np.array([parameters[n] for n in NAMES])
+        scientific=dict(target_hash=self.target.content_hash,target=self.target.data,destination_family=self.destination_family,
+            parameter_count=15,initial_parameters=seed,parameters=parameters,starts=starts,selected_start=chosen,
+            convergence=starts[chosen]['converged'],monotonicity=monotonicity(model.motion),sides=sides,
+            combined=dict(position_rms=math.sqrt(sum(s['diagnostics']['position_rms']**2 for s in sides.values())/2)),
+            near_bounds=[n for i,n in enumerate(NAMES) if min(x[i]-low[i],high[i]-x[i])/(high[i]-low[i])<1e-3],
+            fit_bounds={n:[float(low[i]),float(high[i])] for i,n in enumerate(NAMES)},
+            angle_domain=self.target.scientific['angle_domain'],policy_version=POLICY_VERSION,policy=asdict(self.policy),
+            position_role=self.position_role,acceleration_role=self.acceleration_role,thermodynamic_evaluation=False)
+        return MotionRefitResult(canonical_json(dict(artifact_type='motion_refit',schema_version=2,scientific=scientific,content_hash=content_hash(scientific))))
 
 
 def plot_refit(result):
-    """Two-piston static inspection with source events and shifted uniform nodes."""
+    """Position, error and optional velocity in the current study-angle convention."""
     import matplotlib.pyplot as plt
-    raw = result.data['scientific']
-    target = MotionTarget.from_data(raw['target'])
-    angles = np.linspace(0.,PERIOD,1441)
-    figure, axes = plt.subplots(2,3,figsize=(15,8),sharex=True)
-    colors = dict(maximum='tab:red',minimum='tab:purple',rounding='tab:green',
-                  cadence_change='tab:orange',kink='tab:brown',periodic_seam='gray')
+    raw=result.data['scientific'];target=MotionTarget.from_data(raw['target']);model=structured_model(raw['parameters'])
+    angles=np.linspace(0,PERIOD,1441);fig,axes=plt.subplots(2,3,figsize=(15,8),sharex=True)
     for row,side in enumerate(('small','large')):
-        fitted = raw['sides'][side]
-        phase = fitted['phase_rad']
-        source = PeriodicTargetSide(target,side)
-        motion = _motion(fitted['shape_coordinates'])
-        naive = _FitMotion(FreeMotionDefinition(tuple(fitted['naive']['controls']),1.,2.))
-        q = motion.evaluate(angles-phase)
-        q0 = naive.evaluate(angles)
-        reference = source.position(angles)
-        axes[row,0].plot(angles,reference,'k--',label='Target')
-        axes[row,0].plot(angles,q,label='Refit')
-        axes[row,0].plot(angles,q0,color='gray',alpha=.4,label='Naive phase zero')
-        nodes = np.asarray(fitted['node_angles_rad'])
-        axes[row,0].scatter(nodes,motion.evaluate(nodes-phase),s=24,marker='o',facecolors='none',edgecolors='tab:blue',label='15 spline nodes',zorder=5)
-        points = fitted['diagnostics']['extrema']
-        axes[row,0].scatter([p['angle_rad'] for p in points],[p['position'] for p in points],marker='x',c='tab:red',label='Spline extrema',zorder=6)
-        axes[row,1].plot(angles,q-reference,label='Refit error')
-        axes[row,1].plot(angles,q0-reference,color='gray',alpha=.6,label='Naive error')
-        axes[row,2].plot(angles,motion.evaluate(angles-phase,1),label='Refit velocity')
-        if source.has_velocity: axes[row,2].plot(angles,source.velocity(angles),'k--',label='Target velocity')
-        else: axes[row,2].text(.03,.95,'Target velocity unavailable',transform=axes[row,2].transAxes,va='top')
-        event_labels = {}
-        for event in source.events:
-            if event['kind'] not in colors: continue
-            event_labels.setdefault(round(event['angle_rad'],10), []).append(event['kind'])
-            for ax in axes[row]:
-                ax.axvline(event['angle_rad'],color=colors[event['kind']],alpha=.25,lw=.8)
-                if event['kind'] == 'rounding' and event['end_angle_rad'] is not None:
-                    start,end = event['angle_rad'],event['end_angle_rad']
-                    intervals = [(start,end)] if end >= start else [(start,PERIOD),(0.,end)]
-                    for left,right in intervals: ax.axvspan(left,right,color='tab:green',alpha=.05)
-        for angle,kinds in event_labels.items():
-            axes[row,0].annotate(', '.join(dict.fromkeys(kinds)),xy=(angle,1.02),rotation=90,
-                                fontsize=6,va='bottom',color='dimgray')
-        for ax,label in zip(axes[row],('Position / stroke','Position error / stroke','Velocity / rad')):
-            ax.set_xlim(0.,PERIOD); ax.set_ylabel(label); ax.grid(alpha=.2); ax.legend(fontsize=8,loc='best')
-        d,n = fitted['diagnostics'],fitted['naive']['diagnostics']
-        axes[row,0].set_title(f"{side.upper()}: RMS {n['position_rms']:.4g} → {d['position_rms']:.4g}; phase {math.degrees(phase):.3f}°",pad=65)
-    for ax in axes[-1]: ax.set_xlabel('Study angle (rad)')
-    figure.suptitle('Uniform 15-control refit — events guide initialization; no thermodynamic evaluation',fontsize=11)
-    figure.tight_layout(rect=(0,0,1,.94))
-    return figure
+        source=PeriodicTargetSide(target,side);q=getattr(model,side+'_cylinder_volume')(angles)-1
+        axes[row,0].plot(angles,source.position(angles),'k--',label='Target');axes[row,0].plot(angles,q,label='Structured refit')
+        axes[row,1].plot(angles,q-source.position(angles),label='Position error')
+        if source.has_velocity:axes[row,2].plot(angles,source.velocity(angles),'k--',label='Target velocity')
+        axes[row,2].plot(angles,getattr(model,side+'_cylinder_volume_derivative')(angles),label='Structured velocity')
+        for ax in axes[row]:
+            seen=set()
+            for event in source.events:
+                label=event['kind'] if ax is axes[row,0] and event['kind'] not in seen else None
+                ax.axvline(event['angle_rad'],color='gray',alpha=.25,label=label)
+                seen.add(event['kind'])
+            for kind,angle in source.extrema_angles().items():ax.axvline(angle,color='black',ls=':',alpha=.4)
+            for e in raw['sides'][side]['diagnostics']['extrema']:ax.axvline(e['angle_rad'],color='tab:red',ls='--',alpha=.4)
+            ax.legend();ax.set_xlabel('Study angle [rad]');ax.grid(alpha=.2)
+        axes[row,0].set_ylabel(side.upper()+' normalized position')
+    fig.suptitle('structured_c2_15p refit — no thermodynamic evaluation');fig.tight_layout()
+    return fig

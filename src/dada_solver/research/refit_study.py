@@ -6,51 +6,29 @@ import math
 from pathlib import Path
 import tempfile
 
-import numpy as np
-from dada_solver.free_kinematics import FreeMotionDefinition
 from .motion_target import research_motion_source, target_from_study, MotionTarget
-from .motion_refit import MotionRefitRequest, COUNT, STEP
+from .motion_refit import MotionRefitRequest, NAMES
 from .schema import compile_study, load_study
 from .machine_basis import machine_parameters
 from .study_io import dumps
 
 
-DEFAULT_SHAPE_RADIUS = .02
-DEFAULT_PHASE_RADIUS_FRACTION = .02
+DEFAULT_RADIUS = .1
 
 
-def shape_bounds(controls, angular_radius=DEFAULT_SHAPE_RADIUS):
-    """Centered chart box contained in a canonical-control spherical cap.
-
-    The cap radius is a configurable search-region policy, not a physical domain.
-    Its stereographic image is a ball. The centered box uses the distance from
-    the initial point to the ball boundary, divided by sqrt(shape dimension).
-    Thus simultaneous coordinate changes, including box corners, stay in the cap.
-    """
-    if isinstance(angular_radius,bool) or not math.isfinite(angular_radius) or not 0 < angular_radius < math.pi/2:
-        raise ValueError('Canonical shape search radius must lie in (0, pi/2) radians.')
-    definition = FreeMotionDefinition(tuple(controls),1.,2.)
-    z = np.asarray(definition.to_shape_coordinates())
-    square = float(z@z)
-    sphere = np.r_[2*z,square-1]/(1+square)
-    denominator = math.cos(angular_radius)-sphere[-1]
-    if denominator <= 128*np.finfo(float).eps:
-        raise ValueError('Shape search cap touches the excluded chart pole; choose a smaller radius.')
-    center = sphere[:-1]/denominator
-    radius = math.sin(angular_radius)/denominator
-    half_width = (radius-float(np.linalg.norm(center-z)))/math.sqrt(len(z))
-    lower, upper = z-half_width, z+half_width
-    if not (np.all(np.isfinite(lower)) and np.all(np.isfinite(upper)) and np.all(lower < z) and np.all(z < upper)):
-        raise ValueError('Shape search box is numerically unresolved.')
-    corner_norm = float(np.linalg.norm(np.maximum(abs(lower),abs(upper))))
-    return lower, upper, dict(method='centered coordinate box inscribed in stereographic canonical cap',
-        search_region_policy='canonical_cap_inscribed_box_v2',
-        canonical_angular_radius_rad=angular_radius,chart_ball_center=center.tolist(),chart_ball_radius=radius,
-        chart_box_half_width=half_width,box_is_cap=False,box_inside_cap=True,minimum_box_angle_from_excluded_pole_rad=2*math.atan2(1.,corner_norm))
+def local_bounds(name, value, radius):
+    """Local numeric search policy; open structural domains are never crossed."""
+    if name == 'small_max_deg': low,high=value-180.,value+180.
+    elif name.endswith('duration_deg'): low,high=.1,359.9
+    elif name.endswith('curvature'): low,high=value/2,value*1.5
+    elif name.endswith('width_rel'): low,high=.001,1.999
+    else: low,high=.0001,.9999
+    half=radius*(high-low)
+    return max(low,value-half),min(high,value+half)
 
 
 def refit_study(source, output, *, candidate=None, report=None, policy=None,
-                shape_radius=DEFAULT_SHAPE_RADIUS, phase_radius_fraction=DEFAULT_PHASE_RADIUS_FRACTION):
+                radius=DEFAULT_RADIUS):
     """Fit geometry, freeze the exact source machine, validate and write a study.
 
     A reference-pressure source inventory is frozen to its computed candidate
@@ -63,10 +41,8 @@ def refit_study(source, output, *, candidate=None, report=None, policy=None,
     paths = [output,basis_path]+([] if report is None else [Path(report)])
     if len({p.resolve() for p in paths}) != len(paths) or any(p.exists() for p in paths):
         raise ValueError('Refit study/report paths must be distinct and must not exist.')
-    if isinstance(shape_radius,bool) or not math.isfinite(shape_radius) or not 0 < shape_radius < math.pi/2:
-        raise ValueError('Canonical shape search radius must lie in (0, pi/2) radians.')
-    if isinstance(phase_radius_fraction,bool) or not math.isfinite(phase_radius_fraction) or not 0 < phase_radius_fraction <= 1:
-        raise ValueError('Phase search radius fraction must lie in (0, 1].')
+    if isinstance(radius,bool) or not math.isfinite(radius) or not 0 < radius <= .5:
+        raise ValueError('Structured study search radius must lie in (0, 0.5].')
     with research_motion_source(source,candidate=candidate) as (study,values,identity):
         if study.data['kinematics']['coupling'] != 'independent':
             raise ValueError('Motion refit study requires independent source cylinder laws.')
@@ -89,19 +65,20 @@ def refit_study(source, output, *, candidate=None, report=None, policy=None,
         rows = [dict(name=name,value=value,unit=specs[name].unit) for name,value in nonkinematic.items()]
         # Constraints stay intact; unsupported family-specific constraints are
         # rejected by the normal study loader, never dropped or reinterpreted.
-        result = MotionRefitRequest(target,**({} if policy is None else {'policy':policy})).execute()
+        seeds = {name:physical[key] for name in NAMES for side in ('small','large')
+                 if (key := f'kinematics.{side}.{name}') in physical}
+        result = MotionRefitRequest(target,initial_parameters=seeds,**({} if policy is None else {'policy':policy})).execute()
         search_regions = {}
+        fitted=result.data['scientific']['parameters']
         for side in ('small','large'):
-            fitted = result.data['scientific']['sides'][side]
-            low,high,metadata = shape_bounds(fitted['controls'],shape_radius)
-            search_regions[side] = dict(metadata,phase_radius_rad=STEP*phase_radius_fraction)
-            for i,value in enumerate(fitted['shape_coordinates']):
-                rows.append(dict(name=f'kinematics.{side}.shape_{i}',kind='continuous',unit='1',transform='linear',
-                                 initial=value,lower=float(low[i]),upper=float(high[i])))
-            phase = fitted['phase_rad']
-            rows.append(dict(name=f'kinematics.{side}.phase_rad',kind='continuous',unit='rad',transform='linear',
-                             initial=phase,lower=phase-STEP*phase_radius_fraction,upper=phase+STEP*phase_radius_fraction))
-            raw['kinematics'][side] = dict(family='free_spline',representation='shape_coordinates',count=COUNT)
+            raw['kinematics'][side] = dict(family='structured_c2_15p')
+        for name,value in fitted.items():
+            side='small' if name.startswith('small_') else 'large'
+            low,high=local_bounds(name,value,radius)
+            key=f'kinematics.{side}.{name}'
+            rows.append(dict(name=key,kind='continuous',unit='deg' if name.endswith('_deg') else '1',
+                             transform='linear',initial=value,lower=low,upper=high))
+            search_regions[key]=dict(lower=low,upper=high,initial=value)
         raw['parameters'] = rows
         raw['study']['name'] += ' — motion refit'
         raw['study']['parent_candidate_id'] = identity['candidate_id']
@@ -109,7 +86,8 @@ def refit_study(source, output, *, candidate=None, report=None, policy=None,
                              scramble=raw['search']['scramble'],evaluate_initial=True)
         basis = study.basis.data
         basis['provenance']['motion_refit'] = dict(source=identity,target_hash=target.content_hash,
-            result_hash=result.content_hash,search_regions=search_regions,inventory_policy_change=charge_change)
+            result_hash=result.content_hash,search_regions=search_regions,radius_fraction=radius,
+            search_policy='structured_local_coordinate_box_v1',inventory_policy_change=charge_change)
         basis_text = json.dumps(basis,indent=2,allow_nan=False)+'\n'
         raw['sources']['machine'] = dict(path=basis_path.name,sha256=hashlib.sha256(basis_text.encode()).hexdigest())
         study_text = dumps(raw)

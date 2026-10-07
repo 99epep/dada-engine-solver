@@ -730,110 +730,83 @@ first. All intermediate and complete artifacts use the ordinary interactive
 
 ### Feature-aware motion refit
 
-`MotionRefitRequest.execute()` geometrically fits a `MotionTarget` to
-`free_spline` with **15 points per piston**: uniform nodes spaced by 24 degrees,
-13 `shape_coordinates` and an independent `phase_rad` for each piston.
-`MotionRefitResult` retains the target identity, canonical controls, coordinates,
-phases, per-event errors and numerical policy (`uniform15_feature_position_phase_v1`).
-It contains no thermodynamic result. Refit is an abstract-motion initialization,
-not a mechanism fit.
+`MotionRefitRequest.execute()` converts a `MotionTarget` into a
+`structured_c2_15p` initialization: **15 structured coordinates on the pair**,
+eight SMALL and seven LARGE. The representation has explicit chronology, C2
+extrema, BP branches and kink branches. `free_spline` remains a normal Research
+family; it is not the destination of this operator.
 
-The production phase convention is `q(theta - phase_rad)` in study angle before
-operation transformation. Nodes therefore occur at `phase_rad + j*2*pi/15`.
-The deterministic phase exploration spans one node spacing; whole-node shifts
-are equivalent to circular control permutations. The default `RefitPolicy`
-explores 32 phases, fits each phase with local position least squares, then
-polishes controls and phase together around the best grid result. It uses no
-stochastic global search and does not claim a globally optimal fit.
+The fitter uses the production `StructuredKinematics15` study-angle convention:
+normalized motor time is `t = -theta/(2*pi)`. LARGE maximum is at study angle zero;
+SMALL maximum is at `-small_max_deg` modulo a cycle. There is no additional
+phase or operation transform. A target with a different LARGE gauge can only be
+approximated; extrema-angle errors remain visible in the report.
 
-The frozen target is periodically interpolated using position and available first
-derivatives, enriched by exact source event values. Position-only targets use a
-periodic cubic interpolant without claiming an available target velocity.
-Target acceleration is never used or reconstructed for fitting;
-`acceleration_role = diagnostic_only` remains the contract.
+Hybrid chronology and kink coordinates provide seeds, not constraints. The BP
+midpoints come from the actual branch position. Initial extrema curvatures use
+local position differences over a 1/512-cycle neighborhood solely as a shape
+seed; no target acceleration enters the fit. All fifteen coordinates are free
+in bounded `least_squares`. Default starts combine kink widths 0.25 and 0.65 with
+curvature scales 0.7, 1 and 1.4: six deterministic starts, no global search.
 
-A uniform background mesh of 1440 samples covers the complete cycle. Additional
-sample blocks use the following explicit numerical weights and neighborhoods:
+Position dominates. The default 1440-point uniform mesh carries 90% of position
+weight when events are present. Nine samples within 1/128 cycle of each event,
+plus directed rounding interiors, share the remaining 10%. Events enrich the
+mesh without imposing identical extrema, durations, kink angles or descriptors.
+Available velocity adds a small term: `1e-6 * MSE(2*pi * velocity_error)`.
+Missing velocity adds no term. Target acceleration is never fitted;
+`acceleration_role = diagnostic_only` remains explicit.
 
-| Feature | Total position weight | Neighborhood |
-| --- | ---: | --- |
-| Background | 1 | Entire cycle |
-| Maximum / minimum | 2 each | Quarter node spacing on each side; half the weight at the event |
-| Derivative-root turnaround | 1 each | Same rule as extrema |
-| Rounding | 0.5 each | Full directed interval plus exterior radius `min(spacing/8, interval/4)` |
-| Cadence change | 0.25 each | Eighth node spacing on each side |
-| Kink | 1 each | Radius `min(spacing/2, branch_length/8)` |
-| Periodic seam / other descriptor | 0.1 each | Quarter node spacing on each side |
+A sampled monotonicity residual guides the local optimizer. Acceptance separately
+checks the minimum derivative of all four production branch polynomials at every
+endpoint and polynomial critical point. A nonmonotone fit is rejected regardless
+of its position score. Accepted branches have exactly one physical maximum and
+minimum per piston, without extra inversions.
 
-Feature blocks use 33 interior samples by default, include the exact event, and
-rounding blocks include exterior samples. Weights are normalized after assembling
-all blocks. These are inspectable numerical initialization policies, not physical
-domains or mandatory features of a realizable mechanism. Exact hybrid event
-metadata supplies the branch limits; no acceleration heuristic is involved.
-
-Position is primary: local least squares minimizes weighted position MSE. Phase
-selection first keeps only fits within `1e-12` MSE of the best position result,
-then compares `position_MSE + 1e-4 * normalized_velocity_MSE` within this numerical
-tie. Velocity differences are normalized by the node spacing before squaring.
-The report exposes both terms separately. Velocity cannot trade a materially
-worse position fit for a lower score. Missing target velocity contributes no term.
-
-Every accepted spline has exactly one maximum and one minimum. Topology is checked
-using all roots of its piecewise polynomial derivative, classified between roots;
-stationary intervals and additional stationary points are rejected. A fit without
-an admissible topology fails rather than returning an oscillatory seed.
-`FreeMotionDefinition.to_shape_coordinates()` inverts the production chart,
-round-trips the canonical controls and explicitly rejects the excluded pole.
-
-Diagnostics compare the naive node projection at phase zero with the fitted
-motion: cycle position RMS and sampled maximum error, feature-neighborhood RMS,
-optional velocity RMS, event-local errors, extrema angles and count, and analytic
-maximum absolute first and second spline derivatives. Position-error maxima use
-a dense evaluation mesh, not a certified continuous supremum. `plot_refit()`
-shows both pistons, position, error, available velocity, source events, extrema
-and all 15 shifted nodes. It produces a static Matplotlib figure, not a GIF.
+Finite fitting boxes are numerical search bounds: durations 0.1–359.9 degrees,
+`u/q` 0.001–0.999, relative kink widths 0.005–1.995, positive curvatures from
+1e-5 to at least 5000 (or ten times their initial estimate), and SMALL phase
+within 180 degrees of its seed. These do not redefine structural domains.
+`MotionRefitResult` records the target hash, policy, initial/fitted parameters,
+starts, convergence, per-side and combined position RMS, maximum error, optional
+velocity RMS, extrema-angle errors, events, monotonicity and near-bound parameters.
+It contains no thermodynamic result. `plot_refit()` shows target/structured
+position, position error, available velocity, source events and both sets of
+extrema; no spline grid is involved. Its title is
+`structured_c2_15p refit — no thermodynamic evaluation`.
 
 ### Motion-only study generation
 
-`refit_study()` accepts a current study, stored evaluation, or campaign with an
-explicit candidate selector. It reconstructs that exact machine and writes a
-portable schema-3 study plus machine basis. Only the 28 spline coordinates are
-active (13 shapes plus phase per side); all other candidate coordinates are fixed.
-Physical constraints and numerical settings are retained. An incompatible
-family-specific mechanical constraint is rejected, never silently removed.
-A reference-pressure filling policy is converted to explicit inventory using the
-selected candidate's computed mass, so changing motion does not refill the machine.
+`refit_study()` reconstructs an exact current study, evaluation or selected
+campaign candidate. It writes a portable schema-3 study and machine basis with
+**exactly 15 active parameters**, all structured kinematics. Every other machine
+coordinate is fixed at the selected candidate. Objectives, constraints and
+numerical settings are preserved; unsupported family-specific mechanical
+constraints are rejected rather than silently removed. Reference-pressure filling
+is explicitly frozen to the selected inventory so motion optimization does not
+refill the machine.
 
-The default motion-only search is deliberately narrow around the refitted law.
-The joint canonical-control angular radius is **0.02 radians**. Its stereographic
-image is a ball; the study uses a box centered exactly on the fitted coordinates,
-contained in that ball. Each coordinate half-width is the initial point's distance
-to the ball boundary divided by `sqrt(13)`. Even simultaneous changes at box
-corners therefore stay inside the canonical cap. This prevents the 13 independent
-shape coordinates from collectively expanding the requested neighborhood.
-
-This is a search-region policy, not a uniform physical displacement bound or a
-claim that the source motion is optimal. A cap touching the excluded pole is
-rejected. Machine-basis provenance records the policy, cap, box half-width and
-pole distance. The independent phase search half-width defaults to **0.48 degrees**,
-2% of a node spacing. `--shape-radius` and `--phase-radius-fraction` can explicitly
-widen or narrow these local search policies. These bounds do not change the refit
-itself or its one-cell phase exploration. They apply only to newly generated
-studies; existing studies and campaign identities are not rewritten.
-Other active design coordinates are not inherited. The initial refit is evaluated
-before ordinary Sobol sampling when the new study is subsequently run.
+`--radius` defaults to 0.1 and lies in (0, 0.5]. The local coordinate box uses
+this fraction of reference intervals: durations 0.1–359.9 degrees, `u/q`
+0.0001–0.9999, widths 0.001–1.999, SMALL phase within +/-180 degrees, and
+curvatures from half to 1.5 times the fitted value. Bounds are centered on the
+fit and clipped to those intervals. This is a configurable search-region policy,
+not a physical displacement metric. Effective bounds are recorded in provenance.
+The fitted initial point is evaluated before ordinary Research Sobol sampling.
+Existing studies and campaign identities are not rewritten.
 
 ```console
 dada-research motion-refit path/to/campaign --candidate CANDIDATE_ID \
-    --output path/to/spline/study.toml --report path/to/spline/refit.json --plot
-dada-research validate path/to/spline/study.toml
-dada-research run path/to/spline/study.toml --directory path/to/spline/campaign
+    --output path/to/structured/study.toml --report path/to/structured/refit.json --plot
+dada-research validate path/to/structured/study.toml
+dada-research run path/to/structured/study.toml
 ```
 
-A `MotionTarget` JSON alone supports `--report` fitting and plotting but cannot
-provide a complete machine study. `--validate-only` checks the request without
-fitting or integration. Existing destination files are not overwritten.
-No thermodynamic integration or thermodynamic optimization occurs during refit.
+A `MotionTarget` JSON alone supports report-only fitting and plotting but cannot
+supply a complete machine study. `--validate-only` checks the request without
+fitting or integration. There is no `--count` or destination-family option.
+Existing destination files are not overwritten. No thermodynamic integration
+occurs during generation.
 
 See the [synthesis method](MECHANISM_SYNTHESIS_SEARCH.md) for the methodological
 contract and why primary discovery, complete-mechanism fitting and thermodynamic

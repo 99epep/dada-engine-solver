@@ -119,7 +119,7 @@ def test_motion_target_family_protocols_and_interactive_boundary_are_documented(
                    'synthesis_protocol', 'mechanism_state', 'animate_mechanism',
                    'plot_motion_comparison', 'mechanism_catalogue'):
         assert symbol in content
-    assert '15 points per piston' in content
+    assert '15 structured coordinates on the pair' in content
     assert 'missing' in content.lower() or 'absent derivatives' in content
     assert 'never finite-differenced' in content
     assert 'not implemented' in content
@@ -139,21 +139,18 @@ def test_paired_thermodynamic_and_hardware_generation_use_real_research():
 
 def test_refit_is_current_geometric_initialization_and_study_handoff():
     content = text()
-    for token in ('MotionRefitResult', 'to_shape_coordinates()', '28 spline coordinates',
-                  'q(theta - phase_rad)', 'uniform nodes', 'excluded pole',
-                  'reference-pressure', '--report', '--shape-radius'):
+    for token in ('MotionRefitResult', 'structured_c2_15p', 'exactly 15 active parameters',
+                  't = -theta/(2*pi)', 'reference-pressure', '--report', '--radius'):
         assert token in content
-    assert 'refit\nengine are not implemented' not in content
     assert 'No thermodynamic integration' in content
 
 
-def test_refit_search_defaults_are_tight_joint_bounds():
+def test_refit_search_defaults_are_structural_local_bounds():
     content = text()
-    assert '**0.02 radians**' in content
-    assert '**0.48 degrees**' in content
-    assert 'sqrt(13)' in content
-    assert 'corners therefore stay inside the canonical cap' in content
-    assert 'existing studies and campaign identities are not rewritten' in content
+    assert '0.1 and lies in (0, 0.5]' in content
+    assert 'half to 1.5 times the fitted value' in content
+    assert 'not a physical displacement metric' in content
+    assert 'Existing studies and campaign identities are not rewritten' in content
 
 
 def test_executable_six_bar_hierarchy_and_independent_pair_are_documented():

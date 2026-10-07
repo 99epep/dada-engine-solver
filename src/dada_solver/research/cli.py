@@ -88,17 +88,14 @@ def main(argv=None):
     target.add_argument('--candidate')
     target.add_argument('--samples', type=int, default=721)
     target.add_argument('--output', type=Path, required=True)
-    refit = commands.add_parser('motion-refit', help='Fit a feature-aware 15-control spline and create a motion-only Research study')
+    refit = commands.add_parser('motion-refit', help='Fit structured_c2_15p and create a motion-only Research study')
     refit.add_argument('source', type=Path)
     refit.add_argument('--candidate')
-    refit.add_argument('--count', type=int, default=15)
     refit.add_argument('--validate-only', action='store_true')
     refit.add_argument('--output', type=Path, help='New schema-3 study TOML; requires a complete Research source')
     refit.add_argument('--report', type=Path, help='Stable geometric refit report; sufficient for MotionTarget-only sources')
-    from .refit_study import DEFAULT_SHAPE_RADIUS, DEFAULT_PHASE_RADIUS_FRACTION
-    refit.add_argument('--shape-radius', type=float, default=DEFAULT_SHAPE_RADIUS, help='Joint canonical-control radius in radians (default: 0.02; search policy)')
-    refit.add_argument('--phase-radius-fraction', type=float, default=DEFAULT_PHASE_RADIUS_FRACTION, help='Phase search half-width as a fraction of 24 degrees (default: 0.02, or 0.48 degrees)')
-    refit.add_argument('--plot', action='store_true', help='Open static target/refit comparison with events and spline nodes')
+    refit.add_argument('--radius', type=float, default=.1, help='Local structured coordinate search radius in (0, 0.5]; default 0.1')
+    refit.add_argument('--plot', action='store_true', help='Open static target/structured comparison with events and extrema')
     refit.add_argument('--no-show', action='store_true')
     mechanism = commands.add_parser('mechanism', help='Validate synthesis protocols and inspect physical artifacts')
     mechanical = mechanism.add_subparsers(dest='mechanism_command', required=True)
@@ -221,10 +218,10 @@ def main(argv=None):
                 print(f'Motion target {target.content_hash}; saved {args.output}; no integration started.')
             else:
                 from .motion_refit import MotionRefitRequest
-                request = MotionRefitRequest(target, points_per_piston=args.count)
+                request = MotionRefitRequest(target)
                 if args.validate_only:
                     print(json.dumps(dict(target_hash=target.content_hash,family=request.destination_family,
-                                          points_per_piston=request.points_per_piston,implemented=True,integration_started=False)))
+                                          parameter_count=15,implemented=True,integration_started=False)))
                 else:
                     if args.output is None and args.report is None:
                         raise ValueError('Motion refit requires --output STUDY.toml or --report REFIT.json.')
@@ -233,14 +230,14 @@ def main(argv=None):
                     if args.output is not None:
                         from .refit_study import refit_study
                         path,result = refit_study(args.source,args.output,candidate=args.candidate,report=args.report,
-                            shape_radius=args.shape_radius,phase_radius_fraction=args.phase_radius_fraction)
-                        print(f'Created {path} and {path.with_suffix(".basis.json")}; 28 active spline coordinates; no integration started.')
+                            radius=args.radius)
+                        print(f'Created {path} and {path.with_suffix(".basis.json")}; 15 active structured coordinates; no integration started.')
                     else:
                         result = request.execute()
                         result.save(args.report)
                     for side,fitted in result.data['scientific']['sides'].items():
-                        d,n = fitted['diagnostics'],fitted['naive']['diagnostics']
-                        print(f"{side.upper()}: position RMS {n['position_rms']:.6g} -> {d['position_rms']:.6g}; max {d['maximum_absolute_position_error']:.6g}; {d['extrema_count']} extrema; phase {fitted['phase_rad']:.6g} rad")
+                        d,n = fitted['diagnostics'],fitted['initial_diagnostics']
+                        print(f"{side.upper()}: position RMS {n['position_rms']:.6g} -> {d['position_rms']:.6g}; max {d['maximum_absolute_position_error']:.6g}; {d['extrema_count']} extrema")
                     if args.report is not None: print(f'Refit report: {args.report}')
                     if args.plot:
                         from .motion_refit import plot_refit

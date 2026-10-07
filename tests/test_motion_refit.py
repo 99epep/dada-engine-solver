@@ -1,24 +1,24 @@
-"""Scientific refit initialization, analytic topology and exact machine handoff."""
+"""Structured geometric refit, current spline regression and exact study handoff."""
 from dataclasses import asdict
-import math
-import json
 from pathlib import Path
-from types import SimpleNamespace
+import json
+import math
 import tomllib
-
+from types import SimpleNamespace
 import numpy as np
 import pytest
-
-from dada_solver.free_kinematics import FreeMotionDefinition, _PeriodicMotion
+from dada_solver.free_kinematics import FreeMotionDefinition
 from dada_solver.hybrid_compact_kinematics import HybridCompactKinematics
 from dada_solver.geometry import CylinderVolumeLimits
 from dada_solver.research.motion_target import MotionTarget, _hybrid_events
-from dada_solver.research.motion_refit import MotionRefitRequest, MotionRefitResult, RefitPolicy, STEP, plot_refit
-from dada_solver.research.refit_study import refit_study, shape_bounds
+from dada_solver.research.motion_refit import MotionRefitRequest, MotionRefitResult, RefitPolicy, structured_model, monotonicity, plot_refit
+from dada_solver.research.refit_study import refit_study
+from dada_solver.research.families import STRUCTURED_DEFAULTS
 from dada_solver.research.presets import initialize_kinematics
 from dada_solver.research.schema import load_study, compile_study
 from dada_solver.research.study_io import dumps
 
+POLICY=RefitPolicy(dense_samples=360,maximum_evaluations=160,curvature_scales=(1.,),kink_width_starts=(.25,.65))
 
 @pytest.mark.parametrize('count', [4,8,15,24])
 def test_shape_chart_inverse_and_positive_affine_invariance(count):
@@ -37,264 +37,145 @@ def test_shape_chart_inverse_and_positive_affine_invariance(count):
         FreeMotionDefinition(tuple(pole),1.,2.).to_shape_coordinates()
 
 
-def target_of_motion(motion, phases=(.173,.289)):
-    limits = CylinderVolumeLimits(1.,2.)
-    model = SimpleNamespace(small_volume_limits=limits,large_volume_limits=limits)
-    for side,phase in zip(('small','large'),phases):
-        for order,suffix in enumerate(('', '_derivative','_second_derivative')):
-            setattr(model,side+'_cylinder_volume'+suffix,
-                    lambda angle,p=phase,o=order:motion.evaluate(angle-p,o))
-    return MotionTarget.from_kinematics(model,source={'test':'shifted production spline'},samples=3001)
+
+def target_of(model,events=None):
+    return MotionTarget.from_kinematics(model,source={'test':'production study angle'},samples=2881,events=events)
 
 
 @pytest.fixture(scope='module')
-def spline_fit():
-    angles = np.arange(15)*STEP
-    motion = _PeriodicMotion(FreeMotionDefinition(tuple(np.cos(angles)+.08*np.cos(2*angles+.2)),1.,2.))
-    target = target_of_motion(motion)
-    result = MotionRefitRequest(target,policy=RefitPolicy(phase_samples=16,dense_samples=720,maximum_evaluations=180)).execute()
-    return motion,target,result
+def structured_fit():
+    p=dict(STRUCTURED_DEFAULTS,small_max_deg=147.,small_down_duration_deg=169.,large_down_duration_deg=196.,
+           small_down_kink_u=.45,small_down_kink_q=.43,large_up_kink_u=.57,large_up_kink_q=.55,
+           small_max_curvature=25.,small_min_curvature=21.,large_max_curvature=23.,large_min_curvature=19.)
+    model=structured_model(p)
+    assert monotonicity(model.motion)['valid']
+    target=target_of(model)
+    return model,target,MotionRefitRequest(target,policy=POLICY).execute()
 
 
-def test_exact_shifted_spline_refit_and_phase_sign(spline_fit):
-    source,target,result = spline_fit
-    theta = np.linspace(0,2*math.pi,5001)
-    for side,phase in zip(('small','large'),(.173,.289)):
-        fitted = result.data['scientific']['sides'][side]
-        rebuilt = _PeriodicMotion(FreeMotionDefinition.from_shape_coordinates(fitted['shape_coordinates'],1.,2.))
-        assert 0 <= fitted['phase_rad'] < STEP
-        # The production convention is q(theta - phase), never theta + phase.
-        np.testing.assert_allclose(rebuilt.evaluate(theta-fitted['phase_rad']),source.evaluate(theta-phase),atol=2e-7,rtol=0)
-        assert fitted['phase_rad'] == pytest.approx(phase,abs=2e-5)
-        assert fitted['diagnostics']['position_rms'] < 4e-8
-        assert len(rebuilt.stationary_points()) == fitted['diagnostics']['extrema_count'] == 2
-        assert {p['kind'] for p in rebuilt.stationary_points()} == {'maximum','minimum'}
-        for order in (0,1,2):
-            assert math.isfinite(rebuilt.evaluate(-1e-18,order))
-            np.testing.assert_allclose(rebuilt.evaluate(np.array([-1e-18,0.]),order),rebuilt.evaluate(0.,order),atol=1e-14)
-    assert MotionRefitResult.from_data(result.data).data == result.data
-    bad = result.data
-    bad['scientific']['count'] = 10
-    with pytest.raises(ValueError,match='hash'):
-        MotionRefitResult.from_data(bad)
+def test_exact_structured_refit_and_angle_convention(structured_fit):
+    model,target,result=structured_fit
+    raw=result.data['scientific'];rebuilt=structured_model(raw['parameters'])
+    assert raw['parameter_count']==15 and raw['destination_family']=='structured_c2_15p'
+    for side in ('small','large'):
+        d=raw['sides'][side]['diagnostics']
+        assert d['position_rms']<2e-6
+        assert d['extrema_count']==2 and raw['monotonicity']['valid']
+        angles=np.linspace(0,2*math.pi,1501)
+        np.testing.assert_allclose(getattr(rebuilt,side+'_cylinder_volume')(angles),getattr(model,side+'_cylinder_volume')(angles),atol=2e-5)
+        np.testing.assert_allclose(getattr(rebuilt,side+'_cylinder_volume')(angles+2*math.pi),getattr(rebuilt,side+'_cylinder_volume')(angles),atol=1e-14)
+    assert rebuilt.large_cylinder_volume(0.)==2.
+    assert rebuilt.small_cylinder_volume(-math.radians(raw['parameters']['small_max_deg']))==pytest.approx(2.)
+    assert rebuilt.large_cylinder_volume_derivative(.2)<0
+    assert MotionRefitResult.from_data(result.data).data==result.data
+    print('Structured RMS',raw['combined']['position_rms'])
 
 
-def hybrid_target(variant=0):
-    model = HybridCompactKinematics(CylinderVolumeLimits(1.,2.),CylinderVolumeLimits(1.,2.),
+@pytest.mark.parametrize('variant',[0,1,2])
+def test_hybrid_fit_is_monotone_and_parameters_are_free(variant):
+    model=HybridCompactKinematics(CylinderVolumeLimits(1.,2.),CylinderVolumeLimits(1.,2.),
         small_max_deg=140.+5*variant,small_down_duration_deg=175.-5*variant,large_down_duration_deg=190.+5*variant,
         large_down_rounding=.12+.02*variant,small_up_rounding=.14+.02*variant,
         small_down_kink_u=.47,small_down_kink_q=.48,large_up_kink_u=.53,large_up_kink_q=.52)
-    if variant == 2:
-        seeds = json.loads((Path(__file__).parents[1]/'src/dada_solver/research/data/kinematics_seeds.json').read_text())['seeds']
-        parameters = dict(seeds['small']['hybrid_compact']['parameters'],**seeds['large']['hybrid_compact']['parameters'])
-        model = HybridCompactKinematics(CylinderVolumeLimits(1.,2.),CylinderVolumeLimits(1.,2.),**parameters)
-    events = {side:_hybrid_events(model,side) for side in ('small','large')}
-    return model,MotionTarget.from_kinematics(model,source={'test':'hybrid','variant':variant},events=events,samples=1441)
-
-
-@pytest.fixture(scope='module',params=[0,1,2])
-def hybrid_fit(request):
-    model,target = hybrid_target(request.param)
-    policy = RefitPolicy(phase_samples=16,dense_samples=720,maximum_evaluations=180)
-    return model,target,policy,MotionRefitRequest(target,policy=policy).execute()
-
-
-def test_hybrid_features_topology_quality_and_naive_comparison(hybrid_fit):
-    source,target,policy,result = hybrid_fit
-    theta = np.linspace(0,2*math.pi,6001)
+    target=target_of(model,{s:_hybrid_events(model,s) for s in ('small','large')})
+    result=MotionRefitRequest(target,policy=POLICY).execute();raw=result.data['scientific']
+    assert raw['monotonicity']['valid'] and raw['combined']['position_rms']<.02
+    assert len(raw['parameters'])==15 and len(raw['starts'])==2
+    assert abs(raw['parameters']['small_down_duration_deg']-raw['initial_parameters']['small_down_duration_deg'])>1e-3
     for side in ('small','large'):
-        raw = result.data['scientific']['sides'][side]
-        d,n = raw['diagnostics'],raw['naive']['diagnostics']
-        if target.scientific['source']['variant'] == 2:
-            assert d['position_rms'] < n['position_rms']*.85
-        assert d['terms']['weighted_position_mse'] < n['terms']['weighted_position_mse']
-        assert d['position_rms'] < .006
-        assert d['maximum_absolute_position_error'] < .02
-        assert d['extrema_count'] == 2
-        assert max(abs(x) for x in d['extrema_angular_errors_rad'].values()) < STEP/8
-        assert d['feature_position_rms'] > 0 and d['velocity_rms'] > 0
-        assert d['maximum_absolute_first_derivative'] > 0 and d['maximum_absolute_second_derivative'] > 0
-        assert not d['target_acceleration_used']
-        assert target.scientific['sides'][side]['second_derivative'] is None
-        assert {'kink','rounding','cadence_change','maximum','minimum'} <= {e['kind'] for e in d['events']}
-        for event in d['events']:
-            if event['kind'] == 'kink':
-                source_event = target.scientific['sides'][side]['events'][event['event_index']]
-                m = source_event['metadata']
-                width = (m['branch_end_rad']-m['branch_start_rad'])%(2*math.pi)
-                assert event['radius_rad'] == pytest.approx(min(STEP/2,width/8))
-        fitted = _PeriodicMotion(FreeMotionDefinition.from_shape_coordinates(raw['shape_coordinates'],1.,2.))
-        exact = np.array([getattr(source,side+'_cylinder_volume')(t) for t in theta])
-        error = fitted.evaluate(theta-raw['phase_rad'])-exact
-        assert np.sqrt(np.mean(error**2)) == pytest.approx(d['position_rms'],rel=.01)
-        print(f"{side}: naive RMS={n['position_rms']:.8g}, feature RMS={d['position_rms']:.8g}, max={d['maximum_absolute_position_error']:.8g}")
+        d=raw['sides'][side]['diagnostics']
+        assert d['extrema_count']==2 and not d['target_acceleration_used']
+        assert d['events'] and d['velocity_rms'] is not None
+    print('Hybrid',variant,{s:raw['sides'][s]['diagnostics']['position_rms'] for s in ('small','large')})
+    if variant==0:
+        assert MotionRefitRequest(target,policy=POLICY).execute().payload_json==result.payload_json
 
 
-def test_refit_reproducible_and_acceleration_not_used(spline_fit):
-    _,target,result = spline_fit
-    raw = target.scientific
+def test_acceleration_is_not_used_and_velocity_can_be_absent(structured_fit):
+    _,target,result=structured_fit
+    raw=target.scientific
+    for side in ('small','large'):raw['sides'][side]['second_derivative']=[1e6]*len(raw['angles_rad'])
+    changed=MotionTarget.create(raw['angles_rad'],raw['sides'],source=raw['source'])
+    assert MotionRefitRequest(changed,policy=POLICY).execute().data['scientific']['parameters']==result.data['scientific']['parameters']
     for side in ('small','large'):
-        raw['sides'][side]['second_derivative'] = [1e6]*len(raw['angles_rad'])
-    altered = MotionTarget.create(raw['angles_rad'],raw['sides'],source=raw['source'])
-    policy = RefitPolicy(phase_samples=16,dense_samples=720,maximum_evaluations=180)
-    replay = MotionRefitRequest(target,policy=policy).execute()
-    assert replay.payload_json == result.payload_json
-    other = MotionRefitRequest(altered,policy=policy).execute()
-    assert other.content_hash != result.content_hash
-    assert other.data['scientific']['sides'] == result.data['scientific']['sides']
-
-
-def test_position_only_target_keeps_velocity_unavailable(spline_fit):
-    _,target,_ = spline_fit
-    raw = target.scientific
-    for side in ('small','large'):
-        raw['sides'][side]['first_derivative'] = None
-        raw['sides'][side]['second_derivative'] = None
-    target = MotionTarget.create(raw['angles_rad'],raw['sides'],source=raw['source'])
-    result = MotionRefitRequest(target,policy=RefitPolicy(phase_samples=8,dense_samples=360)).execute()
-    for side in ('small','large'):
-        d = result.data['scientific']['sides'][side]['diagnostics']
-        assert d['velocity_rms'] is None
-        assert d['terms']['normalized_velocity_mse'] is None
-        assert all(e['velocity_error_at_event'] is None for e in d['events'])
-
-
-def test_chart_search_envelope_is_a_policy_and_excludes_pole(spline_fit):
-    controls = spline_fit[2].data['scientific']['sides']['small']['controls']
-    low,high,metadata = shape_bounds(controls,.15)
-    z = np.array(FreeMotionDefinition(tuple(controls),1.,2.).to_shape_coordinates())
-    sphere = np.r_[2*z,z@z-1]/(1+z@z)
-    # Check every joint corner, not just independent one-coordinate changes.
-    import itertools
-    signs = np.array(list(itertools.product((-1.,1.),repeat=13)))
-    corners = z+signs*(high-low)/2
-    squared = np.sum(corners**2,axis=1)
-    points = np.column_stack((2*corners,squared-1))/(1+squared[:,None])
-    angles = np.arccos(np.clip(points@sphere,-1.,1.))
-    assert np.max(angles) <= .15+1e-12
-    np.testing.assert_allclose((low+high)/2,z,atol=1e-15)
-    assert metadata['box_inside_cap']
-    assert metadata['chart_box_half_width'] > 0
-    tighter_low,tighter_high,tighter = shape_bounds(controls)
-    assert tighter['canonical_angular_radius_rad'] == .02
-    assert np.all(tighter_low > low) and np.all(tighter_high < high)
-    assert not metadata['box_is_cap']
-    assert metadata['minimum_box_angle_from_excluded_pole_rad'] > 0
-    with pytest.raises(ValueError): shape_bounds(controls,0.)
-    near_pole = FreeMotionDefinition.from_shape_coordinates([20.]*13,1.,2.)
-    with pytest.raises(ValueError,match='pole'): shape_bounds(near_pole.control_values,.15)
+        raw['sides'][side]['first_derivative']=None;raw['sides'][side]['second_derivative']=None
+    changed=MotionTarget.create(raw['angles_rad'],raw['sides'],source=raw['source'])
+    other=MotionRefitRequest(changed,policy=POLICY).execute().data['scientific']
+    assert all(other['sides'][s]['diagnostics']['velocity_rms'] is None for s in ('small','large'))
 
 
 def no_thermodynamics(monkeypatch):
     from dada_solver.campaign.evaluator import MachineEvaluator
-    monkeypatch.setattr(MachineEvaluator,'evaluate_with_control',lambda *a,**k:pytest.fail('Refit must not integrate thermodynamics'))
+    monkeypatch.setattr(MachineEvaluator,'evaluate_with_control',lambda *a,**k:pytest.fail('Refit must not integrate'))
 
 
-def test_selected_candidate_generates_portable_motion_only_study(tmp_path,monkeypatch):
+def test_candidate_generates_exact_machine_with_fifteen_active_coordinates(tmp_path,monkeypatch):
     from tests.test_research_rescale import snapshot
     no_thermodynamics(monkeypatch)
-    source = initialize_kinematics(tmp_path/'source.toml','hybrid_compact','hybrid_compact')
-    raw = tomllib.loads(source.read_text())
-    frequency = next(r for r in raw['parameters'] if r['name'] == 'operation.frequency_hz')
-    value = frequency.pop('value')
-    frequency.update(initial=value,lower=value/2,upper=value*2,kind='continuous',transform='linear')
-    source.write_text(dumps(raw))
-    study,definition,record = snapshot(source,tmp_path/'campaign',{'operation.frequency_hz':value*1.25})
-    exact = dict(study.fixed_parameters,**record['physical'])
-    design = definition.adapter.build(exact)
-    output = tmp_path/'next/study.toml'
-    report = output.with_suffix('.refit.json')
+    source=initialize_kinematics(tmp_path/'source.toml','hybrid_compact','hybrid_compact')
+    raw=tomllib.loads(source.read_text());row=next(r for r in raw['parameters'] if r['name']=='operation.frequency_hz')
+    v=row.pop('value');row.update(initial=v,lower=v/2,upper=v*2,kind='continuous',transform='linear');source.write_text(dumps(raw))
+    study,definition,record=snapshot(source,tmp_path/'campaign',{'operation.frequency_hz':v*1.25})
+    output,result=refit_study(tmp_path/'campaign',tmp_path/'next/study.toml',candidate=record['candidate_id'],policy=POLICY,radius=.05)
+    new=load_study(output);assert len(new.space.parameters)==15
+    assert {p.name for p in new.space.parameters}=={f'kinematics.{"small" if n.startswith("small_") else "large"}.{n}' for n in STRUCTURED_DEFAULTS}
+    for side in ('small','large'):assert new.settings[side]=={'family':'structured_c2_15p'}
+    original=definition.adapter.build(dict(study.fixed_parameters,**record['physical']))
+    rebuilt=compile_study(new).adapter.build(dict(new.fixed_parameters,**{p.name:p.initial for p in new.space.parameters}))
+    assert asdict(original.configuration)==asdict(rebuilt.configuration)
+    assert asdict(original.heat_in)==asdict(rebuilt.heat_in)
+    assert asdict(original.heat_out)==asdict(rebuilt.heat_out)
+    for key in ('constraints','objective','numerical','mechanical_constraints'):assert new.data[key]==study.data[key]
+    assert new.basis.data['provenance']['motion_refit']['radius_fraction']==.05
     from dada_solver.research.cli import main
-    assert main(['motion-refit',str(tmp_path/'campaign'),'--candidate',record['candidate_id'][:12],
-                 '--output',str(output),'--report',str(report)]) == 0
-    result = MotionRefitResult.from_data(json.loads(report.read_text()))
-    new = load_study(output)
-    assert new.data['schema_version'] == 3
-    assert len(new.space.parameters) == 28
-    assert all(p.name.startswith('kinematics.') for p in new.space.parameters)
-    for name,value in exact.items():
-        if not name.startswith('kinematics.'):
-            assert new.fixed_parameters[name] == value
-    for side in ('small','large'):
-        assert new.settings[side] == dict(family='free_spline',representation='shape_coordinates',count=15)
-        assert {p.name for p in new.space.parameters if p.name.startswith(f'kinematics.{side}.')} == {
-            f'kinematics.{side}.shape_{i}' for i in range(13)} | {f'kinematics.{side}.phase_rad'}
-    rebuilt = compile_study(new).adapter.build(dict(new.fixed_parameters,**{p.name:p.initial for p in new.space.parameters}))
-    assert asdict(rebuilt.configuration) == asdict(design.configuration)
-    assert asdict(rebuilt.heat_in) == asdict(design.heat_in)
-    assert asdict(rebuilt.heat_out) == asdict(design.heat_out)
-    assert new.data['constraints'] == study.data['constraints']
-    assert new.data['numerical'] == study.data['numerical']
-    assert new.data['study']['parent_candidate_id'] == record['candidate_id']
-    for side in ('small','large'):
-        region = new.basis.data['provenance']['motion_refit']['search_regions'][side]
-        assert region['canonical_angular_radius_rad'] == .02
-        assert region['box_inside_cap']
-        assert region['phase_radius_rad'] == pytest.approx(math.radians(.48))
-        for p in new.space.parameters:
-            if p.name == f'kinematics.{side}.phase_rad':
-                assert p.upper-p.lower == pytest.approx(2*math.radians(.48))
-    assert new.data['search']['evaluate_initial']
-    assert result.data['scientific']['target']['scientific']['source']['candidate_id'] == record['candidate_id']
-    from dada_solver.research.cli import main
-    assert main(['validate',str(output)]) == 0
-    with pytest.raises(ValueError,match='must not exist'):
-        refit_study(source,output)
+    assert main(['validate',str(output)])==0
 
 
-def test_reference_pressure_source_freezes_exact_candidate_inventory(tmp_path,monkeypatch):
+def test_cli_report_plot_and_removed_spline_options(tmp_path,monkeypatch,structured_fit):
     no_thermodynamics(monkeypatch)
-    source = initialize_kinematics(tmp_path/'source.toml','hybrid_compact','hybrid_compact')
-    raw = tomllib.loads(source.read_text())
-    from tests.test_research_reference_charge import derived
-    derived(raw)
-    source.write_text(dumps(raw))
-    original = load_study(source)
-    original_design = compile_study(original).adapter.build(original.fixed_parameters)
-    output = tmp_path/'next.toml'
-    refit_study(source,output,policy=RefitPolicy(phase_samples=8,dense_samples=360))
-    new = load_study(output)
-    assert new.data['policies']['charge'] == 'explicit_inventory'
-    assert 'charge_reference' not in new.data
-    assert new.fixed_parameters['charge.total_mass_kg'] == original_design.configuration.charge.total_mass
-    assert new.basis.data['provenance']['motion_refit']['inventory_policy_change']['source_policy'] == original.data['policies']['charge']
-    values = dict(new.fixed_parameters,**{p.name:p.initial for p in new.space.parameters})
-    values['kinematics.small.phase_rad'] += STEP/4
-    changed = compile_study(new).adapter.build(values)
-    assert changed.configuration.charge.total_mass == original_design.configuration.charge.total_mass
-
-
-def test_cli_fit_report_and_plot_without_machine_invention(tmp_path,monkeypatch,spline_fit):
-    no_thermodynamics(monkeypatch)
-    import dada_solver.research.motion_refit as refit_module
-    _,target,result = spline_fit
-    # CLI plumbing reuses an already tested fit; no duplicate expensive search.
-    monkeypatch.setattr(refit_module.MotionRefitRequest,'execute',lambda self:result)
-    path = tmp_path/'target.json'; target.save(path)
+    _,target,result=structured_fit
+    monkeypatch.setattr(MotionRefitRequest,'execute',lambda self:result)
+    source=tmp_path/'target.json';target.save(source)
     from dada_solver.research.cli import main
-    assert main(['motion-refit',str(path),'--validate-only']) == 0
-    report = tmp_path/'report.json'
-    assert main(['motion-refit',str(path),'--report',str(report)]) == 0
-    assert MotionRefitResult.load(report).payload_json == result.payload_json
-    with pytest.raises(SystemExit): main(['motion-refit',str(path),'--output',str(tmp_path/'study.toml')])
-    assert not (tmp_path/'study.toml').exists()
-    with pytest.raises(SystemExit): main(['motion-refit',str(path),'--report',str(report)])
-    matplotlib = pytest.importorskip('matplotlib'); matplotlib.use('Agg')
+    assert main(['motion-refit',str(source),'--validate-only'])==0
+    assert main(['motion-refit',str(source),'--report',str(tmp_path/'refit.json'),'--plot','--no-show'])==0
+    for option in ('--count','--family','--shape-radius','--phase-radius-fraction'):
+        with pytest.raises(SystemExit):main(['motion-refit',str(source),option,'15'])
+    with pytest.raises(SystemExit):main(['motion-refit',str(source),'--output',str(tmp_path/'no-machine.toml')])
     import matplotlib.pyplot as plt
-    figure = plot_refit(result)
-    assert len(figure.axes) == 6
-    for row in (0,3):
-        nodes = next(c for c in figure.axes[row].collections if c.get_label() == '15 spline nodes')
-        assert len(nodes.get_offsets()) == 15
-    figure.canvas.draw(); plt.close(figure)
-    assert main(['motion-refit',str(path),'--report',str(tmp_path/'second.json'),'--plot','--no-show']) == 0
+    fig=plot_refit(result);assert len(fig.axes)==6
+    assert 'structured_c2_15p refit' in fig._suptitle.get_text()
+    assert not any(c.get_label()=='15 spline nodes' for ax in fig.axes for c in ax.collections)
+    fig.canvas.draw();plt.close(fig)
 
 
-def test_analytic_topology_rejects_extra_extrema():
-    motion = _PeriodicMotion(FreeMotionDefinition(tuple(np.cos(3*np.arange(15)*STEP)),1.,2.))
-    points = motion.stationary_points()
-    assert len(points) == 6
-    assert sum(p['kind'] == 'maximum' for p in points) == 3
-    target = target_of_motion(motion)
-    with pytest.raises(ValueError,match='topology-preserving'):
-        MotionRefitRequest(target,policy=RefitPolicy(phase_samples=8,dense_samples=360)).execute()
+def test_reference_inventory_stays_fixed(tmp_path,monkeypatch):
+    from tests.test_research_reference_charge import derived
+    no_thermodynamics(monkeypatch)
+    source=initialize_kinematics(tmp_path/'source.toml','hybrid_compact','hybrid_compact')
+    raw=tomllib.loads(source.read_text());derived(raw);source.write_text(dumps(raw))
+    original=load_study(source);mass=compile_study(original).adapter.build(original.fixed_parameters).configuration.charge.total_mass
+    output,_=refit_study(source,tmp_path/'structured.toml',policy=POLICY)
+    new=load_study(output)
+    assert new.data['policies']['charge']=='explicit_inventory'
+    assert new.fixed_parameters['charge.total_mass_kg']==mass
+
+
+def test_nonmonotone_structured_is_rejected():
+    assert not monotonicity(structured_model(dict(STRUCTURED_DEFAULTS,small_max_curvature=2000.)).motion)['valid']
+
+
+def test_free_spline_family_remains_loadable_and_evaluable(tmp_path,monkeypatch):
+    import dada_solver.campaign.evaluator as evaluator
+    from dada_solver.integration import IntegrationInterrupted
+    from dada_solver.research.schema import candidate_for_values
+    source=initialize_kinematics(tmp_path/'spline.toml','free_spline','free_spline')
+    study=load_study(source);definition=compile_study(study)
+    definition.adapter.build(study.fixed_parameters).build()
+    calls=[]
+    def bounded_solver(*args,**kwargs):
+        calls.append(args)
+        raise IntegrationInterrupted('Bounded regression check')
+    monkeypatch.setattr(evaluator,'solve_periodic_wall_machine',bounded_solver)
+    result=evaluator.MachineEvaluator(definition).evaluate(candidate_for_values(definition,{}))
+    assert len(calls)==1 and result['status']=='budget_exhausted'

@@ -109,15 +109,15 @@ mechanism family, evidence, provenance and artifact hash for human selection.
 Selected families can subsequently be polished or adapted using the actual
 Research thermodynamic objective.
 
-The abstract-motion refit operator uses `free_spline` with **15 points per
-piston**. `MotionRefitRequest` fits position using uniform nodes, feature-aware
-sample weights and a phase search over one node spacing. Exact hybrid extrema,
-rounding intervals, cadence joins and kink/branch descriptors guide this geometric
-initialization; target acceleration is not fitted. The resulting shape coordinates
-and independent phases initialize a motion-only Research study. This does not
-implement mechanical synthesis or judge thermodynamic performance. See the
-[refit contract](DADA_ENGINE_RESEARCH_KINEMATICS.md#feature-aware-motion-refit) for
-numerical policy, topology checks, diagnostics and study generation.
+The abstract-motion refit operator converts a `MotionTarget` to
+`structured_c2_15p` with fifteen active pair coordinates. A deterministic small
+multistart position-led fit uses hybrid features as seeds and diagnostics, not
+fixed constraints. Continuous polynomial derivative checks reject nonmonotone
+solutions. Target acceleration is not fitted. The generated study freezes all
+other machine coordinates. This operator does not perform mechanical synthesis
+or judge thermodynamic performance. See the
+[refit contract](DADA_ENGINE_RESEARCH_KINEMATICS.md#feature-aware-motion-refit)
+for numerical policy, diagnostics and study generation.
 
 ### Direct slider-crank and four-bar operators
 
