@@ -142,3 +142,18 @@ def test_old_document_name_has_no_remaining_consumers():
                 offenders.append(path.relative_to(ROOT))
 
     assert not offenders, offenders
+
+
+def test_method_describes_current_handoff_without_campaign_records():
+    from dada_solver.research.synthesis import STAGES
+
+    text = DOC.read_text()
+    for stage in STAGES:
+        assert f'`{stage}`' in text
+    assert 'declarative stage and ownership contracts' in text
+    assert 'does not run\nan autonomous geometric fit' in text
+    assert 'no injection of design candidates' in text
+    assert 'declare the\nweights' in text
+    for artifact in ('policy.toml', 'saturation_reference.toml',
+                     '## 23. Reproducing', 'completed reference saturation experiment'):
+        assert artifact not in text

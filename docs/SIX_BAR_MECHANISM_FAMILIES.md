@@ -3,10 +3,10 @@
 ## Purpose
 
 This document catalogues four mechanically distinct paired SMALL/LARGE six-bar
-mechanism lineages retained from the DADA mechanism-synthesis work.
+mechanism lineages for use as synthesis seeds.
 
-The catalogue is deliberately independent of one thermodynamic machine,
-optimizer run or historical ranking.
+The catalogue specifies normalized geometry and nominal mechanical margins,
+independently of a thermodynamic operating point.
 
 Each family contains two independently adapted mechanisms:
 
@@ -449,12 +449,8 @@ A true bounded tolerance certification would require proving the constraints
 over an entire multidimensional perturbation domain, not testing an arbitrary
 finite set of random or quasi-random samples.
 
-The old stochastic perturbation study is therefore not part of this clean
-catalogue.
-
 If certified manufacturing robustness becomes necessary, it should be added as
-a generic solver/research capability rather than embedded as historical
-documentation data.
+a generic solver/research capability with explicit uncertainty bounds.
 
 ---
 
@@ -475,7 +471,7 @@ Do not assume that:
 
 - the most compact family is best;
 - the family with the largest nominal transmission margin is best;
-- the lineage that once performed best for another machine remains best;
+- a lineage optimal for one operating point is optimal for another;
 - the original seed coordinates should remain fixed.
 
 ---
@@ -551,7 +547,7 @@ The verifier:
 4. applies the declared standard mechanical screen at 1440 samples;
 5. repeats the screen at 5760 samples;
 6. reports individual constraint margins;
-7. depends on neither historical scripts nor campaign artifacts.
+7. evaluates the stored geometries directly through production mechanisms.
 
 A failure prints both grid values and their verdicts and returns a nonzero exit
 status. All mechanisms are evaluated before reporting screen failures; neither

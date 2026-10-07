@@ -48,7 +48,7 @@ Evidence should include:
 - the best feasible objective value;
 - the best competing regions found;
 - distance from active parameter bounds;
-- sensitivity around the champion;
+- sensitivity around the best-found motion;
 - repeatability across independent seeds;
 - numerical convergence and periodic-state tolerances;
 - all active physical constraints.
@@ -178,31 +178,11 @@ sup eta(k), k in K_relaxed
 
 If a computable relaxed upper bound is close to the efficiency of the best physical motion, the gap itself becomes a near-optimality certificate.
 
-For example, if the best admissible motion gives:
-
-```text
-eta_best = 21.10%
-```
-
-while a rigorously justified relaxation proves:
-
-```text
-eta <= 21.20%
-```
-
-for every admissible motion in the declared class, then the remaining optimality gap is at most:
-
-```text
-0.10 percentage point
-```
-
-That statement is substantially stronger than an arbitrarily large numerical search.
-
 ## Separation of proof scopes
 
 Every optimality statement must specify its scope.
 
-A proof for an 11-parameter family does not prove optimality among arbitrary periodic motions.
+A proof for a finite-dimensional family does not prove optimality among arbitrary periodic motions.
 
 A proof for unconstrained smooth motions does not prove mechanical realizability.
 
@@ -216,26 +196,21 @@ The following scopes should remain distinct:
 - four-bar-realisable motion optimum;
 - complete machine optimum including mechanical losses.
 
-## Agreed next project sequence
+## From abstract motion to a realizable mechanism
 
-1. Finish the current piecewise-linear machine and temperature exploration,
-   using the production gas model and explicit design/feasibility conventions.
-2. Take the selected best linear candidate and construct a smooth C2 motion
-   approximating it.
-3. Allow limited thermodynamic reoptimization of that C2 law to measure whether
-   smoothing loses or gains efficiency.
-4. Synthesize a six-bar mechanism approximating the selected C2 target.
-5. Evaluate the **actual six-bar kinematics** in the periodic thermodynamic
-   solver; geometric RMS fit alone is not a performance result.
+Optimize the selected abstract motion under explicit design and feasibility
+constraints. If it has corners or other unrealizable features, construct a
+smooth target and evaluate its thermodynamic behavior before fitting a physical
+mechanism. Evaluate the **actual six-bar kinematics** in the periodic solver;
+geometric RMS fit alone is not a performance result.
 
 [Motor research objectives](MOTOR_RESEARCH_OBJECTIVES.md) defines the
-whole-machine questions. Existing spline and six-bar support are reusable
-capabilities, not evidence that synthesis for any new target is complete.
+whole-machine questions. Spline and six-bar support are reusable capabilities,
+not evidence that synthesis for a selected target is complete.
 
-Velocity/acceleration and mechanical bounds must be made explicit before
-claiming realizability. Certification, optimal-control bounds and branch-and-
-bound described above remain possible later research, not the immediate
-implementation plan or an achieved result.
+Velocity, acceleration and mechanical bounds must be explicit before claiming
+realizability. Certification and optimal-control bounds described above are
+possible research methods, not achieved results.
 
 ## Reporting language
 
@@ -252,14 +227,12 @@ Use the following terminology consistently.
 
 ## Interpretation of the four-stage probe
 
-The four-stage law deliberately simplifies features discovered in previous
-freer-motion searches. It is a temporary thermodynamic design probe, plausibly
-near a desirable motion but not proven near-optimal. After the thermal study,
-return to smoother, more natural laws for the first prototype. Approximating
-the linear target does not require retaining its corners or freezing its shape. Its piecewise
+The four-stage law is a thermodynamic design probe, not a proven near-optimal
+or mechanically realizable motion. A prototype requires a realizable motion law.
+Approximating the linear target does not require retaining its corners or freezing its shape. Its piecewise
 constant velocities jump at stage boundaries with no acceleration, inertia,
 stress or mechanical-loss penalty. Those jumps are mechanically unrealizable
-as written, and the 2% minimum duration is only a search bound. Passive-valve
+as written. Any minimum stage duration is a study search bound. Passive-valve
 behavior and thermal coupling remain part of the physical evaluation.
 
 No present result proves global optimality, a useful shaft efficiency or

@@ -90,3 +90,20 @@ class MechanismLibrary:
             raise ValueError('Unsupported mechanism library.')
         if content_hash({k:v for k,v in data.items() if k!='content_hash'})!=data['content_hash']: raise ValueError('Library hash mismatch.')
         return cls(tuple(data['members']))
+
+    @classmethod
+    def load(cls, path):
+        return cls.from_data(json.loads(Path(path).read_text()))
+
+    def save(self, path):
+        path = Path(path)
+        if path.exists():
+            raise ValueError('Mechanism library already exists; choose a new path.')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        atomic_json(path, self.to_data())
+
+    def member(self, family_id):
+        for member in self.members:
+            if member['family_id'] == family_id:
+                return json.loads(canonical_json(member))
+        raise ValueError(f'Unknown mechanism family identifier: {family_id!r}.')

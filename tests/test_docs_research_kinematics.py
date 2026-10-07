@@ -111,3 +111,17 @@ def test_second_derivative_availability_matches_reference():
             if "maximum_absolute_second_derivative" in available_metrics(family)} == {
         "harmonic", "slider_crank", "free_spline", "fourier_c2", "structured_c2_15p",
     }
+
+
+def test_motion_target_family_protocols_and_interactive_boundary_are_documented():
+    content = text()
+    for symbol in ('MotionTarget', 'SynthesisPlan', 'MotionRefitRequest',
+                   'synthesis_protocol', 'mechanism_state', 'animate_mechanism',
+                   'plot_motion_comparison', 'mechanism_catalogue'):
+        assert symbol in content
+    assert '15 points per piston' in content
+    assert 'missing' in content.lower() or 'absent derivatives' in content
+    assert 'never finite-differenced' in content
+    assert 'not implemented' in content
+    assert 'FuncAnimation' in content
+    assert 'global_discovery' in content

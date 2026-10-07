@@ -43,12 +43,8 @@ def sample_motion(study, active_values=None, *, samples=361):
             out.update(joints={k:[list(s['joints'][k]) for s in states] for k in states[0]['joints']},
                 links=[['A','B'],['B','C'],['C','D'],['B','E'],['C','E'],['E','F'],['F','G'],['E','H'],['F','H'],['H','P']])
         elif family=='four_bar':
-            assembly=getattr(backend,law.side+'_assembly'); states=[assembly.evaluate(*backend._crank(float(t))) for t in angles]
-            slider=assembly.slider
-            joints={'A':[[0.,0.]]*samples,'D':[[assembly.loop.rocker_pivot_x,assembly.loop.rocker_pivot_y]]*samples,
-                'B':[list(s.crank_pin) for s in states],'C':[list(s.coupler_joint) for s in states],
-                'H':[list(s.output_point) for s in states],
-                'P':[[slider.axis_origin_x+s.coordinate*math.cos(slider.axis_angle),slider.axis_origin_y+s.coordinate*math.sin(slider.axis_angle)] for s in states]}
+            states=[backend.joint_state(float(t), law.side) for t in angles]
+            joints={k:[list(s['joints'][k]) for s in states] for k in states[0]['joints']}
             out.update(joints=joints,links=[['A','B'],['B','C'],['C','D'],['H','P']]+([['C','H'],['D','H']] if study.settings[side]['output']=='rocker' else [['B','H'],['C','H']]))
         out['joint_length_unit']='crank_radius' if out['joints'] else None
         out['crank_radius_m']=study.settings[side].get('crank_radius_m') if hasattr(study,'settings') else None

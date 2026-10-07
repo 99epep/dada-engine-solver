@@ -121,7 +121,7 @@ Cross-study evidence remains separated by source.
 
 ## Journal-first persistence
 
-New campaigns use `history.jsonl.gz`. Each appended result is an independent gzip
+Campaigns use `history.jsonl.gz`. Each appended result is an independent gzip
 member containing one canonical JSON record terminated by a newline. Compression
 is lossless and uses a deterministic gzip timestamp.
 

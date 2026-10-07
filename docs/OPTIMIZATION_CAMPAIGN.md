@@ -29,10 +29,10 @@ The implementation lives in `dada_solver.campaign`:
 - `cli`: the `dada-optimize` command.
 
 There is no database, plugin discovery, distributed execution, Bayesian search
-or new external optimization dependency. The first strategy is Sobol, not
+or new external optimization dependency. The strategy is Sobol, not
 SLSQP. Research additionally uses `scheduled_search.ScheduledSobol` for
-explicit initial evaluations and center-first local regions; the original global
-Sobol path stays unchanged. See [Research local refinement](DADA_ENGINE_RESEARCH_REFERENCE.md#local-refinement-and-explicit-initial-evaluations)
+explicit initial evaluations and center-first local regions alongside global
+Sobol exploration. See [Research local refinement](DADA_ENGINE_RESEARCH_REFERENCE.md#local-refinement-and-explicit-initial-evaluations)
 for normalization, round-robin allocation and resume semantics.
 
 ## Kinematics injection
@@ -108,7 +108,7 @@ fit independently free UA or hold-up values.
 
 Reservoir closures use the existing eight-state periodic solver. Microtube
 exchangers construct the existing `ExternalStreamWallMachine` and use the reusable ten-state
-wall-cycle evaluator factored from hardware screening. The extra states remain
+wall-cycle evaluator. The extra states remain
 H_i and H_o wall energies. The wall convergence rule, correlations, valve
 equations and integration tolerances are unchanged.
 
@@ -213,7 +213,7 @@ campaign_directory/
     base.toml                 # complete thermodynamic configuration snapshot
     definition.json           # immutable content/runtime identity
     state.json                # Sobol index, pending candidate, phase and archive IDs
-    history.jsonl.gz          # new campaigns: append-only gzip members, one full JSON record each
+    history.jsonl.gz          # append-only gzip members, one full JSON record each
     recovery.json            # one transient durable completed result before state commit
     report.json
     report.txt
@@ -252,8 +252,7 @@ of the last ten uncached integrations. Until such timings exist, it uses explici
 `initial_evaluation_seconds`. Cheap preflight rejections do not make the next
 periodic solve appear artificially cheap. A zero or insufficient budget starts
 nothing. A cooperative deadline is checked from the RHS progress boundary.
-`deadline_grace_seconds` is configurable; the default is 12 seconds and the
-microtube smoke uses 3 seconds with one-second progress checks. An interrupted
+`deadline_grace_seconds` is configurable; the default is 12 seconds. An interrupted
 partial `solve_ivp` cycle is discarded, while the last complete cycle and its
 error history are retained. Its status is `budget_exhausted`, never physical
 infeasibility or periodic non-convergence, and it is excluded from the exact
@@ -263,7 +262,7 @@ retries the latest unfinished candidate with a later, larger budget.
 Warm-start selection searches compatible prior states in normalized space and
 prefers converged states before distance. Compatibility includes state layout,
 evaluator family and operating direction. Gas inventory is rescaled while
-preserving specific internal energies. Wall energy is scaled by the new/old
+preserving specific internal energies. Wall energy is scaled by the target/source
 wall-capacity ratio to preserve wall temperature. Source identity, status and
 normalized distance are persisted. Every candidate must still satisfy the
 original periodic criterion.

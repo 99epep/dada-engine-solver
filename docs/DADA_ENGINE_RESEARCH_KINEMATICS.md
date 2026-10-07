@@ -3,7 +3,7 @@
 ## 1. Purpose and scope
 
 This reference describes the current kinematic/mechanism layer used by schema-3
-and schema-3 Research studies. Each study selects cylinder laws, declares their
+Research studies. Each study selects cylinder laws, declares their
 fixed and active coordinates, and builds a production `KinematicsModel` for the
 existing solver and campaign engine.
 
@@ -40,8 +40,8 @@ research evaluate \
     --budget 3m
 ```
 
-These paths are user-created destinations, not dependencies on committed
-historical results. The generated template starts with fixed coordinates and
+These paths are user-created destinations. The generated template starts with
+fixed coordinates and
 portable machine inputs; physical families also receive mechanism artifacts.
 It is a starting configuration, not an optimized or recommended machine.
 
@@ -427,9 +427,55 @@ limit. It is a reading aid, not a safety factor and not a manufacturing toleranc
 certificate. Margins retain their individual units and meanings; no universal
 mechanical robustness score is implied.
 
-## 11. Synthesis handoff
+## 11. Motion targets and synthesis handoff
 
-`dada_solver.research.synthesis` exposes the ordered `STAGES`, coordinate-group
+`dada_solver.research.motion_target.MotionTarget` is an immutable, hashed
+scientific target independent of the source family. It contains both SMALL and
+LARGE on an increasing study-angle grid from zero through `2*pi`, including the
+periodic endpoint. Study angle precedes the single operation transform applied
+by the thermodynamic factory. Position is normalized using declared cylinder
+limits, `(volume - minimum_volume) / swept_volume`, without sampled rescaling or
+clipping. Available derivatives are per study-angle radian; absent derivatives
+are `null`, never finite-differenced into existence.
+
+Each side carries extensible named events with angles, optional directed/wrapped
+intervals and source descriptors. Extraction retains a periodic seam and
+bracketed derivative-root turnarounds when available. For `hybrid_compact`, exact
+source parameters additionally identify extrema, rounding intervals, cadence
+joins and kinks. Event metadata also retains exact normalized position and velocity at these
+source-defined features. Kink metadata carries its branch boundaries; no neighborhood
+width or refit heuristic is inferred. Events describe the source, not mandatory
+features of a realizable mechanism.
+
+`target_from_study()` extracts production kinematics at configured or explicitly
+supplied active coordinates without integration. `load_motion_target()` accepts
+a saved target, a schema-3 study TOML, or an identified stored Research result.
+Campaign extraction requires a candidate selector. Scientific source identity,
+coordinate conventions, events and samples determine the target hash;
+presentation provenance is stored separately. Extraction reconstructs current
+production kinematics, not a thermodynamic trajectory replay.
+
+```console
+dada-research motion-target path/to/study.toml --output path/to/target.json
+dada-research motion-target path/to/campaign --candidate CANDIDATE_ID \
+    --output path/to/target.json
+dada-research mechanism synthesize path/to/target.json --family slider_crank \
+    --stage global_discovery --validate-only
+```
+
+`PROTOCOLS` and `synthesis_protocol()` centrally own ordered stages and continuous
+coordinate groups. Slider-crank and four-bar protocols use `global_discovery`,
+`full_local_polish`, `paired_thermodynamic` and `hardware_retuning`; neither has
+`downstream_fit`. Slider-crank releases `rod_over_crank`, `offset_over_crank` and
+`phase_rad`, keeping orientation fixed. Four-bar releases its eleven continuous
+coordinates, keeping output type, closure branches, direction and orientation
+fixed. The six-bar protocol retains its hierarchy below. A paired release
+requires both independent sides; hardware retuning releases no mechanism
+coordinates.
+
+
+
+`dada_solver.research.synthesis` exposes the six-bar ordered `STAGES`, coordinate-group
 helper `release_coordinates()`, and declarative contracts `SynthesisRequest`
 and `FreshIslandPolicy`.
 
@@ -453,7 +499,8 @@ optimizer. The scientific handoff preserves:
 - fresh-island saturation separate from seeded design exploitation.
 
 `FreshIslandPolicy` declares fixed bounds, distinct deterministic seeds, an
-explicit search policy and both primary branches. `SynthesisRequest` validates
+explicit search policy and both primary branches. This primary-loop saturation
+contract applies to four-bar and six-bar, not slider-crank. `SynthesisRequest` validates
 the ordered stages and separates the two protocols; it does not execute them.
 
 Current Research can construct, screen, evaluate and Sobol-search declared
@@ -464,6 +511,33 @@ It does not yet generically execute automatic primary-family discovery,
 clustering, target-position cadence fitting, downstream-dyad fitting, local
 polish, mirror/adaptation operators, synthesis-stage scheduling or fresh-island
 saturation. Declared stages do not imply implemented synthesis operators.
+
+`SynthesisPlan` binds a request to a target identity. Its `artifact()` creates the
+existing `MechanismArtifact` format from submitted production geometry, while
+`member()` retains per-piston evidence for a `MechanismLibrary`. It does not
+perform a geometric search. `assess_mechanism()` keeps three levels separate:
+
+- angle-weighted RMS and maximum position error, and optional velocity RMS;
+- production mechanical metrics and individual constraint margins;
+- optional identified solver results supplied separately, never inferred from fit.
+
+Acceleration is not included in the fit score. Without explicit machine volume
+limits (`volume_limits` per piston in `member()`), dimensional volume-derivative
+metrics are unavailable; dimensionless
+geometry metrics remain available. A normalized artifact does not imply a
+physical machine volume or crank scale. `mechanism_catalogue()` preserves all
+members and their order, with family IDs, mechanism family, fit, mechanical
+metrics, provenance, artifact hash and optional thermodynamic evidence.
+
+`MotionRefitRequest` prepares only `free_spline` with **15 points per piston**
+(15 SMALL + 15 LARGE). The feature-aware `hybrid_compact` initializer and refit
+engine are not implemented. `motion-refit --validate-only` checks this boundary;
+execution reports an explicit unsupported-operation error. Synthesis execution
+also refuses unimplemented search operators rather than running a proxy fit.
+
+```console
+dada-research motion-refit path/to/target.json --count 15 --validate-only
+```
 
 See the [synthesis method](MECHANISM_SYNTHESIS_SEARCH.md) for the methodological
 contract and why primary discovery, complete-mechanism fitting and thermodynamic
@@ -492,6 +566,36 @@ output is in degrees and volume output in cubic metres; it also requires no ODE
 integration. Report rendering and thermodynamic replay options belong in the
 [cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md).
 
+### Interactive mechanism inspection
+
+`dada_solver.research.mechanism_view` provides `mechanism_state()`,
+`plot_mechanism()`, `animate_mechanism()`, `plot_motion_comparison()` and
+`plot_library_catalogue()`. `MechanismModel` reconstructs a portable artifact
+once. Slider-crank, four-bar and six-bar frames use production joint states;
+the four-bar `joint_state(theta, side)` exposes the same closure used by its
+volume law. No drawing-specific closure, phase correction or reflection is
+introduced. Six-bar joints A–B–C–D–E–F–G–H–P are all available.
+
+Views combine linkage trajectories, normalized position, available target
+velocity, fit error, mechanical metrics and a shared angle cursor. Local lengths
+remain in crank-radius units. A solver record may supply additional COP/power
+annotations; visualization never evaluates thermodynamics.
+
+Install the optional `dada-engine-solver[plot]` dependencies for these views.
+`animate_mechanism()` returns a figure and Matplotlib `FuncAnimation`; retain the
+animation and call `matplotlib.pyplot.show()`. Space pauses/resumes. No GIF,
+encoder or export step is required. Libraries are explicitly selected by family
+ID and piston; no implicit best member is chosen.
+
+```console
+dada-research mechanism catalogue path/to/library.json --plot
+dada-research mechanism visualize path/to/mechanism.json --target path/to/target.json
+dada-research mechanism visualize path/to/library.json --family-id FAMILY_ID --side large
+```
+
+Use `--static` for a still view or `--no-show` to construct a view without opening
+a window. Neither changes the artifact or starts an integration.
+
 ## 13. Scope boundary and related references
 
 This document owns kinematic family selection, coordinate ownership, physical
@@ -508,5 +612,5 @@ For other concerns, use:
 - [working-fluid models](WORKING_FLUID_MODELS.md): thermodynamic property contracts;
 - [validation and evidence](validation.md): current status and evidence boundaries;
 
-Thermodynamic equations, hardware physics, campaign persistence internals and
-historical parity reports are outside this kinematics reference.
+Thermodynamic equations, hardware physics and campaign persistence internals
+are outside this kinematics reference.

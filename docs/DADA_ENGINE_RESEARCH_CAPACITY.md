@@ -94,7 +94,7 @@ parameter declarations and search encoding.
 
 The transformation starts from the production machine constructed for the selected
 candidate. It creates a new basis and declarations, then validates them through
-normal study loading. It does not blindly multiply every old object field.
+normal study loading. It does not blindly multiply every object field.
 
 The selected bank geometry remains authoritative. Rectangular banks retain
 their discrete packing; row/column changes can make header volume and envelope
@@ -167,7 +167,7 @@ remain the reference.
 Only current schema-3 machine studies are supported. Global and `local_regions_v1`
 candidates are accepted: local origin describes how the candidate was found,
 not an ambiguity in its physical machine. A local source produces a global
-`fixed_global_bounds` Sobol study retaining `seed` and `scramble`. Old regions,
+`fixed_global_bounds` Sobol study retaining `seed` and `scramble`. Source regions,
 centers, radius, allocation and center scheduling are discarded. The transformed
 candidate supplies the new initial point; no parent campaign is required.
 
@@ -179,4 +179,4 @@ These refusals protect the declared scientific transformation.
 
 Result tables, report reconstruction and display corrections belong to the
 [cockpit reference](DADA_ENGINE_RESEARCH_COCKPIT.md). Current validation evidence
-belongs to [validation](validation.md), not to a particular historical campaign.
+belongs to [validation](validation.md).

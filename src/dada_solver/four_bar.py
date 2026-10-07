@@ -363,6 +363,21 @@ class SharedCrankFourBarVolumeKinematics:
             self.large_assembly.evaluate(pin, derivative),
         )
 
+    def joint_state(self, theta: float, side: str = "small") -> dict:
+        """Expose the production closure in its local frame, without drawing offsets."""
+        if side not in ("small", "large") or not math.isfinite(theta):
+            raise ValueError("Choose a cylinder side and a finite study angle.")
+        assembly = getattr(self, side + "_assembly")
+        state = assembly.evaluate(*self._crank(theta))
+        slider = assembly.slider
+        piston = (slider.axis_origin_x + state.coordinate * math.cos(slider.axis_angle),
+                  slider.axis_origin_y + state.coordinate * math.sin(slider.axis_angle))
+        return dict(joints={"A": (0., 0.), "B": state.crank_pin,
+                           "C": state.coupler_joint,
+                           "D": (assembly.loop.rocker_pivot_x, assembly.loop.rocker_pivot_y),
+                           "H": state.output_point, "P": piston},
+                    position=state.coordinate, derivative=state.coordinate_derivative)
+
     def _normalize(
         self, assembly: FourBarSliderAssembly, increases: bool
     ) -> _NormalizedAssembly:

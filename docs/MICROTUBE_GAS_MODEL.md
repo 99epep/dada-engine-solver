@@ -14,11 +14,10 @@ for finite external streams see [the thermal boundary](EXTERNAL_STREAM_THERMAL_M
 
 ## Architecture and selection
 
-The original geometry (`MicrotubeBank`), hydraulic links (`TubeHalfLink`),
-thermal assembly (`build_exchanger` / `AirWallExchanger`), family assembly
-(`MicrotubeExchanger`) and Doty measurement files remain in use. There is no
-second exchanger assembly or change to the conservative thermodynamic states,
-valves, indicated-work sign, external-source efficiency boundary or periodic
+The model uses `MicrotubeBank` geometry, `TubeHalfLink` hydraulic links,
+`build_exchanger` / `AirWallExchanger` thermal assembly and `MicrotubeExchanger`
+family assembly. These components share the conservative thermodynamic states,
+valves, indicated-work sign, external-source efficiency boundary and periodic
 convergence criterion.
 
 The production internal-gas closure is selected explicitly:
@@ -192,11 +191,10 @@ at the tube midpoint is not a fresh entrance.
 supported laminar regime. `thermal_developing` retains `L < 0.05 Re Pr D`.
 Neither condition alone invalidates a supported laminar state.
 
-Hausen is a public reference function and the transition
-endpoint (replaced by Bennett in the continuous revision below):
+Hausen is a public reference function:
 `Nu_bar=3.66+0.0668*Gz/(1+0.04*Gz^(2/3))`, `Gz=Re Pr D/L`.
 It assumes a developed velocity profile and constant wall temperature.
-It is no longer the production laminar closure. No thermal-jump correction,
+The production laminar closure uses Bennett. No thermal-jump correction,
 axial transient field or empirical pulse multiplier is introduced.
 
 ### GAS-TURBULENT-HAALAND-GNIELINSKI
@@ -213,8 +211,7 @@ axial transient field or empirical pulse multiplier is introduced.
   single-phase fluid, locally constant wall temperature.
 - Domain: existing conservative 4000 <= Re <= 5e6, 0.5 <= Pr <= 2000,
   L/D >= 10, low Ma and relative pressure drop, Kn < 0.001, property scope above.
-  Re 2300–4000 now uses the explicit transition bridge described below.
-  The fully turbulent closure and its domain are unchanged.
+  Re 2300–4000 uses the explicit transition bridge described below.
 - Pressure/temperature: no additional validated gas-specific absolute range.
   [Yang et al. 2014](https://doi.org/10.1016/j.ijheatmasstransfer.2014.07.017),
   pp.732–740, stainless 750/510/170 micrometre tubes, Re 3000–12000, supplies
@@ -229,18 +226,17 @@ not the laminar Reynolds limit. For `2300 <= Re < 4000`, use
 `w=(Re-2300)/1700` and
 `Nu=(1-w)*Nu_Bennett(2300,Pr,D/L)+w*Nu_Gnielinski(4000,Pr)`.
 When thermal entry is explicitly disabled, the laminar endpoint remains 3.66.
-Below this interval Bennett now replaces Hausen; above it smooth Gnielinski is unchanged.
-The original transition entry guards are retained.
-`correlation_id=bennett_gnielinski_transition_interpolation` identifies the revised bridge.
+Below this interval the model uses Bennett; above it smooth Gnielinski applies.
+The transition entry guards remain active.
+`correlation_id=bennett_gnielinski_transition_interpolation` identifies the bridge.
 
-New primary source: V. Gnielinski, *On heat transfer in tubes*, International
+Interpolation source: V. Gnielinski, *On heat transfer in tubes*, International
 Journal of Heat and Mass Transfer **63** (2013), 134–140,
 [DOI 10.1016/j.ijheatmasstransfer.2013.04.015](https://doi.org/10.1016/j.ijheatmasstransfer.2013.04.015).
 The publisher's abstract explicitly recommends linear interpolation of Nusselt
 values at 2300 and 4000. We apply that principle to the project's existing
 endpoint equations; this is not an implementation of every endpoint correction
-in that paper. The earlier local 1976 reference alone did not document this
-transition construction.
+in that paper.
 
 The hydraulic engineering bridge includes the **complete axial segment**
 laminar endpoint. For segment `[x1,x2]` with `ell=x2-x1` and core multiplier M:
@@ -301,7 +297,7 @@ intermittency, inlet disturbances, hysteresis and micro/mini-channel surface eff
 are not resolved. A candidate with substantial transition usage needs experimental
 validation; neither the interpolation nor its continuity establishes accuracy.
 Existing histories are not rewritten. Changed source/runtime identity prevents
-silently resuming or reusing results from the previous physical closure.
+silently resuming or reusing results from a different physical closure.
 
 ### GAS-UNSTEADY-DIAGNOSTICS
 
@@ -349,7 +345,7 @@ maldistribution, axial conjugate heat transfer or the external-air film.
   No local axial temperature profile is inferred.
 
 
-## Research V3 external-stream and fluid boundaries
+## Research external-stream and fluid boundaries
 
 The internal gas film, tube hydraulics and gas-transport domains remain the same.
 `ExternalStreamMicrotubeExchanger` connects these components to a declared
@@ -358,13 +354,13 @@ liquid labels do not select unvalidated correlations. Wall storage and pause
 heat transfer remain active in motor and refrigeration operation. `AirWallExchanger` provides the declared air-film model. See
 [external-stream equations and sign conventions](EXTERNAL_STREAM_THERMAL_MODEL.md).
 
-Thermodynamic EOS/caloric reconstruction now has a separate conservative-state
+Thermodynamic EOS/caloric reconstruction has a separate conservative-state
 interface and a compiled rho/u table validation path; this does not change the
 role of transport Cp. The validation table is analytically ideal and may use
 the existing ideal-density/constant-gamma hydraulic laws. Those laws explicitly
 reject an incompatible real-fluid model. Microtube density, sonic caps,
 Poiseuille reconstruction, Mach and rarefaction diagnostics still need scientific
-revalidation for real helium. `DiluteGasTransport` now uses the species-dependent temperature domains below;
+revalidation for real helium. `DiluteGasTransport` uses the species-dependent temperature domains below;
 there is no cryogenic extrapolation or two-phase extension. See
 [working-fluid models and compiled backends](WORKING_FLUID_MODELS.md).
 
@@ -393,7 +389,6 @@ Missing optional frame locals or properties remain null without discarding the
 rest of the snapshot. The integrator callback and model method both named
 `derivative` are supported, including the callback without a `self` local.
 Snapshot extraction is best effort and cannot replace the scientific exception.
-Older artifacts are unchanged and do not acquire these fields retrospectively.
 
 ### Transition validation result
 
@@ -676,10 +671,10 @@ The equations are steady constant-property correlations evaluated with local
 variable gas properties. They do **not** resolve pulse history or transient
 axial velocity/temperature fields. Collector losses remain an independent,
 uncalibrated coefficient; any future calibration must exclude the profile
-entrance loss now explicitly represented.
+entrance loss represented by the model.
 
 Both backends call the same pure numerical primitives. The compiled path
-supports the new laminar closure directly; fallback remains reserved for
+supports the laminar closure directly; fallback remains reserved for
 unsupported states. Exchanger metadata records thermal/hydraulic correlation
 IDs, density convention, axial segmentation and header-loss scope.
 

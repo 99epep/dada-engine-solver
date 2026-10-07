@@ -1,6 +1,6 @@
 # Constrained Sizing API
 
-This lower-level API remains useful to existing scripts. New persistent studies
+This lower-level API supports constrained sizing. Persistent studies
 should normally start with [Research](DADA_ENGINE_RESEARCH.md). Its geometry-owned
 parameters must not be replaced by independently optimized derived UA/hold-up.
 
@@ -161,6 +161,7 @@ friction, bearing reactions and structural stresses require a future
 ## Interchangeable model preparation
 
 See [PLUGGABLE_MODELS.md](PLUGGABLE_MODELS.md) for independent periodic free
-kinematics, exchanger construction and the family-specific campaign adapters. The sizing enum is preserved. Free-motion derivative violations return
+kinematics, exchanger construction and the family-specific campaign adapters.
+Free-motion derivative violations return
 `invalid_kinematics` with separate diagnostic margins before integration.
 Swept-volume/clearance changes update free-motion ranges without changing shape.

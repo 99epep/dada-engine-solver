@@ -14,7 +14,7 @@ The motor is a small experimental demonstrator, not a commercial product.
 Keep its name independent of the changeable reservoir temperature difference.
 The current motor research envelope is 2–10 Hz, with reservoirs at 298.15 K and
 598.15 K (25/325 deg C); reduce the hot-source temperature progressively after
-improving dimensions. The earlier 448.15 K hot source is historical. Target approximately 100 W useful mechanical output and limit the
+improving dimensions. Target approximately 100 W useful mechanical output and limit the
 large cylinder maximum enclosed volume (including clearance) to 0.066 m^3.
 This is a ceiling, not a target displacement. Report indicated gas power
 separately from useful output; mechanical losses remain unknown; the opt-in hardware model estimates fan power.
@@ -38,7 +38,7 @@ Treat source temperatures as air inlet conditions, with finite flow. The latest
 user decision excludes external-air aerodynamic losses and fan consumption from
 the current trial balance; do not confuse exclusion with zero physical losses. Retain working-gas heat exchange during pauses; independent
 wall storage is implemented in the opt-in air_wall wrapper, but not calibrated
-to Doty or exposed through the historical CLI.
+to Doty.
 
 For current exchanger models and evidence, read docs/MICROTUBE_GAS_MODEL.md,
 docs/EXTERNAL_STREAM_THERMAL_MODEL.md, docs/DOTY_SCREENING.md and
@@ -49,12 +49,10 @@ ratios and retain finite thermal-film resistance.
 Use checkpoint intervals and optional bounded wall initial-guess acceleration
 without weakening periodic convergence or changing states within a cycle.
 
-Architecture handoff: read docs/PLUGGABLE_MODELS.md before implementing the
-global optimization campaign. Preserve generic KinematicsModel and
+Read docs/PLUGGABLE_MODELS.md for the global optimization campaign architecture. Preserve generic KinematicsModel and
 ExchangerModel boundaries, independent free spline motions, explicit validity
 margins, and family-specific parameter ownership. Do not independently optimize
-geometrically derived exchanger UA, hold-up or losses. The first persistent Sobol orchestration layer is documented in
+geometrically derived exchanger UA, hold-up or losses. The persistent Sobol orchestration layer is documented in
 docs/OPTIMIZATION_CAMPAIGN.md. Preserve its append-only history, exact identity
 cache, explicit rejection states and single motor-direction transform on
-injected study-angle kinematics. No local refinement, dynamic plugin registry
-or assumed mechanical efficiency is introduced.
+injected study-angle kinematics. No dynamic plugin registry or assumed mechanical efficiency is introduced.

@@ -97,8 +97,8 @@ Ambient air introduces water into the nominally single-phase working gas. An
 optional `[humidity]` section supplies the initial relative humidity as a
 fraction from zero to one. The solver preserves the corresponding initial
 water mole fraction only for a screening calculation and compares its local
-partial pressure with equilibrium saturation pressure throughout S, L, C and
-H.
+partial pressure with equilibrium saturation pressure throughout S, L, H_i and
+H_o.
 
 Water and ice saturation pressures use the Murphy--Koop (2005) equations:
 [review and parametrizations](https://doi.org/10.1256/qj.04.94). The definition

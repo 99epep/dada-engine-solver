@@ -83,6 +83,37 @@ def main(argv=None):
     resize.add_argument('--factor', required=True, type=float)
     resize.add_argument('--mode', choices=['capacity'], default='capacity')
     resize.add_argument('--output', required=True, type=Path)
+    target = commands.add_parser('motion-target', help='Extract periodic study-angle motion without integration')
+    target.add_argument('source', type=Path)
+    target.add_argument('--candidate')
+    target.add_argument('--samples', type=int, default=721)
+    target.add_argument('--output', type=Path, required=True)
+    refit = commands.add_parser('motion-refit', help='Validate the prepared free-spline refit contract; no initializer yet')
+    refit.add_argument('source', type=Path)
+    refit.add_argument('--candidate')
+    refit.add_argument('--count', type=int, default=15)
+    refit.add_argument('--validate-only', action='store_true')
+    mechanism = commands.add_parser('mechanism', help='Validate synthesis protocols and inspect physical artifacts')
+    mechanical = mechanism.add_subparsers(dest='mechanism_command', required=True)
+    synthesize = mechanical.add_parser('synthesize', help='Validate a family-owned synthesis plan; search operators not implemented')
+    synthesize.add_argument('source', type=Path)
+    synthesize.add_argument('--candidate')
+    from .families import PHYSICAL_FAMILIES
+    synthesize.add_argument('--family', choices=PHYSICAL_FAMILIES, required=True)
+    synthesize.add_argument('--stage', action='append', required=True)
+    synthesize.add_argument('--side', choices=['small','large','both'], default='large')
+    synthesize.add_argument('--validate-only', action='store_true')
+    visual = mechanical.add_parser('visualize', help='Open interactive production geometry and motion, without integration')
+    visual.add_argument('artifact', type=Path)
+    visual.add_argument('--family-id', help='Required when inspecting a library')
+    visual.add_argument('--side', choices=['small','large'], default='small')
+    visual.add_argument('--target', type=Path, help='MotionTarget or current study TOML')
+    visual.add_argument('--static', action='store_true')
+    visual.add_argument('--no-show', action='store_true', help='Construct and validate the view without opening a window')
+    catalogue = mechanical.add_parser('catalogue', help='List all retained families without ranking')
+    catalogue.add_argument('library', type=Path)
+    catalogue.add_argument('--plot', action='store_true')
+    catalogue.add_argument('--no-show', action='store_true')
     for name in ('status','report','compare'):
         p = commands.add_parser(name, help='Inspect stored results; report curves can replay one saved-state cycle')
         p.add_argument('paths', nargs='+' if name=='compare' else 1, type=Path)
@@ -149,6 +180,74 @@ def main(argv=None):
             from .rescale import rescale
             path = rescale(args.source, args.candidate, args.factor, args.output, mode=args.mode)
             print(f'Created {path} and {path.with_suffix(".basis.json")}. Constraints remain unchanged; evaluate to verify scaling.')
+        elif args.command in ('motion-target', 'motion-refit'):
+            from .motion_target import load_motion_target
+            target = load_motion_target(args.source, candidate=args.candidate,
+                                        samples=getattr(args, 'samples', 721))
+            if args.command == 'motion-target':
+                target.save(args.output)
+                print(f'Motion target {target.content_hash}; saved {args.output}; no integration started.')
+            else:
+                from .motion_refit import MotionRefitRequest
+                request = MotionRefitRequest(target, points_per_piston=args.count)
+                if not args.validate_only:
+                    request.execute()
+                print(json.dumps(dict(target_hash=target.content_hash, family=request.destination_family,
+                                      points_per_piston=request.points_per_piston, implemented=False,
+                                      integration_started=False)))
+        elif args.command == 'mechanism':
+            from .artifacts import MechanismArtifact, MechanismLibrary
+            if args.mechanism_command == 'synthesize':
+                from .motion_target import load_motion_target
+                from .synthesis import SynthesisRequest, SynthesisPlan, release_coordinates
+                target = load_motion_target(args.source, candidate=args.candidate)
+                request = SynthesisRequest(target.content_hash, args.family, 'design_exploitation', tuple(args.stage))
+                plan = SynthesisPlan(target, request)
+                sides = ('small','large') if args.side == 'both' else (args.side,)
+                released = {stage: release_coordinates(stage, sides, family=args.family) for stage in args.stage}
+                if not args.validate_only:
+                    plan.execute()
+                print(json.dumps(dict(target_hash=target.content_hash, family=args.family,
+                                      stages=args.stage, released_coordinates=released,
+                                      implemented=False, integration_started=False)))
+            elif args.mechanism_command == 'catalogue':
+                from .synthesis import mechanism_catalogue
+                library = MechanismLibrary.load(args.library)
+                print(json.dumps(mechanism_catalogue(library), indent=2))
+                if args.plot:
+                    from .mechanism_view import plot_library_catalogue
+                    import matplotlib.pyplot as plt
+                    figure = plot_library_catalogue(library)
+                    plt.close(figure) if args.no_show else plt.show()
+            else:
+                raw = json.loads(args.artifact.read_text())
+                thermodynamic = None
+                if raw.get('artifact_type') == 'mechanism_library':
+                    if args.family_id is None:
+                        raise ValueError('Choose an explicit --family-id from the library catalogue.')
+                    member = MechanismLibrary.from_data(raw).member(args.family_id)
+                    if args.side not in member['mechanisms']:
+                        raise ValueError('Selected family has no artifact for that piston.')
+                    artifact = MechanismArtifact.from_data(member['mechanisms'][args.side])
+                    thermodynamic = member['metadata'].get('thermodynamic')
+                else:
+                    if args.family_id is not None:
+                        raise ValueError('--family-id applies only to a mechanism library.')
+                    artifact = MechanismArtifact.from_data(raw)
+                from .motion_target import load_motion_target
+                target = load_motion_target(args.target) if args.target else None
+                from .mechanism_view import plot_mechanism, animate_mechanism
+                import matplotlib.pyplot as plt
+                if args.static:
+                    figure = plot_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
+                else:
+                    figure, animation = animate_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
+                print(f"Viewing {artifact.content_hash}; no thermodynamic integration started.")
+                if args.no_show:
+                    figure.canvas.draw()
+                    plt.close(figure)
+                else:
+                    plt.show()
         elif args.command == 'evaluate':
             record = evaluate(args.study, args.output, assignments=args.set, budget=args.budget)
             print(f"{record['candidate_id']} {record['status']}; saved {args.output}")
@@ -171,6 +270,8 @@ def main(argv=None):
                 if destination is not None: print(f'HTML: {destination}')
     except KeyboardInterrupt:
         parser.exit(130, 'Interrupted. Campaign pending state is preserved; use resume. Standalone evaluations must be requested again.\n')
+    except ImportError as error:
+        parser.exit(2, f'Research dependency error: {error}. Interactive views require dada-engine-solver[plot].\n')
     except (ValueError, OSError, KeyError, TypeError, RuntimeError) as error:
         parser.exit(2, f'Research error: {error}\n')
     return 0

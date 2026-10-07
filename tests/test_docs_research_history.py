@@ -33,3 +33,24 @@ def test_current_ownership_authority():
         text = (DOCS / name).read_text()
         assert '[current ownership rule](PHYSICS_DECISIONS.md)' in text
         assert '](RESEARCH_LIMIT_OWNERSHIP_AUDIT.md)' not in text
+
+
+def test_active_markdown_has_no_application_directory_dependency():
+    root = DOCS.parent
+    paths = [root / name for name in ('README.md', 'AGENTS.md', 'THIRD_PARTY_NOTICES.md')]
+    paths.extend(DOCS.rglob('*.md'))
+    paths.extend((root / 'tests').rglob('*.md'))
+    for path in paths:
+        assert 'examples/' not in path.read_text(), path
+
+
+def test_active_markdown_does_not_expose_removed_apis():
+    import re
+
+    removed = ('VolumeKinematics', 'FourBarKinematics', 'AirWallMotor',
+               'connect_hardware', 'load_six_bar_mechanism',
+               'solve_periodic_wall_motor', 'params_to_kinematics')
+    pattern = re.compile(r'\b(?:' + '|'.join(removed) + r')\b')
+    paths = [DOCS.parent / 'README.md', *DOCS.rglob('*.md')]
+    for path in paths:
+        assert not pattern.search(path.read_text()), path

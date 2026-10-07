@@ -1,8 +1,7 @@
 # Documentation
 
 Start with the [Research guide](DADA_ENGINE_RESEARCH.md). It begins with the
-source-checkout shell helper and covers the daily commands. This index covers current model references; an old candidate, limit or
-benchmark is not a default for a new study.
+source-checkout shell helper and covers the daily commands. This index covers current models, methods and evidence.
 
 ## Use Research
 
@@ -36,7 +35,7 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 15-dimensional search.
 
 - [Mechanism synthesis search](MECHANISM_SYNTHESIS_SEARCH.md): methodology,
-  failed proxies, hierarchical stages and saturation versus exploitation.
+  proxy limitations, hierarchical stages and saturation versus exploitation.
 - [Primary four-bar families](PRIMARY_FOUR_BAR_FAMILIES.md) and
   [six-bar families](SIX_BAR_MECHANISM_FAMILIES.md): retained geometry, conventions,
   reproducible data and nominal mechanical margins.
@@ -51,5 +50,5 @@ retuning**. Do not replace it with an acceleration-only fit or a blind global
 - [Campaign internals](OPTIMIZATION_CAMPAIGN.md): identity, recovery and scheduling.
 - [Sizing API](SIZING.md): lower-level objectives, constraints and mechanical loads.
 - [Numerical execution](SOLVER_PERFORMANCE.md): Python/Numba, exact reuse,
-  diagnostic replay, benchmark evidence and rejected acceleration experiments.
+  diagnostic replay, performance measurement and numerical safeguards.
 - [Validation map](validation.md): tests to run and the meaning of their results.

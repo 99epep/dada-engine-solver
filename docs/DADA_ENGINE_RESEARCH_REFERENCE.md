@@ -390,7 +390,7 @@ Research snapshots `definition.json`, `study.toml`, `basis.json` and `study.json
 required mechanism artifacts. Edits to the original external TOML do not mutate that
 stored campaign definition.
 
-New campaigns use `history.jsonl.gz`, `recovery.json` and `state.json`. The compressed
+Campaigns use `history.jsonl.gz`, `recovery.json` and `state.json`. The compressed
 journal is lossless and append-only: one complete canonical JSON record per independent
 gzip member, with deterministic gzip timestamp. `recovery.json` is a temporary durable
 completion slot, not a second history.

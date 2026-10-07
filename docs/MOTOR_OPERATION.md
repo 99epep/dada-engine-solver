@@ -1,7 +1,7 @@
 # Motor operation and sign conventions
 
 Reference: [English study, revision 1288](https://dada-engine.org/index.php?title=Thermodynamic_and_Mechanical_Study&oldid=1288),
-read on 2026-09-08; especially sections 1, 2.1, 3, 6.5 and 8.
+especially sections 1, 2.1, 3, 6.5 and 8.
 
 Plots and reports use `H_i`/`H_o` throughout current cycle plots, pressure and
 temperature reports, valve and flow labels, moisture displays and coupled
@@ -36,7 +36,7 @@ cold_temperature = 300.0
 hot_temperature = 600.0
 
 [operation]
-angular_speed = -0.9520107557799403
+angular_speed = -1.0
 ```
 
 Positive speed retains existing refrigeration behavior. Negative speed:

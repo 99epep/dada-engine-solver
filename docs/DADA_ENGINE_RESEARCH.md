@@ -125,7 +125,7 @@ research validate outputs/larger/study.toml
 
 `rescale` creates a new portable schema-3 study without integrating or modifying
 the source. It preserves declared constraints and never overwrites destination
-files. Global and local candidates are accepted; old local basins are not reused
+files. Global and local candidates are accepted; source local basins are not reused
 in the new study. Review the result before evaluation or search.
 
 The [capacity reference](DADA_ENGINE_RESEARCH_CAPACITY.md) defines which

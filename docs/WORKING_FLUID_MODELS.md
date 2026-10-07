@@ -2,25 +2,25 @@
 
 ## Thermodynamics and transport are separate
 
-The production fluid remains `CaloricallyPerfectGas`: P = ρRT, u = CvT,
+The production fluid is `CaloricallyPerfectGas`: P = ρRT, u = CvT,
 h = CpT, constant Cp/Cv/gamma and Z = 1. It implements `ThermodynamicFluid`:
 
 - `state_from_rho_u(density, specific_energy)` reconstructs a local state;
 - `state_from_rho_t(density, temperature)` supports initial filling;
 - `density_from_pt(pressure, temperature)` supports pressure-defined filling.
 
-The conservative solver still stores mass and internal energy, with volume from
+The conservative solver stores mass and internal energy, with volume from
 kinematics: ρ = m/V, u = U/m. Immutable `FluidState` contains density, u, T, P,
 h and optional Z, Cp, Cv and sound speed. Gas transport energy uses the upstream
-state's enthalpy. The generic dynamics no longer assumes h(T). Ideal dynamics
-retain the original arithmetic; general fluids reconstruct the four local
+state's enthalpy. The generic dynamics uses reconstructed enthalpy. Ideal dynamics
+use analytic ideal-gas arithmetic; general fluids reconstruct the four local
 states once per instantaneous point.
 
 This permits three separate physical levels: calorically perfect ideal gas,
 thermally perfect ideal gas with variable caloric properties, and single-phase
 real gas with state-dependent EOS/caloric properties. Only the first is a
 validated production working fluid here. The table is an execution prototype,
-not a new validated physical helium model. The current conservative-state and
+not a validated physical helium model. The current conservative-state and
 table prototype require positive internal energies; a future dataset must use
 an appropriate consistent energy reference or explicitly extend that validation.
 
@@ -42,7 +42,7 @@ storage. `to_data` / `from_data` serialize a deterministic JSON representation;
 `identity` records model/version, hash, interpolation version and domains.
 Research schema 3 embeds this artifact in the portable machine basis. Its byte
 hash and the canonical fluid hash both participate in study/runtime identity.
-A changed table cannot reuse the old candidate ID or exact result cache.
+A changed table cannot reuse a candidate ID from a different table or exact result cache.
 
 `bilinear_rho_u_v1` performs direct table reconstruction with no iterative
 inversion in the RHS and no extrapolation. Axis endpoints are closed. Every
@@ -66,7 +66,7 @@ initialization inversions are deliberately not supplied; only the verified
 ideal-reference table provides those operations. A future real-fluid provider
 must implement and validate them. Source tables in rho/T coordinates can later
 be transformed offline to a rho/u runtime table with consistent energy reference
-and a certified domain. V3 does not guess a helium dataset or an inversion.
+and a certified domain. The table interface supplies no helium dataset or general inversion.
 
 ## Compiled execution
 

@@ -2,13 +2,9 @@
 
 ## Purpose
 
-This note records the reusable mechanism-synthesis method developed for
-transforming an optimized thermodynamic piston motion into mechanically
-realizable four-bar and six-bar linkages.
-
-The reference study used a structured-C2 motor motion at a 260 K
-source-temperature difference, but the method is intended to apply to other
-temperatures, machine sizes, working fluids and operating points.
+This note describes a hierarchical method for transforming an optimized
+thermodynamic piston motion into mechanically realizable slider-crank, four-bar
+and six-bar linkages. Targets, bounds and objective weights belong to the selected study.
 
 The main methodological result is:
 
@@ -65,6 +61,59 @@ match derivative-based targets well.
 
 The target therefore guides discovery, but the final mechanism is not required
 to reproduce every feature of the abstract trajectory.
+
+---
+
+## Family-owned software protocols
+
+A periodic `MotionTarget` is the common input for abstract-motion refit and all
+three physical synthesis families. Its normalized SMALL/LARGE positions,
+available derivatives, extensible source events and scientific identity are
+independent of the source representation. Extraction uses production study-angle
+kinematics, without thermodynamic integration; missing derivatives remain absent.
+The [Research kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md#11-motion-targets-and-synthesis-handoff)
+owns the target conventions, artifact APIs and CLI.
+
+The central `synthesis_protocol()` registry separates family semantics:
+
+| Family | Ordered stages | Continuous coordinates |
+|---|---|---|
+| `slider_crank` | `global_discovery`, `full_local_polish`, `paired_thermodynamic`, `hardware_retuning` | Rod/crank, offset/crank, phase; orientation fixed |
+| `four_bar` | `global_discovery`, `full_local_polish`, `paired_thermodynamic`, `hardware_retuning` | Eleven production coordinates; branches, output and orientation fixed |
+| `six_bar` | Primary discovery, downstream fit, complete polish, mirror initialization, opposite adaptation, paired thermodynamics, hardware retuning | Six primary + nine downstream per side |
+
+Slider-crank and four-bar have no downstream-dyad stage. The hierarchical method
+below applies to six-bar, not to an artificial common topology. Categories remain
+fixed scientific choices rather than continuous optimization coordinates.
+
+`SynthesisPlan` validates family stages and target identity, creates existing
+`MechanismArtifact` objects from submitted physical geometries, and records
+separate evidence in `MechanismLibrary` members. The library may retain mixed
+physical families and multiple basins of the same family. It never prunes to one
+winner automatically. Geometric search operators remain unimplemented; CLI plan
+validation is supported, and a search request fails explicitly.
+
+Fit, mechanical quality and thermodynamic performance are three distinct levels.
+Fit uses angle-weighted position RMS/max error and optional velocity RMS; it does
+not impose acceleration fitting. Production mechanical metrics and constraint
+margins remain individually inspectable. COP, cooling power or indicated power
+come only from an identified solver result, not from a combined proxy score.
+Dimensional volume-derivative constraints require an explicit machine volume
+scale; normalized portable geometry alone does not supply one.
+
+Interactive Matplotlib views use production joints for linkage animation,
+point trajectories, target/mechanism position and available velocity, shared
+angle cursors, fit error and mechanical metrics. `FuncAnimation` and `show()` are
+the normal path; no GIF is required. An unranked catalogue exposes family ID,
+mechanism family, evidence, provenance and artifact hash for human selection.
+Selected families can subsequently be polished or adapted using the actual
+Research thermodynamic objective.
+
+The immediate abstract-refit boundary is `free_spline` with **15 points per
+piston**. `MotionRefitRequest` validates it but does not implement the
+`hybrid_compact` initializer. Exact hybrid extrema, rounding intervals, cadence
+joins and kink/branch descriptors can be carried by the target; selecting spline
+nodes and kink neighborhoods remains a separate scientific implementation step.
 
 ---
 
@@ -216,8 +265,7 @@ useful realizable basin.
 ### 4.7 `hardware_retuning`
 
 Finally, freeze the chosen mechanisms and re-tune the small set of
-thermodynamic or exchanger coordinates that had previously been optimized for
-the abstract piston law.
+thermodynamic or exchanger coordinates for the realized mechanism.
 
 This separates:
 
@@ -229,32 +277,9 @@ This separates:
 
 ## 5. Primary four-bar search space
 
-The reference primary search normalizes the crank to:
-
-\[
-AB=1.
-\]
-
-It searches:
-
-\[
-(g,c,r,E_\parallel,E_\perp,\phi).
-\]
-
-The retained broad bounds are:
-
-| Coordinate | Bound |
-|---|---:|
-| `AD / AB` | 0.50 .. 12.0 |
-| `BC / AB` | 0.50 .. 12.0 |
-| `CD / AB` | 0.35 .. 6.0 |
-| `E_along` | -12.0 .. 18.0 |
-| `E_normal` | -15.0 .. 15.0 |
-| phase | -π .. +π |
-
-Both primary assembly branches are admissible.
-
-Full-revolution closure is mandatory.
+Normalize the crank to \(AB=1\) and search the six coordinates
+\((g,c,r,E_\parallel,E_\perp,\phi)\). Declare the coordinate bounds and admissible
+assembly branches for the study. Full-revolution closure is mandatory.
 
 Primary transmission quality is measured by
 
@@ -267,38 +292,23 @@ s_{\min}
 \min_\theta |\sin\mu|.
 \]
 
-The reference search uses a hard floor:
-
-\[
-s_{\min}\ge 0.30
-\]
-
-and only a soft preference toward approximately `0.35`.
-
-This distinction is deliberate:
+Declare any hard transmission floor separately from a soft preference. Likewise,
+a required point-E span must be an explicit design requirement, not an implicit
+universal threshold.
 
 > A mechanical preference should not silently become a topological exclusion
 > unless a real physical limit justifies it.
 
-The retained search proxy also requires a minimum point-E span of `0.75` crank
-radii.
-
-The exact documentary policy is stored in
-[`repro/mechanism_synthesis_search/policy.toml`](repro/mechanism_synthesis_search/policy.toml).
-
 ---
 
-## 6. Lessons from rejected primary-search proxies
+## 6. Primary-search proxy limitations
 
-Several successive proxy designs were useful because they exposed ways in which
-a mathematically plausible objective can be mechanically misleading.
-
-Their historical version names are not important. The conceptual lessons are.
+A mathematically plausible primary objective can be mechanically misleading.
+The following distinctions constrain how a proxy should be interpreted.
 
 ### 6.1 Acceleration-lobe timing is not enough
 
-An early proxy used the magnitude of point-E velocity and its tangential
-acceleration,
+The tangential acceleration associated with point-E speed magnitude is
 
 \[
 a_t
@@ -308,20 +318,13 @@ a_t
 \frac{d\|E'\|}{d\theta},
 \]
 
-then tried to relate those events to signed piston acceleration.
-
-This is not physically equivalent: the derivative of a non-negative speed
-magnitude is not signed piston acceleration.
-
-The experiment nevertheless exposed a recurring optimizer tendency to exploit
-the transmission floor.
+The derivative of a non-negative speed magnitude is not signed piston
+acceleration.
 
 ### 6.2 Signed PCA velocity improves sign information but not physical identity
 
-A later proxy projected point-E motion onto its principal PCA axis and used
-signed projected velocity.
-
-This repaired the sign problem but revealed two other limitations:
+Projecting point-E motion onto its principal PCA axis supplies signed velocity,
+but has two limitations:
 
 - the PCA axis is not the final piston axis because the downstream dyad can
   rotate and transform the motion;
@@ -330,35 +333,19 @@ This repaired the sign problem but revealed two other limitations:
 
 ### 6.3 Statistically optimal segmentation can violate motion topology
 
-Automatic piecewise velocity segmentation was then tested.
-
-It produced a low approximation error but allowed a fitted regime to cross a
-real piston reversal.
-
-The resulting lesson is general:
+Automatic piecewise velocity segmentation can produce a low approximation
+error while allowing a fitted regime to cross a real piston reversal:
 
 > A segmentation may minimize approximation error while violating the topology
 > of the physical motion.
 
 Real turnarounds must therefore structure the cadence objective.
 
-### 6.4 Retained topology-and-cadence proxy
+### 6.4 Topology-and-cadence proxy
 
-The retained reference proxy begins from the two physical turnarounds.
-
-The reference motion has approximately:
-
-- high-position turnaround: `358.812°`;
-- low-position turnaround: `154.144°`;
-- short high-to-low branch: `155.332°`;
-- long low-to-high branch: `204.668°`.
-
-The short branch contains a fast and a slow cadence.
-
-Reference descriptors are approximately:
-
-- fast/slow mean-speed ratio: `5.027`;
-- fast-sector displacement fraction: `0.5763`.
+Begin from the selected target's physical turnarounds. Measure its branch
+durations, fast/slow mean-speed ratio and displacement sharing rather than
+assuming one operating point's cadence is universal.
 
 The proxy rewards:
 
@@ -370,13 +357,9 @@ The proxy rewards:
 6. acceptable primary transmission;
 7. weak geometric directionality preferences.
 
-The long return branch is deliberately less constrained.
-
-It is not required to copy the detailed target velocity profile and receives no
-smoothness, curvature or local-extrema penalty.
-
-Instead, the retained search proxy uses approximate mirror symmetry of the
-candidate's own long branch:
+A study may leave the return branch less constrained instead of copying its
+detailed target velocity profile. If approximate mirror symmetry is chosen as
+a study preference, the candidate's own branch asymmetry can be measured by:
 
 \[
 A_{BP}
@@ -402,82 +385,14 @@ evolution produces good thermodynamic behavior.
 
 ---
 
-## 7. Reference primary score
+## 7. Primary score ownership
 
-For documentary reproducibility, the retained proxy can be summarized as
-
-\[
-\begin{aligned}
-S ={}&
-2.00\,M
-+0.40\,Z
-+0.65\,\frac{T}{15^\circ}
-+0.50\,N_{\mathrm{extra}} \\
-&+0.55\,\left|\ln\frac{R}{R_*}\right|
-+0.80\,|F-F_*|
-+0.45\,A_{BP}
-+P_s
-+P_a .
-\end{aligned}
-\]
-
-where:
-
-- `M` is normalized RMS wrong-sign velocity over the two monotonic branch
-  cores;
-- `Z` is normalized RMS projected velocity at the target turnarounds;
-- `T` is RMS angular error of the two matched zero crossings;
-- `N_extra` counts additional zero crossings;
-- `R` is the candidate fast/slow mean-speed ratio;
-- `R*` is the reference ratio;
-- `F` is candidate fast-sector displacement fraction;
-- `F*` is the reference fraction;
-- `A_BP` is long-branch mirror asymmetry;
-- `P_s` is a soft primary-transmission penalty;
-- `P_a` is a weak PCA-axis preference.
-
-For the transmission preference,
-
-\[
-P_s=0
-\]
-
-when
-
-\[
-s_{\min}\ge0.35,
-\]
-
-and otherwise
-
-\[
-P_s
-=
-0.12
-\frac{0.35-s_{\min}}{0.35-0.30}.
-\]
-
-Candidates below the hard `0.30` transmission floor are rejected rather than
-merely penalized by this soft term.
-
-For PCA directionality,
-
-\[
-P_a=0
-\]
-
-when the principal-axis position-variance fraction is at least `0.70`;
-otherwise
-
-\[
-P_a
-=
-0.03
-\frac{0.70-a}{0.70}.
-\]
-
-The two possible signs of the PCA axis are evaluated and the lower score is
-retained.
+A primary-discovery proxy may combine monotonicity, velocity at turnarounds,
+zero-crossing timing, additional reversals, fast/slow mean-speed ratio,
+displacement sharing and transmission quality. The study must declare the
+weights, reference descriptors, hard constraints and any directionality or
+symmetry preferences separately. Evaluate both possible PCA-axis signs when
+using signed projected velocity.
 
 The score should not be interpreted as:
 
@@ -494,15 +409,9 @@ It exists only to make primary family discovery computationally tractable.
 
 A differential-evolution island is not one small geometric patch.
 
-With six variables and population size 16, one fresh island begins with
-
-\[
-6\times16=96
-\]
-
-Latin-hypercube individuals distributed across the complete bounded domain.
-
-The population then evolves globally to locally.
+A fresh island initializes a population across the complete bounded domain,
+according to its declared population policy. The population then evolves
+globally to locally.
 
 The useful statistical quantity is therefore **algorithmic basin-capture
 probability**:
@@ -584,84 +493,31 @@ Using connected components makes the result independent of insertion order,
 although chaining remains a reason not to over-interpret the absolute number of
 families.
 
-The reference experiment inspected thresholds:
-
-- `0.03`;
-- `0.04`;
-- `0.05`.
-
-The central retained documentary result uses `0.04`.
+Declare the clustering threshold with the search policy and assess sensitivity
+to that choice before interpreting family counts.
 
 ---
 
 ## 10. Fresh-island saturation evidence
 
-The completed reference saturation experiment used:
+Assess saturation with independent fresh islands, fixed bounds and optimizer
+budget, balanced assembly branches and no injection of design candidates.
+Record the family-count distribution under the declared clustering policy.
+Singletons and repeated captures can inform estimates of unseen algorithmic
+capture mass, but do not certify exhaustive geometric coverage.
 
-- 512 fresh islands;
-- no historical seed;
-- strict alternation of the two primary assembly branches;
-- 260 differential-evolution generations per island;
-- population size 16;
-- approximately 96 initial individuals per island;
-- the complete broad primary bounds described above.
-
-At family-distance threshold `0.04`, the 512 captured winners were distributed
-among 16 observed families with counts:
-
-```text
-244, 228, 19, 4, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
-```
-
-Therefore:
-
-- observed families: `16`;
-- singletons: `8`;
-- doubletons: `3`;
-- Good-Turing unseen capture-mass estimate:
-
-\[
-\frac{8}{512}=1.5625\%;
-\]
-
-- top-1 capture share:
-
-\[
-\frac{244}{512}=47.65625\%;
-\]
-
-- top-4 capture share:
-
-\[
-\frac{495}{512}=96.6796875\%;
-\]
-
-- top-10 capture share:
-
-\[
-\frac{506}{512}=98.828125\%.
-\]
-
-The useful conclusion is deliberately narrow:
-
-> Under the declared search policy and budget, most algorithmic capture
-> probability was concentrated in a small number of dominant primary basins.
-
-This does **not** prove that:
+Concentration of capture probability in a few basins does **not** prove that:
 
 - every geometrically possible four-bar family has been discovered;
-- the family counts are invariant to clustering threshold;
+- family counts are invariant to the clustering threshold;
 - the largest capture basin produces the best complete six-bar;
 - capture frequency is geometric phase-space volume.
-
-The minimal retained counts and their derived statistics are stored in
-[`repro/mechanism_synthesis_search/saturation_reference.toml`](repro/mechanism_synthesis_search/saturation_reference.toml).
 
 ---
 
 ## 11. Seeded design search and fresh-island saturation have different purposes
 
-Historical or retained mechanism seeds are useful during design exploitation
+Mechanism seeds are useful during design exploitation
 because they preserve expensive discoveries and accelerate convergence.
 
 They are inappropriate when the scientific question is whether a fresh search
@@ -676,7 +532,7 @@ May use:
 - retained families;
 - warm starts;
 - local continuation;
-- previous champions.
+- selected mechanisms.
 
 Question:
 
@@ -688,7 +544,7 @@ Uses:
 
 - fixed broad bounds;
 - independent deterministic random seeds;
-- no historical candidate injection;
+- no design-candidate injection;
 - balanced discrete branches;
 - fixed optimizer policy and budget.
 
@@ -803,7 +659,7 @@ mechanism assessment, not to an immutable universal score.
 
 ## 16. Primary score, piston fit and thermodynamic quality are different rankings
 
-The synthesis campaign exposed three different notions of quality.
+Synthesis distinguishes three different notions of quality.
 
 ### Primary quality
 
@@ -955,8 +811,7 @@ The difficult piston and the winning mechanism family may change.
 
 ## 20. Simpler mechanism classes remain valid competitors
 
-The success of a six-bar synthesis workflow does not prove that six bars are
-always necessary.
+Six-bar mechanisms are not always necessary.
 
 For applications where simplicity dominates, the same thermodynamic problem
 should also be tested with simpler physical mechanism families.
@@ -997,16 +852,11 @@ It records:
 - mirroring as initialization only;
 - the thermodynamic objective after paired release.
 
-The historical primary cadence score does **not** belong in `src/`.
-
-It is retained only as documentary reproduction material under:
-
-```text
-docs/repro/mechanism_synthesis_search/
-```
-
-This keeps the solver architecture general while preserving the reasoning that
-led to the current synthesis method.
+These are declarative stage and ownership contracts. The module does not run
+an autonomous geometric fit, family-clustering search or fresh-island optimizer.
+Research evaluates explicitly declared coordinates through its current search
+engine; the hierarchical synthesis operators remain a separate implementation
+boundary.
 
 ---
 
@@ -1020,44 +870,8 @@ This method does not establish that:
 - the closest kinematic fit gives the best thermodynamic machine;
 - a mirrored pair should remain symmetric;
 - six-bar mechanisms are always preferable to simpler linkages;
-- the reference 260 K cadence is universal.
+- one target cadence is universal.
 
 The durable result is the hierarchical search architecture and the distinction
 between discovery proxies, complete-mechanism quality and final
 thermodynamic assessment.
-
----
-
-## 23. Reproducing the documentary search policy
-
-The minimal reproducible material is:
-
-```text
-docs/repro/mechanism_synthesis_search/policy.toml
-docs/repro/mechanism_synthesis_search/saturation_reference.toml
-docs/repro/mechanism_synthesis_search/verify.py
-```
-
-Run:
-
-```bash
-python docs/repro/mechanism_synthesis_search/verify.py
-```
-
-or:
-
-```bash
-python docs/repro/mechanism_synthesis_search/verify.py --check
-```
-
-The reproduction intentionally:
-
-- does not import historical search scripts;
-- does not read campaign outputs;
-- does not retain the 512 individual winners;
-- does not retain a historical best scalar score;
-- stores no JSON;
-- reproduces the important saturation statistics directly from the minimal
-  family-count reference;
-- records the final primary-search proxy as documentation rather than as a
-  generic solver capability.

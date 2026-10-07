@@ -3,10 +3,9 @@
 ## Scope and construction
 
 Four-bar motion is not a fundamental assumption of the DADA cycle. Microtubes
-are the currently best-supported geometry family in the connected motor
-experiments, not a fundamental thermodynamic assumption. The conservative four
-gas volumes, hydraulic graph, passive valves, heat/work signs and equations
-are unchanged by this refactor. No mechanical efficiency is introduced.
+are a supported geometry family, not a fundamental thermodynamic assumption.
+Model composition preserves the conservative four gas volumes, hydraulic graph,
+passive valves, heat/work signs and equations. No mechanical efficiency is introduced.
 
 `MachineDesign` in `dada_solver.machine` composes a `SimulationConfiguration`
 with an optional directly injected `KinematicsModel` and independent
@@ -19,9 +18,8 @@ framework. A family is selected explicitly at construction time, outside the
 integration loop. Family choice is fixed for an optimization campaign; compare
 different families in separate campaigns, not with a continuous family variable.
 
-The existing modules stay in place to preserve public imports. Core composition files
-are `free_kinematics.py`, `machine.py`, `exchangers/base.py` and
-`exchangers/microtube.py`. No large source tree was relocated for appearance.
+Core composition files are `free_kinematics.py`, `machine.py`, `exchangers/base.py` and
+`exchangers/microtube.py`.
 
 ## Common kinematics interface
 
@@ -77,8 +75,8 @@ table, a single input authority; Python configurations reject mismatched ranges.
 Existing sizing and similarity transformations update those ranges consistently.
 
 There are N equally spaced distinct controls, with N >= 4; the endpoint value
-is repeated internally, not an independent variable. The example uses six
-controls per cylinder. A periodic cubic spline is C2, including at the seam;
+is repeated internally, not an independent variable. Each cylinder has its own
+control vector. A periodic cubic spline is C2, including at the seam;
 its third derivative may jump and jerk constraints are deferred. See the
 [SciPy CubicSpline contract](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.CubicSpline.html).
 
@@ -145,10 +143,10 @@ declared external conductance; it does not invent liquid correlations. Integrato
 one-wall-energy exchangers; mixed storage or distributed multi-state exchanger
 models explicitly need another state-layout integrator. This limited capability
 is stated rather than forcing every future family into a microtube/one-wall
-parameter set. Air-specific trial plotting and fan reporting remain explicitly
-specialized utilities, not generic evaluator requirements.
+parameter set. Air-specific fan estimates are specialized model outputs, not
+generic evaluator requirements.
 
-## Derived quantities and sizing migration
+## Derived quantities and sizing
 
 In a microtube candidate, geometry/material/correlation choices determine gas
 volume, internal conductance, hydraulic closures and wall capacity. Those derived

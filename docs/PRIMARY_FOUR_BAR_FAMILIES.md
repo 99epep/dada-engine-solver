@@ -2,9 +2,8 @@
 
 ## Purpose
 
-This note catalogues four primary four-bar geometries retained as mechanically
-distinct seeds while converting a structured-C2 thermodynamic reference motion
-at a 260 K source-temperature difference into realizable linkages.
+This note catalogues four mechanically distinct primary four-bar seed geometries
+for synthesizing realizable linkages from a thermodynamic motion target.
 
 These mechanisms are **seed families**, not a ranking and not an exhaustive
 classification of the primary four-bar search space.
@@ -18,8 +17,6 @@ Their identifiers are descriptive:
 
 The search method, cadence objective and basin-discovery methodology belong in
 [`MECHANISM_SYNTHESIS_SEARCH.md`](MECHANISM_SYNTHESIS_SEARCH.md).
-This catalogue intentionally does not duplicate saturation statistics or
-historical optimizer rankings.
 
 ---
 
@@ -101,12 +98,8 @@ This seed keeps the ground, coupler and rocker lengths of comparable magnitude.
 Point `E` extends moderately beyond the coupler endpoint and has a relatively
 small normal offset.
 
-Its value during the synthesis campaign was not that it represented a globally
-best four-bar mechanism. It provided a compact primary motion that proved
-highly transformable by the downstream dyad.
-
-This is the natural first seed when a compact primary mechanism is desired and
-there is no evidence that a more unusual topology is required.
+It supplies a compact starting geometry. Its usefulness must be evaluated with
+the downstream dyad and the selected thermodynamic target.
 
 ---
 
@@ -118,9 +111,8 @@ This seed remains compact but uses a larger coupler and rocker than
 Point `E` also has a much larger normal offset.
 
 The geometry is useful because it represents a different way of obtaining a
-similar temporal cadence from a compact mechanism. Its downstream descendants
-demonstrated that an attractive primary geometry can still approach mechanical
-limits once the complete mechanism is optimized.
+similar temporal cadence from a compact mechanism. An attractive primary
+geometry can still approach mechanical limits in a complete mechanism.
 
 It should therefore remain distinct from `compact_balanced` rather than being
 treated as a minor perturbation of it.
@@ -135,8 +127,8 @@ Its fixed-ground distance is much larger than the crank radius, its phase is
 nearly opposite the compact seeds, and point `E` lies far beyond the nominal
 coupler length.
 
-It was retained because the downstream dyad can transform primary motion in
-ways that a reduced primary-only cadence metric does not predict.
+The downstream dyad can transform primary motion in ways that a reduced
+primary-only cadence metric does not predict.
 
 The broader lesson is important:
 
@@ -156,8 +148,7 @@ Point `E` is strongly offset from the coupler axis.
 Among these four seeds it has the largest minimum primary transmission sine,
 but that fact alone must not be interpreted as a complete robustness ranking.
 
-Its downstream descendants provided an important control against an
-overly narrow preference for compact primary geometries.
+It provides a starting geometry distinct from the compact primary families.
 
 ---
 

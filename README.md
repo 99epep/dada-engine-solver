@@ -40,8 +40,7 @@ Numba and plotting dependencies are optional. Research can also run with the
 source helper above. The installed command is `dada-research`; this documentation
 uses the shorter `research` helper. For a direct simulation TOML, use
 `dada-solver configuration.toml`; add `--integration-profile` for solver counters.
-The lower-level sizing and campaign interfaces remain available for existing
-scripts; see [architecture](docs/PLUGGABLE_MODELS.md).
+The lower-level sizing and campaign interfaces support constrained design searches; see [architecture](docs/PLUGGABLE_MODELS.md).
 
 [Validation](docs/validation.md) separates analytical checks, numerical parity,
 correlation evidence and experimental limitations. Passing tests or reaching a
@@ -55,10 +54,8 @@ and later user decisions are summarized in
 [physical decisions](docs/PHYSICS_DECISIONS.md); branch and direction conventions
 are explained in [motor operation](docs/MOTOR_OPERATION.md).
 
-> The substantial initial implementation was produced by OpenAI Codex running
-> GPT-5.6 Sol (`gpt-5.6-sol`), under human scientific direction, on 2026-09-02
-> (initial project version 0.1.0). Later work continues to require independent
-> review of equations, conventions, assumptions and results. AI-generated
+> Implementation uses AI assistance under human scientific direction. Equations,
+> conventions, assumptions and results require independent review. AI-generated
 > scientific software can contain plausible but serious errors.
 
 ## License
