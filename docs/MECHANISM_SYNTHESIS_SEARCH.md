@@ -565,6 +565,28 @@ specifies bounds, compatible warm starts, immutable artifact linkage and recorde
 source/pair provenance. Fit remains diagnostic; ordinary Research evaluates the
 actual source objective without a COP/RMS score.
 
+### Manual selection between synthesis and adaptation
+
+A catalogue discovers basins; the human chooses SMALL and LARGE independently.
+`mechanism pair LIBRARY --small SMALL_ID --large LARGE_ID --output pair.json`
+selects from a common library. For mixed sources, use
+`mechanism pair --small-library SMALL_FILE --small SMALL_ID --large-library LARGE_FILE --large LARGE_ID --output pair.json`.
+Do not combine the two forms. This operation preserves complete artifact payloads
+and hashes and records independent `manual_pair_selection` provenance.
+
+Homogeneous workflow: one catalogue → select SMALL and LARGE → pair → adapt.
+Heterogeneous workflow: separate catalogues → select one side in each → pair →
+adapt. No family is preferred and no combination search is performed. The shared
+HTML renderer provides short-command selection, copyable side selectors and
+direct adaptation snippets for already complete pairs. Primary-only components
+remain visible but cannot be paired. See the
+[manual pairing reference](DADA_ENGINE_RESEARCH_KINEMATICS.md#manual-smalllarge-pairing)
+for exact syntax and validation.
+
+`paired_thermodynamic` releases coordinates from each artifact's own family:
+3, 11 or 15 per side. Mixed counts are 14 (slider/four-bar), 18 (slider/six-bar)
+and 26 (four-bar/six-bar). Subsequent hardware retuning freezes either kind of pair.
+
 ### 4.7 `hardware_retuning`
 
 `hardware_retuning()` and `mechanism retune` implement this final stage for

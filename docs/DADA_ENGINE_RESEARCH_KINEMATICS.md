@@ -520,6 +520,64 @@ Paired thermodynamics and hardware retuning generate ordinary Research studies
 through `mechanism adapt` and `mechanism retune`, using explicit complete Research
 sources rather than a geometric proxy objective.
 
+### Manual SMALL/LARGE pairing
+
+`mechanism pair` records an explicit human choice, without synthesis, automatic
+ranking or thermodynamic integration. Both selected artifacts must be complete
+physical piston mechanisms. Primaries and incomplete six-bar components cannot
+be injected into a machine. SMALL and LARGE may use different physical families.
+
+For selections from the same library:
+
+```console
+dada-research mechanism pair path/to/slider.json \
+  --small SMALL_ID --large LARGE_ID --output path/to/slider-pair.json
+```
+
+For selections from different libraries:
+
+```console
+dada-research mechanism pair \
+  --small-library path/to/slider.json --small SMALL_ID \
+  --large-library path/to/fourbar.json --large LARGE_ID \
+  --output path/to/mixed-pair.json
+```
+
+Use exactly one form: a positional common library, or both explicit side-library
+options. Conflicting repeated selectors, mixed forms and missing inputs are
+rejected. Each ID must contain the artifact for its requested side. The output is
+an ordinary single-member `MechanismLibrary` with a deterministic compact
+`pair/<selection-hash>` ID, `mechanisms.small`, `mechanisms.large`, and per-side
+family metadata. Artifact payloads and scientific hashes remain unchanged: no
+phase, scale, orientation or shared-crank assumption is imposed.
+
+Provenance uses `operation = manual_pair_selection` and records each side's
+source library/path and hash, source family ID, artifact hash and physical family.
+A complete pair already in a library can be passed directly to `mechanism adapt`;
+individual sides may also be extracted from different complete members.
+
+Synthesis HTML catalogues show physical family, side, family ID and source
+library. `Select as SMALL` and `Select as LARGE` assemble the short pairing
+command when both selections are made on the page. `Copy SMALL selector` and
+`Copy LARGE selector` expose the corresponding explicit-library snippets for
+combining separate catalogues. Snippets remain visible when clipboard access is
+unavailable. Intermediate primaries are marked ineligible; complete members show
+the direct adaptation command. There is no communication between catalogue pages
+and no automatic choice of a pair.
+
+```console
+dada-research mechanism adapt path/to/source/campaign --candidate SOURCE_ID \
+  --library path/to/mixed-pair.json --family-id PAIR_ID \
+  --output path/to/mixed-thermo/study.toml
+```
+
+The coordinate release follows each artifact's real family independently:
+3 slider-crank, 11 four-bar or 15 six-bar coordinates per side. Homogeneous
+pairs release 6, 22 or 30 coordinates; slider/four-bar releases 14,
+slider/six-bar 18 and four-bar/six-bar 26. Categories remain fixed on each side.
+`mechanism retune` also accepts these independent mixed pairs and releases zero
+mechanical coordinates.
+
 ### Paired thermodynamic study generation
 
 `paired_thermodynamic()` in `research.mechanism_adaptation` accepts a source

@@ -160,3 +160,11 @@ def test_executable_six_bar_hierarchy_and_independent_pair_are_documented():
                   'no implicit symmetry coupling','No global fifteen-dimensional fit'):
         assert token in content
     assert 'Six-bar hierarchy, fresh-primary' not in content
+
+
+def test_manual_pairing_has_independent_side_selection():
+    content=text()
+    for token in ('mechanism pair','--small-library','--large-library','manual_pair_selection',
+                  'Copy SMALL selector','Copy LARGE selector','slider/four-bar releases 14',
+                  'slider/six-bar 18','four-bar/six-bar 26'):
+        assert token in content

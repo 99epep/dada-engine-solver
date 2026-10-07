@@ -198,6 +198,11 @@ def test_primary_and_complete_catalogues_animations_and_cli(downstream,tmp_path,
     for index,library in enumerate((parents,full)):
         path=tmp_path/f'catalogue-{index}.html';render_synthesis_catalogue(library,target,path)
         assert library.members[0]['family_id'] in path.read_text()
+        if index==0:
+            assert 'not eligible for pairing' in path.read_text()
+            assert 'Select as LARGE' not in path.read_text()
+        else:
+            assert 'Select as LARGE' in path.read_text()
         artifact=MechanismArtifact.from_data(library.members[0]['mechanisms']['large'])
         model=MechanismModel(artifact);state=model.state(.3)
         assert len(state['joints'])==(5 if index==0 else 9)

@@ -45,6 +45,15 @@ def evaluate(study_path, output, *, assignments=(), budget=None):
     return record
 
 
+class _ConsistentSelection(argparse.Action):
+    """Reject contradictory repeated selectors instead of silently taking the last."""
+    def __call__(self, parser, namespace, values, option_string=None):
+        previous=getattr(namespace,self.dest,None)
+        if previous is not None and previous!=values:
+            parser.error(f'{option_string} was repeated with conflicting values.')
+        setattr(namespace,self.dest,values)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
@@ -99,6 +108,13 @@ def main(argv=None):
     refit.add_argument('--no-show', action='store_true')
     mechanism = commands.add_parser('mechanism', help='Validate synthesis protocols and inspect physical artifacts')
     mechanical = mechanism.add_subparsers(dest='mechanism_command', required=True)
+    pairing = mechanical.add_parser('pair', help='Select independent SMALL and LARGE mechanisms; no integration')
+    pairing.add_argument('library', type=Path, nargs='?', help='Common library; cannot combine with side-library options')
+    pairing.add_argument('--small-library', type=Path, action=_ConsistentSelection)
+    pairing.add_argument('--large-library', type=Path, action=_ConsistentSelection)
+    pairing.add_argument('--small', required=True, action=_ConsistentSelection, metavar='FAMILY_ID')
+    pairing.add_argument('--large', required=True, action=_ConsistentSelection, metavar='FAMILY_ID')
+    pairing.add_argument('--output', required=True, type=Path, action=_ConsistentSelection)
     adapt = mechanical.add_parser('adapt', help='Generate a local paired thermodynamic study; no integration')
     adapt.add_argument('source', type=Path, help='Research study, evaluation, or campaign')
     adapt.add_argument('--candidate', help='Required for a campaign source')
@@ -248,7 +264,22 @@ def main(argv=None):
                         else: plt.show()
         elif args.command == 'mechanism':
             from .artifacts import MechanismArtifact, MechanismLibrary
-            if args.mechanism_command == 'adapt':
+            if args.mechanism_command == 'pair':
+                if args.library is not None:
+                    if args.small_library is not None or args.large_library is not None:
+                        raise ValueError('Use a common positional library OR both --small-library and --large-library, never both forms.')
+                    small_library=large_library=args.library
+                else:
+                    if args.small_library is None or args.large_library is None:
+                        raise ValueError('Provide a common LIBRARY or both --small-library and --large-library.')
+                    small_library,large_library=args.small_library,args.large_library
+                from .mechanism_pairing import pair_mechanisms
+                paired=pair_mechanisms(small_library=small_library,small=args.small,
+                    large_library=large_library,large=args.large,output=args.output)
+                member=paired.members[0]
+                print(f"Created {args.output}; family_id {member['family_id']}; "
+                      f"SMALL {member['metadata']['families']['small']}, LARGE {member['metadata']['families']['large']}; no integration started.")
+            elif args.mechanism_command == 'adapt':
                 from .mechanism_adaptation import paired_thermodynamic
                 output = paired_thermodynamic(args.source,args.library,args.family_id,args.output,
                                                candidate=args.candidate,radius=args.radius)
@@ -298,7 +329,7 @@ def main(argv=None):
                     import matplotlib  # Verify the catalogue dependency before starting search.
                     result=plan.execute(policy=policy,sides=sides,library=library,volume_limits=limits)
                     from .synthesis_catalogue import render_synthesis_catalogue
-                    render_synthesis_catalogue(result,target,catalogue)
+                    render_synthesis_catalogue(result,target,catalogue,library_path=args.output)
                     result.save(args.output)
                     print(f'Created {args.output} and {catalogue}; {len(result.members)} retained families; no thermodynamic integration started.')
             elif args.mechanism_command == 'catalogue':

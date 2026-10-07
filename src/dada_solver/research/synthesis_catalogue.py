@@ -2,6 +2,7 @@
 import html
 import io
 import json
+import shlex
 from pathlib import Path
 
 import numpy as np
@@ -46,10 +47,12 @@ def _preview(artifact,target,side):
     return stream.getvalue()[stream.getvalue().index('<svg'):]
 
 
-def render_synthesis_catalogue(library,target,path):
+def render_synthesis_catalogue(library,target,path,*,library_path=None):
     """Write inspectable evidence and family IDs; no absolute winner is designated."""
     path=Path(path)
     if path.exists(): raise ValueError('Synthesis catalogue already exists; choose a new path.')
+    library_path=Path(library_path) if library_path is not None else path.with_suffix('.json')
+    common_command='dada-research mechanism pair '+shlex.quote(str(library_path))
     entries=[]
     for member in library.members:
         if member['metadata'].get('target_hash')!=target.content_hash:
@@ -68,16 +71,39 @@ def render_synthesis_catalogue(library,target,path):
             detail=html.escape(json.dumps(dict(artifact_hash=artifact.content_hash,geometry=artifact.scientific['geometry'],categories=categories,
                 fit=fit,mechanical=mechanical,search=member['metadata'].get('search'),
                 provenance=member['metadata']['provenance']),indent=2))
+            primary=artifact.scientific['settings'].get('component') is not None
+            complete=set(member['mechanisms'])=={'small','large'} and all(
+                raw['scientific']['settings'].get('component') is None for raw in member['mechanisms'].values())
+            selector=f'--{side}-library {shlex.quote(str(library_path))} --{side} {shlex.quote(member["family_id"])}'
+            selection=f'<p>Source library: <code>{html.escape(str(library_path))}</code></p>'
+            if primary:
+                selection+='<p>Intermediate component: not eligible for pairing or adaptation.</p>'
+            else:
+                selection+=f'<button data-short="{html.escape(f"--{side} {shlex.quote(member['family_id'])}",quote=True)}" data-side="{side}" data-id="{html.escape(member["family_id"],quote=True)}" onclick="selectMechanism(this)">Select as {side.upper()}</button> '
+                selection+=f'<button data-selector="{html.escape(selector,quote=True)}" onclick="copySelector(this)">Copy {side.upper()} selector</button><pre>{html.escape(selector)}</pre>'
+            if complete:
+                adapt=f'dada-research mechanism adapt path/to/source/campaign --candidate SOURCE_ID --library {shlex.quote(str(library_path))} --family-id {shlex.quote(member["family_id"])} --output path/to/thermo/study.toml'
+                selection+='<p>Complete pair: usable directly with mechanism adapt.</p><pre>'+html.escape(adapt)+'</pre>'
             entries.append('<tr>'+cells+f'<td>{summary}</td><td>{html.escape(json.dumps(categories))}</td>'+
-                '<td><details><summary>Geometry and target comparison</summary>'+_preview(artifact,target,side)+
+                '<td>'+selection+'<details><summary>Geometry and target comparison</summary>'+_preview(artifact,target,side)+
                 '<details><summary>Evidence / search provenance</summary><pre>'+detail+'</pre></details></details></td></tr>')
-    headings=('Family ID','Piston','Mechanism','Position RMS','Max position error','Velocity RMS / rad','Mechanical metrics','Categories','Preview / evidence')
+    headings=('Family ID','Piston','Mechanism','Position RMS','Max position error','Velocity RMS / rad','Mechanical metrics','Categories','Selection / preview / evidence')
     headers=''.join(f'<th><button onclick="sortCatalogue({i})">{title}</button></th>' for i,title in enumerate(headings))
     document='''<!doctype html><html lang="en"><meta charset="utf-8"><title>Mechanism synthesis catalogue</title>
 <style>body{font:14px system-ui;margin:24px;color:#202830}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccd3d8;padding:8px;vertical-align:top}th{background:#eef3f6}button{font:inherit;border:0;background:none;cursor:pointer}svg{width:900px;max-width:100%;height:auto}pre{white-space:pre-wrap;max-width:900px;font-size:12px}summary{cursor:pointer}details{min-width:260px}</style>
 <h1>Mechanism families for human selection</h1><p>Fit, mechanical evidence and internal search score remain separate.
-No thermodynamic performance has been inferred. Click headings to sort; sorting does not identify an absolute winner.</p>'''+f'<p>Target hash: <code>{html.escape(target.content_hash)}</code>. Use the Family ID with <code>mechanism visualize --family-id</code> or <code>full_local_polish --family-id</code>.</p>'+f'<table><thead><tr>{headers}</tr></thead><tbody>{"".join(entries)}</tbody></table>'+'''
-<script>let previous=-1,ascending=true;function sortCatalogue(column){ascending=column===previous?!ascending:true;previous=column;let body=document.querySelector('tbody');let rows=Array.from(body.rows);rows.sort((a,b)=>{let x=a.cells[column].dataset.sort??a.cells[column].textContent,y=b.cells[column].dataset.sort??b.cells[column].textContent;let n=Number(x),m=Number(y);let comparison=Number.isFinite(n)&&Number.isFinite(m)?n-m:x.localeCompare(y);return ascending?comparison:-comparison;});rows.forEach(row=>body.appendChild(row));}</script></html>'''
+No thermodynamic performance has been inferred. Click headings to sort; sorting does not identify an absolute winner.</p>'''+f'<p>Target hash: <code>{html.escape(target.content_hash)}</code>. Use the Family ID with <code>mechanism visualize --family-id</code> or <code>full_local_polish --family-id</code>.</p>'+f'<p>Source library: <code>{html.escape(str(library_path))}</code></p><p>Select both sides here for the short command, or copy side selectors to combine different libraries.</p><pre id="pair-command" data-base="{html.escape(common_command,quote=True)}">Select a SMALL and a LARGE mechanism.</pre>'+f'<table><thead><tr>{headers}</tr></thead><tbody>{"".join(entries)}</tbody></table>'+'''
+<script>
+const selectedMechanisms={};
+function selectMechanism(button){selectedMechanisms[button.dataset.side]={id:button.dataset.id,short:button.dataset.short};
+const box=document.getElementById('pair-command');
+box.textContent=selectedMechanisms.small&&selectedMechanisms.large?
+box.dataset.base+' '+selectedMechanisms.small.short+' '+selectedMechanisms.large.short+' --output pair.json':
+'Selected '+button.dataset.side.toUpperCase()+': '+button.dataset.id+'; select the other side.';}
+async function copySelector(button){const text=button.dataset.selector;
+try{if(navigator.clipboard){await navigator.clipboard.writeText(text);return;}}catch(error){}
+const area=document.createElement('textarea');area.value=text;document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();}
+let previous=-1,ascending=true;function sortCatalogue(column){ascending=column===previous?!ascending:true;previous=column;let body=document.querySelector('tbody');let rows=Array.from(body.rows);rows.sort((a,b)=>{let x=a.cells[column].dataset.sort??a.cells[column].textContent,y=b.cells[column].dataset.sort??b.cells[column].textContent;let n=Number(x),m=Number(y);let comparison=Number.isFinite(n)&&Number.isFinite(m)?n-m:x.localeCompare(y);return ascending?comparison:-comparison;});rows.forEach(row=>body.appendChild(row));}</script></html>'''
     path.parent.mkdir(parents=True,exist_ok=True)
     with path.open('x',encoding='utf-8') as stream: stream.write(document)
     return path
