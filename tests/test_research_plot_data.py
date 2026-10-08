@@ -121,7 +121,7 @@ def test_renderer_script_syntax(tmp_path):
     script=page.split('<script>')[1].split('</script>')[0]
     path=tmp_path/'report.js';path.write_text(script)
     subprocess.run(['node','--check',str(path)],check=True,capture_output=True)
-    assert 'requestAnimationFrame' in page and 'Mechanism study angle' in page
+    assert 'image.src=motion.data_uri' in page and 'Whole machine' in page
     assert '<script src=' not in page
 
 

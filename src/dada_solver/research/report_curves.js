@@ -53,34 +53,15 @@ function mechanismPlots(){
   const motion=row.plots?.mechanisms;if(!motion)continue;
   const card=document.createElement('section');card.className='card';host.appendChild(card);
   const heading=document.createElement('h2');heading.textContent='Mechanisms · '+row.candidate_id.slice(0,12);card.appendChild(heading);
-  const note=document.createElement('p');note.className='muted';note.textContent='Stored local frames in crank-radius units; no common-shaft layout inferred. Study angle before operation reversal. Animation speed is illustrative, not machine speed.';card.appendChild(note);
-  const panels=[];
-  const container=document.createElement('div');container.className='plots';card.appendChild(container);
-  for(const side of ['small','large']){
-   const data=motion.sides[side],panel=document.createElement('div');container.appendChild(panel);
-   const label=document.createElement('h3');label.textContent=side+(data.crank_radius_m?' · crank radius '+data.crank_radius_m+' m':' · dimensionless geometry');panel.appendChild(label);
-   if(!data.joints){const text=document.createElement('p');text.textContent='No linkage geometry for this motion family.';panel.appendChild(text);continue;}
-   let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;
-   for(const positions of Object.values(data.joints))for(const [x,y] of positions){xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}
-   const scale=Math.min(520/(xmax-xmin||1),320/(ymax-ymin||1));
-   const project=p=>[300+(p[0]-(xmin+xmax)/2)*scale,200-(p[1]-(ymin+ymax)/2)*scale];
-   const drawing=document.createElement('div');panel.appendChild(drawing);panels.push({data,project,drawing});
+  const note=document.createElement('p');note.className=motion.unavailable?'warning':'muted';
+  note.textContent=motion.unavailable?'Unavailable: '+motion.unavailable:motion.method+' Animation speed is illustrative. Layout: '+motion.layout+'.';
+  if(row.plots_runtime_compatible===false)note.textContent+=' Stored runtime differs; this animation uses the current code.';
+  card.appendChild(note);
+  if(motion.data_uri){
+   const image=document.createElement('img');image.src=motion.data_uri;
+   image.alt='Whole machine with replayed gas temperatures and effective valve states';
+   image.style.width='100%';image.style.height='auto';card.appendChild(image);
   }
-  if(!panels.length)continue;
-  const button=document.createElement('button');button.textContent='Play';card.appendChild(button);
-  const slider=document.createElement('input');slider.type='range';slider.min=0;slider.max=motion.angle.length-1;slider.value=0;slider.step=1;slider.setAttribute('aria-label','Mechanism study angle');card.appendChild(slider);
-  const label=document.createElement('span');card.appendChild(label);
-  let playing=false,last=null,frame=0;
-  function draw(){const index=Number(slider.value);label.textContent=' '+(motion.angle[index]*180/Math.PI).toFixed(1)+'°';
-   for(const {data,project,drawing} of panels){let svg='<svg role="img" aria-label="Linkage joint positions" viewBox="0 0 600 400">';
-    for(const [a,b] of data.links){const p=project(data.joints[a][index]),q=project(data.joints[b][index]);svg+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#17658b" stroke-width="4"/>';}
-    for(const [name,positions] of Object.entries(data.joints)){const p=project(positions[index]);svg+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="5" fill="#b74424"/><text x="'+(p[0]+8)+'" y="'+(p[1]-8)+'">'+esc(name)+'</text>';}
-    drawing.innerHTML=svg+'</svg>';
-   }
-  }
-  function tick(now){if(!playing)return;if(last!==null){frame=(frame+(now-last)*(motion.angle.length-1)/6000)%(motion.angle.length-1);slider.value=Math.floor(frame);draw();}last=now;requestAnimationFrame(tick);}
-  button.onclick=()=>{playing=!playing;button.textContent=playing?'Pause':'Play';last=null;if(playing)requestAnimationFrame(tick);};
-  slider.oninput=()=>{frame=Number(slider.value);draw();};draw();
  }
 }
 additionalPlots();mechanismPlots();

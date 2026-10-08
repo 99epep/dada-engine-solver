@@ -141,13 +141,27 @@ def replay_thermal(study, record, *, notify=lambda message: None):
     metadata = dict(method=method,backend=backend,endpoint_relative_drift=float(np.max(np.abs(endpoint-state)/np.maximum(np.abs(state),1e-30))),
                     sample_count=len(angles),thermodynamic_replay=True)
     for plot in result.values(): plot['replay'] = metadata
+    from dada_solver.valves import ValveState
+    result['machine_cycle'] = dict(angle_rad=np.asarray(angles).tolist(), series={
+        'S_temperature_K': temperatures['small gas'],
+        'L_temperature_K': temperatures['large gas'],
+        'Hi_temperature_K': temperatures['heat_in gas'],
+        'Ho_temperature_K': temperatures['heat_out gas'],
+        'Ho_to_S_valve_open': [int(p.topology.hot_to_small is ValveState.OPEN) for p in points],
+        'Hi_to_L_valve_open': [int(p.topology.cold_to_large is ValveState.OPEN) for p in points],
+    })
     return result
 
 
 def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda message: None):
-    result = kinematic_plots(study,record,names)
-    if not THERMAL_PLOTS.intersection(names): return result
-    key = content_hash(dict(version=2,study_id=study.study_id,candidate_id=record['candidate_id'],
+    result = kinematic_plots(study,record,tuple(name for name in names if name != 'mechanisms'))
+    mechanism_source = None
+    if 'mechanisms' in names:
+        from .machine_render import candidate_mechanisms
+        mechanism_source = candidate_mechanisms(study,record['physical'])
+        result['mechanisms'] = dict(unavailable='A complete physical mechanism is required for both cylinders.')
+    if not THERMAL_PLOTS.intersection(names) and mechanism_source is None: return result
+    key = content_hash(dict(version=3,study_id=study.study_id,candidate_id=record['candidate_id'],
         physical=record['physical'],state=record.get('final_periodic_state'),runtime=runtime_identity()))
     path = Path(cache_directory)/(key+'.json.gz') if cache_directory is not None else None
     try:
@@ -172,9 +186,23 @@ def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda
                 finally:
                     if os.path.exists(tmp): os.unlink(tmp)
         result.update({name:thermal[name] for name in names if name in THERMAL_PLOTS})
-    except (ValueError,RuntimeError,ArithmeticError) as error:
+        if mechanism_source is not None:
+            try:
+                from .machine_render import render_machine_webp, layout_for_configuration
+                import base64
+                artifacts, configuration = mechanism_source
+                animation, metadata = render_machine_webp(artifacts,thermal['machine_cycle'],
+                    layout=layout_for_configuration(configuration),motor_operation=configuration.motor_operation)
+                result['mechanisms'] = dict(metadata, media_type='image/webp',
+                    data_uri='data:image/webp;base64,'+base64.b64encode(animation).decode('ascii'),
+                    size_bytes=len(animation), replay=thermal.get('temperatures',{}).get('replay'))
+            except (ValueError,RuntimeError,ArithmeticError,ImportError) as error:
+                message = f'{type(error).__name__}: {error}'
+                notify(f"Machine animation {record['candidate_id'][:12]} unavailable: {message}")
+                result['mechanisms'] = dict(unavailable=message)
+    except (ValueError,RuntimeError,ArithmeticError,ImportError) as error:
         message = f'{type(error).__name__}: {error}'
         notify(f"Thermodynamic replay {record['candidate_id'][:12]} unavailable: {message}")
         for name in names:
-            if name in THERMAL_PLOTS: result[name] = dict(unavailable=message)
+            if name in THERMAL_PLOTS or (name=='mechanisms' and mechanism_source is not None): result[name] = dict(unavailable=message)
     return result

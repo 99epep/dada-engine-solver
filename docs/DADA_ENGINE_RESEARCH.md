@@ -91,7 +91,16 @@ By default, `report` writes `campaign/report.html` and requests positions, heat
 exchange, pressures and temperatures for the two best feasible candidates.
 `--candidate` also accepts an exact ID or unique prefix; repeat it to select
 several candidates. `--plots none` omits curves, while `mechanisms` requests
-animations for supported physical mechanisms. Use `--html PATH` for another HTML
+a whole-machine animated WebP when both cylinders have complete physical
+mechanisms. The animation uses production linkage closures, replayed gas
+temperatures and effective valve states, with the candidate's actual valve
+placements. Its independently scaled visible strokes illustrate motion, not a
+physical common-shaft assembly; animation speed is illustrative. The validated
+transfer block is uniformly scaled between fixed cylinder inner faces. Pillow
+with animated WebP support is required; unavailable geometry, saved states or
+encoding support are reported without failing the report. The WebP is embedded
+in the offline HTML alongside the existing derived curves; no GIF or graph
+panels are included in the machine image. Use `--html PATH` for another HTML
 destination.
 
 Requested thermodynamic curves are reconstructed from saved states; Research
