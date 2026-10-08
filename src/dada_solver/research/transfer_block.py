@@ -123,14 +123,19 @@ SCALE = PIPE_H / SRC_PIPE_H
 TRI_W = SRC_TRI_W * SCALE
 TRI_H = SRC_TRI_H * SCALE
 BAR_W = SRC_BAR_W * SCALE
+# Keep the source bar thickness. Its triangle-facing edge reaches the
+# intersection of the sloped triangle edge and the conduit edge (similar
+# triangles); this overlap scales uniformly with the whole transfer block.
+VALVE_BAR_WIDTH = BAR_W
+VALVE_BAR_OVERLAP = TRI_W * PIPE_H / TRI_H
 HX_VISIBLE_X0_SRC = HX_BBOX.x0
 HX_VISIBLE_X1_SRC = 81.115979
 HX_VISIBLE_W_SRC = HX_VISIBLE_X1_SRC - HX_VISIBLE_X0_SRC
 HX_W = HX_VISIBLE_W_SRC * SCALE
 HX_H = HX_BBOX.height * SCALE
 HX_PORT_CENTER_Y_SRC = 0.25 * (190.15015 + 192.86006 + 190.14757 + 192.85696)
-SEG_MID = 0.44
-SEG_OUTER = 0.36
+SEG_MID = 0.40
+SEG_OUTER = 0.40
 HX_Y_OFFSET = 0.004
 BLOCK_WIDTH = 2 * SEG_OUTER + SEG_MID + HX_W + TRI_W + BAR_W
 
@@ -241,13 +246,16 @@ def valve_geometry(x_left, y, direction):
 def draw_valve(ax, x_left, y, direction, is_open, c_left, c_right):
     vertices, base_x, tip_x, bar_x0, x_right = valve_geometry(x_left, y, direction)
 
+    bar_left = (tip_x + VALVE_BAR_OVERLAP - VALVE_BAR_WIDTH
+                if direction == "left" else tip_x - VALVE_BAR_OVERLAP)
+
     if 0 < is_open < 1:
         # Only continuous model openings receive a visual opacity transition.
         # Keep the approved shapes, layering and conduit gradients unchanged.
         gradient_polygon(ax, vertices, c_left, c_right, zorder=6)
         ax.add_patch(Polygon(vertices, closed=True, facecolor="black",
                              edgecolor="none", zorder=6, alpha=1-float(is_open)))
-        ax.add_patch(Rectangle((bar_x0, y - TRI_H / 2), BAR_W, TRI_H,
+        ax.add_patch(Rectangle((bar_left, y - TRI_H / 2), VALVE_BAR_WIDTH, TRI_H,
                                facecolor="black", edgecolor="none", zorder=7,
                                alpha=1-float(is_open)))
     elif is_open:
@@ -256,11 +264,11 @@ def draw_valve(ax, x_left, y, direction, is_open, c_left, c_right):
         ax.add_patch(
             Polygon(vertices, closed=True, facecolor="black", edgecolor="none", zorder=6)
         )
-        # BAR WIDTH IS THE ORIGINAL SVG WIDTH, not a matplotlib line width.
+        # Geometric bar thickness scales with the entire transfer block.
         ax.add_patch(
             Rectangle(
-                (bar_x0, y - TRI_H / 2),
-                BAR_W,
+                (bar_left, y - TRI_H / 2),
+                VALVE_BAR_WIDTH,
                 TRI_H,
                 facecolor="black",
                 edgecolor="none",
@@ -293,7 +301,7 @@ def draw_row(
     Exactly:
       conduit 1 + element 1 + conduit 2 + element 2 + conduit 3
 
-    Outer conduits are slightly shorter than the middle conduit.
+    Outer and middle conduits have equal prototype lengths.
     No extra cylinder-side 'stub' is added.
     """
     x = 1.20
@@ -439,8 +447,9 @@ LAYOUTS["DU"] = {"Ho": LAYOUTS["DD"]["Ho"], "Hi": LAYOUTS["UU"]["Hi"]}
 
 class PlacedAxes:
     """Apply the same uniform transform to images, glyphs and clipping patches."""
-    def __init__(self, axes, left_head, right_head, row_y):
+    def __init__(self, axes, left_head, right_head, row_y, *, zorder_offset=0):
         self.axes = axes
+        self.zorder_offset = zorder_offset
         self.factor = (right_head - left_head) / BLOCK_WIDTH
         if self.factor <= 0:
             raise ValueError("Cylinder inner faces must be ordered left to right.")
@@ -449,9 +458,11 @@ class PlacedAxes:
         self.transData = self.placement + axes.transData
 
     def imshow(self, *args, **kwargs):
+        kwargs["zorder"] = kwargs.get("zorder", 0) + self.zorder_offset
         return self.axes.imshow(*args, transform=self.transData, **kwargs)
 
     def add_patch(self, patch):
+        patch.set_zorder(patch.get_zorder() + self.zorder_offset)
         if not patch.is_transform_set():
             patch.set_transform(self.transData)
         return self.axes.add_patch(patch)

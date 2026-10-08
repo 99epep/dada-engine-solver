@@ -215,7 +215,7 @@ def text_report(data, *, list_candidates=False):
     return '\n'.join(lines)+'\n'
 
 
-def render_html(data, destination):
+def render_html(data, destination, *, external_webp=False):
     destination = Path(destination)
     if destination.suffix.lower() != '.html': raise ValueError('HTML report destination must end in .html.')
     attempts=len(data['records'])
@@ -231,6 +231,24 @@ def render_html(data, destination):
     for record in data.get('selected',[]):
         if (record.get('plots') or data.get('explicit_selection')) and record['candidate_id'] not in included:
             chosen.append(record); included.add(record['candidate_id'])
+    if external_webp:
+        import base64
+        import hashlib
+        from urllib.parse import quote
+        exported=[]
+        for row in chosen:
+            motion=row.get('plots',{}).get('mechanisms',{})
+            uri=motion.get('data_uri','')
+            if uri.startswith('data:image/webp;base64,'):
+                payload=base64.b64decode(uri.split(',',1)[1],validate=True)
+                asset=destination.parent/(destination.stem+'.assets')/('mechanisms-'+hashlib.sha256(payload).hexdigest()[:16]+'.webp')
+                asset.parent.mkdir(parents=True,exist_ok=True)
+                asset.write_bytes(payload)
+                motion=dict(motion,url=quote(asset.relative_to(destination.parent).as_posix()))
+                motion.pop('data_uri')
+                row=dict(row,plots=dict(row['plots'],mechanisms=motion))
+            exported.append(row)
+        chosen=exported
     ranked=chosen[:2] if data.get('comparison_compatible',True) else []
     def brief(record):
         return {k:record.get(k) for k in ('candidate_id','objective','metrics')} if record else None

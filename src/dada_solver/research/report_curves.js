@@ -57,8 +57,8 @@ function mechanismPlots(){
   note.textContent=motion.unavailable?'Unavailable: '+motion.unavailable:motion.method+' Animation speed is illustrative. Layout: '+motion.layout+'.';
   if(row.plots_runtime_compatible===false)note.textContent+=' Stored runtime differs; this animation uses the current code.';
   card.appendChild(note);
-  if(motion.data_uri){
-   const image=document.createElement('img');image.src=motion.data_uri;
+  if(motion.data_uri || motion.url){
+   const image=document.createElement('img');image.src=motion.data_uri || motion.url;
    image.alt='Whole machine with replayed gas temperatures and effective valve states';
    image.style.width='100%';image.style.height='auto';card.appendChild(image);
   }

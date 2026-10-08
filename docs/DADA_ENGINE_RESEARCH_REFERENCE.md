@@ -96,6 +96,86 @@ construction canonicalizes a choice to its selected bin centre.
 Family-defined fixed categories, including mechanism branches, must remain fixed.
 Declaring a number or a `choice` does not bypass a family's ownership rules.
 
+## Study editor
+
+`study edit` is a terminal assistant for an existing, valid schema-3 TOML.
+Install the optional UI with `pip install "dada-engine-solver[tui]"`; it uses
+`prompt_toolkit` and is imported only for interactive editing. The solver,
+batch operations and CLI help do not require this extra. Redirected stdin/stdout
+are refused rather than entering a blocking questionnaire.
+
+```console
+dada-research study edit path/to/retuned/study.toml
+dada-research study release path/to/retuned/study.toml --group mechanisms \
+  --radius 0.05 --output path/to/combined/study.toml
+dada-research study freeze path/to/study.toml --group frequency \
+  --output path/to/fixed-frequency/study.toml
+dada-research study release path/to/study.toml \
+  --parameter operation.frequency_hz --bounds operation.frequency_hz=1:4:log \
+  --search global --output path/to/bounded/study.toml
+```
+
+The menu uses arrows to navigate, Space to toggle activity, Enter to open a
+group/parameter and Escape to go back or cancel. `[~]` indicates partial activity;
+`[-]` marks a fixed scientific category. Group activation preserves already active
+hardware. Individual edits support exact values, numeric bounds, linear/log
+transforms, integer counts and declared choices; displayed values are never
+rounded before saving. Search, execution, review and cancellation have separate
+pages. Review includes effective bounds for every local region, value changes,
+artifact hash changes, source identity and warnings. Nothing is written on cancel.
+
+`research.study_editor.StudyEditor` implements these operations without terminal
+imports or thermodynamic integration. Inventory includes machine-basis values,
+explicit fixed/active declarations and coordinates supplied by artifacts.
+`mechanisms` selects continuous physical coordinates on both sides;
+`kinematics-small` and `kinematics-large` also support abstract families.
+Hardware groups are `exchangers`, `volumes`, `frequency`, `charge`, `valves` and
+`external-stream`; they filter existing coordinates only. Branches, orientations,
+shared crank direction, family/settings and raw spline controls remain fixed by
+their current contracts. Shared-crank phase is one coordinate, not two independent
+phases. Charge remains governed by its current policy; reference-inventory charge
+cannot be made an independent mass parameter by the editor.
+
+Automatic domain resolution uses the current declared domain, then recorded
+original domains (including `paired_thermodynamic.reference_boxes`), then the
+centered, positive-length-aware synthesis reference-box policy for physical
+mechanisms. Angles stay unwrapped. A box which no longer contains the exact
+current mechanical value can fall back to that centered synthesis policy, never
+to clamping. Other incompatible recorded domains require explicit resolution.
+These are **search bounds**, not physical validity domains. Missing domains
+require interactive bounds or batch `--bounds NAME=LOW:HIGH[:linear|log]`;
+`--choices 'NAME=["first", "second"]'` supplies categorical domains. Explicit
+user domains override automatic resolution and undergo the same Research checks.
+
+**Declared domain and local radius are different controls.** `--search global`
+uses `fixed_global_bounds` and the full declarations; `--radius` is rejected in
+that mode. Release defaults to local Sobol with radius 0.05. With
+`local_regions_v1`, `radius_fraction` restricts **all active parameters**, including
+previously active hardware, to `[max(0,c-r), min(1,c+r)]` in their declared
+normalized coordinates. Log transforms and integer decoding use the existing
+parameter APIs. `choice_scope = "declared_choices"` retains all declared choices;
+category order is not a distance. The assistant shows effective physical bounds.
+
+An altered active set or changed initials creates one region at the exact current
+initials; unchanged valid regions are preserved. Replacing multiple regions
+requires explicit interactive confirmation or `--recenter` in batch mode.
+The center is unevaluated: its provenance uses the real computed identity of the
+source initial configuration, not an invented evaluated candidate. An entirely
+fixed study uses global settings and is intended for `evaluate`, not an empty
+search. Freezing always uses the current `initial`, never an assumed campaign best.
+
+Save creates a new portable TOML, basis and referenced artifacts. Active overrides
+can keep their reference artifacts; fixed effective geometry differing from the
+reference receives a new artifact, preserving settings, embedded constraints and
+parent provenance. Unchanged artifacts retain their data and hashes. Existing
+objectives, constraints, scientific policies, warm-start data and prior refit/
+adaptation/retuning provenance are preserved. `basis.provenance.study_edit` records
+edits, domain sources, search changes and unevaluated-center evidence. All staged
+inputs are loaded, compiled and production-preflighted before publication; write
+failures roll back only newly created files. Source files, existing destinations
+and running campaign directories are never overwritten. No integration, automatic
+geometry repair or automatic campaign launch occurs.
+
 ## Objectives and constraints
 
 The objective contains `type` and `unit`:

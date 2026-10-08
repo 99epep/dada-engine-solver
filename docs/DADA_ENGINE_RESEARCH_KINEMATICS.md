@@ -755,6 +755,31 @@ physical machine volume or crank scale. `mechanism_catalogue()` preserves all
 members and their order, with family IDs, mechanism family, fit, mechanical
 metrics, provenance, artifact hash and optional thermodynamic evidence.
 
+### Joint mechanism and hardware editing
+
+After retuning, the [study editor](DADA_ENGINE_RESEARCH_REFERENCE.md#study-editor)
+can reopen the physical coordinates of both pistons while keeping hardware active:
+
+```console
+dada-research study edit path/to/retuned/study.toml
+dada-research study release path/to/retuned/study.toml --group mechanisms \
+  --radius 0.05 --output path/to/combined/study.toml
+dada-research validate path/to/combined/study.toml
+```
+
+SMALL/LARGE artifacts contribute coordinates even when the TOML omits explicit
+fixed declarations. Homogeneous pairs expose 6, 22 or 30 continuous coordinates;
+heterogeneous pairs expose the sum of their real side-specific coordinates.
+The exact current initials, hardware and constraints are preserved. Branches,
+orientations, output and scale stay fixed; shared-crank phase retains its coupled
+ownership. Paired reference boxes are reused when applicable, otherwise the
+existing centered synthesis-box policy supplies numerical search domains.
+The local radius applies to all active hardware and mechanism coordinates, not
+only the newly released group. The assistant can show every effective interval.
+Freezing a changed effective geometry produces a properly hashed artifact with
+parent provenance; active overrides need not alter the reference artifact.
+No thermodynamic evaluation occurs while editing or saving.
+
 ### Hierarchical six-bar synthesis
 
 The [executable six-bar reference](MECHANISM_SYNTHESIS_SEARCH.md#executable-hierarchical-six-bar-operators)

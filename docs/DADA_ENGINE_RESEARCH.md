@@ -29,12 +29,40 @@ research init external-stream-motor \
 
 Templates start with fixed coordinates. Edit the generated study for the intended
 machine and operating conditions. A fixed parameter has a `value`; to search a
-coordinate, replace that value with an active declaration including its initial
+coordinate, use the study editor below or an active declaration with its initial
 value and bounds. Do this before `run`, which needs at least one active parameter.
 
 See the [technical reference](DADA_ENGINE_RESEARCH_REFERENCE.md) for parameter
 types, policies, objectives and constraints, and the
 [kinematics reference](DADA_ENGINE_RESEARCH_KINEMATICS.md) for family selection.
+
+## Edit a study
+
+```sh
+pip install "dada-engine-solver[tui]"
+research study edit path/to/study.toml
+research study release path/to/retuned/study.toml --group mechanisms \
+    --radius 0.05 --output path/to/combined/study.toml
+research study freeze path/to/study.toml --group frequency \
+    --output path/to/fixed-frequency/study.toml
+```
+
+Use arrows, Space, Enter and Escape to inspect groups, toggle activity, edit
+individual parameters, review and save to a new path. Partial activity is marked
+`[~]`. Coordinates stored in mechanical artifacts are available just like explicit
+parameters. Reopening SMALL/LARGE mechanisms preserves the current machine and
+already active hardware; categories and branches stay fixed. Cancel writes nothing.
+
+The declared parameter bounds describe a numerical search domain. A local radius
+is a separate scheduler control: it restricts **all active parameters**, including
+hardware, in their normalized declared domains. Batch release defaults to local
+Sobol at radius 0.05; use `--search global` to search full declared bounds instead.
+Missing domains require explicit bounds; values are never clamped into a domain.
+Review shows effective bounds and any necessary recentring or artifact regeneration.
+Saving validates and copies portable inputs without integrating or changing the
+source. Then use `validate` and `run` explicitly; use `evaluate` for a fully fixed
+study. Batch commands require no TUI extra. Full options and domain recovery rules
+are in the [study editor reference](DADA_ENGINE_RESEARCH_REFERENCE.md#study-editor).
 
 ## Validate and evaluate one point
 
@@ -101,7 +129,10 @@ with animated WebP support is required; unavailable geometry, saved states or
 encoding support are reported without failing the report. The WebP is embedded
 in the offline HTML alongside the existing derived curves; no GIF or graph
 panels are included in the machine image. Use `--html PATH` for another HTML
-destination.
+destination. `--external-webp` saves standalone machine animations in
+`<HTML-stem>.assets/` beside the HTML and uses relative links instead of embedded
+image data. Keep that directory with the HTML when moving the report; each WebP
+can also be opened independently.
 
 Requested thermodynamic curves are reconstructed from saved states; Research
 announces the thermodynamic replay when needed. The HTML is a derived artifact.

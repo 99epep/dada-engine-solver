@@ -91,3 +91,16 @@ def test_microtube_productivity_objective_contract():
     assert ('`maximize_cooling_cop_times_power_per_total_microtube` maximizes\n'
             '`cooling_cop * cooling_power_per_total_microtube_w`.') in content
     assert 'does not impose minimum COP or cooling power by itself' in content
+
+
+def test_study_editor_documents_domains_and_scheduler_separately():
+    content = text().split("## Study editor", 1)[1].split("\n## ", 1)[0]
+    for command in ("study edit", "study release", "study freeze"):
+        assert command in content
+    for contract in ("prompt_toolkit", "reference_boxes", "--bounds", "--choices",
+                     "fixed_global_bounds", "local_regions_v1", "--recenter"):
+        assert contract in content
+    assert "all active parameters" in content
+    assert "unevaluated" in content
+    assert "artifact" in content
+    assert "integration" in content

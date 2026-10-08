@@ -19,6 +19,13 @@ from dada_solver.research.schema import load_study
 from dada_solver.research.plot_data import candidate_plots
 
 
+def assert_clear_cylinder_walls(states,links,cylinder,side):
+    from dada_solver.research.machine_render import _linkage_hits_cylinder,_stroke_world,CYLINDER_LINE_WIDTHS
+    outward=-1 if side=='small' else 1
+    head=cylinder['x_inner']-outward*_stroke_world(CYLINDER_LINE_WIDTHS[side])
+    assert not _linkage_hits_cylinder(states,links,0.,head,cylinder['x_outer'],cylinder['width'],cylinder['clearance'])
+
+
 def cycle():
     angle = np.linspace(0.,2*math.pi,181)
     series = {name:(320+40*np.sin(angle+i)).tolist() for i,name in enumerate(
@@ -95,10 +102,16 @@ def test_webp_is_animated_fixed_size_and_temperature_colored(tmp_path,layout):
     payload,metadata=render_machine_webp(artifacts,cycle(),layout=layout,frames=6)
     with Image.open(io.BytesIO(payload)) as image:
         assert image.format=='WEBP' and image.is_animated and image.n_frames==6
-        assert image.size==(1200,500) and image.info['loop']==0
+        assert image.size==(1200,metadata['height']) and image.info['loop']==0
+        assert metadata['vertical_margin_px']==20 and 40<image.height<=500
         pixels=np.asarray(image.convert('RGB'))
         assert np.any((pixels[:,:,0]>180)&(pixels[:,:,2]<80))
-    assert metadata['layout']==layout and metadata['cylinder_inner_faces']==dict(small=-2.16,large=2.16)
+    assert metadata['layout']==layout
+    from dada_solver.research.machine_render import _stroke_world, CYLINDER_LINE_WIDTHS
+    for side,sign in (('small',-1),('large',1)):
+        assert metadata['transfer_block_endpoints'][side]==pytest.approx(
+            metadata['cylinder_inner_faces'][side]+sign*.5*_stroke_world(CYLINDER_LINE_WIDTHS[side]))
+    assert metadata['cylinder_inner_faces']['small']>-2.16 and metadata['cylinder_inner_faces']['large']<2.16
     assert len(payload)<500_000
 
 
@@ -114,7 +127,7 @@ def test_report_embeds_whole_machine_and_requests_one_replay(tmp_path,monkeypatc
     motion=result['mechanisms']
     assert motion['media_type']=='image/webp'
     with Image.open(io.BytesIO(base64.b64decode(motion['data_uri'].split(',')[1]))) as image:
-        assert image.n_frames==48
+        assert image.n_frames==66
     from tests.test_research_cockpit import campaign
     from dada_solver.research import report
     c,_=campaign(tmp_path/'campaign',1)
@@ -138,7 +151,7 @@ def test_continuous_opening_fades_bar_without_changing_shapes():
     fig=Figure();ax=fig.subplots()
     block.draw_valve(ax,0.,0.,'right',.25,(0.,0.,1.),(1.,0.,0.))
     assert len(ax.images)==1
-    assert ax.patches[-1].get_width()==block.BAR_W
+    assert ax.patches[-1].get_width()==block.VALVE_BAR_WIDTH
     assert ax.patches[-1].get_alpha()==.75
     fig.clear()
 
@@ -194,7 +207,7 @@ def test_non_six_bar_pistons_stay_inside_the_drawn_cylinders(tmp_path,family):
     data=machine_geometry(artifacts,np.linspace(0.,2*math.pi,48,endpoint=False))
     for states,cylinder in data['sides'].values():
         low,high=sorted((cylinder['x_outer'],cylinder['x_inner']))
-        assert all(low<=state['P'][0]<=high for state in states)
+        assert all(low<=piston<=high for piston in cylinder['piston_positions'])
 
 
 def test_six_bar_presentation_preserves_every_production_bar(tmp_path):
@@ -229,3 +242,255 @@ def test_layout_is_read_from_placements_not_operation(ho,hi,expected):
         configuration=SimpleNamespace(heat_out_valve_placement=ho,
             heat_in_valve_placement=hi,motor_operation=motor)
         assert layout_for_configuration(configuration)==expected
+
+
+@pytest.mark.parametrize('family',['slider_crank','four_bar'])
+@pytest.mark.parametrize('small_direction,large_direction',[(True,True),(False,False),(True,False),(False,True)])
+def test_both_volume_conventions_rods_and_outboard_linkages(tmp_path,family,small_direction,large_direction):
+    from dada_solver.research.artifacts import MechanismArtifact
+    from dada_solver.research.mechanism_view import MechanismModel
+    study=load_study(initialize_kinematics(tmp_path/'study.toml',family,family))
+    artifacts,_=candidate_mechanisms(study,{})
+    for side,direction in [('small',small_direction),('large',large_direction)]:
+        old=artifacts[side].scientific
+        artifacts[side]=MechanismArtifact.create(family,dict(old['geometry'],volume_increases_with_coordinate=direction),settings=old['settings'])
+    angles=np.linspace(0,2*math.pi,361,endpoint=False)
+    data=machine_geometry(artifacts,angles)
+    for side in ('small','large'):
+        model=MechanismModel(artifacts[side]);outward=-1 if side=='small' else 1
+        states,cyl=data['sides'][side]
+        volume=np.asarray(model.law.value(angles))-1.
+        gas=outward*(cyl['piston_positions']-cyl['x_inner'])
+        assert (gas-gas.min())/np.ptp(gas)==pytest.approx((volume-volume.min())/np.ptp(volume),abs=1e-11)
+        assert gas[np.argmin(volume)]<gas[np.argmax(volume)]
+        low,high=sorted((cyl['x_inner'],cyl['x_outer']))
+        assert np.all((cyl['piston_positions']>=low)&(cyl['piston_positions']<=high))
+        separation=np.array([outward*(state['P'][0]-piston) for state,piston in zip(states,cyl['piston_positions'])])
+        assert np.all(separation>=0)
+        assert separation==pytest.approx(cyl['rod_length'],abs=1e-12)
+        assert_clear_cylinder_walls(states,data['links'][side],cyl,side)
+        for i,state in enumerate(states):
+            assert state['P'][1]==pytest.approx(0.,abs=1e-12)
+            if cyl['rod_length']>0.:
+                assert all(outward*(p[0]-cyl['x_outer'])>=cyl['clearance']-1e-12 for p in state.values())
+            source=model.state(angles[i])['joints']
+            crank=np.linalg.norm(state['B']-state['A'])
+            for a,b in data['links'][side]:
+                assert np.linalg.norm(state[a]-state[b])/crank==pytest.approx(np.linalg.norm(np.array(source[a])-source[b]),abs=1e-11)
+
+
+def test_cadence_does_not_change_cylinders_or_transfer_block_dimensions(tmp_path):
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','four_bar'))
+    artifacts,_=candidate_mechanisms(study,{})
+    before=machine_geometry(artifacts,np.linspace(0,2*math.pi,48,endpoint=False))
+    after=machine_geometry(artifacts,np.linspace(0,2*math.pi,66,endpoint=False))
+    assert before['heads']==after['heads']==dict(small=-2.16,large=2.16)
+    for side in ('small','large'):
+        for key in ('x_inner','x_outer','width'):
+            assert before['sides'][side][1][key]==after['sides'][side][1][key]
+
+
+def test_default_webp_has_exactly_66_frames_and_slow_cycle(tmp_path):
+    from dada_solver.research.machine_render import FRAME_DURATION_MS,FRAME_COUNT
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','slider_crank'))
+    artifacts,_=candidate_mechanisms(study,{})
+    payload,metadata=render_machine_webp(artifacts,cycle(),layout='DD')
+    assert FRAME_COUNT==66 and FRAME_DURATION_MS==85
+    query,_=frame_series(cycle(),FRAME_COUNT)
+    assert len(query)==66 and query[0]==0 and query[-1]<2*math.pi
+    assert np.diff(query)==pytest.approx(2*math.pi/66)
+    with Image.open(io.BytesIO(payload)) as image:
+        assert image.n_frames==66 and image.info['loop']==0
+        duration=0;top=image.height;bottom=0
+        for i in range(image.n_frames):
+            image.seek(i);image.load()
+            assert image.info['duration']==85
+            duration+=image.info['duration']
+            pixels=np.asarray(image.convert('RGB')).astype(int)
+            rows=np.flatnonzero(np.any(abs(pixels-240)>32,axis=(1,2)))
+            top=min(top,int(rows[0]));bottom=max(bottom,int(rows[-1])+1)
+        assert duration==5610
+        assert 18<=top<=27 and 18<=image.height-bottom<=27
+    assert metadata['cycle_duration_ms']==5610
+    assert len(payload)<2_000_000
+
+
+@pytest.mark.parametrize('family',['slider_crank','four_bar','six_bar'])
+def test_exact_extrema_mid_volume_and_six_bar_rod_clearance(tmp_path,family):
+    from dada_solver.research.mechanism_view import MechanismModel
+    from dada_solver.research.artifacts import MechanismArtifact
+    from scipy.optimize import brentq
+    study=load_study(initialize_kinematics(tmp_path/'study.toml',family,family))
+    artifacts,_=candidate_mechanisms(study,{})
+    if family!='six_bar':
+        # Opposite conventions on the two sides, each checked independently.
+        old=artifacts['large'].scientific
+        artifacts['large']=MechanismArtifact.create(family,dict(old['geometry'],volume_increases_with_coordinate=False),settings=old['settings'])
+    checkpoints={};angles=[]
+    for side in ('small','large'):
+        model=MechanismModel(artifacts[side])
+        extrema=model.law.model.stationary_points(model.law.side) if family=='four_bar' else model.geometry.stationary_points()
+        minimum=next(p['angle_rad'] for p in extrema if p['kind']=='minimum')
+        maximum=next(p['angle_rad'] for p in extrema if p['kind']=='maximum')
+        middle=brentq(lambda t:model.law.value(t)-1.5,min(minimum,maximum),max(minimum,maximum))
+        checkpoints[side]=[len(angles)+i for i in range(3)]
+        angles.extend((minimum,middle,maximum))
+    data=machine_geometry(artifacts,angles)
+    for side,indices in checkpoints.items():
+        states,cyl=data['sides'][side];outward=-1 if side=='small' else 1
+        distances=outward*(cyl['piston_positions'][indices]-cyl['x_inner'])
+        assert distances[0]==pytest.approx(.035*cyl['width'],abs=1e-9)
+        assert distances[0]<distances[1]<distances[2]
+        assert distances[1]==pytest.approx(.5*(distances[0]+distances[2]),abs=1e-9)
+        assert np.array([outward*(s['P'][0]-p) for s,p in zip(states,cyl['piston_positions'])])==pytest.approx(cyl['rod_length'],abs=1e-12)
+        if cyl['rod_length']>0.:
+            assert all(outward*(point[0]-cyl['x_outer'])>=cyl['clearance']-1e-12 for s in states for point in s.values())
+        assert_clear_cylinder_walls(states,data['links'][side],cyl,side)
+
+
+def test_only_cylinder_outlines_move_by_their_line_thickness(tmp_path):
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from dada_solver.research.machine_render import draw_machine_frame,CYLINDER_LINE_WIDTHS,_stroke_points
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','four_bar'))
+    artifacts,_=candidate_mechanisms(study,{})
+    query,data=frame_series(cycle(),66);geometry=machine_geometry(artifacts,query)
+    fig=Figure(figsize=(12,5),dpi=100);FigureCanvasAgg(fig);ax=fig.add_axes((.01,.01,.98,.98))
+    draw_machine_frame(ax,geometry,17,data,'DD',280,380);fig.canvas.draw()
+    walls=[line for line in ax.lines if line.get_zorder()==6 and line.get_color()=='#111111']
+    assert len(walls)==6
+    for i,side in enumerate(('small','large')):
+        frames,cyl=geometry['sides'][side];inward=1 if side=='small' else -1
+        head=walls[3*i];upper=walls[3*i+1];lower=walls[3*i+2]
+        original_x=ax.transData.transform((cyl['x_inner'],0))[0]
+        new_x=ax.transData.transform((head.get_xdata()[0],0))[0]
+        assert inward*(new_x-original_x)==pytest.approx(_stroke_points(ax,CYLINDER_LINE_WIDTHS[side])*fig.dpi/72.,abs=1e-10)
+        assert head.get_xdata()[0]==upper.get_xdata()[0]==lower.get_xdata()[0]
+        assert upper.get_xdata()[1]==lower.get_xdata()[1]==cyl['x_outer']
+        assert upper.get_ydata()==pytest.approx([cyl['width']/2]*2)
+        assert lower.get_ydata()==pytest.approx([-cyl['width']/2]*2)
+        piston=next(line for line in ax.lines if line.get_linewidth()==_stroke_points(ax,9.5 if side=='small' else 10.))
+        assert piston.get_xdata()==pytest.approx([cyl['piston_positions'][17]]*2)
+    # Geometry baselines remain fixed; transfer endpoints now overlap the walls.
+    coils=[patch for patch in ax.patches if isinstance(patch,PathPatch)]
+    assert len(coils)==2
+    assert geometry['heads']==dict(small=-2.16,large=2.16)
+    fig.clear()
+
+
+def test_external_webp_is_portable_and_does_not_mutate_report_data(tmp_path,monkeypatch):
+    from tests.test_research_cockpit import campaign
+    from dada_solver.research import report
+    c,_=campaign(tmp_path/'campaign',1);data=report.inspect(c.directory)
+    payload=b'RIFF-test-WebP-bytes'
+    uri='data:image/webp;base64,'+base64.b64encode(payload).decode()
+    data['selected']=data['records']
+    data['selected'][0]['plots']=dict(mechanisms=dict(data_uri=uri,media_type='image/webp',layout='DD'))
+    destination=tmp_path/'export dir'/'report.html'
+    report.render_html(data,destination,external_webp=True)
+    assets=list(destination.with_suffix('.assets').glob('*.webp'))
+    assert len(assets)==1 and assets[0].read_bytes()==payload
+    page=destination.read_text()
+    assert uri not in page and 'report.assets/mechanisms-' in page
+    assert 'motion.data_uri || motion.url' in page
+    assert data['selected'][0]['plots']['mechanisms']['data_uri']==uri
+    embedded=report.render_html(data,tmp_path/'embedded.html').read_text()
+    assert uri in embedded
+    # CLI forwards the opt-in independently from curve generation.
+    from dada_solver.research.cli import main
+    monkeypatch.setattr(report,'compare',lambda *a,**k:data)
+    output=tmp_path/'cli.html'
+    assert main(['report',str(c.directory),'--plots','mechanisms','--external-webp','--html',str(output)])==0
+    assert list(output.with_suffix('.assets').glob('*.webp'))
+
+
+@pytest.mark.parametrize('layout',['UU','DD'])
+def test_transfer_rows_overlap_walls_and_have_requested_separation(tmp_path,layout):
+    from dada_solver.research.machine_render import draw_machine_frame, _transfer_endpoints, _stroke_world, CYLINDER_LINE_WIDTHS
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','four_bar'))
+    artifacts,_=candidate_mechanisms(study,{})
+    query,data=frame_series(cycle(),66);geometry=machine_geometry(artifacts,query)
+    fig=Figure(figsize=(12,5),dpi=100);ax=fig.add_axes((.01,.01,.98,.98))
+    draw_machine_frame(ax,geometry,0,data,layout,280,380)
+    ends=_transfer_endpoints(ax,geometry)
+    width=geometry['sides']['large'][1]['width']
+    # Every conduit lies above walls, below diodes, and above the serpentine.
+    conduits=[image for image in ax.images if image.get_zorder() in (8,9)]
+    assert conduits
+    centers=[]
+    for image in conduits:
+        x0,x1,y0,y1=image.get_extent()
+        a,b=image.get_transform().transform(((x0,(y0+y1)/2),(x1,(y0+y1)/2)))
+        a,b=ax.transData.inverted().transform((a,b))
+        assert ends['small']-1e-12<=a[0]<=b[0]<=ends['large']+1e-12
+        centers.append(a[1])
+    assert min(centers)==pytest.approx(-.155*1.25*width)
+    assert max(centers)==pytest.approx(.155*1.25*width)
+    coils=[patch for patch in ax.patches if isinstance(patch,PathPatch)]
+    assert all(p.get_zorder()==7 for p in coils)
+    walls=[line for line in ax.lines if line.get_zorder()==6 and line.get_color()=='#111111']
+    for i,side in enumerate(('small','large')):
+        sign=-1 if side=='small' else 1
+        assert ends[side]-walls[3*i].get_xdata()[0]==pytest.approx(sign*.5*_stroke_world(CYLINDER_LINE_WIDTHS[side]))
+    assert block.SEG_OUTER>.36 and block.SEG_MID<.44
+    fig.clear()
+
+
+def test_assembly_strokes_scale_with_viewport_without_moving_cylinders(tmp_path):
+    from dada_solver.research.machine_render import draw_machine_frame,_cylinder_head,_stroke_points,REFERENCE_PIXELS_PER_UNIT
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','slider_crank','slider_crank'))
+    artifacts,_=candidate_mechanisms(study,{})
+    query,data=frame_series(cycle(),66);geometry=machine_geometry(artifacts,query)
+    heads=[];strokes=[]
+    for zoom in (1.,2.):
+        expanded=dict(geometry)
+        xmin,xmax,ymin,ymax=geometry['limits']
+        expanded['limits']=(xmin*zoom,xmax*zoom,ymin*zoom,ymax*zoom)
+        fig=Figure(figsize=(12,5),dpi=100);ax=fig.add_axes((.01,.01,.98,.98))
+        draw_machine_frame(ax,expanded,0,data,'DD',280,380)
+        heads.append(_cylinder_head(ax,geometry['sides']['small'][1],'small'))
+        strokes.append(_stroke_points(ax,6.5))
+        fig.clear()
+    assert heads[0]==heads[1]
+    assert strokes[1]==pytest.approx(strokes[0]/2.)
+    # The calibrated reference retains the original point linewidths.
+    fig=Figure(figsize=(12,5),dpi=100);ax=fig.add_axes((.01,.01,.98,.98))
+    ax.set_xlim(0.,1176/REFERENCE_PIXELS_PER_UNIT)
+    assert _stroke_points(ax,6.5)==pytest.approx(6.5)
+    assert _stroke_points(ax,10.)==pytest.approx(10.)
+    fig.clear()
+
+
+@pytest.mark.parametrize('direction',['left','right'])
+@pytest.mark.parametrize('opening',[0.,.5])
+def test_diode_bar_has_original_thickness_and_reaches_conduit_triangle_intersection(direction,opening):
+    fig=Figure();ax=fig.subplots()
+    vertices,base,tip,_,_=block.valve_geometry(0.,0.,direction)
+    block.draw_valve(ax,0.,0.,direction,opening,(0.,0.,1.),(1.,0.,0.))
+    bar=ax.patches[-1]
+    assert bar.get_width()==pytest.approx(block.BAR_W)
+    overlap=(bar.get_x()+bar.get_width()-tip if direction=='left' else tip-bar.get_x())
+    assert overlap==pytest.approx(block.VALVE_BAR_OVERLAP)
+    # At the triangle-facing bar edge, the sloped triangle boundary meets
+    # the conduit top/bottom exactly, for either mirrored diode direction.
+    assert .5*block.TRI_H*overlap/block.TRI_W==pytest.approx(.5*block.PIPE_H)
+    fig.clear()
+
+
+@pytest.mark.parametrize('side',['small','large'])
+@pytest.mark.parametrize('collision',[False,True])
+def test_piston_rod_can_be_zero_only_without_wall_collision(side,collision):
+    from dada_solver.research.machine_render import _place, _linkage_hits_cylinder, _stroke_world, CYLINDER_LINE_WIDTHS
+    sign=-1 if side=='small' else 1
+    # A narrow horizontal mechanism fits inside the open-ended cylinder;
+    # moving B above a wall instead makes its connecting rod cross that wall.
+    samples=[dict(A=np.array((sign*3.,0.)),B=np.array((sign*2.,2. if collision else .1)),P=np.array((sign*x,0.))) for x in (0.,1.)]
+    links=[('A','B'),('B','P')]
+    placed,cyl=_place(samples,side,0.,2.,.1,envelope=samples,visible_stroke=1.,links=links)
+    assert (cyl['rod_length']>0)==collision
+    for before,after,piston in zip(samples,placed,cyl['piston_positions']):
+        assert sign*(after['P'][0]-piston)==pytest.approx(cyl['rod_length'])
+        assert np.linalg.norm(after['B']-after['P'])==pytest.approx(np.linalg.norm(before['B']-before['P']))
+    if not collision:
+        assert all(state['P'][0]==p for state,p in zip(placed,cyl['piston_positions']))
+    wall_head=cyl['x_inner']-sign*_stroke_world(CYLINDER_LINE_WIDTHS[side])
+    assert not _linkage_hits_cylinder(placed,links,0.,wall_head,cyl['x_outer'],cyl['width'],.1)

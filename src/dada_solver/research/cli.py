@@ -57,6 +57,23 @@ class _ConsistentSelection(argparse.Action):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
+    study_command = commands.add_parser('study', help='Edit portable Research declarations without thermodynamic integration')
+    study_actions = study_command.add_subparsers(dest='study_command', required=True)
+    interactive = study_actions.add_parser('edit', help='Open the optional terminal study editor')
+    interactive.add_argument('source', type=Path)
+    from .study_editor import GROUPS as EDITOR_GROUPS
+    for operation in ('release','freeze'):
+        batch = study_actions.add_parser(operation, help=f'{operation.capitalize()} selected study parameters and write a new portable study')
+        batch.add_argument('source', type=Path)
+        batch.add_argument('--group', action='append', default=[], choices=EDITOR_GROUPS)
+        batch.add_argument('--parameter', action='append', default=[], metavar='NAME')
+        batch.add_argument('--output', type=Path, required=True)
+        batch.add_argument('--search', choices=['local','global'], help='Local normalized scheduler or full declared bounds')
+        batch.add_argument('--radius', type=float, help='Local scheduler radius for ALL active parameters; release defaults to 0.05')
+        batch.add_argument('--recenter', action='store_true', help='Explicitly replace existing local regions with one unevaluated initial center')
+        if operation=='release':
+            batch.add_argument('--bounds', action='append', default=[], metavar='NAME=LOW:HIGH[:linear|log]', help='Explicit numerical search domain; no physical domain is inferred')
+            batch.add_argument('--choices', action='append', default=[], metavar='NAME=JSON_ARRAY', help='Explicit categorical search choices')
     init = commands.add_parser('init', help='Create an editable study and its portable basis')
     init.add_argument('preset', choices=['kinematics','external-stream-refrigeration','external-stream-motor'])
     from .families import FAMILIES
@@ -168,9 +185,54 @@ def main(argv=None):
         if name != 'status':
             p.add_argument('--html', type=Path, help='Write or regenerate standalone HTML (report default: CAMPAIGN/report.html)')
             p.add_argument('--plots', action='append', metavar='NAMES', help='Comma-separated/repeated: positions, volumes, pressures, heat, temperatures, flows, velocity, acceleration, mechanisms; default, all or none. Report defaults to positions,heat,pressures,temperatures for the best two.')
+        if name == 'report':
+            p.add_argument('--external-webp',action='store_true',help='Save mechanism WebP files beside the HTML in HTML_NAME.assets/ rather than embedding them')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'init':
+        if args.command == 'study':
+            if args.study_command=='edit':
+                from .study_editor_tui import run_editor
+                run_editor(args.source)
+            else:
+                from .study_editor import StudyEditor
+                editor=StudyEditor(args.source)
+                if not args.group and not args.parameter:
+                    raise ValueError('Select at least one --group or --parameter.')
+                if args.study_command=='release':
+                    domains={}
+                    entries={p.name:p for p in editor.inventory()}
+                    for specification in args.bounds:
+                        name,separator,interval=specification.partition('=')
+                        parts=interval.split(':')
+                        if not separator or len(parts) not in (2,3) or name not in entries:
+                            raise ValueError(f'Invalid --bounds {specification!r}; use NAME=LOW:HIGH[:linear|log].')
+                        if name in domains: raise ValueError(f'Duplicate domain for {name}.')
+                        kind=entries[name].kind
+                        if kind not in ('continuous','integer'): raise ValueError(f'{name}: numeric bounds require a releasable numeric coordinate.')
+                        domains[name]=dict(kind=kind,lower=json.loads(parts[0]),upper=json.loads(parts[1]),
+                            **({'encoding':'nearest_even_v1'} if kind=='integer' else {'transform':parts[2] if len(parts)==3 else 'linear'}))
+                        if kind=='integer' and len(parts)==3: raise ValueError(f'{name}: integer coordinates have an encoding, not a linear/log transform.')
+                    for specification in args.choices:
+                        name,separator,choices=specification.partition('=')
+                        if not separator or name not in entries or entries[name].kind!='choice':
+                            raise ValueError(f'Invalid --choices {specification!r}; use a current choice parameter and JSON array.')
+                        if name in domains: raise ValueError(f'Duplicate domain for {name}.')
+                        values=json.loads(choices)
+                        if not isinstance(values,list): raise ValueError(f'{name}: choices must be a JSON array.')
+                        domains[name]=dict(kind='choice',choices=values)
+                    editor.release(groups=args.group,parameters=args.parameter,domains=domains)
+                else:
+                    editor.freeze(groups=args.group,parameters=args.parameter)
+                mode=args.search or ('local' if args.study_command=='release' or args.radius is not None else None)
+                if mode=='global' and args.radius is not None:
+                    raise ValueError('--radius belongs to the local scheduler, not full declared bounds.')
+                if mode is not None:
+                    editor.configure_search(mode,radius=args.radius if args.radius is not None else .05,recenter=args.recenter)
+                else: editor.recenter=args.recenter
+                print(json.dumps(editor.review(),indent=2))
+                output=editor.save(args.output)
+                print(f'Created {output}; {len(load_study(output).space.parameters)} active parameters; no integration started.')
+        elif args.command == 'init':
             if args.preset.startswith('external-stream-'):
                 from .presets import initialize_external_stream
                 path=initialize_external_stream(args.output,args.small,args.large,mode=args.preset.removeprefix('external-stream-'))
@@ -384,7 +446,7 @@ def main(argv=None):
             cache_directory=destination.parent/'.research-plot-cache' if destination is not None else None
             data = report.compare(args.paths,args.candidate, plots=plots,cache_directory=cache_directory,
                 notify=lambda message: print(message,file=sys.stderr,flush=True))
-            if destination is not None: report.render_html(data,destination)
+            if destination is not None: report.render_html(data,destination,external_webp=getattr(args,'external_webp',False))
             if args.json:
                 print(json.dumps(data,indent=2))
             else:
