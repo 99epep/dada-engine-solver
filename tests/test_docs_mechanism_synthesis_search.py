@@ -165,8 +165,12 @@ def test_method_describes_current_handoff_without_campaign_records():
 def test_six_bar_stages_are_real_hierarchical_operators():
     text=DOC.read_text()
     for token in ('hierarchical_six_bar_geometry_v1','SixBarPrimaryMechanism','component = "primary"',
-                  'E is not P','deferred','primary_linearity_weight','primary_topology_weight',
+                  'E is not P','deferred','primary_topology_cadence_v2','missing_cadence','PrimaryCadencePolicy',
                   'pivot_envelope_radius','minimum_trajectory_extent','parent lineages never merge',
                   'q_mirror(theta) = q_source(-theta)','--stage opposite_local_adaptation'):
         assert token in text
     assert 'six-bar search remains an explicit implementation boundary' not in text
+    assert 'Normalized projection position MSE dominates' not in text
+    assert 'primary_linearity_weight' not in text
+    assert 'primary_topology_weight' not in text
+    assert 'Position and\nvelocity-profile RMS remain diagnostics only' in text

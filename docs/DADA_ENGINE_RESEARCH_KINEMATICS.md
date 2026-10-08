@@ -776,6 +776,11 @@ ownership. Paired reference boxes are reused when applicable, otherwise the
 existing centered synthesis-box policy supplies numerical search domains.
 The local radius applies to all active hardware and mechanism coordinates, not
 only the newly released group. The assistant can show every effective interval.
+For mechanisms already active, `study bounds recenter --group mechanisms
+--half-width 0.01` narrows their current declared numerical domains without
+changing their initial geometry or exchanger bounds. A local scheduler radius
+of 1 can then cover those declared windows; changing that radius affects all
+active coordinates and requires a separate decision.
 Freezing a changed effective geometry produces a properly hashed artifact with
 parent provenance; active overrides need not alter the reference artifact.
 No thermodynamic evaluation occurs while editing or saving.
@@ -935,7 +940,9 @@ annotations; visualization never evaluates thermodynamics.
 
 Install the optional `dada-engine-solver[plot]` dependencies for these views.
 `animate_mechanism()` returns a figure and Matplotlib `FuncAnimation`; retain the
-animation and call `matplotlib.pyplot.show()`. Space pauses/resumes. No GIF,
+animation and call `matplotlib.pyplot.show()`. Playback uses 66 uniformly spaced
+frames at 20 fps (3.3 seconds per cycle), independently of the target grid.
+Curves and diagnostics retain their full resolution. Space pauses/resumes. No GIF,
 encoder or export step is required. Libraries are explicitly selected by family
 ID and piston; no implicit best member is chosen.
 

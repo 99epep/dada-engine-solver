@@ -65,11 +65,11 @@ def render_synthesis_catalogue(library,target,path,*,library_path=None):
             labels=[member['family_id'],side,artifact.scientific['settings']['family']+(' primary (E proxy)' if artifact.scientific['settings'].get('component')=='primary' else ''),
                     fit['position_rms'],fit['position_maximum_error'],fit['velocity_rms_per_rad']]
             metrics={k:v for k,v in mechanical['metrics'].items() if k in ('stroke_over_crank',
-                'minimum_primary_transmission_sine','minimum_secondary_transmission_sine','minimum_rod_axis_cosine','stroke_over_envelope','closure_margin','E_projection_span_over_crank','E_lateral_rms_over_projection_span','EH_over_crank','H_axis_lateral_rms_over_stroke','H_axis_lateral_span_over_stroke','crank_axis_to_EFH_clearance_over_crank')}
+                'minimum_primary_transmission_sine','minimum_secondary_transmission_sine','minimum_rod_axis_cosine','stroke_over_envelope','closure_margin','E_projection_span_over_crank','E_axis_variance_fraction','E_lateral_rms_over_projection_span','EH_over_crank','H_axis_lateral_rms_over_stroke','H_axis_lateral_span_over_stroke','crank_axis_to_EFH_clearance_over_crank')}
             summary=html.escape('; '.join(f'{k}: {v:.5g}' for k,v in metrics.items() if v is not None))
             cells=''.join(f'<td data-sort="{html.escape(str(v))}">{html.escape(str(v) if not isinstance(v,float) else f"{v:.6g}")}</td>' for v in labels)
             detail=html.escape(json.dumps(dict(artifact_hash=artifact.content_hash,geometry=artifact.scientific['geometry'],categories=categories,
-                fit=fit,mechanical=mechanical,search=member['metadata'].get('search'),
+                fit=fit,primary_cadence=evidence.get('primary_cadence'),mechanical=mechanical,search=member['metadata'].get('search'),
                 provenance=member['metadata']['provenance']),indent=2))
             primary=artifact.scientific['settings'].get('component') is not None
             complete=set(member['mechanisms'])=={'small','large'} and all(
@@ -84,14 +84,29 @@ def render_synthesis_catalogue(library,target,path,*,library_path=None):
             if complete:
                 adapt=f'dada-research mechanism adapt path/to/source/campaign --candidate SOURCE_ID --library {shlex.quote(str(library_path))} --family-id {shlex.quote(member["family_id"])} --output path/to/thermo/study.toml'
                 selection+='<p>Complete pair: usable directly with mechanism adapt.</p><pre>'+html.escape(adapt)+'</pre>'
-            entries.append('<tr>'+cells+f'<td>{summary}</td><td>{html.escape(json.dumps(categories))}</td>'+
+            cadence=evidence.get('primary_cadence')
+            cadence_summary='Not a primary stage'
+            if cadence is not None:
+                c=cadence['target']['cadence']
+                lines=[f"Policy: {cadence['policy_version']}", f"Internal cadence score: {cadence['score']:.6g}",
+                       f"Turnarounds (study rad): {cadence['matched_turnarounds_rad']}",
+                       f"Extra reversals: {cadence['extra_crossings']}",
+                       f"Fast/slow speed ratio: {cadence['fast_slow_speed_ratio']}",
+                       f"Fast displacement fraction: {cadence['fast_displacement_fraction']}",
+                       f"Target cadence: {c}"]
+                lines.extend(f"{name}: {value:.6g}" for name,value in cadence['terms'].items())
+                cadence_summary='<pre>'+html.escape('\n'.join(lines))+'</pre>'
+            elif primary:
+                cadence_summary='Archived evidence: no topology/cadence score recorded.'
+            entries.append('<tr>'+cells+f'<td>{summary}</td><td>{cadence_summary}</td><td>{html.escape(json.dumps(categories))}</td>'+
                 '<td>'+selection+'<details><summary>Geometry and target comparison</summary>'+_preview(artifact,target,side)+
                 '<details><summary>Evidence / search provenance</summary><pre>'+detail+'</pre></details></details></td></tr>')
-    headings=('Family ID','Piston','Mechanism','Position RMS','Max position error','Velocity RMS / rad','Mechanical metrics','Categories','Selection / preview / evidence')
+    headings=('Family ID','Piston','Mechanism','Position RMS','Max position error','Velocity RMS / rad','Mechanical metrics','Primary topology / cadence','Categories','Selection / preview / evidence')
     headers=''.join(f'<th><button onclick="sortCatalogue({i})">{title}</button></th>' for i,title in enumerate(headings))
     document='''<!doctype html><html lang="en"><meta charset="utf-8"><title>Mechanism synthesis catalogue</title>
 <style>body{font:14px system-ui;margin:24px;color:#202830}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccd3d8;padding:8px;vertical-align:top}th{background:#eef3f6}button{font:inherit;border:0;background:none;cursor:pointer}svg{width:900px;max-width:100%;height:auto}pre{white-space:pre-wrap;max-width:900px;font-size:12px}summary{cursor:pointer}details{min-width:260px}</style>
 <h1>Mechanism families for human selection</h1><p>Fit, mechanical evidence and internal search score remain separate.
+E-projection position and velocity errors are diagnostics only, excluded from the primary score.
 No thermodynamic performance has been inferred. Click headings to sort; sorting does not identify an absolute winner.</p>'''+f'<p>Target hash: <code>{html.escape(target.content_hash)}</code>. Use the Family ID with <code>mechanism visualize --family-id</code> or <code>full_local_polish --family-id</code>.</p>'+f'<p>Source library: <code>{html.escape(str(library_path))}</code></p><p>Select both sides here for the short command, or copy side selectors to combine different libraries.</p><pre id="pair-command" data-base="{html.escape(common_command,quote=True)}">Select a SMALL and a LARGE mechanism.</pre>'+f'<table><thead><tr>{headers}</tr></thead><tbody>{"".join(entries)}</tbody></table>'+'''
 <script>
 const selectedMechanisms={};

@@ -306,3 +306,45 @@ def test_four_bar_joint_state_respects_direction_phase_and_orientation():
             assert state['derivative'] == original.coordinate_derivative
     with pytest.raises(ValueError):
         model.law.model.joint_state(.1, 'invalid')
+
+
+
+@pytest.mark.parametrize('target_samples',[25,1441])
+def test_animation_uses_uniform_frames_without_reducing_curve_resolution(target_samples):
+    plt=_pyplot()
+    a=artifact('slider_crank')
+    target=MotionTarget.from_kinematics(
+        ComposedKinematics(*(build_side(SEEDS[side]['slider_crank']['settings'],
+            SEEDS[side]['slider_crank']['parameters'],side,CylinderVolumeLimits(.1,.3))[0]
+            for side in ('small','large'))),source={'study_id':'uniform-animation-grid'},samples=target_samples)
+    figure,animation=animate_mechanism(a,target=target,samples=25)
+    indices=list(animation.new_frame_seq())
+    assert indices==list(range(66))
+    assert animation.event_source.interval==50
+    assert len(figure.axes[1].lines[0].get_xdata())==target_samples
+    angles=np.linspace(0.,2*math.pi,66,endpoint=False)
+    model=MechanismModel(a)
+    for index in indices:
+        artists=animation._func(index)
+        assert artists[-1].get_text()==f"Study angle {angles[index]:.3f} rad"
+        for cursor in artists[-4:-1]:
+            np.testing.assert_allclose(cursor.get_xdata(),[angles[index]]*2)
+        left,right=model.state(float(angles[index]))['links'][0]
+        joints=model.state(float(angles[index]))['joints']
+        np.testing.assert_allclose(artists[0].get_xdata(),[joints[left][0],joints[right][0]])
+    assert angles[-1]<2*math.pi
+    figure.canvas.draw();plt.close(figure)
+
+
+def test_animation_without_target_and_custom_frame_count():
+    plt=_pyplot()
+    figure,animation=animate_mechanism(artifact('slider_crank'),frames_per_cycle=33,interval_ms=100)
+    assert list(animation.new_frame_seq())==list(range(33))
+    assert animation.event_source.interval==100
+    figure.canvas.draw();plt.close(figure)
+
+
+@pytest.mark.parametrize('count',[0,2,-1,1.5,True])
+def test_animation_rejects_invalid_frame_count(count):
+    with pytest.raises(ValueError,match='frames per cycle'):
+        animate_mechanism(artifact('slider_crank'),frames_per_cycle=count)

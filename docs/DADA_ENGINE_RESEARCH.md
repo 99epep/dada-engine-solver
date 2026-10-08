@@ -59,6 +59,14 @@ hardware, in their normalized declared domains. Batch release defaults to local
 Sobol at radius 0.05; use `--search global` to search full declared bounds instead.
 Missing domains require explicit bounds; values are never clamped into a domain.
 Review shows effective bounds and any necessary recentring or artifact regeneration.
+To balance search windows by group, use **Recalibrate bounds for this group**
+or `research study bounds recenter path/to/active/study.toml --group mechanisms
+--half-width 0.01 --output path/to/narrow/study.toml`. It narrows active numeric
+mechanism declarations around their exact initials, leaving exchanger bounds and
+the scheduler radius unchanged. The TUI previews old/new intervals and offers
+undo; setting the global local radius to 1 is a separate confirmed action.
+Toggles stay in the group submenu with the cursor on the same parameter.
+
 Saving validates and copies portable inputs without integrating or changing the
 source. Then use `validate` and `run` explicitly; use `evaluate` for a fully fixed
 study. Batch commands require no TUI extra. Full options and domain recovery rules

@@ -61,12 +61,13 @@ def mechanism_state(mechanism, angle_rad):
     return model.state(angle_rad)
 
 
-def _samples(artifact, target, side, samples):
+def _samples(artifact, target, side, samples, *, angles=None):
     if side not in ('small', 'large'):
         raise ValueError('Choose SMALL or LARGE.')
     if type(samples) is not int or samples < 3:
         raise ValueError('At least three angle samples are required.')
-    angles = np.asarray(target.scientific['angles_rad']) if target else np.linspace(0., 2*math.pi, samples)
+    if angles is None:
+        angles = np.asarray(target.scientific['angles_rad']) if target else np.linspace(0., 2*math.pi, samples)
     model = MechanismModel(artifact)
     if model.primary and target:
         from .synthesis_six_bar import primary_evidence, PrimaryProjection
@@ -108,7 +109,7 @@ def plot_motion_comparison(artifact, target, *, side='small', samples=361, axes=
     return figure, axes
 
 
-def _view(artifact, target, side, samples, thermodynamic):
+def _view(artifact, target, side, samples, thermodynamic, *, frame_angles=None):
     import matplotlib.pyplot as plt
     from .synthesis import assess_mechanism
     from .families import side_metrics
@@ -153,6 +154,8 @@ def _view(artifact, target, side, samples, thermodynamic):
         text += '\nSolver '+thermodynamic['candidate_id']+': '+str(thermodynamic['metrics'])
     figure.suptitle(artifact.scientific['settings']['family']+' / '+side+'\n'+heading+'\n'+text, fontsize=9)
     angle_label = drawing.text(.02, .98, '', transform=drawing.transAxes, va='top')
+    if frame_angles is not None:
+        angles, states = _samples(artifact, target, side, samples, angles=frame_angles)
     def update(index):
         state = states[index]
         for bar, (left, right) in zip(bars, state['links']):
@@ -166,7 +169,7 @@ def _view(artifact, target, side, samples, thermodynamic):
         return [*bars, *labels.values(), *cursors, angle_label]
     update(0)
     figure.tight_layout(rect=(0, 0, 1, .88))
-    return figure, update, len(states)-1
+    return figure, update, len(states)
 
 
 def plot_mechanism(artifact, *, target=None, side='small', samples=361, angle_rad=0., thermodynamic=None):
@@ -179,17 +182,25 @@ def plot_mechanism(artifact, *, target=None, side='small', samples=361, angle_ra
     return figure
 
 
-def animate_mechanism(artifact, *, target=None, side='small', samples=181, interval_ms=40, thermodynamic=None):
+def animate_mechanism(artifact, *, target=None, side='small', samples=181, interval_ms=50, frames_per_cycle=66, thermodynamic=None):
     """Return (figure, FuncAnimation); call pyplot.show() for interactive use.
 
     Space pauses/resumes. Keep the returned animation alive while its window is
-    open. No writer, GIF or external encoder is involved.
+    open. No writer, GIF or external encoder is involved. Playback uses an
+    independent uniform angular grid, without duplicating the periodic seam.
+    Defaults are 66 frames at 20 fps (3.3 seconds per cycle); curves and
+    diagnostics keep their full resolution. Only moving artists are redrawn
+    when the graphical backend supports blitting.
     """
     from matplotlib.animation import FuncAnimation
     if not math.isfinite(interval_ms) or interval_ms <= 0:
         raise ValueError('Animation interval must be positive and finite.')
-    figure, update, count = _view(artifact, target, side, samples, thermodynamic)
-    animation = FuncAnimation(figure, update, frames=count, interval=interval_ms, blit=False)
+    if type(frames_per_cycle) is not int or frames_per_cycle < 3:
+        raise ValueError('Animation frames per cycle must be an integer >= 3.')
+    frame_angles = np.linspace(0., 2*math.pi, frames_per_cycle, endpoint=False)
+    figure, update, count = _view(artifact, target, side, samples, thermodynamic, frame_angles=frame_angles)
+    animation = FuncAnimation(figure, update, frames=range(count), interval=interval_ms,
+                              blit=figure.canvas.supports_blit)
     paused = False
     def key(event):
         nonlocal paused

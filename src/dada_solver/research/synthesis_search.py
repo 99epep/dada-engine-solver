@@ -65,8 +65,7 @@ class SearchPolicy:
     discovery_polish_evaluations: int = 24
     bounds: dict = field(default_factory=dict)
     categories: dict = field(default_factory=dict)
-    primary_linearity_weight: float = .001
-    primary_topology_weight: float = .001
+    primary_cadence: dict = field(default_factory=dict)
     minimum_trajectory_extent: float = .1
     pivot_envelope_radius: float = 2.
     link_extent_minimum: float = .25
@@ -83,10 +82,9 @@ class SearchPolicy:
 
     def __post_init__(self):
         self.validate_relative_bounds()
-        for name in ('primary_linearity_weight','primary_topology_weight'):
-            value=getattr(self,name)
-            if isinstance(value,bool) or not math.isfinite(value) or not 0<=value<=.1:
-                raise ValueError(f'{name} must lie in [0, 0.1].')
+        from .synthesis_six_bar import PrimaryCadencePolicy
+        if not isinstance(self.primary_cadence,dict): raise ValueError('primary_cadence must be a policy table.')
+        PrimaryCadencePolicy(**self.primary_cadence)
         for name,minimum in (('seed',0),('islands',1),('population',4),('generations',0),
                 ('samples',360),('mechanical_samples',360),('root_samples',360),('retain_per_side',2),
                 ('polish_evaluations',1),('discovery_polish_evaluations',0)):

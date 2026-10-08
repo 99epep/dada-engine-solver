@@ -156,6 +156,42 @@ normalized coordinates. Log transforms and integer decoding use the existing
 parameter APIs. `choice_scope = "declared_choices"` retains all declared choices;
 category order is not a distance. The assistant shows effective physical bounds.
 
+Recalibrate a selected group's **declared bounds** around its exact current
+initials, independently of the scheduler radius:
+
+```console
+dada-research study bounds recenter path/to/active/study.toml \
+  --group mechanisms --half-width 0.01 --output path/to/narrow/study.toml
+```
+
+`StudyEditor.recenter_bounds(groups=..., parameters=..., half_width=...)` uses
+`encode(initial) ± half_width` in the **current** declared normalized domain,
+clips to `[0, 1]`, and decodes with the existing linear/log or integer encoding.
+It changes only `lower/upper`, never initials, types, units or transforms, and
+never expands the previous domain. Fixed parameters and categorical choices are
+reported as skipped. An integer interval collapsing to one value is rejected;
+all selected rows are checked before any change is applied. Unselected exchanger
+bounds remain unchanged. This sets search windows, not equal thermodynamic
+sensitivities or new physical validity domains.
+
+Each group submenu offers **Recalibrate bounds for this group**, with the old
+reference intervals, proposed intervals and Apply/Back. Repeating the operation
+uses the newly declared intervals and therefore narrows cumulatively; the preview
+says so explicitly. **Undo last bounds recalibration** restores the preceding
+intervals in the session, provided subsequent parameter edits would not be lost.
+Nothing is saved until Save. Applied operations are recorded in `changed_bounds`
+and `study_edit.bounds_recalibrations`, including their reference declarations.
+
+The scheduler radius is unchanged by recalibration. The TUI separately asks
+whether to set a local radius to 1.0; accepting affects **all active parameters**,
+including unmodified hardware. Batch `--radius 1` requests that same separate
+change explicitly. With radius 1, Sobol explores the entire newly declared
+numeric domain. **Show effective bounds** groups declared bounds, exact initials,
+effective bounds and clipping indicators, and displays the global radius;
+choices retain `choice_scope = "declared_choices"` without numeric distances.
+Group menus remain open after toggles and individual edits, preserving parameter
+focus and scroll position. Back or Escape returns to the main menu.
+
 An altered active set or changed initials creates one region at the exact current
 initials; unchanged valid regions are preserved. Replacing multiple regions
 requires explicit interactive confirmation or `--recenter` in batch mode.

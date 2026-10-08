@@ -74,6 +74,17 @@ def main(argv=None):
         if operation=='release':
             batch.add_argument('--bounds', action='append', default=[], metavar='NAME=LOW:HIGH[:linear|log]', help='Explicit numerical search domain; no physical domain is inferred')
             batch.add_argument('--choices', action='append', default=[], metavar='NAME=JSON_ARRAY', help='Explicit categorical search choices')
+    bounds = study_actions.add_parser('bounds', help='Edit declared search domains independently of scheduler radius')
+    bounds_actions = bounds.add_subparsers(dest='bounds_command', required=True)
+    recenter_bounds = bounds_actions.add_parser('recenter', help='Narrow selected active numeric bounds around exact initials')
+    recenter_bounds.add_argument('source', type=Path)
+    recenter_bounds.add_argument('--group', action='append', default=[], choices=EDITOR_GROUPS)
+    recenter_bounds.add_argument('--parameter', action='append', default=[], metavar='NAME')
+    recenter_bounds.add_argument('--half-width', type=float, default=.01)
+    recenter_bounds.add_argument('--output', type=Path, required=True)
+    recenter_bounds.add_argument('--search', choices=['local','global'])
+    recenter_bounds.add_argument('--radius', type=float, help='Explicit independent scheduler radius for ALL active parameters')
+    recenter_bounds.add_argument('--recenter', action='store_true', help='Confirm replacement of incompatible local region centers')
     init = commands.add_parser('init', help='Create an editable study and its portable basis')
     init.add_argument('preset', choices=['kinematics','external-stream-refrigeration','external-stream-motor'])
     from .families import FAMILIES
@@ -221,6 +232,9 @@ def main(argv=None):
                         if not isinstance(values,list): raise ValueError(f'{name}: choices must be a JSON array.')
                         domains[name]=dict(kind='choice',choices=values)
                     editor.release(groups=args.group,parameters=args.parameter,domains=domains)
+                elif args.study_command=='bounds':
+                    plan=editor.recenter_bounds(groups=args.group,parameters=args.parameter,half_width=args.half_width)
+                    print(json.dumps(plan,indent=2))
                 else:
                     editor.freeze(groups=args.group,parameters=args.parameter)
                 mode=args.search or ('local' if args.study_command=='release' or args.radius is not None else None)

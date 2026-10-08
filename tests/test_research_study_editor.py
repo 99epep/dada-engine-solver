@@ -363,3 +363,174 @@ def test_readable_review_includes_execution_changes_and_radius_scope(tmp_path):
     assert 'effective_bounds' not in text
     new=load_study(editor.save(tmp_path/'reviewed/study.toml'))
     assert new.basis.data['provenance']['study_edit']['execution_configuration_change']==review['execution_configuration_change']
+
+
+def test_recenter_mechanisms_preserves_hardware_initials_artifacts_and_provenance(tmp_path):
+    from dada_solver.campaign.parameters import parameter_from_mapping
+    editor=StudyEditor(retuned(tmp_path));editor.release(groups=['kinematics-small'])
+    before=copy.deepcopy(editor.raw);values=editor.values()
+    selected=editor.select(groups=['kinematics-small'],releasable_only=True)
+    plan=editor.recenter_bounds(groups=['kinematics-small'],half_width=.01)
+    assert len(plan['changes'])==3 and plan['skipped']
+    for name in selected:
+        old=next(r for r in before['parameters'] if r['name']==name)
+        p=parameter_from_mapping({k:v for k,v in old.items() if k!='unit'})
+        new=editor._rows()[name];u=p.encode(old['initial'])
+        assert new['lower']==pytest.approx(p.decode(max(0.,u-.01)))
+        assert new['upper']==pytest.approx(p.decode(min(1.,u+.01)))
+        assert {k:v for k,v in new.items() if k not in ('lower','upper')}=={k:v for k,v in old.items() if k not in ('lower','upper')}
+    assert editor.values()==values
+    for row in before['parameters']:
+        if row['name'] not in selected: assert editor._rows()[row['name']]==row
+    editor.configure_search('local',radius=1.)
+    review=editor.review()
+    assert not review['changed_initial_values']
+    for name in selected:
+        box,=review['effective_bounds'][name]
+        assert (box['lower'],box['upper'])==(editor._rows()[name]['lower'],editor._rows()[name]['upper'])
+    new=load_study(editor.save(tmp_path/'narrow/study.toml'))
+    assert main(['validate',str(tmp_path/'narrow/study.toml')])==0
+    assert new.artifacts==editor.study.artifacts
+    assert new.basis.data['provenance']['study_edit']['bounds_recalibrations']==review['bounds_recalibrations']
+    assert set(selected)<=new.basis.data['provenance']['study_edit']['changed_bounds'].keys()
+    assert np.array_equal(design(new).kinematics.small.value(np.linspace(0,6,71)),design(editor.study).kinematics.small.value(np.linspace(0,6,71)))
+
+
+@pytest.mark.parametrize('half_width',[0.,-1.,1.1,float('nan'),float('inf'),True,'0.1'])
+def test_recenter_invalid_width_does_not_mutate(tmp_path,half_width):
+    editor=StudyEditor(original_source(tmp_path));before=copy.deepcopy(editor.raw)
+    with pytest.raises(ValueError,match='half_width'):editor.recenter_bounds(groups=['frequency'],half_width=half_width)
+    assert editor.raw==before and not editor.bounds_history
+
+
+def test_log_integer_choices_and_fixed_rows(tmp_path):
+    from dada_solver.research.study_editor import recentered_declaration
+    log=dict(name='x',unit='1',kind='continuous',lower=1.,upper=10000.,initial=100.,transform='log')
+    fitted=recentered_declaration(log,.1)
+    assert fitted['lower']==pytest.approx(10**1.6) and fitted['upper']==pytest.approx(10**2.4)
+    integer=dict(name='n',unit='1',kind='integer',encoding='nearest_even_v1',lower=10,upper=110,initial=50)
+    fitted=recentered_declaration(integer,.05)
+    assert fitted==dict(integer,lower=45,upper=55)
+    for width in (.01,.5,1.):
+        edge=dict(log,initial=1.)
+        fitted=recentered_declaration(edge,width)
+        assert 1.<=fitted['lower']<fitted['upper']<=10000.
+        assert fitted['initial']==1.
+    with pytest.raises(ValueError,match='n: recalibration'):
+        recentered_declaration(dict(integer,lower=49,upper=51),.01)
+    editor=StudyEditor(original_source(tmp_path));editor.freeze(groups=['frequency'])
+    before=copy.deepcopy(editor.raw)
+    result=editor.recenter_bounds(parameters=['operation.frequency_hz','valve.heat_in.placement'])
+    assert len(result['skipped'])==2 and not result['changes']
+    assert editor.raw==before
+
+
+def test_recenter_atomic_preview_cancel_undo_and_explicit_cumulative_reference(tmp_path):
+    editor=StudyEditor(retuned(tmp_path));editor.release(groups=['mechanisms'])
+    name='microtube.heat_in.tube_count';value=editor.values()[name]
+    editor.edit_parameter(name,lower=value,upper=value+1)
+    before=copy.deepcopy(editor.raw);domains=copy.deepcopy(editor.domains)
+    with pytest.raises(ValueError,match='tube_count: recalibration'):
+        editor.recenter_bounds(groups=['mechanisms'],parameters=[name],half_width=.01)
+    assert editor.raw==before and editor.domains==domains and not editor.bounds_history
+    preview=editor.preview_recenter_bounds(groups=['mechanisms'],half_width=.05)
+    assert editor.raw==before
+    first=editor.recenter_bounds(groups=['mechanisms'],half_width=.05)
+    after=copy.deepcopy(editor.raw)
+    second=editor.recenter_bounds(groups=['mechanisms'],half_width=.05)
+    assert all(c['before']==first['changes'][n]['after'] for n,c in second['changes'].items())
+    editor.undo_recenter_bounds();assert editor.raw==after
+    editor.undo_recenter_bounds();assert editor.raw==before and editor.domains==domains
+    editor.recenter_bounds(groups=['mechanisms']);n=next(iter(preview['changes']))
+    editor.edit_parameter(n,initial=editor.values()[n]+1e-8)
+    with pytest.raises(ValueError,match='overwrite later edits'):editor.undo_recenter_bounds()
+
+
+def test_bounds_batch_matches_api_and_does_not_change_scheduler_radius(tmp_path):
+    editor=StudyEditor(retuned(tmp_path));editor.release(groups=['mechanisms'])
+    source=editor.save(tmp_path/'active/study.toml')
+    expected=StudyEditor(source);radius=expected.review()['search']['radius_fraction']
+    expected.recenter_bounds(groups=['mechanisms'],half_width=.01)
+    output=tmp_path/'batch-narrow/study.toml'
+    assert main(['study','bounds','recenter',str(source),'--group','mechanisms','--half-width','0.01','--output',str(output)])==0
+    a=load_study(expected.save(tmp_path/'api-narrow/study.toml'));b=load_study(output)
+    assert a.study_id==b.study_id and b.data['search']['radius_fraction']==radius
+
+
+class RecordingMenus(SimulatedMenus):
+    def __init__(self,*args,**kwargs):super().__init__(*args,**kwargs);self.menus=[]
+    def menu(self,title,choices,**kwargs):
+        self.menus.append((title,copy.deepcopy(choices),kwargs));return super().menu(title,choices,**kwargs)
+
+
+def test_group_navigation_keeps_focus_after_toggle_and_individual_edit(tmp_path):
+    from dada_solver.research.study_editor_tui import run_editor
+    source=retuned(tmp_path,'four_bar','four_bar');editor=StudyEditor(source)
+    names=editor.select(groups=['kinematics-small'],releasable_only=True)[:4]
+    editor.release(parameters=[names[2]])
+    old=editor._rows()[names[2]];new_upper=(old['initial']+old['upper'])/2
+    ui=RecordingMenus([('open','kinematics-small'),('toggle',names[0]),('toggle',names[1]),
+        ('open',names[2]),('open','upper'),('open','back'),('toggle',names[3]),('open','back'),('open','cancel')],
+        [json.dumps(new_upper)])
+    before=set(source.parent.rglob('*'))
+    assert run_editor(source,ui=ui,editor=editor) is None
+    group_menus=[m for m in ui.menus if m[0].startswith('Mechanism / motion SMALL')]
+    assert [m[2]['focus_key'] for m in group_menus]==[None,names[0],names[1],names[2],names[3]]
+    assert sum(m[0].startswith('DADA RESEARCH') for m in ui.menus)==2
+    assert all(editor._rows()[n].get('initial')==editor.values()[n] for n in names)
+    assert editor._rows()[names[2]]['upper']==new_upper
+    assert '[x]' in dict(group_menus[1][1])[names[0]]
+    assert set(source.parent.rglob('*'))==before
+
+
+def test_group_recalibration_preview_back_apply_undo_and_separate_radius_confirmation(tmp_path):
+    from dada_solver.research.study_editor_tui import edit_group,effective_bounds_text
+    editor=StudyEditor(retuned(tmp_path));editor.release(groups=['mechanisms'])
+    before=copy.deepcopy(editor.raw)
+    cancel=RecordingMenus([('open','recalibrate'),('open','back'),None],['0.01'])
+    edit_group(editor,cancel,'kinematics-small');assert editor.raw==before
+    assert 'CURRENT declared domain' in cancel.menus[1][0]
+    ui=RecordingMenus([('open','recalibrate'),('open','apply'),None],['0.01'])
+    ui.confirm=lambda text:False
+    radius=editor.review()['search']['radius_fraction']
+    edit_group(editor,ui,'kinematics-small')
+    assert editor.review()['search']['radius_fraction']==radius
+    assert editor.bounds_history
+    ui=RecordingMenus([('open','recalibrate'),('open','apply'),None],['0.05'])
+    edit_group(editor,ui,'kinematics-large')
+    assert editor.review()['search']['radius_fraction']==1.
+    text=effective_bounds_text(editor)
+    assert 'Exchangers' in text and 'Mechanism / motion SMALL' in text and 'clipped' in text
+    assert 'ALL active parameters' in text and 'declared choices' in text
+    undo=RecordingMenus([('open','undo-bounds'),None]);edit_group(editor,undo,'kinematics-large')
+    assert len(editor.bounds_history)==1
+
+
+def test_terminal_menu_semantic_focus_and_scroll_with_long_list():
+    from dada_solver.research.study_editor_tui import TerminalMenus,menu_focus_index
+    from types import SimpleNamespace
+    choices=[(f'p{i}',str(i)) for i in range(500)]
+    assert menu_focus_index(choices,'p410')==410
+    assert menu_focus_index(choices,'removed',410)==410
+    assert menu_focus_index(choices[:5],'removed',410)==4
+    class Bindings:
+        def __init__(self):self.actions={}
+        def add(self,key):
+            def register(callback):self.actions[key]=callback;return callback
+            return register
+    class Window:
+        def __init__(self,control,**kwargs):self.control=control;self.vertical_scroll=0
+    class App:
+        def __init__(self,layout,key_bindings,**kwargs):self.window=layout;self.keys=key_bindings
+        def run(self):
+            assert self.window.vertical_scroll==400
+            event=SimpleNamespace(app=SimpleNamespace(exit=lambda **kwargs:setattr(self,'result',kwargs['result'])))
+            self.keys.actions['down'](event);self.keys.actions[' '](event)
+            return self.result
+    ui=TerminalMenus.__new__(TerminalMenus)
+    ui.menu_positions={'Long parameters':('p410',410,400)}
+    ui.KeyBindings=Bindings;ui.Window=Window;ui.Control=lambda *a,**k:None
+    ui.Layout=lambda w:w;ui.Application=App;ui.Point=lambda **kw:kw
+    assert ui.menu('Long parameters',choices,toggle=True,focus_key='p410')==('toggle','p411')
+    assert ui.menu_positions['Long parameters']==('p411',411,400)
+    assert ui.menu('Long parameters',choices,toggle=True,focus_key='p411')==('toggle','p412')

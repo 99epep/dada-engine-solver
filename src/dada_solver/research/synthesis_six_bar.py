@@ -3,7 +3,7 @@
 No differential-evolution implementation or thermodynamic evaluator lives here.
 Intermediate primary evidence is a projection opportunity, never a piston fit.
 """
-from dataclasses import asdict, replace
+from dataclasses import asdict, replace, dataclass
 import math
 import json
 import numpy as np
@@ -16,12 +16,13 @@ from .motion_target import PERIOD, PeriodicTargetSide
 from .synthesis_search import GeometrySearch, SearchPolicy, SearchStopped, BOUNDS, CATEGORY_VALUES
 
 STAGE_POLICY = 'hierarchical_six_bar_geometry_v1'
+PRIMARY_POLICY = 'primary_topology_cadence_v2'
 STAGES = ('primary_discovery','downstream_fit','full_local_polish','mirror_initialization','opposite_local_adaptation')
 
 
 class PrimaryProjection:
     """PCA projection of E for inspectable chronology, not a cylinder law."""
-    def __init__(self, primary, *, axis=None, sign=1.):
+    def __init__(self, primary, *, axis=None, sign=1., root_samples=360):
         self.geometry=primary
         angles=np.linspace(0.,PERIOD,721,endpoint=False)
         state=primary.joint_state(angles)
@@ -31,7 +32,7 @@ class PrimaryProjection:
             axis=vectors[:,-1]
             if axis[np.argmax(abs(axis))]<0: axis=-axis
         self.axis=np.asarray(axis)*sign
-        roots=velocity_stationary_points(self.coordinate,self.derivative,360)
+        roots=velocity_stationary_points(self.coordinate,self.derivative,root_samples)
         if len(roots)<2:
             raise ValueError('Projected E has no useful chronology.')
         values=[r['position'] for r in roots]
@@ -41,7 +42,8 @@ class PrimaryProjection:
         self.lateral_rms=float(np.std(points@np.array([-self.axis[1],self.axis[0]])))/self.span
         self.metrics=dict(minimum_primary_transmission_sine=float(np.min(state['primary_transmission_sine'])),
                           E_projection_span_over_crank=self.span,E_lateral_rms_over_projection_span=self.lateral_rms,
-                          E_projection_extrema_count=len(roots))
+                          E_projection_extrema_count=len(roots),
+                          E_axis_variance_fraction=float(np.var(points@self.axis)/max(np.var(points,axis=0).sum(),1e-30)))
 
     def coordinate(self,angles):
         state=self.geometry.joint_state(angles)
@@ -57,10 +59,176 @@ class PrimaryProjection:
         raise NotImplementedError('Primary projection acceleration is not a synthesis target.')
 
 
-def primary_evidence(artifact,target,side,samples=1440):
+@dataclass(frozen=True)
+class PrimaryCadencePolicy:
+    """Method 6.4 numerical preferences, never universal mechanical limits."""
+    monotonicity_weight: float = 2.
+    endpoint_zero_weight: float = .40
+    turning_weight: float = .65
+    turning_scale_rad: float = math.pi/12
+    extra_crossing_weight: float = .50
+    speed_ratio_weight: float = .55
+    displacement_fraction_weight: float = .80
+    long_symmetry_weight: float = 0.
+    transmission_preference_weight: float = .12
+    directionality_preference_weight: float = .03
+    preferred_transmission_sine: float = .35
+    preferred_axis_variance_fraction: float = .70
+    sign_guard_fraction: float = 3/360
+    turnaround_guard_fraction: float = 8/360
+    transition_guard_fraction: float = 6/360
+    minimum_subphase_fraction: float = .15
+    minimum_speed_ratio: float = 1.5
+    minimum_split_explained_variance: float = .5
+    missing_cadence: str = 'disable'
+    reject_extra_turnarounds: bool = False
+
+    def __post_init__(self):
+        for name,value in asdict(self).items():
+            if name in ('missing_cadence','reject_extra_turnarounds'): continue
+            if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or value<0:
+                raise ValueError(f'primary_cadence.{name} must be finite and nonnegative.')
+        if self.turning_scale_rad<=0 or self.minimum_speed_ratio<=1:
+            raise ValueError('Primary timing scale must be positive and minimum_speed_ratio greater than one.')
+        for name in ('sign_guard_fraction','turnaround_guard_fraction','transition_guard_fraction'):
+            if not 0<=getattr(self,name)<.125: raise ValueError(f'primary_cadence.{name} must be in [0, 0.125).')
+        if not 0<self.minimum_subphase_fraction<.5: raise ValueError('minimum_subphase_fraction must be in (0, 0.5).')
+        for name in ('preferred_transmission_sine','preferred_axis_variance_fraction','minimum_split_explained_variance'):
+            if not 0<=getattr(self,name)<=1: raise ValueError(f'primary_cadence.{name} must be in [0, 1].')
+        if self.missing_cadence not in ('disable','error') or type(self.reject_extra_turnarounds) is not bool:
+            raise ValueError('Use missing_cadence=disable/error and a boolean reject_extra_turnarounds.')
+
+
+def _cyclic_error(a,b):
+    return (a-b+math.pi)%PERIOD-math.pi
+
+
+def primary_target_features(source,policy):
+    """Target-owned turns and ordered cadence; absent cadence is explicit."""
+    extrema=source.extrema_angles()
+    maximum,minimum=extrema['maximum'],extrema['minimum']
+    down=(minimum-maximum)%PERIOD
+    ascending=down>math.pi
+    start=minimum if ascending else maximum
+    span=PERIOD-down if ascending else down
+    result=dict(maximum_rad=maximum,minimum_rad=minimum,short_start_rad=start,
+        short_span_rad=span,long_span_rad=PERIOD-span,short_direction=1 if ascending else -1,
+        cadence=dict(available=False,reason='target_velocity_unavailable'))
+    if source.has_velocity:
+        guard=min(PERIOD*policy.turnaround_guard_fraction,.1*span)
+        u=np.linspace(guard,span-guard,257)
+        speed=np.abs(source.velocity(start+u))
+        total=float(np.sum((speed-speed.mean())**2))
+        event_splits=[]
+        for event in source.events:
+            offset=(event['angle_rad']-start)%PERIOD
+            if event['kind'] in ('kink','cadence_change') and policy.minimum_subphase_fraction*span<offset<(1-policy.minimum_subphase_fraction)*span:
+                event_splits.append((offset,'event:'+event['kind']))
+        splits=event_splits or [(float(x),'two_level_velocity_estimate') for x in np.linspace(
+            policy.minimum_subphase_fraction*span,(1-policy.minimum_subphase_fraction)*span,65)]
+        candidates=[]
+        for split,origin in splits:
+            transition=min(PERIOD*policy.transition_guard_fraction,.2*min(split,span-split))
+            first=(u<split-transition); second=(u>split+transition)
+            if first.sum()<3 or second.sum()<3: continue
+            means=[float(np.mean(np.abs(source.velocity(start+np.linspace(lo,hi,65)))))
+                   for lo,hi in ((guard,split-transition),(split+transition,span-guard))]
+            ratio=max(means)/max(min(means),1e-12)
+            # Numerical two-level detection must improve on a single cadence;
+            # event-supported transitions still require a resolved speed contrast.
+            left=u<=split; right=~left
+            sse=float(sum(np.sum((speed[m]-speed[m].mean())**2) for m in (left,right)))
+            explained=max(0.,1-sse/max(total,1e-30))
+            if ratio<policy.minimum_speed_ratio or (not event_splits and explained<policy.minimum_split_explained_variance): continue
+            first_fast=means[0]>=means[1]
+            q=source.position(np.array([start,start+split,start+span]))
+            displacement=np.abs(np.diff(q));fraction=float(displacement[0 if first_fast else 1]/max(displacement.sum(),1e-12))
+            candidates.append((sse,dict(available=True,source=origin,split_offset_rad=split,
+                split_angle_rad=(start+split)%PERIOD,first_is_fast=first_fast,fast_slow_speed_ratio=ratio,
+                fast_displacement_fraction=fraction,explained_variance=explained,
+                first_core_rad=[guard,split-transition],second_core_rad=[split+transition,span-guard])))
+        result['cadence']=min(candidates,key=lambda c:c[0])[1] if candidates else dict(
+            available=False,reason='no_resolved_two_cadence_transition')
+    if not result['cadence']['available'] and policy.missing_cadence=='error':
+        raise ValueError('Primary target cadence unavailable: '+result['cadence']['reason'])
+    return result
+
+
+def primary_cadence_score(projection,target_features,policy,samples=721):
+    """Signed topology/cadence score; no target position or velocity-profile fit."""
+    angles=np.linspace(0.,PERIOD,samples,endpoint=False)
+    velocity=np.asarray(projection.value(angles,1)); scale=max(float(np.sqrt(np.mean(velocity**2))),1e-12)
+    start=target_features['short_start_rad'];span=target_features['short_span_rad'];direction=target_features['short_direction']
+    guard=min(PERIOD*policy.sign_guard_fraction,.1*span,.1*(PERIOD-span))
+    u=(angles-start)%PERIOD
+    short=(u>=guard)&(u<=span-guard); long=(u>=span+guard)&(u<=PERIOD-guard)
+    wrong=np.r_[np.maximum(-direction*velocity[short],0.),np.maximum(direction*velocity[long],0.)]
+    monotonicity=float(np.sqrt(np.mean(wrong**2))/scale)
+    roots=projection.roots
+    high=[r for r in roots if r['kind']=='maximum'];low=[r for r in roots if r['kind']=='minimum']
+    if not high or not low: raise ValueError('Projected E lacks a maximum/minimum pair.')
+    high_turn=min(high,key=lambda r:abs(_cyclic_error(r['angle_rad'],target_features['maximum_rad'])))['angle_rad']
+    low_turn=min(low,key=lambda r:abs(_cyclic_error(r['angle_rad'],target_features['minimum_rad'])))['angle_rad']
+    turning=float(np.sqrt(np.mean([_cyclic_error(high_turn,target_features['maximum_rad'])**2,
+                                  _cyclic_error(low_turn,target_features['minimum_rad'])**2])))
+    endpoints=np.asarray(projection.value(np.array([target_features['maximum_rad'],target_features['minimum_rad']]),1))
+    zero=float(np.sqrt(np.mean(endpoints**2))/scale)
+    extra=max(0,len(high)+len(low)-2)
+    if policy.reject_extra_turnarounds and extra: raise ValueError('Additional primary projection turnarounds are excluded by policy.')
+    cadence=target_features['cadence'];ratio=fraction=None;ratio_error=fraction_error=0.
+    if cadence['available']:
+        means=[]
+        for lower,upper in (cadence['first_core_rad'],cadence['second_core_rad']):
+            means.append(float(np.mean(np.abs(projection.value(start+np.linspace(lower,upper,65),1)))))
+        fast=0 if cadence['first_is_fast'] else 1
+        ratio=means[fast]/max(means[1-fast],1e-12)
+        ratio_error=abs(math.log(max(ratio,1e-12)/cadence['fast_slow_speed_ratio']))
+        q=projection.value(start+np.array([0.,cadence['split_offset_rad'],span]))
+        displacement=np.abs(np.diff(q));fraction=float(displacement[fast]/max(displacement.sum(),1e-12))
+        fraction_error=abs(fraction-cadence['fast_displacement_fraction'])
+    own_start=low_turn if direction<0 else high_turn
+    own_end=high_turn if direction<0 else low_turn
+    own_span=(own_end-own_start)%PERIOD
+    distance=np.linspace(min(PERIOD*policy.turnaround_guard_fraction,.1*own_span),.5*own_span,64)
+    a=np.asarray(projection.value(own_start+distance,1));b=np.asarray(projection.value(own_end-distance,1))
+    asymmetry=float(np.sqrt(np.mean((a-b)**2))/max(float(np.sqrt(np.mean(.5*(a*a+b*b)))),1e-12))
+    metrics=projection.metrics
+    transmission=max(0.,policy.preferred_transmission_sine-metrics['minimum_primary_transmission_sine'])/max(policy.preferred_transmission_sine,1e-12)
+    directionality=max(0.,policy.preferred_axis_variance_fraction-metrics['E_axis_variance_fraction'])/max(policy.preferred_axis_variance_fraction,1e-12)
+    terms=dict(monotonicity=policy.monotonicity_weight*monotonicity,
+        endpoint_zero=policy.endpoint_zero_weight*zero,turnaround=policy.turning_weight*turning/policy.turning_scale_rad,
+        extra_crossing=policy.extra_crossing_weight*extra,speed_ratio=policy.speed_ratio_weight*ratio_error,
+        displacement_fraction=policy.displacement_fraction_weight*fraction_error,
+        long_mirror_asymmetry=policy.long_symmetry_weight*asymmetry,
+        transmission_preference=policy.transmission_preference_weight*transmission,
+        directionality_preference=policy.directionality_preference_weight*directionality)
+    return dict(policy_version=PRIMARY_POLICY,score=float(sum(terms.values())),terms=terms,
+        target=target_features,projection_axis=projection.axis.tolist(),
+        monotonicity_wrong_sign_rms=monotonicity,endpoint_zero_rms=zero,turning_rms_rad=turning,
+        matched_turnarounds_rad=dict(maximum=high_turn,minimum=low_turn),
+        zero_crossing_count=len(high)+len(low),stationary_point_count=len(roots),extra_crossings=extra,
+        fast_slow_speed_ratio=ratio,fast_displacement_fraction=fraction,
+        speed_ratio_log_error=ratio_error,displacement_fraction_error=fraction_error,
+        long_mirror_asymmetry_rms=asymmetry,long_symmetry_enabled=policy.long_symmetry_weight>0,
+        mechanical_preferences=dict(transmission=transmission,directionality=directionality))
+
+
+def primary_evidence(artifact,target,side,samples=1440,*,cadence_policy=None):
     source=PeriodicTargetSide(target,side); angles=np.linspace(0.,PERIOD,samples,endpoint=False)
-    projections=[PrimaryProjection(artifact.reconstruct(),sign=sign) for sign in (1.,-1.)]
-    projection=min(projections,key=lambda p:float(np.mean((p.value(angles)-1-source.position(angles))**2)))
+    provenance=artifact.data['provenance']
+    saved=provenance.get('primary_cadence_policy',{})
+    score_samples=provenance.get('primary_score_samples',samples)
+    root_samples=provenance.get('primary_root_samples',samples)
+    policy=cadence_policy or PrimaryCadencePolicy(**saved)
+    features=primary_target_features(source,policy)
+    candidates=[]
+    for sign in (1.,-1.):
+        projection=PrimaryProjection(artifact.reconstruct(),sign=sign,root_samples=root_samples)
+        try: cadence=primary_cadence_score(projection,features,policy,score_samples)
+        except ValueError: continue
+        candidates.append((cadence['score'],projection,cadence))
+    if not candidates: raise ValueError('No admissible primary projection sign.')
+    _,projection,cadence=min(candidates,key=lambda row:row[0])
     error=projection.value(angles)-1-source.position(angles)
     dv=None if not source.has_velocity else float(np.sqrt(np.mean((projection.value(angles,1)-source.velocity(angles))**2)))
     constraints=[]; deferred=[]
@@ -68,9 +236,9 @@ def primary_evidence(artifact,target,side,samples=1440):
         if row['metric'] in projection.metrics:
             constraints.append(margin_record(row['metric'],projection.metrics[row['metric']],row['limit'],row['relation'],row['unit']))
         else: deferred.append(row)
-    return dict(fit=None,primary_projection=dict(position_rms=float(np.sqrt(np.mean(error**2))),
+    return dict(fit=None,primary_cadence=cadence,primary_projection=dict(position_rms=float(np.sqrt(np.mean(error**2))),
         position_maximum_error=float(np.max(abs(error))),velocity_rms_per_rad=dv,
-        axis=projection.axis.tolist(),meaning='E projection chronology opportunity; E is not P'),
+        axis=projection.axis.tolist(),meaning='Diagnostic only: E is not P; position resemblance is excluded from primary search'),
         mechanical=dict(metrics=projection.metrics,constraints=constraints,deferred_constraints=deferred,samples=samples),thermodynamic=None)
 
 
@@ -97,6 +265,8 @@ class SixBarStageSearch(GeometrySearch):
         self.parent_artifact=None if parent is None else MechanismArtifact.from_data(parent['mechanisms'][sides[0]])
         self.fixed={} if parent is None else dict(self.parent_artifact.scientific['geometry'])
         super().__init__(plan,policy,sides,volume_limits)
+        self.cadence_policy=PrimaryCadencePolicy(**policy.primary_cadence)
+        self.target_features={side:primary_target_features(self.targets[side],self.cadence_policy) for side in sides} if self.stage=='primary_discovery' else {}
 
     def coordinate_bounds(self):
         full=self.policy.coordinates('six_bar')
@@ -144,31 +314,21 @@ class SixBarStageSearch(GeometrySearch):
         try:
             primary=SixBarPrimaryMechanism(**p)
             reason='primary_projection_topology'; penalty=20.
-            candidates=[PrimaryProjection(primary,sign=sign) for sign in (1.,-1.)]
-            angles,weights=self.mesh[side]; target,velocity=self.references[side]
+            candidates=[PrimaryProjection(primary,sign=sign,root_samples=self.policy.root_samples) for sign in (1.,-1.)]
             for projection in candidates:
-                reason='primary_constraints'; penalty=10.
+                reason='primary_constraints'; penalty=1000.
                 constraints=[margin_record(r['metric'],projection.metrics[r['metric']],r['limit'],r['relation'],r['unit'])
                              for r in self.plan.request.mechanical_constraints if r['metric'] in projection.metrics]
                 if any(not r['satisfied'] for r in constraints): raise ValueError('Primary constraint fails.')
-                error=projection.value(angles)-1-target; position=float(weights@(error**2))
-                vmse=None; vt=0.; residual=np.sqrt(weights)*error
-                if velocity is not None:
-                    scale=max(float(np.sqrt(weights@(velocity**2))),1/PERIOD)
-                    dv=(projection.value(angles,1)-velocity)/scale; vmse=float(weights@(dv**2))
-                    vt=self.policy.velocity_weight*vmse/(1+vmse)
-                    residual=np.r_[residual,math.sqrt(self.policy.velocity_weight/(1+vmse))*np.sqrt(weights)*dv]
-                # Projection is a guide, not an equality constraint E=P. Lateral
-                # potential is exposed; no universal near-linearity floor exists.
-                lateral_term=self.policy.primary_linearity_weight*projection.lateral_rms**2/(1+projection.lateral_rms**2)
-                topology_term=self.policy.primary_topology_weight*max(0.,len(projection.roots)-2)
-                residual=np.r_[residual,math.sqrt(lateral_term),math.sqrt(topology_term)]
-                score=position+vt+lateral_term+topology_term
+                reason='primary_projection_topology'
+                try: cadence=primary_cadence_score(projection,self.target_features[side],self.cadence_policy,self.policy.samples)
+                except ValueError: continue
+                score=cadence['score']
                 if not row['valid'] or score<row['score']:
-                    row.update(valid=True,score=score,residual=residual,metrics=projection.metrics,reason=None,
-                        terms=dict(projected_chronology_mse=position,normalized_velocity_mse=vmse,velocity_term=vt,
-                                   projection_linearity_preference=lateral_term,projection_topology_preference=topology_term),
+                    row.update(valid=True,score=score,residual=np.sqrt(list(cadence['terms'].values())),
+                        metrics=projection.metrics,reason=None,terms=cadence['terms'],cadence=cadence,
                         projection_axis=projection.axis.tolist())
+            if not row['valid']: raise ValueError('No admissible projection sign.')
             if retain: self.archive.add(row)
         except (ValueError,ArithmeticError,np.linalg.LinAlgError):
             row.update(score=penalty,reason=reason); self.rejections[reason]+=1
@@ -243,10 +403,13 @@ class SixBarStageSearch(GeometrySearch):
                        f"{parent_id}/{stage}-{len(members)+1:03d}")
             provenance=dict(target_hash=self.plan.target.content_hash,stage=stage,protocol=self.plan.request.protocol,
                             origin=origin,categories=row['categories'],primary_family_id=origin.get('primary_family_id',family_id))
+            if stage=='primary_discovery':
+                provenance.update(search_policy=PRIMARY_POLICY,primary_cadence_policy=asdict(self.cadence_policy),
+                                  primary_score_samples=self.policy.samples,primary_root_samples=self.policy.root_samples)
             artifact=MechanismArtifact.create('six_bar',row['geometry'],settings=row['settings'],
                 constraints=self.plan.request.mechanical_constraints,provenance=provenance)
             if stage=='primary_discovery':
-                evidence=primary_evidence(artifact,self.plan.target,row['side'],self.policy.root_samples)
+                evidence=primary_evidence(artifact,self.plan.target,row['side'],self.policy.root_samples,cadence_policy=self.cadence_policy)
             else:
                 try:
                     roots=artifact.reconstruct().stationary_points(samples=self.policy.root_samples)
@@ -263,7 +426,7 @@ class SixBarStageSearch(GeometrySearch):
             previous={} if self.parent is None else dict(self.parent['metadata'].get('evidence',{}))
             previous[row['side']]=evidence
             metadata=dict(target_hash=self.plan.target.content_hash,evidence=previous,thermodynamic=None,provenance=provenance,
-                search=dict(score=row['score'],terms=row['terms'],policy_version=STAGE_POLICY,policy=asdict(self.policy),
+                search=dict(score=row['score'],terms=row['terms'],policy_version=PRIMARY_POLICY if stage=='primary_discovery' else STAGE_POLICY,policy=asdict(self.policy),
                     effective_bounds=self.bounds,primary_bounds=({n:self.bounds[n] for n in PRIMARY_COORDINATES} if stage=='primary_discovery' else
                         self.parent['metadata'].get('search',{}).get('primary_bounds',
                             {n:BOUNDS['six_bar'][n] for n in PRIMARY_COORDINATES})),

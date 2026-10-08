@@ -291,18 +291,22 @@ The existing `MechanismLibrary` retains these intermediate artifacts and their
 family IDs without inserting dummy slider or dyad dimensions.
 
 Primary discovery uses the principal-axis projection of the production E
-trajectory as an **intermediate chronology opportunity**. Both projection signs
-are examined. Normalized projection position MSE dominates; available target
-velocity contributes the same bounded secondary term as direct discovery.
-Two explicit, configurable preferences add
-`primary_linearity_weight * lateral_ratio**2 / (1 + lateral_ratio**2)` and
-`primary_topology_weight * max(0, projected_extrema_count - 2)`; both default
-weights are 0.001. These are ranking preferences, not validity limits.
-Additional E-projection reversals are not silently treated as piston reversals.
-The catalogue labels the projection as such: **E is not P**. Evidence exposes
-projection axis/span, lateral RMS, primary transmission and separate score
-terms. Piston fit is `null`. Constraints requiring downstream geometry are
-recorded as deferred, not satisfied; applicable primary constraints are enforced.
+trajectory as an **intermediate chronology opportunity**, following method
+[6.4](#64-topology-and-cadence-proxy). Both projection signs are examined and
+selected by topology and cadence, never by piston-position resemblance.
+The executable policy is `primary_topology_cadence_v2`: correctly timed
+turnarounds, monotonic signs, zero endpoint speeds, extra-reversal penalties,
+short-branch speed ratio and displacement sharing, and explicit soft
+transmission/directionality preferences. Optional long-branch symmetry compares
+the candidate's own branch; it does not penalize internal speed variations.
+
+The catalogue labels the projection as such: **E is not P**. Position and
+velocity-profile RMS remain diagnostics only; piston fit is `null`.
+Evidence exposes projection axis/span, axis variance fraction, primary
+transmission, matched turnarounds, cadence descriptors and each weighted score
+component. Constraints requiring downstream geometry are recorded as deferred,
+not satisfied; applicable primary constraints are enforced. Downstream fitting
+continues to compare the actual piston trajectory directly with the target.
 
 Default primary search bounds, in crank-radius units except phase, are:
 `primary_ground` 1.2–10, `primary_coupler` 1.2–12,
@@ -729,6 +733,58 @@ A_{BP}
 \]
 
 A symmetric fast-slow-fast branch is therefore allowed.
+
+The implementation extracts extrema from `MotionTarget` events when present,
+otherwise from its periodic position interpolant. The shorter ascending or
+descending branch is selected cyclically. Interior `kink`/`cadence_change` events
+provide candidate splits. Without such events, a deterministic two-level split
+of available target velocity is accepted only when its mean-speed contrast and
+explained variance meet the configured detection thresholds. Event-supported
+splits also require a resolved speed contrast. No target acceleration is used.
+If cadence cannot be resolved, `missing_cadence = "disable"` omits both cadence
+terms and records the reason; `"error"` refuses discovery. No cadence is invented.
+
+A search-settings TOML may contain, for example:
+
+```toml
+[primary_cadence]
+missing_cadence = "disable"
+monotonicity_weight = 2.0
+endpoint_zero_weight = 0.40
+turning_weight = 0.65
+turning_scale_rad = 0.2617993877991494
+extra_crossing_weight = 0.50
+speed_ratio_weight = 0.55
+displacement_fraction_weight = 0.80
+long_symmetry_weight = 0.0
+transmission_preference_weight = 0.12
+directionality_preference_weight = 0.03
+preferred_transmission_sine = 0.35
+preferred_axis_variance_fraction = 0.70
+minimum_speed_ratio = 1.5
+minimum_split_explained_variance = 0.5
+reject_extra_turnarounds = false
+```
+
+All weights and preferences belong to `PrimaryCadencePolicy`, not universal
+mechanical limits. Long-branch symmetry is disabled unless requested explicitly.
+The scalar score sums the weighted RMS wrong-sign velocity, normalized endpoint
+speed, turnaround RMS divided by `turning_scale_rad`, extra-reversal count,
+absolute log speed-ratio error, absolute displacement-fraction error, optional
+mirror asymmetry and normalized deficits below the two preferred mechanical
+values. Speeds in topology terms are normalized by the candidate's cycle RMS.
+Non-reversing stationary points are not extra turnarounds.
+
+Default sampling guards exclude 3/360 of a cycle around turns for sign checks,
+8/360 for cadence means and long symmetry, and 6/360 around a cadence split;
+they are capped relative to branch/subphase length. Candidate cadence means
+use 65 points in each guarded subphase. A numerical split must leave at least
+15% of the short branch on either side. These configurable sampling/detection
+policies are recorded alongside effective weights and search/root resolutions.
+Analytic production velocities and refined root searches determine turns;
+this is a doubled-grid/tangency check, not a certified continuous proof.
+
+
 
 This is still only a search proxy.
 

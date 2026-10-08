@@ -11,6 +11,13 @@ LABELS = {
 }
 
 
+def menu_focus_index(choices, focus_key=None, previous_index=0):
+    """Restore semantic focus; use the nearest surviving row if a key vanished."""
+    if not choices: raise ValueError('A terminal menu requires at least one choice.')
+    return next((i for i,(key,_) in enumerate(choices) if key==focus_key),
+                min(max(0,previous_index),len(choices)-1))
+
+
 class TerminalMenus:
     """Arrow/space/enter/escape menus, built on the optional prompt_toolkit extra."""
     def __init__(self):
@@ -27,10 +34,14 @@ class TerminalMenus:
         self.Application,self.KeyBindings,self.Layout,self.Window,self.Control=Application,KeyBindings,Layout,Window,FormattedTextControl
         self.Point=Point
         self.prompt=PromptSession()
+        self.menu_positions={}
 
-    def menu(self, title, choices, *, toggle=False):
+    def menu(self, title, choices, *, toggle=False, focus_key=None):
         """Return a controller action; no scientific values are changed here."""
-        selected=0; bindings=self.KeyBindings()
+        identity=title.split('\n',1)[0]
+        old_key,old_index,scroll=self.menu_positions.get(identity,(None,0,0))
+        selected=menu_focus_index(choices,focus_key if focus_key is not None else old_key,old_index)
+        bindings=self.KeyBindings()
         @bindings.add('up')
         def up(event):
             nonlocal selected
@@ -53,9 +64,12 @@ class TerminalMenus:
             for i,(_,label) in enumerate(choices):
                 lines.append(('reverse' if i==selected else '',('› ' if i==selected else '  ')+label+'\n'))
             return lines
-        app=self.Application(layout=self.Layout(self.Window(self.Control(text,focusable=True,get_cursor_position=lambda:self.Point(x=0,y=title.count('\n')+3+selected)),always_hide_cursor=True)),
-                             key_bindings=bindings,full_screen=False,erase_when_done=True)
-        return app.run()
+        window=self.Window(self.Control(text,focusable=True,get_cursor_position=lambda:self.Point(x=0,y=title.count('\n')+3+selected)),always_hide_cursor=True)
+        window.vertical_scroll=scroll
+        app=self.Application(layout=self.Layout(window),key_bindings=bindings,full_screen=False,erase_when_done=True)
+        result=app.run()
+        self.menu_positions[identity]=(choices[selected][0],selected,window.vertical_scroll)
+        return result
 
     def input(self, label, default=''):
         try: return self.prompt.prompt(label+': ',default=str(default))
@@ -98,6 +112,7 @@ def _release(editor, ui, names):
 
 
 def _parameter(editor, ui, name):
+    focused=None
     while True:
         entry=next(p for p in editor.inventory() if p.name==name)
         row=editor._rows().get(name,{})
@@ -110,9 +125,9 @@ def _parameter(editor, ui, name):
                 if key in row: choices.append((key,f'Edit {key} = {row[key]!r}'))
         elif entry.releasable: choices.append(('release','Activate parameter'))
         choices.append(('back','Back'))
-        selected=ui.menu(f'{name} [{entry.unit}]\n{entry.source_of_value}\n{entry.reason}',choices)
+        selected=ui.menu(f'{name} [{entry.unit}]\n{entry.source_of_value}\n{entry.reason}',choices,focus_key=focused)
         if selected is None or selected[1]=='back': return
-        action=selected[1]
+        action=selected[1]; focused=action
         if action=='freeze': editor.freeze(parameters=[name])
         elif action=='release': _release(editor,ui,[name])
         else:
@@ -133,13 +148,93 @@ def _parameter(editor, ui, name):
             editor.edit_parameter(name,**{field:value})
 
 
+def bounds_preview_text(plan):
+    lines=['BOUNDS RECALIBRATION — reference: CURRENT declared domain',
+           f"Normalized half-width: {plan['half_width']!r}",
+           'Parameter | Old declared range | New declared range']
+    for name,change in plan['changes'].items():
+        a,b=change['before'],change['after']
+        lines.append(f"{name} | [{a['lower']!r}, {a['upper']!r}] | [{b['lower']!r}, {b['upper']!r}]")
+    lines.extend(f'Skipped {name}: {reason}' for name,reason in plan['skipped'].items())
+    lines.append(f"{len(plan['changes'])} numeric parameters selected; 0 initial values changed.")
+    lines.append('Applying again uses these NEW bounds as reference and narrows cumulatively. Undo is available in the group menu.')
+    return '\n'.join(lines)
+
+
+def effective_bounds_text(editor):
+    review=editor.review(); rows=editor._rows(); search=review['search']
+    lines=['EFFECTIVE SEARCH BOUNDS',f"Global normalized radius: {search.get('radius_fraction','full declared bounds')} (ALL active parameters)"]
+    shown=set()
+    for group,label in LABELS.items():
+        names=[n for n in editor.select(groups=[group]) if n in review['effective_bounds'] and n not in shown]
+        if not names: continue
+        lines.append('\n'+label+' — declared | initial | effective | clipped')
+        for name in names:
+            shown.add(name); row=rows[name]
+            if row['kind']=='choice':
+                lines.append(f"{name}: {row['choices']!r} | {row['initial']!r} | declared choices (no numeric distance)")
+                continue
+            from dada_solver.campaign.parameters import parameter_from_mapping
+            p=parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})
+            for i,box in enumerate(review['effective_bounds'][name]):
+                clipped=False
+                if search['domain']=='local_regions_v1':
+                    u=p.encode(search['regions'][i]['center'][name]); r=search['radius_fraction']
+                    clipped=u-r<0 or u+r>1
+                lines.append(f"{name}: [{row['lower']!r}, {row['upper']!r}] | {row['initial']!r} | [{box['lower']!r}, {box['upper']!r}] | {'yes' if clipped else 'no'}")
+    return '\n'.join(lines)
+
+
+def _recalibrate(editor,ui,group):
+    half_width=_scalar(ui,'Normalized half-width (fraction of CURRENT declared domain)',.01)
+    if half_width is None: return
+    plan=editor.preview_recenter_bounds(groups=[group],half_width=half_width)
+    selected=ui.menu(bounds_preview_text(plan),[('apply','Apply'),('back','Back')])
+    if selected is None or selected[1]!='apply': return
+    editor.recenter_bounds(groups=[group],half_width=half_width)
+    if not plan['changes']: return
+    mode,radius=editor.search_request or ('local' if editor.raw['search']['domain']=='local_regions_v1' else 'global',editor.raw['search'].get('radius_fraction',1.))
+    if mode=='local' and radius!=1. and ui.confirm(
+            f'Current Sobol radius: {radius!r}. Set it to 1.0 to explore the full newly declared windows? '
+            'This affects ALL active parameters, including unchanged hardware; bounds themselves are not altered.'):
+        editor.configure_search('local',radius=1.,recenter=editor.recenter)
+
+
+def edit_group(editor,ui,group):
+    """Stay in this group after actions, preserving semantic parameter focus."""
+    focused=None
+    while True:
+        names=editor.select(groups=[group]); members=[p for p in editor.inventory() if p.name in names]
+        items=[(p.name,f'[{"x" if p.active else " " if p.releasable else "-"}] {p.name} = {p.value!r} [{p.unit}]') for p in members]
+        items.append(('recalibrate','Recalibrate bounds for this group'))
+        if editor.bounds_history: items.append(('undo-bounds','Undo last bounds recalibration (session-wide)'))
+        items.append(('back','Back'))
+        selected=ui.menu(f"{LABELS[group]}\nActive: {sum(p.active for p in members)} / {len(members)}",items,toggle=True,focus_key=focused)
+        if selected is None or selected[1]=='back': return
+        action,name=selected; focused=name
+        try:
+            if name=='recalibrate':
+                if action=='open': _recalibrate(editor,ui,group)
+            elif name=='undo-bounds':
+                if action=='open' and ui.confirm('Restore the domains preceding the last bounds recalibration? Scheduler radius is unchanged.'):
+                    editor.undo_recenter_bounds()
+            elif action=='toggle':
+                entry=next(p for p in members if p.name==name)
+                if entry.active: editor.freeze(parameters=[name])
+                elif entry.releasable: _release(editor,ui,[name])
+                else: ui.message(entry.reason)
+            else: _parameter(editor,ui,name)
+        except (ValueError,TypeError,KeyError,OSError,RuntimeError) as error:
+            ui.message(f'Study edit error: {error}')
+
+
 def _search(editor,ui):
     selected=ui.menu('SEARCH CONFIGURATION — radius affects ALL active parameters',[
         ('local','Local Sobol, center-first (normalized radius)'),
         ('global','Full declared parameter bounds'),('bounds','Show effective bounds'),('back','Back')])
     if selected is None or selected[1]=='back': return
     if selected[1]=='bounds':
-        ui.message(json.dumps(editor.review()['effective_bounds'],indent=2)); return
+        ui.message(effective_bounds_text(editor)); return
     mode=selected[1]
     radius=.05
     if mode=='local':
@@ -197,6 +292,7 @@ def run_editor(source, *, ui=None, editor=None):
     """Testable controller: menus choose actions, the pure engine applies them."""
     ui=TerminalMenus() if ui is None else ui
     editor=StudyEditor(source) if editor is None else editor
+    focused=None
     while True:
         inventory=editor.inventory(); active=sum(p.active for p in inventory)
         choices=[]
@@ -210,10 +306,10 @@ def run_editor(source, *, ui=None, editor=None):
             choices.append((group,f'[{marker}] {label:<30} {count} / {len(eligible)}'+(f' · {locked} fixed by contract' if locked else '')))
         choices += [('individual','Edit individual parameters'),('search','Search configuration'),
                     ('execution','Execution settings'),('review','Review changes'),('save','Save as new study'),('cancel','Cancel')]
-        result=ui.menu(f'DADA RESEARCH — STUDY EDITOR\nSource: {source}\nActive: {active} · available: {len(inventory)}',choices,toggle=True)
+        result=ui.menu(f'DADA RESEARCH — STUDY EDITOR\nSource: {source}\nActive: {active} · available: {len(inventory)}',choices,toggle=True,focus_key=focused)
         if result is None or result[1]=='cancel':
             ui.message('Cancelled; no files written.'); return None
-        action,selection=result
+        action,selection=result; focused=selection
         if action=='toggle' and selection not in LABELS:
             continue  # Space changes activity only; Enter opens action pages.
         try:
@@ -224,15 +320,7 @@ def run_editor(source, *, ui=None, editor=None):
                     elif names: _release(editor,ui,names)
                     else: ui.message('This group has no releasable coordinates under the current Research contract.')
                 else:
-                    items=[(p.name,f'[{"x" if p.active else " " if p.releasable else "-"}] {p.name} = {p.value!r} [{p.unit}]') for p in inventory if p.name in editor.select(groups=[selection])]
-                    selected=ui.menu(LABELS[selection],items+[('back','Back')],toggle=True)
-                    if selected and selected[1]!='back':
-                        name=selected[1]; entry=next(p for p in inventory if p.name==name)
-                        if selected[0]=='toggle':
-                            if entry.active: editor.freeze(parameters=[name])
-                            elif entry.releasable: _release(editor,ui,[name])
-                            else: ui.message(entry.reason)
-                        else: _parameter(editor,ui,name)
+                    edit_group(editor,ui,selection)
             elif selection=='individual':
                 query=ui.input('Filter parameter name (empty = all)','')
                 if query is None: continue

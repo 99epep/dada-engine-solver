@@ -94,6 +94,12 @@ def test_primary_discovery_is_inspectable_diverse_and_not_piston_fit(tmp_path):
         assert set(a.scientific['geometry'])==set((*PRIMARY_COORDINATES,'primary_branch'))
         assert isinstance(a.reconstruct(),SixBarPrimaryMechanism)
         assert member['metadata']['evidence']['large']['fit'] is None
+        cadence=member['metadata']['evidence']['large']['primary_cadence']
+        search=member['metadata']['search']
+        assert search['policy_version']=='primary_topology_cadence_v2'
+        assert search['score']==pytest.approx(cadence['score'],abs=1e-12)
+        assert search['terms']==cadence['terms']
+        assert not any('position' in term for term in search['terms'])
         assert 'E is not P' in member['metadata']['evidence']['large']['primary_projection']['meaning']
         assert member['metadata']['search']['released_coordinates']==list(PRIMARY_COORDINATES)
         with pytest.raises((ValueError,TypeError)):

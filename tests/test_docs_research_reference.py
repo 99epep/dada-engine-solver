@@ -95,11 +95,13 @@ def test_microtube_productivity_objective_contract():
 
 def test_study_editor_documents_domains_and_scheduler_separately():
     content = text().split("## Study editor", 1)[1].split("\n## ", 1)[0]
-    for command in ("study edit", "study release", "study freeze"):
+    for command in ("study edit", "study release", "study freeze", "study bounds recenter"):
         assert command in content
     for contract in ("prompt_toolkit", "reference_boxes", "--bounds", "--choices",
                      "fixed_global_bounds", "local_regions_v1", "--recenter"):
         assert contract in content
+    assert "--half-width" in content and "bounds_recalibrations" in content
+    assert "scheduler radius is unchanged" in content
     assert "all active parameters" in content
     assert "unevaluated" in content
     assert "artifact" in content

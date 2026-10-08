@@ -11,7 +11,7 @@ import math
 from pathlib import Path
 import tempfile
 
-from dada_solver.campaign.parameters import parameter_from_mapping, ParameterSpace
+from dada_solver.campaign.parameters import parameter_from_mapping, ParameterSpace, ChoiceParameter
 from .artifacts import MechanismArtifact
 from .families import parameter_specs, PHYSICAL_FAMILIES, ParameterSpec
 from .hardware_retuning import GROUPS as HARDWARE_GROUPS, _effective_bounds
@@ -37,6 +37,24 @@ def continuous_declaration(name, unit, initial, lower, upper, *, transform='line
 def integer_declaration(name, unit, initial, lower, upper):
     return dict(name=name,unit=unit,kind='integer',initial=initial,
                 lower=lower,upper=upper,encoding='nearest_even_v1')
+
+
+def recentered_declaration(row, half_width):
+    """Restrict a numeric box around its exact initial in normalized coordinates."""
+    if isinstance(half_width,bool) or not isinstance(half_width,(int,float)) or not math.isfinite(half_width) or not 0<half_width<=1:
+        raise ValueError('half_width must be in (0, 1].')
+    row=copy.deepcopy(row)
+    if 'initial' not in row: raise ValueError(f"{row['name']}: only active numeric parameters have search bounds.")
+    parameter=parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})
+    if isinstance(parameter,ChoiceParameter):
+        raise ValueError(f'{parameter.name}: categorical choices have no numeric width.')
+    center=parameter.encode(row['initial'])
+    row['lower']=parameter.decode(max(0.,center-half_width))
+    row['upper']=parameter.decode(min(1.,center+half_width))
+    try: parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})
+    except ValueError as error:
+        raise ValueError(f"{parameter.name}: recalibration cannot produce a valid numeric domain: {error}") from error
+    return row
 
 
 def initial_center(rows):
@@ -82,6 +100,7 @@ class StudyEditor:
         self.recenter = False
         self.search_request = None
         self.fixed_by_contract = {}
+        self.bounds_history = []
 
     def _rows(self):
         return {r['name']:r for r in self.raw['parameters']}
@@ -231,6 +250,47 @@ class StudyEditor:
             self.domains[name]=copy.deepcopy(row)
         self._replace(row)
 
+    def preview_recenter_bounds(self, *, groups=(), parameters=(), half_width=.01):
+        """Validate a complete operation without modifying the session."""
+        if isinstance(half_width,bool) or not isinstance(half_width,(int,float)) or not math.isfinite(half_width) or not 0<half_width<=1:
+            raise ValueError('half_width must be in (0, 1].')
+        names=self.select(groups=groups,parameters=parameters)
+        if not names: raise ValueError('No parameters match the bounds selection.')
+        rows=self._rows(); entries={p.name:p for p in self.inventory()}
+        changes={}; skipped={}
+        staged=copy.copy(self)
+        staged.raw=copy.deepcopy(self.raw); staged.domains=copy.deepcopy(self.domains)
+        for name in names:
+            entry=entries[name]
+            if not entry.active or entry.kind=='choice':
+                skipped[name]='Fixed parameter' if not entry.active else 'Categorical choices have no numeric width'
+                continue
+            before=copy.deepcopy(rows[name]); after=recentered_declaration(before,half_width)
+            staged.edit_parameter(name,lower=after['lower'],upper=after['upper'])
+            changes[name]=dict(before=before,after=after)
+        return dict(half_width=half_width,changes=changes,skipped=skipped)
+
+    def recenter_bounds(self, *, groups=(), parameters=(), half_width=.01):
+        """Atomically narrow current declarations; leave scheduler radius unchanged."""
+        plan=self.preview_recenter_bounds(groups=groups,parameters=parameters,half_width=half_width)
+        # All rows and specification checks passed before this commit.
+        history=dict(plan,domains=copy.deepcopy(self.domains))
+        for name,change in plan['changes'].items():
+            self.edit_parameter(name,lower=change['after']['lower'],upper=change['after']['upper'])
+        if plan['changes']: self.bounds_history.append(history)
+        return plan
+
+    def undo_recenter_bounds(self):
+        """Restore the last recalibration without overwriting subsequent row edits."""
+        if not self.bounds_history: raise ValueError('No bounds recalibration to undo.')
+        history=self.bounds_history[-1]
+        if any(self._rows().get(n)!=change['after'] for n,change in history['changes'].items()):
+            raise ValueError('Parameters changed since recalibration; undo would overwrite later edits.')
+        for name,change in history['changes'].items():
+            self._replace(copy.deepcopy(change['before']))
+            self.domains[name]=copy.deepcopy(history['domains'][name])
+        self.bounds_history.pop()
+
     def configure_search(self, mode, *, radius=.05, recenter=False):
         if mode not in ('local','global'): raise ValueError('Choose local or global search.')
         if isinstance(radius,bool) or not isinstance(radius,(int,float)) or not math.isfinite(radius) or not 0<radius<=1:
@@ -307,6 +367,7 @@ class StudyEditor:
                     changed_bounds=changed_bounds,search=search,effective_bounds=effective,
                     replaced_regions=replaced,artifact_changes=artifact_changes,warnings=warnings,
                     fixed_by_contract=dict(self.fixed_by_contract),
+                    bounds_recalibrations=[{k:copy.deepcopy(v) for k,v in h.items() if k!='domains'} for h in self.bounds_history],
                     execution_configuration_change={k:dict(before=self.study.data['execution'].get(k),after=v)
                         for k,v in self.raw['execution'].items() if v!=self.study.data['execution'].get(k)},
                     center_evidence='unevaluated study initials; source_candidate_id is the computed source initial configuration identity, not an evaluated result')
@@ -338,7 +399,7 @@ class StudyEditor:
         raw['search']=review['search']
         previous=basis['provenance'].get('study_edit')
         entry={k:copy.deepcopy(review[k]) for k in ('source_study_id','policy','activated_parameters','frozen_parameters',
-            'changed_initial_values','changed_bounds','artifact_changes','center_evidence','execution_configuration_change')}
+            'changed_initial_values','changed_bounds','artifact_changes','center_evidence','execution_configuration_change','bounds_recalibrations')}
         entry['search_configuration_change']=dict(before=self.study.data['search'],after=raw['search'])
         entry['declared_domains']=copy.deepcopy(self.domains)
         entry['domain_sources']=copy.deepcopy(self.domain_sources)
