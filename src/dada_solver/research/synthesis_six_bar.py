@@ -15,18 +15,35 @@ from .margins import margin_record
 from .motion_target import PERIOD, PeriodicTargetSide
 from .synthesis_search import GeometrySearch, SearchPolicy, SearchStopped, BOUNDS, CATEGORY_VALUES
 
+from .mechanical_screen import FINAL_MECHANICAL_SAMPLES, inherit_parent_plan, screen_provenance, PrimaryMechanicalPolicy
+
 STAGE_POLICY = 'hierarchical_six_bar_geometry_v1'
 PRIMARY_POLICY = 'primary_topology_cadence_v2'
 STAGES = ('primary_discovery','downstream_fit','full_local_polish','mirror_initialization','opposite_local_adaptation')
 
 
+def primary_cycle_data(primary, samples):
+    """Sign-independent full-cycle metrics from production primary joints."""
+    angles=np.linspace(0.,PERIOD,samples,endpoint=False)
+    state=primary.joint_state(angles)
+    points=np.column_stack(state['joints']['E'])
+    metrics=dict(minimum_primary_transmission_sine=float(np.min(state['primary_transmission_sine'])),
+                 E_span_over_crank=float(np.max(np.ptp(points,axis=0))))
+    return state,points,metrics
+
+
+def primary_rejection_reason(records):
+    names={r['name'] for r in records if not r['satisfied']}
+    if 'minimum_primary_transmission_sine' in names: return 'primary_transmission_below_minimum'
+    if 'E_span_over_crank' in names: return 'primary_e_span_below_minimum'
+    return None
+
+
 class PrimaryProjection:
     """PCA projection of E for inspectable chronology, not a cylinder law."""
-    def __init__(self, primary, *, axis=None, sign=1., root_samples=360):
+    def __init__(self, primary, *, axis=None, sign=1., root_samples=360, metric_samples=721, cycle=None):
         self.geometry=primary
-        angles=np.linspace(0.,PERIOD,721,endpoint=False)
-        state=primary.joint_state(angles)
-        points=np.column_stack(state['joints']['E'])
+        state,points,base_metrics=cycle if cycle is not None else primary_cycle_data(primary,metric_samples)
         if axis is None:
             _,vectors=np.linalg.eigh(np.cov(points.T))
             axis=vectors[:,-1]
@@ -40,7 +57,7 @@ class PrimaryProjection:
         if self.span<=1e-10: raise ValueError('Degenerate primary E projection.')
         self.roots=roots
         self.lateral_rms=float(np.std(points@np.array([-self.axis[1],self.axis[0]])))/self.span
-        self.metrics=dict(minimum_primary_transmission_sine=float(np.min(state['primary_transmission_sine'])),
+        self.metrics=dict(base_metrics,
                           E_projection_span_over_crank=self.span,E_lateral_rms_over_projection_span=self.lateral_rms,
                           E_projection_extrema_count=len(roots),
                           E_axis_variance_fraction=float(np.var(points@self.axis)/max(np.var(points,axis=0).sum(),1e-30)))
@@ -69,7 +86,7 @@ class PrimaryCadencePolicy:
     extra_crossing_weight: float = .50
     speed_ratio_weight: float = .55
     displacement_fraction_weight: float = .80
-    long_symmetry_weight: float = 0.
+    long_symmetry_weight: float = .45
     transmission_preference_weight: float = .12
     directionality_preference_weight: float = .03
     preferred_transmission_sine: float = .35
@@ -186,10 +203,11 @@ def primary_cadence_score(projection,target_features,policy,samples=721):
         q=projection.value(start+np.array([0.,cadence['split_offset_rad'],span]))
         displacement=np.abs(np.diff(q));fraction=float(displacement[fast]/max(displacement.sum(),1e-12))
         fraction_error=abs(fraction-cadence['fast_displacement_fraction'])
-    own_start=low_turn if direction<0 else high_turn
-    own_end=high_turn if direction<0 else low_turn
+    own_down_span=(low_turn-high_turn)%PERIOD
+    own_start=low_turn if own_down_span<=math.pi else high_turn
+    own_end=high_turn if own_down_span<=math.pi else low_turn
     own_span=(own_end-own_start)%PERIOD
-    distance=np.linspace(min(PERIOD*policy.turnaround_guard_fraction,.1*own_span),.5*own_span,64)
+    distance=np.linspace(min(PERIOD*policy.turnaround_guard_fraction,.20*own_span),.5*own_span,64)
     a=np.asarray(projection.value(own_start+distance,1));b=np.asarray(projection.value(own_end-distance,1))
     asymmetry=float(np.sqrt(np.mean((a-b)**2))/max(float(np.sqrt(np.mean(.5*(a*a+b*b)))),1e-12))
     metrics=projection.metrics
@@ -209,11 +227,12 @@ def primary_cadence_score(projection,target_features,policy,samples=721):
         zero_crossing_count=len(high)+len(low),stationary_point_count=len(roots),extra_crossings=extra,
         fast_slow_speed_ratio=ratio,fast_displacement_fraction=fraction,
         speed_ratio_log_error=ratio_error,displacement_fraction_error=fraction_error,
-        long_mirror_asymmetry_rms=asymmetry,long_symmetry_enabled=policy.long_symmetry_weight>0,
+        long_mirror_asymmetry_rms=asymmetry,candidate_long_span_rad=own_span,
+        candidate_long_start_rad=own_start,candidate_long_end_rad=own_end,long_symmetry_enabled=policy.long_symmetry_weight>0,
         mechanical_preferences=dict(transmission=transmission,directionality=directionality))
 
 
-def primary_evidence(artifact,target,side,samples=1440,*,cadence_policy=None):
+def primary_evidence(artifact,target,side,samples=1440,*,cadence_policy=None,mechanical_policy=None):
     source=PeriodicTargetSide(target,side); angles=np.linspace(0.,PERIOD,samples,endpoint=False)
     provenance=artifact.data['provenance']
     saved=provenance.get('primary_cadence_policy',{})
@@ -221,9 +240,13 @@ def primary_evidence(artifact,target,side,samples=1440,*,cadence_policy=None):
     root_samples=provenance.get('primary_root_samples',samples)
     policy=cadence_policy or PrimaryCadencePolicy(**saved)
     features=primary_target_features(source,policy)
+    mechanical_policy=mechanical_policy or PrimaryMechanicalPolicy(**provenance.get('primary_mechanical_policy',{}))
+    primary=artifact.reconstruct()
+    cycle=primary_cycle_data(primary,samples)
+    primary_constraints=mechanical_policy.constraints(cycle[2])
     candidates=[]
     for sign in (1.,-1.):
-        projection=PrimaryProjection(artifact.reconstruct(),sign=sign,root_samples=root_samples)
+        projection=PrimaryProjection(primary,sign=sign,root_samples=root_samples,cycle=cycle)
         try: cadence=primary_cadence_score(projection,features,policy,score_samples)
         except ValueError: continue
         candidates.append((cadence['score'],projection,cadence))
@@ -239,7 +262,8 @@ def primary_evidence(artifact,target,side,samples=1440,*,cadence_policy=None):
     return dict(fit=None,primary_cadence=cadence,primary_projection=dict(position_rms=float(np.sqrt(np.mean(error**2))),
         position_maximum_error=float(np.max(abs(error))),velocity_rms_per_rad=dv,
         axis=projection.axis.tolist(),meaning='Diagnostic only: E is not P; position resemblance is excluded from primary search'),
-        mechanical=dict(metrics=projection.metrics,constraints=constraints,deferred_constraints=deferred,samples=samples),thermodynamic=None)
+        mechanical=dict(metrics=projection.metrics,constraints=constraints,primary_constraints=primary_constraints,
+            primary_mechanical_screen=mechanical_policy.profile(),deferred_constraints=deferred,samples=samples),thermodynamic=None)
 
 
 def relative_downstream_bounds(primary,policy):
@@ -264,8 +288,10 @@ class SixBarStageSearch(GeometrySearch):
         self.stage=plan.request.stages[0]; self.parent=parent
         self.parent_artifact=None if parent is None else MechanismArtifact.from_data(parent['mechanisms'][sides[0]])
         self.fixed={} if parent is None else dict(self.parent_artifact.scientific['geometry'])
+        if parent is not None: plan=inherit_parent_plan(plan,parent,sides[0])
         super().__init__(plan,policy,sides,volume_limits)
         self.cadence_policy=PrimaryCadencePolicy(**policy.primary_cadence)
+        self.primary_mechanical_policy=PrimaryMechanicalPolicy(**policy.primary_mechanical)
         self.target_features={side:primary_target_features(self.targets[side],self.cadence_policy) for side in sides} if self.stage=='primary_discovery' else {}
 
     def coordinate_bounds(self):
@@ -313,8 +339,20 @@ class SixBarStageSearch(GeometrySearch):
         reason='primary_closure'; penalty=40.
         try:
             primary=SixBarPrimaryMechanism(**p)
+            cycle=primary_cycle_data(primary,self.policy.mechanical_samples)
+            records=self.primary_mechanical_policy.constraints(cycle[2])
+            row.update(metrics=cycle[2],primary_constraints=records)
+            failed=primary_rejection_reason(records)
+            if failed:
+                reason=failed; penalty=1000.
+                self.record_constraint_violations('primary_mechanical_constraints',records)
+                for record in records:
+                    if not record['satisfied']:
+                        named='primary_transmission_below_minimum' if record['name']=='minimum_primary_transmission_sine' else 'primary_e_span_below_minimum'
+                        if named!=reason: self.rejections[named]+=1
+                raise ValueError('Primary design screen fails.')
             reason='primary_projection_topology'; penalty=20.
-            candidates=[PrimaryProjection(primary,sign=sign,root_samples=self.policy.root_samples) for sign in (1.,-1.)]
+            candidates=[PrimaryProjection(primary,sign=sign,root_samples=self.policy.root_samples,cycle=cycle) for sign in (1.,-1.)]
             for projection in candidates:
                 reason='primary_constraints'; penalty=1000.
                 constraints=[margin_record(r['metric'],projection.metrics[r['metric']],r['limit'],r['relation'],r['unit'])
@@ -403,13 +441,27 @@ class SixBarStageSearch(GeometrySearch):
                        f"{parent_id}/{stage}-{len(members)+1:03d}")
             provenance=dict(target_hash=self.plan.target.content_hash,stage=stage,protocol=self.plan.request.protocol,
                             origin=origin,categories=row['categories'],primary_family_id=origin.get('primary_family_id',family_id))
+            provenance['mechanical_screen']=screen_provenance(self.plan,self.parent,row['side'])
             if stage=='primary_discovery':
                 provenance.update(search_policy=PRIMARY_POLICY,primary_cadence_policy=asdict(self.cadence_policy),
-                                  primary_score_samples=self.policy.samples,primary_root_samples=self.policy.root_samples)
+                                  primary_score_samples=self.policy.samples,primary_root_samples=self.policy.root_samples,
+                                  primary_mechanical_policy=asdict(self.primary_mechanical_policy),
+                                  primary_mechanical_screen=self.primary_mechanical_policy.profile())
             artifact=MechanismArtifact.create('six_bar',row['geometry'],settings=row['settings'],
                 constraints=self.plan.request.mechanical_constraints,provenance=provenance)
             if stage=='primary_discovery':
-                evidence=primary_evidence(artifact,self.plan.target,row['side'],self.policy.root_samples,cadence_policy=self.cadence_policy)
+                try:
+                    evidence=primary_evidence(artifact,self.plan.target,row['side'],FINAL_MECHANICAL_SAMPLES,
+                        cadence_policy=self.cadence_policy,mechanical_policy=self.primary_mechanical_policy)
+                except (ValueError,ArithmeticError):
+                    self.rejections['final_primary_closure_or_topology']+=1; continue
+                records=evidence['mechanical']['primary_constraints']
+                if self.record_constraint_violations('final_primary_mechanical_constraints',records):
+                    for record in records:
+                        if not record['satisfied']:
+                            named='primary_transmission_below_minimum' if record['name']=='minimum_primary_transmission_sine' else 'primary_e_span_below_minimum'
+                            self.rejections[named]+=1; self.rejections['final_'+named]+=1
+                    continue
             else:
                 try:
                     roots=artifact.reconstruct().stationary_points(samples=self.policy.root_samples)
@@ -417,14 +469,39 @@ class SixBarStageSearch(GeometrySearch):
                     self.rejections['final_refined_closure']+=1; continue
                 if len(roots)!=2 or {r['kind'] for r in roots}!={'maximum','minimum'}:
                     self.rejections['final_refined_topology']+=1; continue
-                evidence=assess_mechanism(artifact,self.plan.target,row['side'],mechanical_samples=self.policy.mechanical_samples,
-                                          volume_limits=self.volume_limits.get(row['side']))
+                try:
+                    evidence=assess_mechanism(artifact,self.plan.target,row['side'],mechanical_samples=FINAL_MECHANICAL_SAMPLES,
+                                              volume_limits=self.volume_limits.get(row['side']))
+                except (ValueError,ArithmeticError):
+                    self.rejections['final_refined_closure']+=1; continue
+                evidence['mechanical']['closure']=dict(satisfied=True,method='production reconstruction and 1440-sample geometry screen')
                 evidence['mechanical']['topology']=dict(extrema=roots,method='analytic velocity roots; doubled-grid and tangency screen, not a certified proof')
-            if any(not r['satisfied'] for r in evidence['mechanical']['constraints']): continue
+            if self.record_constraint_violations('final_mechanical_constraints',evidence['mechanical']['constraints']):
+                self.rejections['final_mechanical_constraints']+=1; continue
+            if stage!='primary_discovery' and self.policy.maximum_position_rms is not None and evidence['fit']['position_rms']>self.policy.maximum_position_rms:
+                self.rejections['final_maximum_position_rms']+=1; continue
             mechanisms={} if self.parent is None else dict(self.parent['mechanisms'])
             mechanisms[row['side']]=artifact.data
             previous={} if self.parent is None else dict(self.parent['metadata'].get('evidence',{}))
             previous[row['side']]=evidence
+            rejected_parent=False
+            for other,raw in mechanisms.items():
+                if other==row['side'] or raw['scientific']['settings'].get('component'): continue
+                try:
+                    parent_artifact=MechanismArtifact.from_data(raw)
+                    roots=parent_artifact.reconstruct().stationary_points(samples=self.policy.root_samples)
+                    if len(roots)!=2 or {r['kind'] for r in roots}!={'maximum','minimum'}:
+                        self.rejections['final_refined_topology']+=1; rejected_parent=True; continue
+                    previous[other]=assess_mechanism(parent_artifact,self.plan.target,other,mechanical_samples=FINAL_MECHANICAL_SAMPLES,volume_limits=self.volume_limits.get(other))
+                    previous[other]['mechanical']['topology']=dict(extrema=roots,method='analytic velocity roots; doubled-grid and tangency screen')
+                    previous[other]['mechanical']['closure']=dict(satisfied=True,method='production reconstruction and 1440-sample geometry screen')
+                    if self.record_constraint_violations('final_mechanical_constraints',previous[other]['mechanical']['constraints']):
+                        self.rejections['final_mechanical_constraints']+=1; rejected_parent=True
+                    if self.policy.maximum_position_rms is not None and previous[other]['fit']['position_rms']>self.policy.maximum_position_rms:
+                        self.rejections['final_maximum_position_rms']+=1; rejected_parent=True
+                except (ValueError,ArithmeticError):
+                    self.rejections['final_refined_closure']+=1; rejected_parent=True
+            if rejected_parent: continue
             metadata=dict(target_hash=self.plan.target.content_hash,evidence=previous,thermodynamic=None,provenance=provenance,
                 search=dict(score=row['score'],terms=row['terms'],policy_version=PRIMARY_POLICY if stage=='primary_discovery' else STAGE_POLICY,policy=asdict(self.policy),
                     effective_bounds=self.bounds,primary_bounds=({n:self.bounds[n] for n in PRIMARY_COORDINATES} if stage=='primary_discovery' else
@@ -436,6 +513,9 @@ class SixBarStageSearch(GeometrySearch):
             members.append(dict(family_id=family_id,mechanisms=mechanisms,metadata=metadata))
             if stage in ('full_local_polish','opposite_local_adaptation'): break
         if not members: raise ValueError('No admissible six-bar basin found under this stage, bounds and budget.')
+        for member in members:
+            member['metadata']['search'].update(rejections=dict(self.rejections),rejection_evidence=self.rejection_evidence,
+                rejection_evidence_limit=64,mechanical_screen=member['metadata']['provenance']['mechanical_screen'])
         return MechanismLibrary(tuple(json.loads(json.dumps(members))))
 
 
@@ -456,8 +536,7 @@ def mirror_member(plan,parent,side,policy,volume_limits):
     if side in parent['mechanisms']: raise ValueError('Mirror initialization will not overwrite an existing opposite mechanism.')
     artifact=MechanismArtifact.from_data(parent['mechanisms'][other]); raw=artifact.scientific
     if raw['settings'].get('family')!='six_bar' or raw['settings'].get('component'): raise ValueError('Mirror requires a complete six-bar mechanism.')
-    if any(c not in plan.request.mechanical_constraints for c in raw['constraints']):
-        raise ValueError('Retain all source artifact constraints.')
+    plan=inherit_parent_plan(plan,parent,other)
     p=mirror_geometry(raw['geometry']); mechanism=SixBarCylinderMechanism(**p)
     desired=PeriodicTargetSide(plan.target,side).extrema_angles()['maximum']
     p['primary_phase']=(p['primary_phase']+mechanism.minimum_angle-desired)%PERIOD
@@ -467,14 +546,24 @@ def mirror_member(plan,parent,side,policy,volume_limits):
         angle_rule='q_seed(theta)=q_source(-theta-delta); delta aligns the destination maximum',
         primary_family_id=parent['metadata'].get('provenance',{}).get('primary_family_id',parent['family_id']),
         categories={n:p[n] for n in ('primary_branch','second_branch')})
+    provenance['mechanical_screen']=screen_provenance(plan,parent,other)
     result=MechanismArtifact.create('six_bar',p,settings=raw['settings'],constraints=plan.request.mechanical_constraints,provenance=provenance)
     roots=result.reconstruct().stationary_points(samples=policy.root_samples)
     if len(roots)!=2 or {r['kind'] for r in roots}!={'maximum','minimum'}: raise ValueError('Mirror topology fails.')
-    evidence=assess_mechanism(result,plan.target,side,volume_limits=(volume_limits or {}).get(side),mechanical_samples=policy.mechanical_samples)
+    evidence=assess_mechanism(result,plan.target,side,volume_limits=(volume_limits or {}).get(side),mechanical_samples=FINAL_MECHANICAL_SAMPLES)
     if any(not c['satisfied'] for c in evidence['mechanical']['constraints']): raise ValueError('Mirror violates declared constraints.')
     evidence['mechanical']['topology']=dict(extrema=roots,method='reflection/time reversal followed by analytic-root screen')
+    evidence['mechanical']['closure']=dict(satisfied=True,method='production reconstruction and 1440-sample geometry screen')
+    if policy.maximum_position_rms is not None and evidence['fit']['position_rms']>policy.maximum_position_rms: raise ValueError('Mirror exceeds maximum_position_rms.')
     mechanisms=dict(parent['mechanisms']); mechanisms[side]=result.data
     previous=dict(parent['metadata']['evidence']); previous[side]=evidence
+    source_roots=artifact.reconstruct().stationary_points(samples=policy.root_samples)
+    if len(source_roots)!=2 or {r['kind'] for r in source_roots}!={'maximum','minimum'}: raise ValueError('Mirror source topology fails.')
+    previous[other]=assess_mechanism(artifact,plan.target,other,mechanical_samples=FINAL_MECHANICAL_SAMPLES,volume_limits=(volume_limits or {}).get(other))
+    previous[other]['mechanical']['topology']=dict(extrema=source_roots,method='analytic velocity roots; doubled-grid and tangency screen')
+    previous[other]['mechanical']['closure']=dict(satisfied=True,method='production reconstruction and 1440-sample geometry screen')
+    if any(not c['satisfied'] for c in previous[other]['mechanical']['constraints']): raise ValueError('Mirror source violates inherited constraints.')
+    if policy.maximum_position_rms is not None and previous[other]['fit']['position_rms']>policy.maximum_position_rms: raise ValueError('Mirror source exceeds maximum_position_rms.')
     bounds=dict(BOUNDS['six_bar'])
     bounds.update(parent['metadata'].get('search',{}).get('primary_bounds',{}))
     bounds.update(parent['metadata'].get('search',{}).get('effective_bounds',{}))
@@ -484,7 +573,7 @@ def mirror_member(plan,parent,side,policy,volume_limits):
     bounds['primary_phase']=(0.,PERIOD) if math.isclose(width,PERIOD) else (p['primary_phase']-width/2,p['primary_phase']+width/2)
     return dict(family_id=parent['family_id']+'/mirror-'+side,mechanisms=mechanisms,
                 metadata=dict(target_hash=plan.target.content_hash,evidence=previous,thermodynamic=None,provenance=provenance,
-                              search=dict(policy_version=STAGE_POLICY,policy=asdict(policy),effective_bounds=bounds,
+                              search=dict(policy_version=STAGE_POLICY,policy=asdict(policy),mechanical_screen=provenance['mechanical_screen'],effective_bounds=bounds,
                                           primary_bounds={n:bounds[n] for n in PRIMARY_COORDINATES},released_coordinates=[])))
 
 
@@ -520,7 +609,6 @@ def execute_six_bar(plan,*,policy=None,sides=('large',),library=None,volume_limi
             if raw['settings']['family']!='six_bar': raise ValueError('Selected artifact is not six_bar.')
             primary=raw['settings'].get('component')=='primary'
             if primary!=(stage=='downstream_fit'): raise ValueError('Downstream needs a primary; local stages need a complete six-bar.')
-            if any(c not in plan.request.mechanical_constraints for c in raw['constraints']): raise ValueError('Retain all source artifact constraints.')
             if stage=='opposite_local_adaptation':
                 other='small' if side=='large' else 'large'
                 if other not in parent['mechanisms'] or artifact.data['provenance'].get('stage')!='mirror_initialization':
@@ -547,15 +635,17 @@ def execute_six_bar(plan,*,policy=None,sides=('large',),library=None,volume_limi
             if remaining is not None: remaining-=engine.evaluations
             if not engine.archive.rows:
                 failed.append(dict(parent_family_id=identifier,side=side,evaluations=engine.evaluations,
-                                   rejections=dict(engine.rejections),reason='no admissible coarse basin'))
+                                   rejections=dict(engine.rejections),rejection_evidence=engine.rejection_evidence,reason='no admissible coarse basin'))
                 continue
             try:
                 results.extend(engine.final_library().members)
             except ValueError as error:
                 if str(error)!='No admissible six-bar basin found under this stage, bounds and budget.': raise
                 failed.append(dict(parent_family_id=identifier,side=side,evaluations=engine.evaluations,
-                                   rejections=dict(engine.rejections),reason='no admissible refined basin'))
-    if not results: raise ValueError(f'No admissible six-bar descendants from the selected parents: {failed}.')
+                                   rejections=dict(engine.rejections),rejection_evidence=engine.rejection_evidence,reason='no admissible refined basin'))
+    if not results:
+        summary=[{k:v for k,v in row.items() if k!='rejection_evidence'} for row in failed]
+        raise ValueError(f'No admissible six-bar descendants from the selected parents: {summary}.')
     for member in results:
         member['metadata']['search']['failed_parent_searches']=failed
     return MechanismLibrary(tuple(json.loads(json.dumps(results))))

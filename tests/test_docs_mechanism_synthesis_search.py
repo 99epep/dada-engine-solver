@@ -174,3 +174,21 @@ def test_six_bar_stages_are_real_hierarchical_operators():
     assert 'primary_linearity_weight' not in text
     assert 'primary_topology_weight' not in text
     assert 'Position and\nvelocity-profile RMS remain diagnostics only' in text
+
+
+def test_six_bar_design_screen_is_explicit_and_separate_from_fit():
+    text=DOC.read_text()
+    for token in ('six_bar_design_v1','--mechanical-screen none','1 440 samples',
+                  'maximum_position_rms','Each selected parent','Rejections retain aggregate counters'):
+        assert token in text
+
+
+def test_primary_hard_screen_and_soft_symmetry_have_separate_ownership():
+    text = DOC.read_text()
+    for token in ('six_bar_primary_design_v1', '[primary_mechanical]',
+                  'minimum_primary_transmission_sine >= 0.30',
+                  'E_span_over_crank >= 0.75', 'max(ptp(E_x), ptp(E_y))',
+                  'long_symmetry_weight = 0.45', 'primary_constraints',
+                  'primary_transmission_below_minimum', 'primary_e_span_below_minimum'):
+        assert token in text
+    assert 'Long-branch symmetry is disabled unless requested explicitly' not in text

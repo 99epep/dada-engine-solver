@@ -97,8 +97,11 @@ def test_primary_discovery_is_inspectable_diverse_and_not_piston_fit(tmp_path):
         cadence=member['metadata']['evidence']['large']['primary_cadence']
         search=member['metadata']['search']
         assert search['policy_version']=='primary_topology_cadence_v2'
-        assert search['score']==pytest.approx(cadence['score'],abs=1e-12)
-        assert search['terms']==cadence['terms']
+        assert search['score']==pytest.approx(sum(search['terms'].values()))
+        assert cadence['score']==pytest.approx(sum(cadence['terms'].values()))
+        mechanical=member['metadata']['evidence']['large']['mechanical']
+        assert mechanical['samples']==1440
+        assert all(c['satisfied'] for c in mechanical['primary_constraints'])
         assert not any('position' in term for term in search['terms'])
         assert 'E is not P' in member['metadata']['evidence']['large']['primary_projection']['meaning']
         assert member['metadata']['search']['released_coordinates']==list(PRIMARY_COORDINATES)

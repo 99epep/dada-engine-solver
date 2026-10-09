@@ -515,10 +515,36 @@ its target identity, search origin and separate evidence; polish additionally
 records its parent family and artifact. Six-bar `primary_discovery`,
 `downstream_fit`, `full_local_polish`, `mirror_initialization` and
 `opposite_local_adaptation` execute independently through the same engine.
+Primary discovery defaults to the primary-only `six_bar_primary_design_v1`
+profile: full-cycle transmission sine at least 0.30 and Cartesian E excursion
+`max(ptp(E_x), ptp(E_y))` at least 0.75 crank radii. Both are hard filters,
+independent of PCA sign and cadence score. Final primary admission recomputes
+these metrics at 1 440 samples, retaining thresholds and margins in evidence.
+`[primary_mechanical]` config overrides the limits; `false` disables either one.
+The separate soft transmission preference remains 0.35 with weight 0.12.
+Long-branch analytic velocity mirror symmetry has default weight 0.45; zero
+explicitly disables it. It uses the candidate's own turns and permits symmetric
+internal speed variations. E remains an intermediate point, never the piston;
+its excursion filter is not added to complete-mechanism scientific constraints.
+See [primary score ownership](MECHANISM_SYNTHESIS_SEARCH.md#7-primary-score-ownership)
+for the distinction between admission, cadence preferences and downstream fit.
+
 Fresh-primary saturation is not implemented by this geometric operator.
 Paired thermodynamics and hardware retuning generate ordinary Research studies
 through `mechanism adapt` and `mechanism retune`, using explicit complete Research
 sources rather than a geometric proxy objective.
+
+The six-bar `downstream_fit` CLI enables `--mechanical-screen six_bar_design`
+by default. This packaged design profile has ten constraints; it does not
+change the physical domains. `--mechanical-screen none` disables the automatic
+addition while preserving parent constraints. Each parent's constraints follow
+its descendants through polish, mirror initialization and opposite adaptation,
+with additional config constraints accumulated per side. Complete six-bar
+outputs are finally checked at 1 440 mechanical samples, separately from analytic
+velocity-root topology checks. The catalogue separates mechanical admissibility,
+target tracking quality and geometric families. Optional `--maximum-position-rms`
+filters final complete mechanisms only; by default no fit threshold excludes them.
+
 
 ### Manual SMALL/LARGE pairing
 
@@ -954,6 +980,53 @@ dada-research mechanism visualize path/to/library.json --family-id FAMILY_ID --s
 
 Use `--static` for a still view or `--no-show` to construct a view without opening
 a window. Neither changes the artifact or starts an integration.
+
+Add `--browse` to inspect a `MechanismLibrary` in one window. The default
+`--sort library` preserves JSON order; `--family-id` optionally selects the
+initial member within the chosen order. Without `--browse`, a library still
+requires an explicit family ID. An isolated artifact cannot be browsed, and
+numeric sorting requires `--browse`.
+
+```console
+dada-research mechanism visualize path/to/primary-library.json --side large \
+    --target path/to/target.json --browse
+dada-research mechanism visualize path/to/downstream-library.json --side large \
+    --target path/to/target.json --browse --sort position-rms
+```
+
+Previous/Next buttons and Left/Right arrows navigate circularly. `n` advances,
+Home/End select the first/last member, and Space pauses/resumes animation.
+`p`, `s` (cycle sort) and `r` (restore JSON order) are used only when they do not
+conflict with configured Matplotlib toolbar shortcuts. With standard toolbar
+bindings, use Shift+P, Shift+S and Shift+R instead: pan, zoom and save retain
+their normal shortcuts. The toolbar's other home shortcuts remain available.
+
+Sorts `position-rms`, `position-max` and `velocity-rms` use **recorded piston-fit**
+evidence, in increasing order. They never substitute the diagnostic projection
+of E. They are unavailable for primary-only libraries. In mixed libraries,
+primaries remain present at the end of piston-fit sorts. Missing, nonfinite or
+nonnumeric values also stay at the end, with ties preserving original JSON
+order. `score` orders the recorded stage score: topology/cadence for primaries,
+kinematic search for complete mechanisms, never thermodynamic performance.
+Shift+S cycles only criteria with finite recorded values. Changing sort retains
+the selected family, study angle and playback state. Only members containing
+the requested side are visited.
+
+`MechanismBrowser` owns one `FuncAnimation` (66 frames, 50 ms, no blitting in
+browse mode) and an on-demand LRU cache limited to five numerical views.
+`prepare_mechanism_view()` shares a production model between full-resolution
+curves and uniform animation frames. Revisiting cached geometry avoids
+reconstruction; switching topology rebuilds the drawing artists in the same
+figure. Mechanical diagnostics are read from metadata, not reevaluated at each
+selection. Missing diagnostics are marked unavailable. A supplied target with
+an identity conflicting with recorded evidence is rejected; absent recorded
+target identity is explicitly labelled unverified. Without a target, sorting
+still uses recorded results. No order or scientific data is written back.
+
+`--browse --static` provides the same navigation at a fixed angle without an
+animation. `--browse --no-show` constructs and checks the browser under Agg,
+then closes the figure. Interactive navigation requires an interactive
+Matplotlib backend, with no mandatory Qt/Tk dependency.
 
 ## 13. Scope boundary and related references
 

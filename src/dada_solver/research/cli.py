@@ -173,12 +173,16 @@ def main(argv=None):
     synthesize.add_argument('--library',type=Path,help='Input library for downstream, polish or opposite-piston stages')
     synthesize.add_argument('--family-id',action='append',default=[],help='Retained parent member; repeat to preserve several families')
     synthesize.add_argument('--config',type=Path,help='TOML search policy, bounds, categories and mechanical constraints')
+    synthesize.add_argument('--mechanical-screen',choices=['six_bar_design','none'],default=None,help='Default six_bar_design for six_bar downstream_fit; none preserves parent constraints')
+    synthesize.add_argument('--maximum-position-rms',type=float,help='Optional final complete-mechanism fit filter; does not change search score')
     synthesize.add_argument('--budget',help='Cooperative geometry-search budget, e.g. 2m; not a thermodynamic budget')
     for option in ('islands','population','generations','seed','max-evaluations'):
         synthesize.add_argument('--'+option,type=int,default=None)
     visual = mechanical.add_parser('visualize', help='Open interactive production geometry and motion, without integration')
     visual.add_argument('artifact', type=Path)
-    visual.add_argument('--family-id', help='Required when inspecting a library')
+    visual.add_argument('--family-id', help='Library member; optional starting member with --browse')
+    visual.add_argument('--browse', action='store_true', help='Browse a library in one Matplotlib window')
+    visual.add_argument('--sort', choices=['library','position-rms','position-max','velocity-rms','score'], default='library', help='Recorded-metric ordering; numeric sorts require --browse')
     visual.add_argument('--side', choices=['small','large'], default='small')
     visual.add_argument('--target', type=Path, help='MotionTarget or current study TOML')
     visual.add_argument('--static', action='store_true')
@@ -375,6 +379,10 @@ def main(argv=None):
                 import tomllib
                 settings={} if args.config is None else tomllib.loads(args.config.read_text())
                 constraints=tuple(settings.pop('mechanical_constraints',()))
+                configured_screen=settings.pop('mechanical_screen',None)
+                screen=args.mechanical_screen if args.mechanical_screen is not None else configured_screen
+                if screen is None: screen='six_bar_design' if args.family=='six_bar' and tuple(args.stage)==('downstream_fit',) else 'none'
+                if args.maximum_position_rms is not None: settings['maximum_position_rms']=args.maximum_position_rms
                 declared_limits=settings.pop('volume_limits',{})
                 from dada_solver.geometry import CylinderVolumeLimits
                 if set(declared_limits)-{'small','large'} or any(set(row)!={'minimum','maximum'} for row in declared_limits.values()):
@@ -386,15 +394,28 @@ def main(argv=None):
                 if args.budget is not None: settings['budget_seconds']=parse_budget(args.budget)
                 policy=SearchPolicy(**settings)
                 request=SynthesisRequest(target.content_hash,args.family,'design_exploitation',tuple(args.stage),
-                                         retained_family_ids=tuple(args.family_id),mechanical_constraints=constraints)
+                                         retained_family_ids=tuple(args.family_id),mechanical_constraints=constraints,mechanical_screen=screen)
                 plan=SynthesisPlan(target,request)
                 sides=('small','large') if args.side=='both' else (args.side,)
                 released={stage:release_coordinates(stage,sides,family=args.family) for stage in args.stage}
                 supported=(args.family in ('slider_crank','four_bar') and tuple(args.stage) in (('global_discovery',),('full_local_polish',))) or (args.family=='six_bar' and len(args.stage)==1 and args.stage[0] in ('primary_discovery','downstream_fit','full_local_polish','mirror_initialization','opposite_local_adaptation'))
                 if args.validate_only:
+                    from .mechanical_screen import inherit_parent_plan, screen_provenance, PrimaryMechanicalPolicy
+                    parent_screens=[]
+                    if args.library is not None:
+                        parents=MechanismLibrary.load(args.library)
+                        for identifier in args.family_id:
+                            parent=parents.member(identifier)
+                            for side in sides:
+                                source_side=('small' if side=='large' else 'large') if tuple(args.stage)==('mirror_initialization',) else side
+                                if source_side not in parent['mechanisms']: raise ValueError('Selected family has no mechanism on this side.')
+                                effective=inherit_parent_plan(plan,parent,source_side)
+                                parent_screens.append(dict(parent_family_id=identifier,side=side,mechanical_screen=screen_provenance(effective,parent,source_side)))
                     policy.coordinates(args.family); policy.choices(args.family)
                     print(json.dumps(dict(target_hash=target.content_hash,family=args.family,
-                        stages=args.stage,released_coordinates=released,implemented=supported,integration_started=False)))
+                        stages=args.stage,released_coordinates=released,implemented=supported,integration_started=False,
+                        mechanical_screen=screen_provenance(plan),parent_screens=parent_screens,
+                        primary_mechanical=(PrimaryMechanicalPolicy(**policy.primary_mechanical).profile() if args.family=='six_bar' and tuple(args.stage)==('primary_discovery',) else None))))
                 else:
                     if not supported: plan.execute(policy=policy,sides=sides)
                     if args.output is None: raise ValueError('Synthesis requires --output for its MechanismLibrary.')
@@ -418,29 +439,39 @@ def main(argv=None):
                     figure = plot_library_catalogue(library)
                     plt.close(figure) if args.no_show else plt.show()
             else:
+                if args.sort != 'library' and not args.browse:
+                    raise ValueError('--sort other than library requires --browse.')
                 raw = json.loads(args.artifact.read_text())
-                thermodynamic = None
-                if raw.get('artifact_type') == 'mechanism_library':
-                    if args.family_id is None:
-                        raise ValueError('Choose an explicit --family-id from the library catalogue.')
-                    member = MechanismLibrary.from_data(raw).member(args.family_id)
-                    if args.side not in member['mechanisms']:
-                        raise ValueError('Selected family has no artifact for that piston.')
-                    artifact = MechanismArtifact.from_data(member['mechanisms'][args.side])
-                    thermodynamic = member['metadata'].get('thermodynamic')
-                else:
-                    if args.family_id is not None:
-                        raise ValueError('--family-id applies only to a mechanism library.')
-                    artifact = MechanismArtifact.from_data(raw)
                 from .motion_target import load_motion_target
                 target = load_motion_target(args.target) if args.target else None
-                from .mechanism_view import plot_mechanism, animate_mechanism
+                from .mechanism_view import plot_mechanism, animate_mechanism, browse_mechanisms
                 import matplotlib.pyplot as plt
-                if args.static:
-                    figure = plot_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
+                if args.browse:
+                    if raw.get('artifact_type') != 'mechanism_library':
+                        raise ValueError('--browse requires a MechanismLibrary, not an isolated artifact.')
+                    library = MechanismLibrary.from_data(raw)
+                    figure, browser = browse_mechanisms(library, target=target, side=args.side,
+                        family_id=args.family_id, sort=args.sort, static=args.static)
+                    print(f'Browsing {len(browser.members)} mechanisms; current family {browser.current_family_id}; sort {browser.current_sort}; no thermodynamic integration started.')
                 else:
-                    figure, animation = animate_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
-                print(f"Viewing {artifact.content_hash}; no thermodynamic integration started.")
+                    thermodynamic = None
+                    if raw.get('artifact_type') == 'mechanism_library':
+                        if args.family_id is None:
+                            raise ValueError('Choose an explicit --family-id from the library catalogue.')
+                        member = MechanismLibrary.from_data(raw).member(args.family_id)
+                        if args.side not in member['mechanisms']:
+                            raise ValueError('Selected family has no artifact for that piston.')
+                        artifact = MechanismArtifact.from_data(member['mechanisms'][args.side])
+                        thermodynamic = member['metadata'].get('thermodynamic')
+                    else:
+                        if args.family_id is not None:
+                            raise ValueError('--family-id applies only to a mechanism library.')
+                        artifact = MechanismArtifact.from_data(raw)
+                    if args.static:
+                        figure = plot_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
+                    else:
+                        figure, animation = animate_mechanism(artifact, target=target, side=args.side, thermodynamic=thermodynamic)
+                    print(f"Viewing {artifact.content_hash}; no thermodynamic integration started.")
                 if args.no_show:
                     figure.canvas.draw()
                     plt.close(figure)

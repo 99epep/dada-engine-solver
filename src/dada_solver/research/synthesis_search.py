@@ -66,6 +66,8 @@ class SearchPolicy:
     bounds: dict = field(default_factory=dict)
     categories: dict = field(default_factory=dict)
     primary_cadence: dict = field(default_factory=dict)
+    primary_mechanical: dict = field(default_factory=dict)
+    maximum_position_rms: float | None = None
     minimum_trajectory_extent: float = .1
     pivot_envelope_radius: float = 2.
     link_extent_minimum: float = .25
@@ -81,10 +83,15 @@ class SearchPolicy:
             raise ValueError('Relative link bounds must be increasing.')
 
     def __post_init__(self):
+        if self.maximum_position_rms is not None and (isinstance(self.maximum_position_rms,bool) or not math.isfinite(self.maximum_position_rms) or self.maximum_position_rms<0):
+            raise ValueError('maximum_position_rms must be finite and nonnegative or None.')
         self.validate_relative_bounds()
         from .synthesis_six_bar import PrimaryCadencePolicy
         if not isinstance(self.primary_cadence,dict): raise ValueError('primary_cadence must be a policy table.')
         PrimaryCadencePolicy(**self.primary_cadence)
+        from .mechanical_screen import PrimaryMechanicalPolicy
+        if not isinstance(self.primary_mechanical,dict): raise ValueError('primary_mechanical must be a policy table.')
+        PrimaryMechanicalPolicy(**self.primary_mechanical)
         for name,minimum in (('seed',0),('islands',1),('population',4),('generations',0),
                 ('samples',360),('mechanical_samples',360),('root_samples',360),('retain_per_side',2),
                 ('polish_evaluations',1),('discovery_polish_evaluations',0)):
@@ -234,7 +241,7 @@ class GeometrySearch:
             if side not in self.volume_limits and any(r['metric'].startswith('maximum_absolute_') for r in plan.request.mechanical_constraints):
                 raise ValueError('Dimensional derivative constraints require explicit cylinder volume limits.')
         self.archive=BasinArchive(self.family,self.bounds,policy)
-        self.evaluations=0; self.cache_hits=0; self.rejections=Counter(); self.cache=OrderedDict()
+        self.evaluations=0; self.cache_hits=0; self.rejections=Counter(); self.rejection_evidence=[]; self.cache=OrderedDict()
         self.deadline=None if policy.budget_seconds is None else time.monotonic()+policy.budget_seconds
         self.tasks=[]; self.stop_reason='completed_generations'
 
@@ -260,6 +267,17 @@ class GeometrySearch:
         return p
 
     def encode(self,geometry): return (np.array([geometry[n] for n in self.names])-self.lower)/self.span
+
+    def record_constraint_violations(self, prefix, records):
+        violations=[r for r in records if not r['satisfied']]
+        if not violations: return False
+        for metric in {r['name'] for r in violations}:
+            self.rejections[prefix+':'+metric]+=1
+        # Bounded examples retain all margins for each recorded rejected candidate.
+        if len(self.rejection_evidence)<64:
+            self.rejection_evidence.append(dict(stage=prefix,evaluation=self.evaluations,
+                                                constraints=records))
+        return True
 
     def evaluate(self,x,side,categories,origin,*,retain=True):
         self.check_budget()
@@ -320,8 +338,10 @@ class GeometrySearch:
             stage='mechanical_constraints'; penalty=10.
             metrics=side_metrics(settings,law,backend,self.policy.mechanical_samples)
             constraints=[margin_record(r['metric'],metrics.get(r['metric']),r['limit'],r['relation'],r['unit']) for r in self.plan.request.mechanical_constraints]
+            row.update(metrics=metrics,mechanical_constraints=constraints)
             violations=[r for r in constraints if not r['satisfied']]
             if violations:
+                self.record_constraint_violations('mechanical_constraints',constraints)
                 penalty+=sum(1. if not r['available'] else min(1.,abs(r['margin'])/max(abs(r['limit']),1.)) for r in violations)
                 raise ValueError('Declared mechanical constraint fails.')
             stage='dense_fit'; penalty=5.
@@ -442,11 +462,13 @@ class GeometrySearch:
                 self.rejections['final_refined_topology']+=1; continue
             evidence=assess_mechanism(artifact,self.plan.target,row['side'],mechanical_samples=max(self.policy.mechanical_samples,self.policy.root_samples),
                 volume_limits=self.volume_limits.get(row['side']))
-            if any(not r['satisfied'] for r in evidence['mechanical']['constraints']):
+            if self.record_constraint_violations('final_mechanical_constraints',evidence['mechanical']['constraints']):
                 self.rejections['final_mechanical_constraints']+=1; continue
             topology=dict(extrema=points,method='exact collinear dead centers' if self.family=='slider_crank' else
                 'analytic velocity roots, doubled-grid and tangency screen; not a certified continuous proof',initial_samples=self.policy.root_samples)
             evidence['mechanical']['topology']=topology
+            if self.policy.maximum_position_rms is not None and evidence['fit']['position_rms']>self.policy.maximum_position_rms:
+                self.rejections['final_maximum_position_rms']+=1; continue
             family_id=f"{row['side']}-family-{len(members)+1:03d}"
             metadata=dict(target_hash=self.plan.target.content_hash,evidence={row['side']:evidence},thermodynamic=None,
                 search=dict(score=row['score'],terms=row['terms'],policy_version=POLICY_VERSION,bounds_version=BOUNDS_VERSION,
@@ -458,7 +480,7 @@ class GeometrySearch:
             members.append(dict(family_id=family_id,mechanisms={row['side']:artifact.data},metadata=metadata))
         if not members: raise ValueError('No mechanically admissible basin found under these bounds, constraints and search budget.')
         for member in members:
-            member['metadata']['search']['rejections']=dict(self.rejections)
+            member['metadata']['search'].update(rejections=dict(self.rejections),rejection_evidence=self.rejection_evidence,rejection_evidence_limit=64)
         return MechanismLibrary(tuple(json.loads(json.dumps(members))))
 
 

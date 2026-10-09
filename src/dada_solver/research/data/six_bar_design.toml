@@ -1,0 +1,63 @@
+name = "six_bar_design"
+version = "six_bar_design_v1"
+canonical_samples = 1440
+
+[[constraints]]
+metric = "stroke_over_crank"
+relation = "minimum"
+limit = 1.0
+unit = "crank_radius"
+
+[[constraints]]
+metric = "stroke_over_crank"
+relation = "maximum"
+limit = 3.0
+unit = "crank_radius"
+
+[[constraints]]
+metric = "minimum_primary_transmission_sine"
+relation = "minimum"
+limit = 0.30
+unit = "1"
+
+[[constraints]]
+metric = "minimum_secondary_transmission_sine"
+relation = "minimum"
+limit = 0.30
+unit = "1"
+
+[[constraints]]
+metric = "minimum_rod_axis_cosine"
+relation = "minimum"
+limit = 0.95
+unit = "1"
+
+[[constraints]]
+metric = "EH_over_crank"
+relation = "maximum"
+limit = 7.0
+unit = "crank_radius"
+
+[[constraints]]
+metric = "crank_axis_to_EFH_clearance_over_crank"
+relation = "minimum"
+limit = 0.5
+unit = "crank_radius"
+
+[[constraints]]
+metric = "H_axis_lateral_rms_over_stroke"
+relation = "maximum"
+limit = 0.25
+unit = "1"
+
+[[constraints]]
+metric = "H_axis_lateral_span_over_stroke"
+relation = "maximum"
+limit = 0.65
+unit = "1"
+
+[[constraints]]
+metric = "zero_crossing_count"
+relation = "equal"
+limit = 2
+unit = "1"

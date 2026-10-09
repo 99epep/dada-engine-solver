@@ -297,8 +297,15 @@ selected by topology and cadence, never by piston-position resemblance.
 The executable policy is `primary_topology_cadence_v2`: correctly timed
 turnarounds, monotonic signs, zero endpoint speeds, extra-reversal penalties,
 short-branch speed ratio and displacement sharing, and explicit soft
-transmission/directionality preferences. Optional long-branch symmetry compares
+transmission/directionality preferences. Default long-branch symmetry compares
 the candidate's own branch; it does not penalize internal speed variations.
+
+Use `mechanism visualize LIBRARY --side large --browse` to inspect primaries
+in stored order in one Matplotlib window. For complete descendants,
+`--browse --sort position-rms` orders recorded piston-fit errors without changing
+the library. Buttons and keyboard navigation retain the current study angle
+and pause state. Primary E-projection errors are never used as piston-fit RMS;
+`--sort score` exposes their topology/cadence ranking instead.
 
 The catalogue labels the projection as such: **E is not P**. Position and
 velocity-profile RMS remain diagnostics only; piston fit is `null`.
@@ -336,6 +343,38 @@ as seeds using the production closure. These heuristics supply starting points;
 they impose no equality, rod/stroke ceiling or transmission floor.
 The evaluation order checks primary, secondary and rod closure, stroke,
 piston topology, explicit mechanical constraints, then dense piston fit.
+The CLI activates the packaged `six_bar_design_v1` design screen by default
+for `six_bar/downstream_fit`. Its ten constraints exactly match the documented
+[design screen](repro/six_bar_mechanism_families/design_screen.toml), including
+units. These are explicit design limits, not intrinsic physical domains.
+Use `--mechanical-screen none` to disable the automatic profile; it never
+removes constraints already attached to a parent. `--config` may select
+`mechanical_screen = "none"` or add `[[mechanical_constraints]]` declarations.
+CLI screen selection takes precedence over the config setting.
+
+Each selected parent's constraints are inherited independently through local
+polish, mirror initialization and opposite adaptation. Constraints from unrelated
+parents or the other piston are not globally merged. Extra requested constraints
+are cumulative. Primary discovery receives no complete-mechanism profile.
+The profile/version, inherited provenance and effective constraints appear in
+library artifacts, catalogue evidence and `--validate-only` output.
+
+Search-time mechanical metrics use `mechanical_samples` (default 720).
+Every retained complete six-bar, including mirrored or unchanged paired sides,
+is screened again at **1 440 samples**. Closure, individual margins and refined
+analytic velocity roots are checked before inclusion. Root-search resolution is
+separate from metric sampling. No 5 760-sample execution screen is added.
+Rejections retain aggregate counters, per-metric counters and up to 64 examples
+containing all constraint margins per rejected candidate; counts remain complete.
+Final mechanical rejections use the `final_mechanical_constraints:METRIC` prefix.
+
+Target tracking remains distinct from mechanical admissibility and geometric
+diversity. `--maximum-position-rms` (or `maximum_position_rms` in config) optionally
+filters complete mechanisms after final assessment. Its default is `None`;
+it never changes the search score or filters primary discovery. Position RMS,
+maximum position error and available velocity RMS remain inspectable and sortable,
+so mechanically sound basins with imperfect immediate fit can still be polished.
+
 Complete piston acceptance refines analytic velocity roots on doubled grids and
 screens tangencies: exactly one maximum and one minimum are required. This is
 resolution-checked, not a certified continuous proof.
@@ -714,8 +753,8 @@ The proxy rewards:
 7. weak geometric directionality preferences.
 
 A study may leave the return branch less constrained instead of copying its
-detailed target velocity profile. If approximate mirror symmetry is chosen as
-a study preference, the candidate's own branch asymmetry can be measured by:
+detailed target velocity profile. The default soft mirror-symmetry preference
+uses the candidate's own longer branch, bounded by its own turnarounds:
 
 \[
 A_{BP}
@@ -732,7 +771,10 @@ A_{BP}
 }.
 \]
 
-A symmetric fast-slow-fast branch is therefore allowed.
+A symmetric fast-slow-fast branch is therefore allowed. The contribution is
+`0.45 * A_BP` by default; `long_symmetry_weight = 0.0` explicitly disables it.
+This term uses raw analytic projected velocity, without smoothing, curvature
+penalties or penalties on local speed extrema. It is never an admission filter.
 
 The implementation extracts extrema from `MotionTarget` events when present,
 otherwise from its periodic position interpolant. The shorter ascending or
@@ -747,6 +789,10 @@ terms and records the reason; `"error"` refuses discovery. No cadence is invente
 A search-settings TOML may contain, for example:
 
 ```toml
+[primary_mechanical]
+minimum_primary_transmission_sine = 0.30
+minimum_e_span_over_crank = 0.75
+
 [primary_cadence]
 missing_cadence = "disable"
 monotonicity_weight = 2.0
@@ -756,7 +802,7 @@ turning_scale_rad = 0.2617993877991494
 extra_crossing_weight = 0.50
 speed_ratio_weight = 0.55
 displacement_fraction_weight = 0.80
-long_symmetry_weight = 0.0
+long_symmetry_weight = 0.45
 transmission_preference_weight = 0.12
 directionality_preference_weight = 0.03
 preferred_transmission_sine = 0.35
@@ -767,10 +813,13 @@ reject_extra_turnarounds = false
 ```
 
 All weights and preferences belong to `PrimaryCadencePolicy`, not universal
-mechanical limits. Long-branch symmetry is disabled unless requested explicitly.
+mechanical limits. Set either `[primary_mechanical]` limit to `false` to disable
+that filter explicitly, or supply another nonnegative threshold. The packaged
+profile `six_bar_primary_design_v1` records the effective thresholds separately
+from the cadence score.
 The scalar score sums the weighted RMS wrong-sign velocity, normalized endpoint
 speed, turnaround RMS divided by `turning_scale_rad`, extra-reversal count,
-absolute log speed-ratio error, absolute displacement-fraction error, optional
+absolute log speed-ratio error, absolute displacement-fraction error, soft
 mirror asymmetry and normalized deficits below the two preferred mechanical
 values. Speeds in topology terms are normalized by the candidate's cycle RMS.
 Non-reversing stationary points are not extra turnarounds.
@@ -794,6 +843,32 @@ evolution produces good thermodynamic behavior.
 ---
 
 ## 7. Primary score ownership
+
+Primary admission first requires full-cycle closure and two independent hard
+search filters: `minimum_primary_transmission_sine >= 0.30` and
+`E_span_over_crank >= 0.75`. The latter is exactly
+`max(ptp(E_x), ptp(E_y))` in crank-radius units, not the PCA projection span and
+not piston stroke. They are evaluated once per geometry, before either PCA
+sign is scored. A good cadence score cannot compensate for either violation.
+These configurable design filters are not universal physical limits.
+
+The primary transmission preference remains distinct: below 0.30 is rejected;
+from 0.30 to the preferred 0.35 it is admissible with a soft deficit weighted
+by 0.12; at or above 0.35 this preference contributes zero. Directionality and
+long-branch symmetry are also soft preferences. Complete-mechanism constraints
+such as secondary transmission, rod alignment and clearance belong to the
+later downstream stages. Thermodynamic objectives are evaluated later still.
+
+Every retained primary is reconstructed and screened again at **1 440 samples**
+on a full cycle. This recomputes transmission and Cartesian E excursion, rather
+than reusing the projection helper's default 721-point metrics. Evidence records
+`primary_constraints`, raw margins, thresholds, profile identity/version and
+final resolution. These primary-only records do not insert `E_span_over_crank`
+into a complete artifact's scientific constraints. Rejection counters distinguish
+`primary_transmission_below_minimum` and `primary_e_span_below_minimum`, with
+`final_` counterparts when the final check fails. The catalogue displays these
+admission records separately from cadence score components and position-fit
+diagnostics. Root searches remain separate from metric sampling.
 
 A primary-discovery proxy may combine monotonicity, velocity at turnarounds,
 zero-crossing timing, additional reversals, fast/slow mean-speed ratio,
