@@ -132,8 +132,13 @@ mechanisms. The animation uses production linkage closures, replayed gas
 temperatures and effective valve states, with the candidate's actual valve
 placements. Its independently scaled visible strokes illustrate motion, not a
 physical common-shaft assembly; animation speed is illustrative. The validated
-transfer block is uniformly scaled between fixed cylinder inner faces. Pillow
-with animated WebP support is required; unavailable geometry, saved states or
+transfer block is uniformly scaled between fixed cylinder inner faces.
+The large cylinder's transverse display width is at least 20% of the exported
+image height, including margins, so large linkages with short piston strokes
+do not collapse the chamber and transfer rows visually. Both cylinders enlarge
+by the same factor, preserving their relative transverse dimensions. This changes only the
+illustration; piston strokes and scientific volumes remain unchanged.
+Pillow with animated WebP support is required; unavailable geometry, saved states or
 encoding support are reported without failing the report. The WebP is embedded
 in the offline HTML alongside the existing derived curves; no GIF or graph
 panels are included in the machine image. Use `--html PATH` for another HTML

@@ -192,3 +192,13 @@ def test_primary_hard_screen_and_soft_symmetry_have_separate_ownership():
                   'primary_transmission_below_minimum', 'primary_e_span_below_minimum'):
         assert token in text
     assert 'Long-branch symmetry is disabled unless requested explicitly' not in text
+
+
+def test_four_bar_design_is_explicit_with_dynamic_frame_and_inheritance():
+    text = DOC.read_text()
+    for token in ('four_bar_design_v1', '0.30', '0.95', '0.1238',
+                  'envelope_frame = "slider_axis"', '--minimum-rod-axis-cosine',
+                  'constraint identity enters the evaluation cache',
+                  'category_coverage', '1 440 mechanical samples'):
+        assert token in text
+    assert 'No\nimplicit transmission floor' not in text

@@ -20,6 +20,7 @@ from .families import parameter_specs, build_side, side_metrics
 from .margins import margin_record
 from .motion_target import PERIOD, PeriodicTargetSide
 from .artifacts import MechanismLibrary, MechanismArtifact
+from .mechanical_screen import inherit_parent_plan, screen_provenance, FINAL_MECHANICAL_SAMPLES
 
 POLICY_VERSION = 'direct_geometry_islands_v1'
 BOUNDS_VERSION = 'crank_normalized_direct_bounds_v1'
@@ -244,6 +245,27 @@ class GeometrySearch:
         self.evaluations=0; self.cache_hits=0; self.rejections=Counter(); self.rejection_evidence=[]; self.cache=OrderedDict()
         self.deadline=None if policy.budget_seconds is None else time.monotonic()+policy.budget_seconds
         self.tasks=[]; self.stop_reason='completed_generations'
+        self.parent_plans = {}
+        self.parents = {}
+        self.category_counts = {}
+        for side in self.sides:
+            for categories in self.choices:
+                self.category_counts[(side,tuple(categories.items()))] = dict(side=side,categories=categories,
+                    evaluations=0,admissible=0,mechanical_rejections=0,cache_hits=0)
+
+    def effective_plan(self, origin, side):
+        return self.parent_plans.get((origin.get('parent_family_id'),side),self.plan)
+
+    def category_coverage(self):
+        """Report actual work, including scheduled categories with no evaluations."""
+        coverage=[]
+        for stats in self.category_counts.values():
+            tasks=[t for t in self.tasks if t['side']==stats['side'] and t['categories']==stats['categories']]
+            coverage.append(dict(stats,islands_launched=sum(bool(t['population']) for t in tasks),
+                islands_scheduled=len(tasks),completed_generations=sum(t['completed_generations'] for t in tasks),
+                island_progress=[dict(island=t['island'],seed=t['seed'],evaluations=t['evaluations'],completed_generations=t['completed_generations']) for t in tasks],
+                stopped_before_completion=self.stop_reason!='completed_generations'))
+        return coverage
 
     def coordinate_bounds(self):
         return self.policy.coordinates(self.family)
@@ -282,14 +304,22 @@ class GeometrySearch:
     def evaluate(self,x,side,categories,origin,*,retain=True):
         self.check_budget()
         geometry=self.decode(x,categories)
-        key=(side,tuple(categories.items()),tuple(geometry.values()),tuple(sorted(origin.get('source_settings',{}).items())))
+        effective = self.effective_plan(origin,side)
+        constraints_identity = json.dumps(effective.request.mechanical_constraints,sort_keys=True)
+        key=(side,tuple(categories.items()),tuple(geometry.values()),tuple(sorted(origin.get('source_settings',{}).items())),constraints_identity,effective.request.mechanical_screen)
+        counts = self.category_counts.setdefault((side,tuple(categories.items())),dict(side=side,categories=categories,evaluations=0,admissible=0,mechanical_rejections=0,cache_hits=0))
         if key in self.cache:
             self.cache_hits+=1
+            counts['cache_hits']+=1
             row=dict(self.cache[key],origin=origin)
             if retain and row['valid']: self.archive.add(row)
             return row
         self.evaluations+=1
-        settings=origin.get('source_settings') or dict(family=self.family,**({'output':categories['output']} if self.family=='four_bar' else {}))
+        counts['evaluations']+=1
+        settings=dict(origin.get('source_settings') or dict(family=self.family,**({'output':categories['output']} if self.family=='four_bar' else {})))
+        if self.family=='four_bar' and effective.request.mechanical_screen=='four_bar_design':
+            settings.pop('envelope_frame_angle_rad',None)
+            settings['envelope_frame']='slider_axis'
         row=dict(valid=False,side=side,geometry=geometry,categories=categories,settings=settings,origin=origin)
         stage='loop_closure'; penalty=40.
         try:
@@ -336,11 +366,18 @@ class GeometrySearch:
             if count!=2:
                 penalty+=abs(count-2); raise ValueError('Additional piston reversals.')
             stage='mechanical_constraints'; penalty=10.
-            metrics=side_metrics(settings,law,backend,self.policy.mechanical_samples)
-            constraints=[margin_record(r['metric'],metrics.get(r['metric']),r['limit'],r['relation'],r['unit']) for r in self.plan.request.mechanical_constraints]
+            # A local optimizer can settle immediately next to a design limit.
+            # Screen polish iterates on the export grid before they displace a
+            # valid parent in the score-ordered basin archive.
+            mechanical_samples=self.policy.mechanical_samples
+            if self.family=='four_bar' and self.plan.request.stages==('full_local_polish',):
+                mechanical_samples=max(FINAL_MECHANICAL_SAMPLES,mechanical_samples)
+            metrics=side_metrics(settings,law,backend,mechanical_samples)
+            constraints=[margin_record(r['metric'],metrics.get(r['metric']),r['limit'],r['relation'],r['unit']) for r in effective.request.mechanical_constraints]
             row.update(metrics=metrics,mechanical_constraints=constraints)
             violations=[r for r in constraints if not r['satisfied']]
             if violations:
+                counts['mechanical_rejections']+=1
                 self.record_constraint_violations('mechanical_constraints',constraints)
                 penalty+=sum(1. if not r['available'] else min(1.,abs(r['margin'])/max(abs(r['limit']),1.)) for r in violations)
                 raise ValueError('Declared mechanical constraint fails.')
@@ -359,6 +396,7 @@ class GeometrySearch:
             score=position+velocity_term
             row.update(valid=True,score=score,residual=residual,terms=dict(weighted_position_mse=position,normalized_velocity_mse=velocity_mse,
                 velocity_term=velocity_term),metrics=metrics,reason=None)
+            counts['admissible']+=1
             if retain: self.archive.add(row)
         except (ValueError,ArithmeticError,np.linalg.LinAlgError) as error:
             row.update(score=penalty,reason=stage)
@@ -398,7 +436,7 @@ class GeometrySearch:
                     seed=int(np.random.SeedSequence([self.policy.seed,('small','large').index(side),category_index,island]).generate_state(1)[0])
                     rng=np.random.default_rng(seed)
                     self.tasks.append(dict(side=side,categories=categories,island=island,seed=seed,rng=rng,
-                        population=[],scores=[],generation=0,evaluations=0))
+                        population=[],scores=[],generation=0,completed_generations=0,evaluations=0))
         try:
             # Interleave populations across sides/categories/islands before DE.
             for index in range(self.policy.population):
@@ -418,6 +456,7 @@ class GeometrySearch:
                         proposal=np.where(mask,mutant,population[index])
                         row=self.evaluate(proposal,task['side'],task['categories'],dict(island=task['island'],seed=task['seed'],generation=generation))
                         task['evaluations']+=1; task['generation']=generation+1
+                        if index==self.policy.population-1: task['completed_generations']=generation+1
                         if row['score']<=task['scores'][index]:
                             task['population'][index]=proposal; task['scores'][index]=row['score']
             if self.policy.discovery_polish_evaluations:
@@ -449,38 +488,70 @@ class GeometrySearch:
 
     def final_library(self):
         members=[]; from .synthesis import assess_mechanism
-        for row in self.archive.rows:
+        polishing=self.plan.request.stages==('full_local_polish',)
+        admitted_parents=set()
+        rows=sorted(self.archive.rows,key=lambda r:r['score']) if polishing else self.archive.rows
+        for row in rows:
+            parent_key=(row['side'],row['origin'].get('parent_family_id'))
+            if polishing and parent_key in admitted_parents: continue
             settings,geometry=row['settings'],row['geometry']
-            artifact=self.plan.artifact(geometry,settings=settings,provenance=dict(target_hash=self.plan.target.content_hash,
+            effective=self.effective_plan(row['origin'],row['side'])
+            parent=self.parents.get((row['origin'].get('parent_family_id'),row['side']))
+            screen=screen_provenance(effective,parent,row['side'],requested_plan=self.plan)
+            if self.family=='four_bar':
+                screen['envelope_frame']=settings.get('envelope_frame','fixed_angle' if 'envelope_frame_angle_rad' in settings else 'global')
+                screen['envelope_frame_angle_rad']= -geometry['axis_angle'] if settings.get('envelope_frame')=='slider_axis' else settings.get('envelope_frame_angle_rad',0.)
+                if parent is not None:
+                    screen['source_envelope_settings']={k:v for k,v in parent['mechanisms'][row['side']]['scientific']['settings'].items() if k.startswith('envelope_frame')}
+            final_samples=max(FINAL_MECHANICAL_SAMPLES,self.policy.mechanical_samples) if self.family=='four_bar' else max(self.policy.mechanical_samples,self.policy.root_samples)
+            if self.family=='four_bar': screen['final_mechanical_samples']=final_samples
+            artifact=effective.artifact(geometry,settings=settings,provenance=dict(target_hash=self.plan.target.content_hash,
                 protocol=self.plan.request.protocol,stage=self.plan.request.stages[-1],search_policy=POLICY_VERSION,
-                categories=row['categories'],origin=row['origin']))
+                categories=row['categories'],origin=row['origin'],mechanical_screen=screen))
             raw=artifact.scientific
             limits=self.volume_limits.get(row['side'],CylinderVolumeLimits(1.,2.))
             law,backend=build_side(settings,geometry,row['side'],limits)
             points=backend.stationary_points(samples=self.policy.root_samples) if self.family=='six_bar' else backend.stationary_points() if self.family=='slider_crank' else law.model.stationary_points(row['side'],samples=self.policy.root_samples)
             if len(points)!=2 or {p['kind'] for p in points}!={'maximum','minimum'}:
                 self.rejections['final_refined_topology']+=1; continue
-            evidence=assess_mechanism(artifact,self.plan.target,row['side'],mechanical_samples=max(self.policy.mechanical_samples,self.policy.root_samples),
+            evidence=assess_mechanism(artifact,self.plan.target,row['side'],mechanical_samples=final_samples,
                 volume_limits=self.volume_limits.get(row['side']))
             if self.record_constraint_violations('final_mechanical_constraints',evidence['mechanical']['constraints']):
                 self.rejections['final_mechanical_constraints']+=1; continue
             topology=dict(extrema=points,method='exact collinear dead centers' if self.family=='slider_crank' else
                 'analytic velocity roots, doubled-grid and tangency screen; not a certified continuous proof',initial_samples=self.policy.root_samples)
             evidence['mechanical']['topology']=topology
+            if self.family=='four_bar':
+                evidence['mechanical']['envelope_frame']=dict(convention=screen['envelope_frame'],angle_rad=screen['envelope_frame_angle_rad'])
+            evidence['mechanical']['mechanical_screen']=screen
             if self.policy.maximum_position_rms is not None and evidence['fit']['position_rms']>self.policy.maximum_position_rms:
                 self.rejections['final_maximum_position_rms']+=1; continue
             family_id=f"{row['side']}-family-{len(members)+1:03d}"
+            if row['origin'].get('parent_family_id'):
+                family_id=row['origin']['parent_family_id']+'/polish-'+family_id
             metadata=dict(target_hash=self.plan.target.content_hash,evidence={row['side']:evidence},thermodynamic=None,
                 search=dict(score=row['score'],terms=row['terms'],policy_version=POLICY_VERSION,bounds_version=BOUNDS_VERSION,
                     policy=asdict(self.policy),effective_bounds=self.bounds,stopping_reason=self.stop_reason,
                     evaluations=self.evaluations,cache_hits=self.cache_hits,rejections=dict(self.rejections),
                     islands=[dict(side=t['side'],categories=t['categories'],island=t['island'],seed=t['seed'],
-                        generations=t['generation'],evaluations=t['evaluations']) for t in self.tasks]),
-                provenance=dict(protocol=self.plan.request.protocol,stage=self.plan.request.stages[-1],origin=row['origin'],categories=row['categories']))
+                        generations=t['generation'],completed_generations=t['completed_generations'],evaluations=t['evaluations']) for t in self.tasks]),
+                provenance=dict(protocol=self.plan.request.protocol,stage=self.plan.request.stages[-1],origin=row['origin'],categories=row['categories'],mechanical_screen=screen))
             members.append(dict(family_id=family_id,mechanisms={row['side']:artifact.data},metadata=metadata))
-        if not members: raise ValueError('No mechanically admissible basin found under these bounds, constraints and search budget.')
+            if polishing: admitted_parents.add(parent_key)
+        if not members:
+            message='No mechanically admissible basin found under these bounds, constraints and search budget.'
+            if self.family=='four_bar':
+                coverage=[{k:v for k,v in row.items() if k!='island_progress'} for row in self.category_coverage() if row['evaluations']]
+                final_examples=[r for r in self.rejection_evidence if r['stage'].startswith('final_')]
+                examples=final_examples[:1] or self.rejection_evidence[:1]
+                violations=[dict(stage=example['stage'],**record) for example in examples for record in example['constraints'] if not record['satisfied']]
+                message+=f' Rejections: {dict(self.rejections)}. Explored categories: {coverage}. Constraint violations: {violations}.'
+            raise ValueError(message)
+        coverage=self.category_coverage() if self.family=='four_bar' else None
         for member in members:
             member['metadata']['search'].update(rejections=dict(self.rejections),rejection_evidence=self.rejection_evidence,rejection_evidence_limit=64)
+            if self.family=='four_bar':
+                member['metadata']['search']['category_coverage']=coverage
         return MechanismLibrary(tuple(json.loads(json.dumps(members))))
 
 
@@ -520,18 +591,20 @@ def execute_synthesis(plan,*,policy=None,sides=('large',),library=None,volume_li
                     if raw['settings']['family']!=plan.request.mechanism_family: raise ValueError('Polish cannot change mechanism family.')
                     categories={name:raw['settings']['output'] if name=='output' else raw['geometry'][name] for name in CATEGORY_VALUES[engine.family]}
                     if categories not in engine.choices: raise ValueError('Polish categories are excluded by this search policy.')
-                    if any(c not in plan.request.mechanical_constraints for c in raw['constraints']):
-                        raise ValueError('Polish must retain all source artifact constraints.')
+                    if engine.family=='four_bar':
+                        effective=inherit_parent_plan(plan,member,side)
+                    else:
+                        if any(c not in plan.request.mechanical_constraints for c in raw['constraints']):
+                            raise ValueError('Polish must retain all source artifact constraints.')
+                        effective=plan
+                    engine.parent_plans[(family_id,side)]=effective
+                    engine.parents[(family_id,side)]=member
+                    if side not in engine.volume_limits and any(r['metric'].startswith('maximum_absolute_') for r in effective.request.mechanical_constraints):
+                        raise ValueError('Dimensional derivative constraints require explicit cylinder volume limits.')
                     x=engine.encode(raw['geometry'])
                     if np.any(x<0) or np.any(x>1): raise ValueError('Polish geometry lies outside configured search bounds.')
                     parent=engine.evaluate(x,side,categories,dict(parent_family_id=family_id,parent_artifact_hash=artifact.content_hash,source_settings=raw['settings']))
                     if not parent['valid']: raise ValueError('Selected parent fails current synthesis constraints/topology.')
                     engine.polish(parent,policy.polish_evaluations)
         except SearchStopped: pass
-    if plan.request.stages==('full_local_polish',):
-        best={}
-        for row in engine.archive.rows:
-            key=(row['side'],row['origin']['parent_family_id'])
-            if key not in best or row['score']<best[key]['score']: best[key]=row
-        engine.archive.rows=list(best.values())
     return engine.final_library()

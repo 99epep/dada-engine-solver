@@ -171,8 +171,70 @@ mechanical constraints, then dense fit. Production closure and metrics are the
 authority. Vectorized poses share the scalar production equations. Slider-crank
 turnarounds use exact collinear dead centers. Four-bar acceptance refines roots
 of analytic velocity on doubled periodic grids and screens tangencies; this is
-a resolution-checked screen, **not a certified continuous root count**. No
-implicit transmission floor or auxiliary mechanical preference is imposed.
+a resolution-checked screen, **not a certified continuous root count**. Named
+design profiles impose explicit admission constraints, not auxiliary fit terms.
+
+The CLI defaults to `four_bar_design_v1` for four-bar discovery and local
+polish. It requires minimum primary transmission sine 0.30, minimum
+rod/slider-axis cosine 0.95 and minimum stroke/envelope ratio 0.1238, all with
+unit `1`. They are project design choices, not intrinsic physical domains.
+The rod cosine concerns H–P, independently of the quadrilateral transmission:
+0.95 corresponds to about 18.2 degrees of inclination and a lateral/axial
+force ratio of about 0.329. No force or friction model is introduced.
+
+New profile artifacts record `envelope_frame = "slider_axis"`. Production
+`four_bar_metrics()` measures the envelope with frame angle equal to the
+negative of the **current** geometry's `axis_angle`. It therefore follows axis
+changes during polish and is invariant under rigid rotation of the whole
+mechanism. This is screening metadata, not a twelfth continuous variable.
+Existing fixed `envelope_frame_angle_rad` settings retain their meaning;
+artifacts without either setting retain the global frame. Selecting the new
+profile for a descendant explicitly adopts the slider-axis convention, while
+preserving the parent's scientific constraint limits and recording its source
+frame settings. No old artifact is rewritten.
+
+`--mechanical-screen none` disables new automatic limits, never inherited
+requirements. Python requests still default to `none`; explicitly selecting
+`four_bar_design` applies the same profile. In a new policy, TOML rows replace
+profile defaults by metric/relation identity; `--minimum-rod-axis-cosine`
+has final precedence for the four-bar rod minimum, including with screen
+`none` (then only explicitly requested constraints apply).
+
+```toml
+[[mechanical_constraints]]
+metric = "minimum_rod_axis_cosine"
+relation = "minimum"
+limit = 0.98
+unit = "1"
+```
+
+Transmission and compactness limits can be overridden identically. Incompatible
+units and contradictory intervals are rejected before search. Parent commitments
+are a separate layer: polish inherits the strongest limit per metric/relation
+for each parent and side. A weaker request cannot relax that parent, and the
+provenance and CLI report the retained stronger requirement. Multiple parents
+keep separate effective plans; constraint identity enters the evaluation cache
+key, and each final artifact uses its own parent's plan.
+
+Every retained four-bar is screened at at least **1 440 mechanical samples**,
+independently of the refined analytic velocity-root search. Final evidence
+records all three values, limits and margins, the effective frame angle and
+the versioned profile. Failed final constraints exclude the candidate even if
+its piston fit is excellent. Both intermediate and final rejection counters
+retain individual metric names and bounded examples of all observed violations.
+The catalogue separates mechanical admissibility from fit and search provenance.
+Four-bar `full_local_polish` also uses at least 1 440 mechanical samples for
+each iterate, so a candidate passing only the cheaper discovery grid cannot
+replace an admissible parent. The best descendant per parent is selected only
+after final admission; a failed final check does not discard other archived
+descendants of that parent.
+
+The 32 output/branch/direction/orientation categories remain unchanged.
+`category_coverage` records actual evaluations, admissible evaluations,
+mechanical rejections, cache hits, scheduled/launched islands, completed
+generations per island and interrupted searches. A scheduled but untouched
+category is not evidence of exploration or saturation. Geometry diversity
+and separate categorical basins remain in `BasinArchive`.
 
 The fit has 721 uniform cycle samples by default. Nine samples per recognized
 extremum, turnaround, cadence join, rounding or kink reinforce coverage; their

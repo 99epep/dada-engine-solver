@@ -104,6 +104,7 @@ def test_wheel_can_be_installed_and_load_entry_points(distributions, tmp_path):
          'assert files("dada_solver.research").joinpath("data/machine_basis.json").is_file(); '
          'from dada_solver.research.mechanical_screen import mechanical_screen; '
          'assert len(mechanical_screen("six_bar_design")["constraints"]) == 10; '
+         'assert len(mechanical_screen("four_bar_design")["constraints"]) == 3; '
          'from dada_solver.research.mechanical_screen import PrimaryMechanicalPolicy; '
          'assert PrimaryMechanicalPolicy().profile()["thresholds"]["minimum_e_span_over_crank"] == 0.75; '
          '[entry.load() for entry in distribution("dada-engine-solver").entry_points]',

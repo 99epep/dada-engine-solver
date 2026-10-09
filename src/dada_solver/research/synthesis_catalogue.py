@@ -66,10 +66,10 @@ def render_synthesis_catalogue(library,target,path,*,library_path=None):
                     fit['position_rms'],fit['position_maximum_error'],fit['velocity_rms_per_rad']]
             metrics={k:v for k,v in mechanical['metrics'].items() if k in ('stroke_over_crank',
                 'minimum_primary_transmission_sine','minimum_secondary_transmission_sine','minimum_rod_axis_cosine','stroke_over_envelope','closure_margin','E_projection_span_over_crank','E_span_over_crank','E_axis_variance_fraction','E_lateral_rms_over_projection_span','EH_over_crank','H_axis_lateral_rms_over_stroke','H_axis_lateral_span_over_stroke','crank_axis_to_EFH_clearance_over_crank')}
-            screen=mechanical.get('primary_mechanical_screen',artifact.data['provenance'].get('mechanical_screen',{}))
+            screen=mechanical.get('primary_mechanical_screen',mechanical.get('mechanical_screen',artifact.data['provenance'].get('mechanical_screen',{})))
             records=[*mechanical['constraints'],*mechanical.get('primary_constraints',[])]
             admissibility=dict(satisfied=all(r['satisfied'] for r in records),samples=mechanical.get('samples'),
-                               mechanical_screen=screen,constraints=records)
+                               mechanical_screen=screen,constraints=records,envelope_frame=mechanical.get('envelope_frame'))
             summary=html.escape('; '.join(f'{k}: {v:.5g}' for k,v in metrics.items() if v is not None))
             cells=''.join(f'<td data-sort="{html.escape(str(v))}">{html.escape(str(v) if not isinstance(v,float) else f"{v:.6g}")}</td>' for v in labels)
             detail=html.escape(json.dumps(dict(artifact_hash=artifact.content_hash,geometry=artifact.scientific['geometry'],categories=categories,

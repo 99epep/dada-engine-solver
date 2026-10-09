@@ -494,3 +494,53 @@ def test_piston_rod_can_be_zero_only_without_wall_collision(side,collision):
         assert all(state['P'][0]==p for state,p in zip(placed,cyl['piston_positions']))
     wall_head=cyl['x_inner']-sign*_stroke_world(CYLINDER_LINE_WIDTHS[side])
     assert not _linkage_hits_cylinder(placed,links,0.,wall_head,cyl['x_outer'],cyl['width'],.1)
+
+
+def test_large_cylinder_minimum_size_for_large_linkage(tmp_path,monkeypatch):
+    from dada_solver.research import machine_render
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','six_bar','six_bar'))
+    artifacts,_=candidate_mechanisms(study,{})
+    angles=np.linspace(0.,2*math.pi,66,endpoint=False)
+    normal=machine_geometry(artifacts,angles)
+    original=machine_render._oriented
+    def tall_linkage(*args):
+        joints,links=original(*args)
+        # Stress the display envelope independently of the piston stroke.
+        return {name:point*np.array((1.,50. if name!='P' else 1.)) for name,point in joints.items()},links
+    monkeypatch.setattr(machine_render,'_oriented',tall_linkage)
+    geometry=machine_geometry(artifacts,angles)
+    assert geometry['heads']==normal['heads']
+    assert geometry['sides']['large'][1]['width']>normal['sides']['large'][1]['width']
+    assert geometry['sides']['small'][1]['width']>normal['sides']['small'][1]['width']
+    assert geometry['sides']['small'][1]['width']/geometry['sides']['large'][1]['width']==pytest.approx(
+        normal['sides']['small'][1]['width']/normal['sides']['large'][1]['width'])
+    assert np.ptp(geometry['sides']['large'][1]['piston_positions'])==pytest.approx(
+        np.ptp(normal['sides']['large'][1]['piston_positions']))
+    payload,metadata=render_machine_webp(artifacts,cycle(),layout='DD',frames=3)
+    assert metadata['large_cylinder_width_px']>=.20*metadata['height']
+    with Image.open(io.BytesIO(payload)) as image:
+        assert image.n_frames==3 and image.height==metadata['height']
+
+
+@pytest.mark.parametrize('output,base,edges,color',[
+    ('rocker',('C','D'),[('C','H'),('D','H')],'#2ca02c'),
+    ('coupler',('B','C'),[('B','H'),('C','H')],'#ff7f0e'),
+])
+def test_four_bar_output_body_segments_share_color(tmp_path,output,base,edges,color):
+    from dada_solver.research.machine_render import draw_machine_frame
+    study=load_study(initialize_kinematics(tmp_path/'study.toml','four_bar','four_bar'))
+    artifacts,_=candidate_mechanisms(study,{})
+    query,data=frame_series(cycle(),66)
+    geometry=machine_geometry(artifacts,query)
+    # Exercise both rigid output-body connectivities on production joint states.
+    for side in ('small','large'):
+        geometry['links'][side]=[('A','B'),('B','C'),('C','D'),('H','P'),*edges]
+    figure=Figure(figsize=(12,5),dpi=100);ax=figure.subplots()
+    draw_machine_frame(ax,geometry,7,data,'DD',280,380)
+    for side in ('small','large'):
+        state=geometry['sides'][side][0][7]
+        for a,b in [base,*edges]:
+            matches=[line for line in ax.lines if line.get_linewidth()==2.55 and
+                np.array_equal(line.get_xdata(),[state[a][0],state[b][0]]) and
+                np.array_equal(line.get_ydata(),[state[a][1],state[b][1]])]
+            assert matches and all(line.get_color()==color for line in matches)

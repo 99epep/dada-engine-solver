@@ -130,14 +130,20 @@ class SynthesisRequest:
                 raise ValueError('Primary-loop saturation uses fresh starts and discovery only.')
         if (self.protocol == 'fresh_island_saturation') != (self.saturation_policy is not None):
             raise ValueError('Only fresh-island saturation requires its explicit bounds, seeds and policy.')
-        from .mechanical_screen import mechanical_screen, merge_constraints
+        from .mechanical_screen import mechanical_screen, merge_constraints, overlay_profile_constraints, validate_constraint_intervals
         screen=mechanical_screen(self.mechanical_screen)
         if screen['name']!='none':
-            if self.mechanism_family!='six_bar' or 'primary_discovery' in self.stages:
-                raise ValueError('six_bar_design requires a complete six-bar stage.')
-            object.__setattr__(self,'mechanical_constraints',merge_constraints(self.mechanical_constraints,screen['constraints']))
+            if screen['name']=='six_bar_design':
+                if self.mechanism_family!='six_bar' or 'primary_discovery' in self.stages:
+                    raise ValueError('six_bar_design requires a complete six-bar stage.')
+                constraints=merge_constraints(self.mechanical_constraints,screen['constraints'])
+            else:
+                if self.mechanism_family!='four_bar': raise ValueError('four_bar_design requires the four_bar family.')
+                constraints=overlay_profile_constraints(screen['constraints'],self.mechanical_constraints)
+            object.__setattr__(self,'mechanical_constraints',constraints)
         for row in self.mechanical_constraints:
             validate_mechanical_constraint(row, self.mechanism_family, scoped=False)
+        if self.mechanism_family == 'four_bar': validate_constraint_intervals(self.mechanical_constraints)
         if (self.position_role, self.acceleration_role, self.mirror_policy, self.objective_after_pairing) != (
                 'primary_synthesis_reference', 'diagnostic_only', 'initialization_only', 'study_thermodynamic_objective'):
             raise ValueError('Preserve position/topology guidance, diagnostic acceleration, initialization-only mirroring and thermodynamic final assessment.')

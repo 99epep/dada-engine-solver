@@ -13,6 +13,7 @@ EXCHANGER_GAP = 9.6
 MACHINE_SCALE = 0.90
 CYLINDER_LINE_WIDTHS = dict(small=6.5,large=7.)
 VERTICAL_MARGIN_PX = 20
+MINIMUM_LARGE_CYLINDER_HEIGHT_FRACTION = .20
 # Presentation calibration: 100-dpi reference drawing, 1176 horizontal pixels
 # over 28.8730100164066 drawing units. Keep assembly strokes in drawing units
 # so viewport zoom scales them together with conduits and exchanger glyphs.
@@ -137,7 +138,7 @@ def _place(samples, side, head, width, gap, *, envelope, visible_stroke, links):
                         piston_positions=piston_positions,rod_length=abs(delta),clearance=gap)
 
 
-def machine_geometry(artifacts, study_angles, *, width_px=1200):
+def machine_geometry(artifacts, study_angles, *, width_px=1200, height_px=500):
     """Production joints, fixed cylinder layout, and whole-cycle rod clearance."""
     from .mechanism_view import MechanismModel
     raw, envelopes, reference, links = {}, {}, {}, {}
@@ -162,6 +163,7 @@ def machine_geometry(artifacts, study_angles, *, width_px=1200):
         raise ValueError('Mechanism has no visible piston stroke.')
     common = .90 * (1.5 * .5 * sum(strokes.values()))
     widths = dict(small=common,large=common/.84)
+    cylinder_width_ratio = widths['small']/widths['large']
     heads = dict(small=-MACHINE_SCALE*EXCHANGER_GAP/4,large=MACHINE_SCALE*EXCHANGER_GAP/4)
     local = {side:[{k:v*common/strokes[side] for k,v in state.items()} for state in frames]
              for side,frames in raw.items()}
@@ -170,31 +172,48 @@ def machine_geometry(artifacts, study_angles, *, width_px=1200):
     def place(gap):
         return {side:_place(local[side],side,heads[side],widths[side],gap,
                            envelope=envelopes[side],visible_stroke=common,links=links[side]) for side in local}
-    probes = place(0.)
-    cloud = np.array([p for frames,_ in probes.values() for state in frames for p in state.values()])
-    xmin = min(cloud[:,0].min(),*(c['x_outer'] for _,c in probes.values()))
-    xmax = max(cloud[:,0].max(),*(c['x_outer'] for _,c in probes.values()))
-    # Six pixels of visual margin plus the production drawing's joint radius.
-    gap = 6.*(xmax-xmin)/max(1.,width_px-12.)+.085
-    placed = place(gap)
-    # Frame the dense envelope too: framing must not depend on which frames
-    # happen to be exported, nor crop the new outboard mechanisms and rods.
-    clouds = []
-    for side,(frames,cyl) in placed.items():
-        delta = frames[0]['P']-local[side][0]['P']
-        clouds.extend(point+delta for state in envelopes[side] for point in state.values())
-    cloud = np.array(clouds)
-    xmin = min(cloud[:,0].min(),*(c['x_outer'] for _,c in placed.values()))
-    xmax = max(cloud[:,0].max(),*(c['x_outer'] for _,c in placed.values()))
-    ymin = min(cloud[:,1].min()-.31*.40*widths['large'],-widths['large']/2)
-    ymax = max(cloud[:,1].max()+.18,widths['large']/2)
-    from .transfer_block import BLOCK_WIDTH,HX_H,TRI_H
-    block_scale = (heads['large']-heads['small'])/BLOCK_WIDTH
-    row_extent = .31*widths['large']+max(HX_H,TRI_H)*block_scale
-    ymin,ymax = min(ymin,-row_extent),max(ymax,row_extent)
-    pad = .03*max(xmax-xmin,ymax-ymin)
-    return dict(sides=placed,links=links,heads=heads,
-                limits=(xmin-pad,xmax+pad,ymin-pad,ymax+pad))
+    # Keep the large chamber legible even when linkage size dwarfs its stroke.
+    # Width means the transverse cylinder dimension, not its piston travel.
+    # Re-place rods and reframe after enlargement; heads and linkage scales stay fixed.
+    for _ in range(32):
+        probes = place(0.)
+        cloud = np.array([p for frames,_ in probes.values() for state in frames for p in state.values()])
+        xmin = min(cloud[:,0].min(),*(c['x_outer'] for _,c in probes.values()))
+        xmax = max(cloud[:,0].max(),*(c['x_outer'] for _,c in probes.values()))
+        # Six pixels of visual margin plus the production drawing's joint radius.
+        gap = 6.*(xmax-xmin)/max(1.,width_px-12.)+.085
+        placed = place(gap)
+        # Frame the dense envelope too: framing must not depend on which frames
+        # happen to be exported, nor crop the new outboard mechanisms and rods.
+        clouds = []
+        for side,(frames,cyl) in placed.items():
+            delta = frames[0]['P']-local[side][0]['P']
+            clouds.extend(point+delta for state in envelopes[side] for point in state.values())
+        cloud = np.array(clouds)
+        xmin = min(cloud[:,0].min(),*(c['x_outer'] for _,c in placed.values()))
+        xmax = max(cloud[:,0].max(),*(c['x_outer'] for _,c in placed.values()))
+        ymin = min(cloud[:,1].min()-.31*.40*widths['large'],-widths['large']/2)
+        ymax = max(cloud[:,1].max()+.18,widths['large']/2)
+        from .transfer_block import BLOCK_WIDTH,HX_H,TRI_H
+        block_scale = (heads['large']-heads['small'])/BLOCK_WIDTH
+        row_extent = .31*widths['large']+max(HX_H,TRI_H)*block_scale
+        ymin,ymax = min(ymin,-row_extent),max(ymax,row_extent)
+        pad = .03*max(xmax-xmin,ymax-ymin)
+        limits=(xmin-pad,xmax+pad,ymin-pad,ymax+pad)
+        pixels_per_unit=min(.98*width_px/(limits[1]-limits[0]),
+                            .98*height_px/(limits[3]-limits[2]))
+        # The exported image is vertically cropped, then padded with 20 px on
+        # each side. Using the whole viewport extent is a conservative bound.
+        required=MINIMUM_LARGE_CYLINDER_HEIGHT_FRACTION*(
+            limits[3]-limits[2]+2*VERTICAL_MARGIN_PX/pixels_per_unit)
+        if widths['large'] >= required: break
+        widths['large']=required*1.001
+        # Enlarge both chamber diameters together, preserving the drawing's
+        # original relative dimensions while leaving piston travel unchanged.
+        widths['small']=widths['large']*cylinder_width_ratio
+    else:
+        raise ValueError('Minimum large cylinder display width did not converge.')
+    return dict(sides=placed,links=links,heads=heads,limits=limits)
 
 
 def layout_for_configuration(configuration):
@@ -251,7 +270,7 @@ def _transfer_endpoints(ax, geometry):
             for side,(_,cyl) in geometry['sides'].items()}
 
 
-def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax):
+def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_mechanisms=True):
     from matplotlib.patches import Circle, Rectangle
     from .transfer_block import PlacedAxes, LAYOUTS, draw_row
     ax.clear()
@@ -276,27 +295,34 @@ def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax):
         ax.plot([piston,piston],[-width/2,width/2],color='#555555',lw=_stroke_points(ax,9.5 if side=='small' else 10.),zorder=4,solid_capstyle='butt')
         for xs,ys in (([head,head],[-width/2,width/2]),([head,outer],[width/2]*2),([head,outer],[-width/2]*2)):
             ax.plot(xs,ys,color='#111111',lw=linewidth,zorder=6,solid_capstyle='round')
-        if cyl['rod_length'] > 0.:
-            ax.plot([piston,state['P'][0]],[0.,0.],color='#555555',lw=_stroke_points(ax,4.),zorder=4,solid_capstyle='butt')
-        ax.add_patch(Circle(state['P'],.075,facecolor='white',edgecolor='black',lw=1.1,zorder=8))
-        if 'F' in state:
-            _draw_six_bar(ax,state,width,lw=2.55 if side=='small' else 2.65)
-        else:
-            A,B = state['A'],state['B']
-            ax.add_patch(Circle(A,float(np.linalg.norm(B-A)),fill=False,edgecolor='black',lw=.85,zorder=0))
-            for i,(a,b) in enumerate(geometry['links'][side]):
-                ax.plot(*zip(state[a],state[b]),color=colors[min(i,len(colors)-1)],lw=2.55,solid_capstyle='round',zorder=4)
-            for name,point in state.items():
-                if name != 'P':
-                    ax.add_patch(Circle(point,.075,facecolor='white',edgecolor='black',lw=1.1,zorder=8))
-            for name in ('A','D','G'):
-                if name in state:
-                    x,y = state[name]; scale=.40*width
-                    ax.plot([x,x],[y-.08*scale,y-.22*scale],color='black',lw=1.8)
-                    ax.plot([x-.18*scale,x+.18*scale],[y-.24*scale]*2,color='black',lw=1.8)
-                    for k in range(5):
-                        xi=x-.18*scale+k*(.36*scale/4)
-                        ax.plot([xi-.04*scale,xi+.04*scale],[y-.31*scale,y-.24*scale],color='black',lw=1.2)
+        if show_mechanisms:
+            if cyl['rod_length'] > 0.:
+                ax.plot([piston,state['P'][0]],[0.,0.],color='#555555',lw=_stroke_points(ax,4.),zorder=4,solid_capstyle='butt')
+            ax.add_patch(Circle(state['P'],.075,facecolor='white',edgecolor='black',lw=1.1,zorder=8))
+            if 'F' in state:
+                _draw_six_bar(ax,state,width,lw=2.55 if side=='small' else 2.65)
+            else:
+                A,B = state['A'],state['B']
+                ax.add_patch(Circle(A,float(np.linalg.norm(B-A)),fill=False,edgecolor='black',lw=.85,zorder=0))
+                for i,(a,b) in enumerate(geometry['links'][side]):
+                    color=colors[min(i,len(colors)-1)]
+                    if 'H' in state and 'H' in (a,b) and 'P' not in (a,b):
+                        # The two output-point edges belong to the same rigid body
+                        # as BC (coupler) or CD (rocker), not to separate links.
+                        rocker=('D','H') in geometry['links'][side]
+                        color=_COLORS['rocker' if rocker else 'coupler']
+                    ax.plot(*zip(state[a],state[b]),color=color,lw=2.55,solid_capstyle='round',zorder=4)
+                for name,point in state.items():
+                    if name != 'P':
+                        ax.add_patch(Circle(point,.075,facecolor='white',edgecolor='black',lw=1.1,zorder=8))
+                for name in ('A','D','G'):
+                    if name in state:
+                        x,y = state[name]; scale=.40*width
+                        ax.plot([x,x],[y-.08*scale,y-.22*scale],color='black',lw=1.8)
+                        ax.plot([x-.18*scale,x+.18*scale],[y-.24*scale]*2,color='black',lw=1.8)
+                        for k in range(5):
+                            xi=x-.18*scale+k*(.36*scale/4)
+                            ax.plot([xi-.04*scale,xi+.04*scale],[y-.31*scale,y-.24*scale],color='black',lw=1.2)
     large_width = geometry['sides']['large'][1]['width']
     endpoints = _transfer_endpoints(ax,geometry)
     for branch,direction,y in (('Ho','left',TRANSFER_ROW_OFFSET*large_width),('Hi','right',-TRANSFER_ROW_OFFSET*large_width)):
@@ -353,6 +379,8 @@ def render_machine_webp(artifacts, cycle, *, layout, motor_operation=False, fram
                        duration=FRAME_DURATION_MS,loop=0,quality=82,method=4)
         return output.getvalue(), dict(layout=layout,frames=frames,frame_duration_ms=FRAME_DURATION_MS,cycle_duration_ms=frames*FRAME_DURATION_MS,width=1200,height=height,vertical_margin_px=VERTICAL_MARGIN_PX,
             cylinder_inner_faces={side:_cylinder_head(ax,cyl,side) for side,(_,cyl) in geometry['sides'].items()},
+            large_cylinder_width_px=float(geometry['sides']['large'][1]['width']*ax.bbox.height/(ax.get_ylim()[1]-ax.get_ylim()[0])),
+            minimum_large_cylinder_height_fraction=MINIMUM_LARGE_CYLINDER_HEIGHT_FRACTION,
             transfer_block_endpoints=_transfer_endpoints(ax,geometry),temperature_range_K=[Tmin,Tmax],
             method='One-cycle replay from saved periodic state; production linkage closures. Independent visible-stroke scaling is illustrative, not a shared-shaft assembly.')
     finally:

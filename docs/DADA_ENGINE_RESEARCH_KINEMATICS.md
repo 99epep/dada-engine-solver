@@ -156,6 +156,11 @@ unit `1` in declarations.
 
 `envelope_frame_angle_rad` is optional screening-frame metadata. It defines the
 frame used for the envelope proxy, not a reconstructed shaft layout.
+New four-bar design artifacts use `envelope_frame = "slider_axis"` instead:
+the metric frame is derived as `-axis_angle` from the geometry actually
+evaluated, including after an axis change. The two settings are mutually
+exclusive. Old explicit angles remain fixed, and absent frame metadata retains
+the global frame. Neither setting adds a continuous coordinate.
 
 ### 5.4 `six_bar`
 
@@ -530,6 +535,33 @@ See [primary score ownership](MECHANISM_SYNTHESIS_SEARCH.md#7-primary-score-owne
 for the distinction between admission, cadence preferences and downstream fit.
 
 Fresh-primary saturation is not implemented by this geometric operator.
+
+Four-bar CLI discovery and polish default to `four_bar_design_v1`:
+primary transmission sine at least 0.30, rod-axis cosine at least 0.95 and
+stroke/envelope ratio at least 0.1238 (unit `1`). These are hard design filters,
+separate from loop/rod closure, piston topology and target fit. The rod limit
+corresponds to about 18.2 degrees and lateral/axial force ratio 0.329, without
+adding a force model. The envelope frame follows the current slider axis.
+Final retained geometries are checked at at least 1 440 mechanical samples;
+root refinement remains separate. Artifacts preserve effective constraints,
+frame convention, profile version and parent provenance.
+
+```console
+dada-research mechanism synthesize path/to/target.json --family four_bar \
+    --stage global_discovery --minimum-rod-axis-cosine 0.98 --output path/to/library.json
+```
+
+TOML `[[mechanical_constraints]]` rows replace matching profile defaults;
+the four-bar-only CLI rod option has final precedence and accepts finite values
+in [0,1]. `--mechanical-screen none` disables automatic additions; combining
+it with the rod option enables only that explicitly requested limit.
+Python requests continue to default to `none`. Full local polish automatically
+inherits each parent's own constraints and retains the stronger commitment
+when a new request is weaker. Constraints never leak between parents, and
+effective constraints participate in cache identity. Categories remain fixed.
+Recorded `category_coverage` distinguishes untouched categories, rejections,
+admissible evaluations and actual island/generation progress across all 32
+four-bar categories. It does not claim statistical saturation.
 Paired thermodynamics and hardware retuning generate ordinary Research studies
 through `mechanism adapt` and `mechanism retune`, using explicit complete Research
 sources rather than a geometric proxy objective.

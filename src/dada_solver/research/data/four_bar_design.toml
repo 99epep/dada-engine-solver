@@ -1,0 +1,21 @@
+name = "four_bar_design"
+version = "four_bar_design_v1"
+canonical_samples = 1440
+
+[[constraints]]
+metric = "minimum_primary_transmission_sine"
+relation = "minimum"
+limit = 0.30
+unit = "1"
+
+[[constraints]]
+metric = "minimum_rod_axis_cosine"
+relation = "minimum"
+limit = 0.95
+unit = "1"
+
+[[constraints]]
+metric = "stroke_over_envelope"
+relation = "minimum"
+limit = 0.1238
+unit = "1"

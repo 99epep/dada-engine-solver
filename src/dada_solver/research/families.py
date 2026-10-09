@@ -100,7 +100,7 @@ def parameter_specs(settings, side):
 
 def validate_settings(settings, side):
     family=settings.get('family')
-    extra={'four_bar':{'output','envelope_frame_angle_rad'},'free_spline':{'representation','count'},'fourier_c2':{'harmonics'}}.get(family,set())
+    extra={'four_bar':{'output','envelope_frame_angle_rad','envelope_frame'},'free_spline':{'representation','count'},'fourier_c2':{'harmonics'}}.get(family,set())
     allowed={'family','crank_radius_m','artifact','sha256'}|extra
     if set(settings)-allowed: raise ValueError(f'Unknown {side} family settings: {sorted(set(settings)-allowed)}')
     if ('artifact' in settings)!=('sha256' in settings): raise ValueError('An artifact requires its content hash.')
@@ -109,6 +109,9 @@ def validate_settings(settings, side):
         if family not in PHYSICAL_FAMILIES: raise ValueError('An abstract motion has no physical crank scale.')
         ParameterSpec('m',positive=True).validate(settings['crank_radius_m'])
     if 'envelope_frame_angle_rad' in settings: ParameterSpec('rad').validate(settings['envelope_frame_angle_rad'])
+    if 'envelope_frame' in settings:
+        if settings['envelope_frame'] != 'slider_axis' or 'envelope_frame_angle_rad' in settings:
+            raise ValueError('envelope_frame must be slider_axis, without a fixed frame angle.')
     return parameter_specs(settings,side)
 
 
@@ -176,7 +179,10 @@ def side_metrics(settings, law, geometry, samples):
         result.update(maximum_absolute_first_derivative=d.maximum_absolute_first_derivative,
                       maximum_absolute_second_derivative=d.maximum_absolute_second_derivative)
     elif family=='six_bar': result.update(six_bar_metrics(geometry,samples))
-    elif family=='four_bar': result.update(four_bar_metrics(law.model,law.side,samples,settings.get('envelope_frame_angle_rad',0.)))
+    elif family=='four_bar':
+        frame = -float(geometry.slider.axis_angle) if settings.get('envelope_frame')=='slider_axis' else settings.get('envelope_frame_angle_rad',0.)
+        result.update(four_bar_metrics(law.model,law.side,samples,frame))
+        result['envelope_frame_angle_rad'] = frame
     elif family=='slider_crank':
         l,e=geometry.rod_over_crank,geometry.offset_over_crank
         result.update(stroke_over_crank=geometry.stroke_over_crank,closure_margin=l-1-abs(e),

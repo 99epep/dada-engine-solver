@@ -173,7 +173,8 @@ def main(argv=None):
     synthesize.add_argument('--library',type=Path,help='Input library for downstream, polish or opposite-piston stages')
     synthesize.add_argument('--family-id',action='append',default=[],help='Retained parent member; repeat to preserve several families')
     synthesize.add_argument('--config',type=Path,help='TOML search policy, bounds, categories and mechanical constraints')
-    synthesize.add_argument('--mechanical-screen',choices=['six_bar_design','none'],default=None,help='Default six_bar_design for six_bar downstream_fit; none preserves parent constraints')
+    synthesize.add_argument('--mechanical-screen',choices=['six_bar_design','four_bar_design','none'],default=None,help='Default four_bar_design for direct four-bar search/polish, six_bar_design for downstream; none preserves parent constraints')
+    synthesize.add_argument('--minimum-rod-axis-cosine',type=float,help='Four-bar only: override the design rod-alignment minimum in [0,1]')
     synthesize.add_argument('--maximum-position-rms',type=float,help='Optional final complete-mechanism fit filter; does not change search score')
     synthesize.add_argument('--budget',help='Cooperative geometry-search budget, e.g. 2m; not a thermodynamic budget')
     for option in ('islands','population','generations','seed','max-evaluations'):
@@ -381,7 +382,16 @@ def main(argv=None):
                 constraints=tuple(settings.pop('mechanical_constraints',()))
                 configured_screen=settings.pop('mechanical_screen',None)
                 screen=args.mechanical_screen if args.mechanical_screen is not None else configured_screen
-                if screen is None: screen='six_bar_design' if args.family=='six_bar' and tuple(args.stage)==('downstream_fit',) else 'none'
+                if screen is None:
+                    screen='four_bar_design' if args.family=='four_bar' and tuple(args.stage) in (('global_discovery',),('full_local_polish',)) else 'six_bar_design' if args.family=='six_bar' and tuple(args.stage)==('downstream_fit',) else 'none'
+                if args.minimum_rod_axis_cosine is not None:
+                    import math
+                    value=args.minimum_rod_axis_cosine
+                    if args.family!='four_bar': raise ValueError('--minimum-rod-axis-cosine applies only to four_bar.')
+                    if not math.isfinite(value) or not 0<=value<=1:
+                        raise ValueError('--minimum-rod-axis-cosine must be finite and in [0,1].')
+                    from .mechanical_screen import overlay_profile_constraints
+                    constraints=overlay_profile_constraints(constraints, [dict(metric='minimum_rod_axis_cosine',relation='minimum',limit=value,unit='1')])
                 if args.maximum_position_rms is not None: settings['maximum_position_rms']=args.maximum_position_rms
                 declared_limits=settings.pop('volume_limits',{})
                 from dada_solver.geometry import CylinderVolumeLimits
@@ -410,7 +420,7 @@ def main(argv=None):
                                 source_side=('small' if side=='large' else 'large') if tuple(args.stage)==('mirror_initialization',) else side
                                 if source_side not in parent['mechanisms']: raise ValueError('Selected family has no mechanism on this side.')
                                 effective=inherit_parent_plan(plan,parent,source_side)
-                                parent_screens.append(dict(parent_family_id=identifier,side=side,mechanical_screen=screen_provenance(effective,parent,source_side)))
+                                parent_screens.append(dict(parent_family_id=identifier,side=side,mechanical_screen=screen_provenance(effective,parent,source_side,requested_plan=plan)))
                     policy.coordinates(args.family); policy.choices(args.family)
                     print(json.dumps(dict(target_hash=target.content_hash,family=args.family,
                         stages=args.stage,released_coordinates=released,implemented=supported,integration_started=False,
@@ -425,6 +435,9 @@ def main(argv=None):
                     library=None if args.library is None else MechanismLibrary.load(args.library)
                     import matplotlib  # Verify the catalogue dependency before starting search.
                     result=plan.execute(policy=policy,sides=sides,library=library,volume_limits=limits)
+                    for member in result.members:
+                        retained=member['metadata'].get('provenance',{}).get('mechanical_screen',{}).get('parent_prevents_relaxation',[])
+                        if retained: print(f"Parent requirements prevent relaxation for {member['family_id']}: {retained}")
                     from .synthesis_catalogue import render_synthesis_catalogue
                     render_synthesis_catalogue(result,target,catalogue,library_path=args.output)
                     result.save(args.output)

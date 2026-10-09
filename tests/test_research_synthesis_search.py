@@ -224,7 +224,7 @@ def test_polish_rejects_target_mismatch_missing_side_and_dropped_constraints(dis
         plan(altered,family,'full_local_polish',ids).execute(policy=p,library=library)
 
 
-def test_polish_preserves_settings_and_rejects_dropped_constraints():
+def test_polish_preserves_fixed_frame_settings_and_inherits_constraints():
     target,geometry,settings=source('four_bar')
     settings['envelope_frame_angle_rad']=.37
     constraint=dict(metric='minimum_rod_axis_cosine',relation='minimum',limit=.5,unit='1')
@@ -232,8 +232,8 @@ def test_polish_preserves_settings_and_rejects_dropped_constraints():
     p=replace(policy('four_bar'),polish_evaluations=3)
     member=plan(target,'four_bar',constraints=(constraint,)).member('chosen',{'large':artifact})
     library=MechanismLibrary((member,))
-    with pytest.raises(ValueError,match='retain all source'):
-        plan(target,'four_bar','full_local_polish',('chosen',)).execute(policy=p,library=library)
+    inherited=plan(target,'four_bar','full_local_polish',('chosen',)).execute(policy=p,library=library)
+    assert inherited.members[0]['mechanisms']['large']['scientific']['constraints']==[constraint]
     result=plan(target,'four_bar','full_local_polish',('chosen',),(constraint,)).execute(policy=p,library=library)
     assert result.members[0]['mechanisms']['large']['scientific']['settings']==settings
     assert result.members[0]['metadata']['evidence']['large']['mechanical']['constraints'][0]['satisfied']
