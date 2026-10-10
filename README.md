@@ -1,6 +1,6 @@
 # Dada Engine Solver
 
-Dada Engine simulates a thermal machine with conservative gas balances, passive valves,
+Dada Engine Solver simulates a thermal machine with conservative gas balances, passive valves,
 prescribed piston motion and interchangeable exchangers. **Research** configures
 studies, evaluates candidates, runs resumable Sobol searches and compares results
 in standalone HTML reports. It supports motor and refrigeration studies,
