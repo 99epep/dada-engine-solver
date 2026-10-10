@@ -11,7 +11,7 @@ The motion-law search should not stop at the statement that no better motion was
 
 The final two levels require explicit upper bounds on achievable performance, not only repeated searches.
 
-This document defines a practical route toward such a certificate for the DADA motor while preserving the current thermodynamic model and passive-valve rules.
+This document defines a practical route toward such a certificate for the experimental motor while preserving the current thermodynamic model and passive-valve rules.
 
 ## What an optimality claim means
 
@@ -120,7 +120,7 @@ That is a numerical proof of epsilon-global optimality **within that bounded mot
 
 ### Main difficulty
 
-The DADA objective is not a simple algebraic function of the motion parameters. Each evaluation requires a periodic solution of a nonlinear, topology-varying thermo-hydraulic system with dynamic exchanger walls and passive valves.
+The optimization objective is not a simple algebraic function of the motion parameters. Each evaluation requires a periodic solution of a nonlinear, topology-varying thermo-hydraulic system with dynamic exchanger walls and passive valves.
 
 Therefore a useful branch-and-bound implementation needs certified bounds not only on the kinematic law but also on the resulting periodic thermodynamic solution.
 

@@ -22,7 +22,7 @@ Each directory also contains the following, using the same `*_coolcell` prefix:
 
 ## Common thermodynamic setup
 
-The DADA cell circulates air between **two cylinders of different swept volumes** through hot and cold microtube heat exchangers. Passive valves select the flow path. Compression and expansion are interleaved with heat-transfer phases, aiming toward a Brayton/Joule-like refrigeration cycle. The heat exchangers have finite gas-side transfer and pressure losses, finite wall thermal storage and prescribed external fluid streams.
+This cooling cell circulates air between **two cylinders of different swept volumes** through hot and cold microtube heat exchangers. Passive valves select the flow path. Compression and expansion are interleaved with heat-transfer phases, aiming toward a Brayton/Joule-like refrigeration cycle. The heat exchangers have finite gas-side transfer and pressure losses, finite wall thermal storage and prescribed external fluid streams.
 
 All three studies use **air**, a **−15 °C cold source** and a **25 °C hot source** (a 40 K temperature lift), at **0.933 Hz** (about 56 rpm). Their saved configurations specify a fixed inventory of approximately **20.7 g of air**, rather than imposing 1 bar throughout the cycle: internal pressures necessarily vary during operation. Both external streams are modeled as water-like liquids with prescribed flow and heat-transfer conductance.
 

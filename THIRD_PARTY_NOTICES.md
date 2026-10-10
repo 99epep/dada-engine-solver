@@ -1,6 +1,6 @@
 # Third-party notices
 
-DADA remains GPL-3.0-or-later; the canonical LICENSE is unchanged.
+Dada Engine remains GPL-3.0-or-later; the canonical LICENSE is unchanged.
 
 ## CoolProp 8.0.0 — MIT
 

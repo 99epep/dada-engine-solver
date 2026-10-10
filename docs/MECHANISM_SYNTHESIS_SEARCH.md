@@ -1,4 +1,4 @@
-# Mechanism-synthesis search for the DADA engine
+# Mechanism-synthesis search for Dada Engine
 
 ## Purpose
 
@@ -1265,7 +1265,7 @@ machine must copy exactly.
 
 ## 18. Recommended reusable workflow
 
-For a new DADA machine configuration:
+For a new machine configuration:
 
 ### Step 1 — obtain a useful thermodynamic reference motion
 

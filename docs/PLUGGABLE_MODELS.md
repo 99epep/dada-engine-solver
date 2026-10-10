@@ -2,7 +2,7 @@
 
 ## Scope and construction
 
-Four-bar motion is not a fundamental assumption of the DADA cycle. Microtubes
+Four-bar motion is not a fundamental assumption of the cycle modeled by Dada Engine. Microtubes
 are a supported geometry family, not a fundamental thermodynamic assumption.
 Model composition preserves the conservative four gas volumes, hydraulic graph,
 passive valves, heat/work signs and equations. No mechanical efficiency is introduced.

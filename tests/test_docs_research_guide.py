@@ -9,7 +9,7 @@ DOC = ROOT / "docs" / "DADA_ENGINE_RESEARCH.md"
 
 def test_current_guide_and_command_workflow():
     text = DOC.read_text(encoding="utf-8")
-    assert text.startswith("# DADA Research user guide")
+    assert text.startswith("# Dada Engine Research user guide")
     assert "dada-research" in text
     for command in (
         "init", "validate", "evaluate", "run", "resume", "status",

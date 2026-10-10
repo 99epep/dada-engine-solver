@@ -78,7 +78,7 @@ literature, including:
 - [Experimental oscillating-air pin-fin measurements](https://doi.org/10.1155/2013/283830),
   which found enhancement without bypass but degradation for
   excessive bypass in its tested apparatus. This is evidence that manifold and
-  bypass geometry matter, not a correction factor for DADA.
+  bypass geometry matter, not a correction factor for this machine.
 - [Laminar pulsating-flow analysis in a rectangular channel](https://doi.org/10.1016/j.ijheatmasstransfer.2018.08.109),
   which found a reduction of time-averaged Nusselt number for its boundary
   conditions. Together with the preceding experiment, this rules out assuming
@@ -86,7 +86,7 @@ literature, including:
 
 The literature therefore supports the present steady-flow model as a screening
 baseline, but it does not provide one universal multiplier that converts it
-into a validated DADA exchanger. Published oscillatory effects can have either
+into a validated exchanger for this machine. Published oscillatory effects can have either
 sign and depend on waveform, frequency, penetration depth, bypass and geometry.
 The configured `external_conductance` remains an assumed boundary value until the
 complete glycol-side or ambient-side geometry is specified.

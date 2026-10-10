@@ -1,4 +1,4 @@
-# DADA Research user guide
+# Dada Engine Research user guide
 
 Research configures, evaluates, searches and compares machines using the existing
 physical solver. Indicated gas power is not automatically useful mechanical

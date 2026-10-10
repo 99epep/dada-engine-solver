@@ -98,7 +98,7 @@ Unsteady use is quasi-steady and unvalidated for pulse phase response.
 ### GAS-TRANSPORT-SUTHERLAND
 
 - Equation: `x(T)=x0*(T/T0)^1.5*(T0+S)/(T+S)`, separately for mu and k.
-- Meaning: dilute-gas transport temperature dependence, not a fitted DADA loss.
+- Meaning: dilute-gas transport temperature dependence, not a fitted machine loss.
 - Geometry/boundary: bulk property, geometry independent; N2 and Ar. Air uses the dilute correlation below.
 - Re/Pr/Ma/Kn: not property-law fit coordinates. Pressure: dilute-gas limit.
   Temperature: implementation restricted to 200–1000 K; this is an application
@@ -216,7 +216,7 @@ axial transient field or empirical pulse multiplier is introduced.
   [Yang et al. 2014](https://doi.org/10.1016/j.ijheatmasstransfer.2014.07.017),
   pp.732–740, stainless 750/510/170 micrometre tubes, Re 3000–12000, supplies
   gas evidence and warns about compressibility. Its boundary is imposed heat
-  input, not the DADA lumped-wall boundary. No quantitative Yang enhancement
+  input, not the lumped-wall boundary used by Dada Engine. No quantitative Yang enhancement
   was implemented from the abstract. Rough-tube extensions remain unavailable.
 
 ### Gas transition endpoint interpolation
@@ -446,15 +446,15 @@ No residual-density or critical enhancement terms are included.
 - Helium conductivity: [Hands & Arp (1981), *A Correlation of Thermal Conductivity
   Data for Helium*, Cryogenics 21, 697–703](https://doi.org/10.1016/0011-2275(81)90211-3).
   `k=2.7870034e-3*T^0.7034007057*exp(3.739232544/T-26.20316969/T²+59.82252246/T³-49.26397634/T⁴)` W/(m K).
-  The paper's reported data range ends at 830 K; the requested 1000 K DADA ceiling
+  The paper's reported data range ends at 830 K; the requested 1000 K model ceiling
   follows the implemented CoolProp dilute expression, not new experimental validation above 830 K.
 - Air transport Cp retains the NIST Shomate 79/21 molar N2/O2 approximation,
   with branches documented from 100 K. Helium retains `Cp=2.5*2077.1` J/(kg K).
-  None of these transport Cp values replaces DADA conservative caloric properties.
+  None of these transport Cp values replaces the conservative caloric properties used by Dada Engine.
 
 The oracle's air EOS is [Lemmon, Jacobsen, Penoncello & Friend (2000), JPCRD 29,
 331–385](https://www.nist.gov/publications/thermodynamic-properties-air-and-mixtures-nitrogen-argon-and-oxygen-60-2000-k-pressures).
-It is **not** installed as DADA's thermodynamic EOS. `property_temperature_domain`
+It is **not** installed as the thermodynamic EOS used by Dada Engine. `property_temperature_domain`
 is not `single_phase_domain`: no condensation, mixture phase equilibrium or
 real-gas nonideality check is added. A future `(T,p)` phase/nonideality layer remains
 necessary. Tube transport is still quasi-steady in a pulsed machine.
@@ -592,7 +592,7 @@ Scientific sources: Bennett (2020a), DOI
 branch; [author HeatLib](https://sites.me.ucsb.edu/~bennett/heatlib/conv/index.html),
 `LamPipeEntryNuT`, `LamEntryNuL`, `GrtzNuL`, `LevNuL`, `mLevNuL`, `InvGz`.
 The official [EES PipeFlow_Laminar documentation](https://fchartsoftware.com/ees/heat_transfer_library/internal_flow/hs1024.htm)
-identifies Bennett (2020a) and Shah & London Eq.192 p.98 explicitly. No fitted DADA coefficients or runtime external library are used.
+identifies Bennett (2020a) and Shah & London Eq.192 p.98 explicitly. No fitted machine-specific coefficients or runtime external library are used.
 
 Exact scalar transcription for a circular tube (Darcy fully developed fRe=64):
 

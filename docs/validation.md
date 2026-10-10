@@ -1,7 +1,7 @@
 # Validation and evidence
 
 Tests establish specific numerical or software properties. They do not validate
-an experimental DADA machine, a global optimum or all physical assumptions of a
+an experimental machine, a global optimum or all physical assumptions of a
 candidate. Always separate convergence, conservation, model applicability and
 study feasibility.
 
