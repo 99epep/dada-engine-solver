@@ -1,0 +1,95 @@
+{
+  "artifact_type": "mechanism",
+  "content_hash": "9f8d78323a99e87769ada169e93d389d09e2dcf399a71de45380c5d0762d65e8",
+  "provenance": {},
+  "schema_version": 1,
+  "scientific": {
+    "angle_convention": "study_radians",
+    "constraints": [
+      {
+        "limit": 1.0,
+        "metric": "stroke_over_crank",
+        "relation": "minimum",
+        "unit": "crank_radius"
+      },
+      {
+        "limit": 3.0,
+        "metric": "stroke_over_crank",
+        "relation": "maximum",
+        "unit": "crank_radius"
+      },
+      {
+        "limit": 0.3,
+        "metric": "minimum_primary_transmission_sine",
+        "relation": "minimum",
+        "unit": "1"
+      },
+      {
+        "limit": 0.3,
+        "metric": "minimum_secondary_transmission_sine",
+        "relation": "minimum",
+        "unit": "1"
+      },
+      {
+        "limit": 0.95,
+        "metric": "minimum_rod_axis_cosine",
+        "relation": "minimum",
+        "unit": "1"
+      },
+      {
+        "limit": 7.0,
+        "metric": "EH_over_crank",
+        "relation": "maximum",
+        "unit": "crank_radius"
+      },
+      {
+        "limit": 0.5,
+        "metric": "crank_axis_to_EFH_clearance_over_crank",
+        "relation": "minimum",
+        "unit": "crank_radius"
+      },
+      {
+        "limit": 0.25,
+        "metric": "H_axis_lateral_rms_over_stroke",
+        "relation": "maximum",
+        "unit": "1"
+      },
+      {
+        "limit": 0.65,
+        "metric": "H_axis_lateral_span_over_stroke",
+        "relation": "maximum",
+        "unit": "1"
+      },
+      {
+        "limit": 2,
+        "metric": "zero_crossing_count",
+        "relation": "equal",
+        "unit": "1"
+      }
+    ],
+    "geometry": {
+      "h_along_over_ef": 1.0101411702092984,
+      "h_normal_over_ef": -0.22110319901150144,
+      "link_ef": 5.0062154849132785,
+      "link_gf": 4.112407066251015,
+      "piston_rod": 8.33447888328081,
+      "primary_branch": 1,
+      "primary_coupler": 5.107357869904478,
+      "primary_e_along": 8.171534752627373,
+      "primary_e_normal": 1.487218431735294,
+      "primary_ground": 4.641547955004274,
+      "primary_phase": 4.08024937579985,
+      "primary_rocker": 4.50122019212404,
+      "second_branch": -1,
+      "second_pivot_x": -3.081662172169076,
+      "second_pivot_y": 4.702232191917551,
+      "slider_axis_angle": 3.138500766095809,
+      "slider_axis_offset": -9.705283475584075
+    },
+    "length_convention": "crank_radius",
+    "schema_version": 1,
+    "settings": {
+      "family": "six_bar"
+    }
+  }
+}

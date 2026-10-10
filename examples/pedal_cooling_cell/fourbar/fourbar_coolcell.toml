@@ -1,0 +1,572 @@
+# Dada-Engine Research: fixed values use value; active coordinates use initial with lower/upper or choices.
+"schema_version" = 3
+
+[[ "mechanical_constraints" ]]
+"side" = "large"
+"metric" = "zero_crossing_count"
+"relation" = "equal"
+"limit" = 2
+"unit" = "1"
+
+[[ "mechanical_constraints" ]]
+"side" = "small"
+"metric" = "zero_crossing_count"
+"relation" = "equal"
+"limit" = 2
+"unit" = "1"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.3
+"metric" = "minimum_primary_transmission_sine"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "small"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.95
+"metric" = "minimum_rod_axis_cosine"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "small"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.1238
+"metric" = "stroke_over_envelope"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "small"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.3
+"metric" = "minimum_primary_transmission_sine"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "large"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.95
+"metric" = "minimum_rod_axis_cosine"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "large"
+
+[[ "mechanical_constraints" ]]
+"limit" = 0.1238
+"metric" = "stroke_over_envelope"
+"relation" = "minimum"
+"unit" = "1"
+"side" = "large"
+
+[[ "constraints" ]]
+"type" = "valid_thermodynamic_model"
+"unit" = "1"
+
+[ "kinematics" ]
+"coupling" = "independent"
+
+[ "kinematics"."large" ]
+"family" = "four_bar"
+"artifact" = "fourbar_coolcell.large.mechanism.json"
+"sha256" = "66cc133447ca40b8a3d2701b377fb298d76b8d26e7516ae6f2a86df208db0bd7"
+
+[ "kinematics"."small" ]
+"family" = "four_bar"
+"artifact" = "fourbar_coolcell.small.mechanism.json"
+"sha256" = "b2265101ffebbf387a6dcb114cc60e76fc69b5b7cd98ff43da7b544c38235961"
+
+[ "numerical" ]
+"backend" = "numba"
+"candidate_budget_seconds" = 300.0
+"domain_error_retry" = "once_safe_uniform_state_with_source_wall_temperatures"
+"maximum_cycles" = 100
+
+[ "objective" ]
+"type" = "maximize_cooling_cop"
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "volume.small_clearance_ratio"
+"value" = 0.01
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "volume.large_clearance_ratio"
+"value" = 0.01
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "operation.frequency_hz"
+"value" = 0.933
+"unit" = "Hz"
+
+[[ "parameters" ]]
+"name" = "charge.total_mass_kg"
+"value" = 0.020671121732731997
+"unit" = "kg"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.wall_thickness_m"
+"value" = 0.0001
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.pitch_ratio"
+"value" = 1.25
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.collector_half_angle_deg"
+"value" = 30.0
+"unit" = "deg"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.conduit_area_ratio"
+"value" = 1.0
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.additional_internal_volume_m3"
+"value" = 0.0
+"unit" = "m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_conductivity_w_m_k"
+"value" = 200.0
+"unit" = "W/(m*K)"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_density_kg_m3"
+"value" = 8000.0
+"unit" = "kg/m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_in.metal_cp_j_kg_k"
+"value" = 500.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.inlet_temperature_k"
+"value" = 258.15
+"unit" = "K"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.mass_flow_kg_s"
+"value" = 5.0
+"unit" = "kg/s"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.cp_j_kg_k"
+"value" = 4180.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_in.wall_conductance_w_k"
+"value" = 10000.0
+"unit" = "W/K"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.wall_thickness_m"
+"value" = 0.0001
+"unit" = "m"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.pitch_ratio"
+"value" = 1.25
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.collector_half_angle_deg"
+"value" = 30.0
+"unit" = "deg"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.conduit_area_ratio"
+"value" = 1.0
+"unit" = "1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.additional_internal_volume_m3"
+"value" = 0.0
+"unit" = "m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_conductivity_w_m_k"
+"value" = 200.0
+"unit" = "W/(m*K)"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_density_kg_m3"
+"value" = 8000.0
+"unit" = "kg/m^3"
+
+[[ "parameters" ]]
+"name" = "thermal.heat_out.metal_cp_j_kg_k"
+"value" = 500.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.inlet_temperature_k"
+"value" = 298.15
+"unit" = "K"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.mass_flow_kg_s"
+"value" = 5.0
+"unit" = "kg/s"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.cp_j_kg_k"
+"value" = 4180.0
+"unit" = "J/(kg*K)"
+
+[[ "parameters" ]]
+"name" = "external_stream.heat_out.wall_conductance_w_k"
+"value" = 10000.0
+"unit" = "W/K"
+
+[[ "parameters" ]]
+"name" = "volume.total_swept_m3"
+"initial" = 0.025097732514047108
+"lower" = 0.025
+"upper" = 0.031
+"kind" = "continuous"
+"unit" = "m^3"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "volume.swept_ratio"
+"initial" = 0.7558897865998788
+"lower" = 0.73
+"upper" = 0.8
+"kind" = "continuous"
+"unit" = "1"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_count"
+"initial" = 223
+"lower" = 213
+"upper" = 253
+"kind" = "integer"
+"unit" = "1"
+"encoding" = "nearest_even_v1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.tube_length_m"
+"initial" = 0.31931062575568236
+"lower" = 0.28
+"upper" = 0.5
+"kind" = "continuous"
+"unit" = "m"
+"transform" = "log"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_in.inner_diameter_m"
+"initial" = 0.0027645919855798125
+"lower" = 0.002
+"upper" = 0.003
+"kind" = "continuous"
+"unit" = "m"
+"transform" = "log"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_count"
+"initial" = 219
+"lower" = 199
+"upper" = 219
+"kind" = "integer"
+"unit" = "1"
+"encoding" = "nearest_even_v1"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.tube_length_m"
+"initial" = 0.47768764702568933
+"lower" = 0.34
+"upper" = 0.6
+"kind" = "continuous"
+"unit" = "m"
+"transform" = "log"
+
+[[ "parameters" ]]
+"name" = "microtube.heat_out.inner_diameter_m"
+"initial" = 0.003245061391779539
+"lower" = 0.0025
+"upper" = 0.0036
+"kind" = "continuous"
+"unit" = "m"
+"transform" = "log"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.coupler"
+"initial" = 3.2149510284100122
+"lower" = 3.149020466901445
+"upper" = 3.277127228077629
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.rocker"
+"initial" = 4.425611325899347
+"lower" = 4.333762828483391
+"upper" = 4.511087467800387
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.ground_x"
+"initial" = -4.735120817894474
+"lower" = -4.981604152441756
+"upper" = -4.5016041524417565
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.ground_y"
+"initial" = 3.387051173829696
+"lower" = 3.1539017252680273
+"upper" = 3.633901725268027
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.output_along"
+"initial" = -2.996837422000473
+"lower" = -3.2405334682932554
+"upper" = -2.7605334682932545
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.output_normal"
+"initial" = -1.0021207242628603
+"lower" = -1.1586294765373735
+"upper" = -0.8386294765373732
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.rod_length"
+"initial" = 8.559850641150689
+"lower" = 8.392020164703412
+"upper" = 8.736702952744954
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.slider_origin_x"
+"initial" = 0.5566324629315921
+"lower" = 0.22817514057250676
+"upper" = 0.8681751405725073
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.slider_origin_y"
+"initial" = -0.1374958860693376
+"lower" = -0.45870618777851346
+"upper" = 0.18129381222148755
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.axis_angle"
+"initial" = 0.9968734308873777
+"lower" = 0.8743193508256664
+"upper" = 1.1256467631128502
+"kind" = "continuous"
+"unit" = "rad"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.small.phase_rad"
+"initial" = 1.8869783104988627
+"lower" = 1.757119318753641
+"upper" = 2.0084467310408245
+"kind" = "continuous"
+"unit" = "rad"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.coupler"
+"initial" = 2.4985774408471113
+"lower" = 2.4467463511755194
+"upper" = 2.547032460314953
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.rocker"
+"initial" = 5.460393293255901
+"lower" = 5.353033837316426
+"upper" = 5.572707114982237
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.ground_x"
+"initial" = -4.154558462043159
+"lower" = -4.388660298241728
+"upper" = -3.9086602982417276
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.ground_y"
+"initial" = 0.45370152180335466
+"lower" = 0.21254601518056315
+"upper" = 0.6925460151805636
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.output_along"
+"initial" = -1.413355557459583
+"lower" = -1.649065839499225
+"upper" = -1.169065839499226
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.output_normal"
+"initial" = -2.0715868029677873
+"lower" = -2.231179311414958
+"upper" = -1.9111793114149578
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.rod_length"
+"initial" = 7.473340686543676
+"lower" = 7.329761100629174
+"upper" = 7.6266285958545925
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.slider_origin_x"
+"initial" = -3.8833030704034215
+"lower" = -4.1933251117242225
+"upper" = -3.553325111724222
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.slider_origin_y"
+"initial" = -6.291986143497927
+"lower" = -6.607433477572901
+"upper" = -5.9674334775729
+"kind" = "continuous"
+"unit" = "crank_radius"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.axis_angle"
+"initial" = 1.2813046349925434
+"lower" = 1.1548811025216676
+"upper" = 1.4062085148088512
+"kind" = "continuous"
+"unit" = "rad"
+"transform" = "linear"
+
+[[ "parameters" ]]
+"name" = "kinematics.large.phase_rad"
+"initial" = 2.979802963586029
+"lower" = 2.8539999425412823
+"upper" = 3.1053273548284657
+"kind" = "continuous"
+"unit" = "rad"
+"transform" = "linear"
+
+[ "policies" ]
+"charge" = "explicit_inventory"
+"external_loop_hydraulics" = "unmodelled"
+"external_pump_fan_consumption" = "excluded_from_balance"
+"local_reflux" = "retain_signed_flows"
+"mechanical_losses" = "unknown"
+"outlet_valve_cda" = "geometry_conduit_area_v1"
+"useful_power" = "unavailable"
+"volume_partition" = "total_swept_and_clearance_ratios"
+
+[ "screening" ]
+"samples" = 1440
+
+[ "search" ]
+"type" = "sobol"
+"domain" = "local_regions_v1"
+"seed" = 20261003
+"scramble" = true
+"radius_fraction" = 0.1
+"allocation" = "round_robin"
+"evaluate_centers" = true
+
+[[ "search"."regions" ]]
+"id" = "region_1"
+
+[ "search"."regions"."center" ]
+"kinematics.large.axis_angle" = 1.2813046349925434
+"kinematics.large.coupler" = 2.4985774408471113
+"kinematics.large.ground_x" = -4.154558462043159
+"kinematics.large.ground_y" = 0.45370152180335466
+"kinematics.large.output_along" = -1.413355557459583
+"kinematics.large.output_normal" = -2.0715868029677873
+"kinematics.large.phase_rad" = 2.979802963586029
+"kinematics.large.rocker" = 5.460393293255901
+"kinematics.large.rod_length" = 7.473340686543676
+"kinematics.large.slider_origin_x" = -3.8833030704034215
+"kinematics.large.slider_origin_y" = -6.291986143497927
+"kinematics.small.axis_angle" = 0.9968734308873777
+"kinematics.small.coupler" = 3.2149510284100122
+"kinematics.small.ground_x" = -4.735120817894474
+"kinematics.small.ground_y" = 3.387051173829696
+"kinematics.small.output_along" = -2.996837422000473
+"kinematics.small.output_normal" = -1.0021207242628603
+"kinematics.small.phase_rad" = 1.8869783104988627
+"kinematics.small.rocker" = 4.425611325899347
+"kinematics.small.rod_length" = 8.559850641150689
+"kinematics.small.slider_origin_x" = 0.5566324629315921
+"kinematics.small.slider_origin_y" = -0.1374958860693376
+"microtube.heat_in.inner_diameter_m" = 0.0027645919855798125
+"microtube.heat_in.tube_count" = 223
+"microtube.heat_in.tube_length_m" = 0.31931062575568236
+"microtube.heat_out.inner_diameter_m" = 0.003245061391779539
+"microtube.heat_out.tube_count" = 219
+"microtube.heat_out.tube_length_m" = 0.47768764702568933
+"volume.swept_ratio" = 0.7558897865998788
+"volume.total_swept_m3" = 0.025097732514047108
+
+[ "sources" ]
+
+[ "sources"."machine" ]
+"path" = "fourbar_coolcell.basis.json"
+"sha256" = "4f9fe096b53af8ffb6444fb5e60aaad85ee3e34184e45e4534203079ed7abe69"
+
+[ "study" ]
+"protocol" = "machine_design"
+"purpose" = "f013_long_thin_microtube_100x_count_reduction_COP_at_5L_2p8Hz"
+"name" = "Four-bar pedal cooling cell"
+
+[ "warm_start" ]
+"initial_source" = "source_exact"
+
+[ "execution" ]
+"default_budget" = "6h"
+"default_max_candidates" = 512
+"initial_evaluation_seconds" = 30.0
+"deadline_grace_seconds" = 5.0
