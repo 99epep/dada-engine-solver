@@ -310,7 +310,9 @@ silently resuming or reusing results from a different physical closure.
 - Geometry/fluid/boundary: circular gas passages, any selected wall closure;
   Re/Pr/Ma/Kn and pressure/T inherit instantaneous model diagnostics. These
   definitions have no experimental validity guarantee for the pulse response.
-- Source context: Aubert (1999), supplied `50015150.pdf`, chapter III §3.4.3.2,
+- Source context: [Aubert (1999), doctoral thesis](https://microfluidique.insa-toulouse.fr/wp-content/uploads/2015/10/1999-Aubert.CompressibleGasMicroFlows_thesis.pdf),
+  *Écoulements compressibles de gaz dans les microcanaux : effets de raréfaction,
+  effets instationnaires*, Université Paul Sabatier, chapter III §3.4.3.2,
   PDF pp.181–186 and annex figures A13–A22. This is experimental **pressure gain
   and phase**, not h(t). PDF p.183 Fig.III.49/50 includes 76.25 micrometre,
   30.13 mm tubing near 113 kPa. Fundamental-frequency Wo alone cannot resolve
