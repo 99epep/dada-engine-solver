@@ -303,3 +303,62 @@ def test_local_center_name_error_is_actionable(center,missing,unexpected):
     assert f'Missing: {missing}' in message
     assert f'unexpected (not active): {unexpected}' in message
     assert 'fixed parameters belong only in [[parameters]]' in message
+
+
+def test_tidy_refine_orders_fields_without_changing_values(source,tmp_path):
+    a=refine([source],['best'],.2,tmp_path/'a.toml')
+    b=refine([source],['best'],.2,tmp_path/'b.toml',tidy=True)
+    before=load_study(a);after=load_study(b)
+    assert before.data['parameters']==after.data['parameters']
+    for row in after.data['parameters']:
+        keys=list(row)
+        assert keys[0]=='name'
+        if 'initial' in row:assert keys[1]=='initial'
+        if 'lower' in row:assert keys[2:4]==['lower','upper']
+
+
+def test_standalone_export_preserves_geometry_search_and_warm_values(tmp_path,monkeypatch):
+    from dada_solver.research.study_export import export_study
+    from dada_solver.research.artifacts import MechanismArtifact
+    from dada_solver.campaign.evaluator import MachineEvaluator
+    monkeypatch.setattr(MachineEvaluator,'evaluate_with_control',lambda *a,**k:pytest.fail('Thermodynamics'))
+    source=initialize_kinematics(tmp_path/'source'/'parent.toml','slider_crank','four_bar')
+    original=load_study(source);raw=original.data
+    raw['study']['parent_candidate_id']='a'*64
+    for name in ('volume.swept_ratio',):activate(raw,name,.2)
+    raw['search']=settings([{row['name']:row['initial'] for row in raw['parameters'] if 'initial' in row}])
+    source.write_text(dumps(raw))
+    original=load_study(source)
+    target=tmp_path/'portable'/'example.toml'
+    assert main(['study','export',str(source),'--output',str(target),'--standalone','--tidy','--name','Example'])==0
+    exported=load_study(target)
+    assert exported.data['study']['name']=='Example'
+    assert 'parent_candidate_id' not in exported.data['study']
+    assert exported.basis.data['provenance']=={}
+    assert exported.basis.data['configuration']==original.basis.data['configuration']
+    expected_warm=copy.deepcopy(original.basis.data['warm_start'])
+    expected_warm.pop('source_candidate_id',None)
+    assert exported.basis.data['warm_start']==expected_warm
+    assert exported.data['parameters']==original.data['parameters']
+    assert set(exported.artifacts)=={'small','large'}
+    for side,artifact in exported.artifacts.items():
+        assert artifact.scientific==original.artifacts[side].scientific
+        assert artifact.content_hash==original.artifacts[side].content_hash
+        assert artifact.data['provenance']=={}
+        assert MechanismArtifact.load(target.parent/exported.data['kinematics'][side]['artifact']).content_hash==artifact.content_hash
+    region=exported.data['search']['regions'][0]
+    assert set(region)=={'id','center'}
+    old=compile_study(original);new=compile_study(exported)
+    left=ScheduledSobol(old.space,old.search_settings);right=ScheduledSobol(new.space,new.search_settings)
+    for _ in range(8):assert left.next_point()==right.next_point()
+    with pytest.raises(ValueError,match='already exists'):export_study(source,target,standalone=True)
+    shutil.rmtree(source.parent)
+    assert compile_study(load_study(target)).study.study_id==exported.study_id
+
+
+def test_standalone_refine_removes_source_ids(source,tmp_path):
+    target=refine([source],['best'],.2,tmp_path/'standalone.toml',standalone=True,tidy=True,name='Standalone')
+    study=load_study(target)
+    assert study.data['study']['name']=='Standalone'
+    assert study.basis.data['provenance']=={}
+    assert set(study.data['search']['regions'][0])=={'id','center'}

@@ -74,6 +74,13 @@ def main(argv=None):
         if operation=='release':
             batch.add_argument('--bounds', action='append', default=[], metavar='NAME=LOW:HIGH[:linear|log]', help='Explicit numerical search domain; no physical domain is inferred')
             batch.add_argument('--choices', action='append', default=[], metavar='NAME=JSON_ARRAY', help='Explicit categorical search choices')
+    export = study_actions.add_parser('export', help='Write a portable study, optionally tidy and without ancestry; no integration')
+    export.add_argument('source', type=Path)
+    export.add_argument('--output', type=Path, required=True)
+    export.add_argument('--tidy', action='store_true', help='Order parameter fields: name, initial, lower, upper, then type/unit/encoding')
+    export.add_argument('--standalone', action='store_true', help='Remove parent IDs and basis/artifact provenance; preserve search and warm-start values')
+    export.add_argument('--name', help='New self-contained study name')
+    export.add_argument('--purpose', help='New study purpose')
     bounds = study_actions.add_parser('bounds', help='Edit declared search domains independently of scheduler radius')
     bounds_actions = bounds.add_subparsers(dest='bounds_command', required=True)
     recenter_bounds = bounds_actions.add_parser('recenter', help='Narrow selected active numeric bounds around exact initials')
@@ -114,6 +121,10 @@ def main(argv=None):
     refinement.add_argument('--candidate',action='append',default=[],help='ID, unique prefix, best or second; repeat for several centers')
     refinement.add_argument('--radius',type=float,required=True,help='Half-width in global normalized coordinates, in (0,1]')
     refinement.add_argument('--output',type=Path,required=True)
+    refinement.add_argument('--tidy', action='store_true', help='Order parameter fields logically')
+    refinement.add_argument('--standalone', action='store_true', help='Remove historical metadata and parent IDs from the new portable study')
+    refinement.add_argument('--name', help='Override the generated study name')
+    refinement.add_argument('--purpose', help='Override the study purpose')
     resize = commands.add_parser('rescale', help='Create a new capacity-scaled candidate study and portable basis; never integrate')
     resize.add_argument('source', type=Path)
     resize.add_argument('--candidate', required=True, help='Exact ID or unambiguous prefix')
@@ -209,6 +220,10 @@ def main(argv=None):
             if args.study_command=='edit':
                 from .study_editor_tui import run_editor
                 run_editor(args.source)
+            elif args.study_command=='export':
+                from .study_export import export_study
+                path=export_study(args.source,args.output,tidy=args.tidy,standalone=args.standalone,name=args.name,purpose=args.purpose)
+                print(f'Created {path}; portable study; no integration started.')
             else:
                 from .study_editor import StudyEditor
                 editor=StudyEditor(args.source)
@@ -300,7 +315,7 @@ def main(argv=None):
                              retry_incomplete=getattr(args,'retry_incomplete',False))
         elif args.command == 'refine':
             from .refine import refine
-            path=refine(args.sources,args.candidate,args.radius,args.output)
+            path=refine(args.sources,args.candidate,args.radius,args.output,tidy=args.tidy,standalone=args.standalone,name=args.name,purpose=args.purpose)
             print(f'Created {path}\nCenters will be evaluated before local Sobol sampling.')
         elif args.command == 'rescale':
             from .rescale import rescale

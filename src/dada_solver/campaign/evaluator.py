@@ -352,7 +352,7 @@ class MachineEvaluator:
             if backend_last: result['rhs_backend'] = backend_last
             if hasattr(self.definition, 'safe_domain_retry'):
                 result.update(safe_retry_used=safe_retry,
-                    warm_start_source=source['candidate_id'] if source else external['source_candidate_id'] if external else None)
+                    warm_start_source=source['candidate_id'] if source else external.get('source_candidate_id') if external else None)
             return retain_failure(result)
         caps = [wrapper.heat_in.wall_capacity_j_k, wrapper.heat_out.wall_capacity_j_k]
         guess = (_state_record(periodic.last_complete_state, layout, family, direction,
@@ -363,7 +363,7 @@ class MachineEvaluator:
         warm = dict(warm_start_source=source['candidate_id'] if source else None,
             warm_start_normalized_distance=distance, warm_start_source_status=source['status'] if source else None)
         if external:
-            warm.update(warm_start_source=external['source_candidate_id'],
+            warm.update(warm_start_source=external.get('source_candidate_id'),
                         warm_start_source_status='external_reference_initial_guess')
         if hasattr(self.definition, 'safe_domain_retry'):
             warm['safe_retry_used'] = safe_retry

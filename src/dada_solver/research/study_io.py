@@ -3,7 +3,7 @@ import json
 import math
 
 
-def dumps(data):
+def dumps(data, *, tidy=False):
     def value(x):
         if isinstance(x,str): return json.dumps(x,ensure_ascii=False)
         if type(x) is bool: return str(x).lower()
@@ -22,5 +22,12 @@ def dumps(data):
             if isinstance(v,dict): table(v,(*path,k))
             elif isinstance(v,list) and v and isinstance(v[0],dict):
                 for item in v: table(item,(*path,k),True)
+    if tidy:
+        import copy
+        data = copy.deepcopy(data)
+        order = ('name','initial','lower','upper','value','choices','kind','unit','transform','encoding')
+        data['parameters'] = [dict(sorted(row.items(), key=lambda item:
+            (order.index(item[0]) if item[0] in order else len(order), item[0])))
+            for row in data.get('parameters', [])]
     table(data)
     return '# Dada-Engine Research: fixed values use value; active coordinates use initial with lower/upper or choices.\n'+'\n'.join(lines)+'\n'

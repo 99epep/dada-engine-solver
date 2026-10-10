@@ -2,15 +2,13 @@
 import copy
 import math
 from pathlib import Path
-import tempfile
 
 from .report import inspect, select_records
 from .snapshots import stored_study
-from .schema import load_study
-from .study_io import dumps
+from .study_export import write_study
 
 
-def refine(sources, selectors, radius, output):
+def refine(sources, selectors, radius, output, *, tidy=False, standalone=False, name=None, purpose=None):
     if isinstance(radius,bool) or not math.isfinite(radius) or not 0<radius<=1:
         raise ValueError('Refinement radius must be finite and in (0, 1].')
     output=Path(output)
@@ -41,21 +39,4 @@ def refine(sources, selectors, radius, output):
                 source_study_id=datasets[0]['study_id'],center=r['physical']) for i,r in enumerate(chosen)])
         raw['study']['name'] += ' — local refinement'
         raw['execution']['default_max_candidates']=512
-        basis_path=output.with_suffix('.basis.json')
-        raw['sources']['machine']['path']=basis_path.name
-        contents={basis_path:study.basis.source}
-        for side,artifact in study.artifacts.items():
-            import json
-            target=output.with_name(output.stem+'.'+side+'.mechanism.json')
-            raw['kinematics'][side]['artifact']=target.name
-            contents[target]=json.dumps(artifact.data,indent=2)+'\n'
-        contents[output]=dumps(raw)
-        if any(path.exists() for path in contents): raise ValueError('Refinement study or associated input already exists.')
-        with tempfile.TemporaryDirectory() as directory:
-            root=Path(directory)
-            for path,text in contents.items(): (root/path.name).write_text(text)
-            load_study(root/output.name)
-        output.parent.mkdir(parents=True,exist_ok=True)
-        for path,text in contents.items():
-            with path.open('x') as stream: stream.write(text)
-    return output
+        return write_study(study,raw,output,tidy=tidy,standalone=standalone,name=name,purpose=purpose)

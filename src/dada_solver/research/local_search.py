@@ -28,10 +28,13 @@ def validate_search(search, space):
     if not isinstance(search['regions'],list) or not search['regions']: raise ValueError('Provide at least one local region.')
     ids=set()
     for region in search['regions']:
-        keys(region,('id','source_candidate_id','source_study_id','center'),'search.regions')
+        keys(region,('id','center'),'search.regions',('source_candidate_id','source_study_id'))
+        if ('source_candidate_id' in region) != ('source_study_id' in region):
+            raise ValueError('Region provenance must provide both source IDs or neither.')
         if not isinstance(region['id'],str) or not region['id'] or region['id'] in ids: raise ValueError('Region IDs must be nonempty and unique.')
         ids.add(region['id'])
         for key in ('source_candidate_id','source_study_id'):
+            if key not in region: continue
             value=region[key]
             if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value): raise ValueError('Region provenance requires SHA-256 IDs.')
         if not isinstance(region['center'],dict):

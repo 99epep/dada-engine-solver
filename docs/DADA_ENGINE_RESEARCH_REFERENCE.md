@@ -420,9 +420,31 @@ artifacts without changing thermodynamic physics or global bounds. It never over
 destination files and does not import source evaluations as already completed results.
 The new search definition makes this a new study.
 
+Use `--tidy` to order parameter declaration fields as `name`, `initial`, `lower`,
+`upper`, followed by value/choice and type/unit/encoding fields. This changes neither
+values nor the order of parameter declarations. `--standalone` removes candidate
+parentage, region source IDs and basis/artifact historical provenance; it preserves
+scientific settings, mechanism hashes and constraints, numerical warm-start values,
+and local search centres, radius and scheduling. Region IDs become neutral labels.
+The original study remains unchanged. Removed source provenance can no longer supply
+source-based adaptation or retuning defaults.
+
+An existing TOML can also be exported without another refinement:
+
+```bash
+research study export path/to/study.toml --tidy --standalone \
+  --name "Cooling cell" --output standalone/cooling_cell.toml
+```
+
+Both `refine` and `study export` accept `--name` and `--purpose` to replace historical
+labels explicitly. Exports copy the basis and mechanism artifacts alongside the TOML
+with relative links, validate the initial machine without integration, and refuse to
+overwrite any destination input. Keep these associated files with the exported study.
+
 The local search fields are `domain = "local_regions_v1"`, `radius_fraction` in `(0,
 1]`, `allocation = "round_robin"` and `evaluate_centers = true`. Each region embeds
-`id`, `source_candidate_id`, `source_study_id` and `center`. Its centre contains exactly
+`id` and `center`, plus paired `source_candidate_id` / `source_study_id` provenance
+when retained. Its centre contains exactly
 the active parameters in physical units; source IDs are provenance, not external file
 dependencies.
 
