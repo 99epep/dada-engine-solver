@@ -1,58 +1,215 @@
-# Project conventions
+# Repository instructions
 
-All project content must be written in English: documentation, comments,
-docstrings, identifiers, messages, example descriptions, reports and figures.
-Standard scientific symbols, SI units, proper names and original source URLs
-are preserved. The conversation with the user may remain in French.
+## Language and scope
 
-Read `docs/PHYSICS_DECISIONS.md` before changing the physical model. Current user
-decisions override historical project decisions. Motor efficiency is the primary
-objective under explicit power and size constraints; ideal chronology remains
-the target.
+Write repository content in English: documentation, comments, docstrings,
+identifiers, messages, reports and figures. Preserve scientific symbols,
+SI units, proper names and original source URLs. Conversation may be in French.
 
-The motor is a small experimental demonstrator, not a commercial product.
-Keep its name independent of the changeable reservoir temperature difference.
-The current motor research envelope is 2–10 Hz, with reservoirs at 298.15 K and
-598.15 K (25/325 deg C); reduce the hot-source temperature progressively after
-improving dimensions. Target approximately 100 W useful mechanical output and limit the
-large cylinder maximum enclosed volume (including clearance) to 0.066 m^3.
-This is a ceiling, not a target displacement. Report indicated gas power
-separately from useful output; mechanical losses remain unknown; the opt-in hardware model estimates fan power.
-Prefer a documented commercial exchanger and adapt the machine to it.
-If suitable commercial data are unavailable, the user authorizes extrapolation
-from Doty's measurements with explicit assumptions and uncertainty scenarios.
-The intended exchanger through-flow is intermittent and unidirectional; report
-any modeled local reflux without hiding it. Explain the purpose and cost before
-adding a dynamic exchanger model.
+Current user instructions take precedence over historical project decisions.
+Study definitions own objectives, constraints, operating conditions, parameter
+bounds and evaluation policies. Do not promote a campaign's requirements or
+research roadmap into universal defaults. Do not launch optimization campaigns
+or thermodynamic calculations merely to edit or validate configuration files.
 
-Run relevant checks from a source checkout using `PYTHONPATH=src python3 -m pytest`.
+## Scientific and software boundaries
 
-The piecewise-linear motion law is a reference, not a proven optimum. The motor
-search must not inherit mandatory mirror symmetry from the refrigerator seed.
-Record the ordered long-term objectives in docs/MOTOR_RESEARCH_OBJECTIVES.md:
-first optimize motion laws, then map independent Lambdas and cylinder swept-
-volume ratio against reservoir temperatures and useful-power requirements.
+Before changing the physical model, read [physical decisions](docs/PHYSICS_DECISIONS.md)
+and the relevant model reference listed in the [documentation index](docs/README.md).
+Disclose assumptions, evidence and model limitations; distinguish numerical
+validation from experimental validation and best-found results from proven optima.
 
-External air is the selected hot/cold source medium for the demonstrator.
-Treat source temperatures as air inlet conditions, with finite flow. The latest
-user decision excludes external-air aerodynamic losses and fan consumption from
-the current trial balance; do not confuse exclusion with zero physical losses. Retain working-gas heat exchange during pauses; independent
-wall storage is implemented in the opt-in air_wall wrapper, but not calibrated
-to Doty.
+Preserve production kinematics and exchanger interfaces, family-specific parameter
+ownership and explicit validity margins. Reuse production geometry and validation
+rather than implementing independent approximations. Do not independently vary
+quantities derived from exchanger geometry. Do not impose symmetry or shared
+mechanical families unless the study explicitly declares that coupling.
 
-For current exchanger models and evidence, read docs/MICROTUBE_GAS_MODEL.md,
-docs/EXTERNAL_STREAM_THERMAL_MODEL.md, docs/DOTY_SCREENING.md and
-docs/EXCHANGER_VALIDATION.md; these references retain the applicable source
-provenance and limitations. External airflow is now sized
-from expected peak internal flow with a capacity-rate margin; verify achieved
-ratios and retain finite thermal-film resistance.
-Use checkpoint intervals and optional bounded wall initial-guess acceleration
-without weakening periodic convergence or changing states within a cycle.
+Preserve scientific hashes, artifact constraints, portable input links and existing
+provenance. Campaign history is append-only; preserve exact identity caching,
+rejection states and resume compatibility. Do not silently weaken convergence or
+feasibility checks, change scientific inputs, or reinterpret historical artifacts.
 
-Read docs/PLUGGABLE_MODELS.md for the global optimization campaign architecture. Preserve generic KinematicsModel and
-ExchangerModel boundaries, independent free spline motions, explicit validity
-margins, and family-specific parameter ownership. Do not independently optimize
-geometrically derived exchanger UA, hold-up or losses. The persistent Sobol orchestration layer is documented in
-docs/OPTIMIZATION_CAMPAIGN.md. Preserve its append-only history, exact identity
-cache, explicit rejection states and single motor-direction transform on
-injected study-angle kinematics. No dynamic plugin registry or assumed mechanical efficiency is introduced.
+## Research command cheat sheet
+
+Run from the repository root. The installed equivalent is `dada-research`.
+Paths, budgets, radii and factors below are illustrative, not scientific defaults.
+Use `research COMMAND --help` for all options and the
+[Research guide](docs/DADA_ENGINE_RESEARCH.md) for detailed workflows.
+
+```sh
+research() { PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m dada_solver.research "$@"; }
+```
+
+### Prepare studies without thermodynamic integration
+
+```sh
+# Validate configuration, geometry and linked inputs.
+research validate study.toml
+
+# Edit interactively (requires the optional tui extra).
+research study edit study.toml
+
+# Reopen mechanisms while retaining existing active hardware parameters.
+research study release study.toml --group mechanisms --radius 0.05 --output work/combined/study.toml
+research study freeze study.toml --group frequency --output work/fixed/study.toml
+
+# Narrow declared mechanism bounds; this does not change the scheduler radius.
+research study bounds recenter study.toml --group mechanisms --half-width 0.01 --output work/narrow/study.toml
+
+# Create a local study around a selected stored candidate.
+research refine campaign --candidate best --radius 0.1 --tidy --output work/refined/study.toml
+
+# Explicit capacity scaling, not local refinement or hardware retuning.
+research rescale campaign --candidate CANDIDATE_ID --factor 2 --output work/rescaled/study.toml
+
+# Portable export; standalone intentionally removes historical provenance.
+research study export study.toml --tidy --standalone --output work/standalone/study.toml
+```
+
+For `refine`, the radius is relative to the declared normalized domains, not a
+percentage of each physical value. Study-editor local radius settings apply to
+all active parameters. `rescale` changes scientific inputs under the capacity
+scaling policy; validate and evaluate the resulting study before comparing it.
+Keep associated basis/artifact files with generated TOMLs and use new destinations.
+
+### Evaluate and search (thermodynamic calculations)
+
+Run these only within the requested task and budget. `evaluate` evaluates the
+study's initial configuration unless explicit overrides are supplied; `run`
+requires active parameters. Resume uses the stored campaign definition.
+
+```sh
+research evaluate study.toml --budget 5m --output work/initial-evaluation.json
+research run study.toml --directory work/campaign --budget 30m --max-candidates 32
+research resume work/campaign --budget 30m --max-candidates 32
+```
+
+### Inspect results and mechanisms
+
+`status` reads stored results. Reports and comparisons with cycle plots can replay
+one cycle from a saved state; they are not necessarily calculation-free.
+`best` follows the source study's objectives and constraints. Use an exact candidate
+ID or unique prefix when a specific result is required.
+
+```sh
+research status campaign --list-candidates
+research report campaign --candidate best
+research report campaign --candidate best --plots mechanisms --external-webp
+research report campaign --plots none
+research compare campaign-a campaign-b --candidate best --html work/comparison.html
+
+# Browse saved geometry only, with no thermodynamic integration.
+research mechanism visualize library.json --side large --browse
+research mechanism visualize library.json --side large --browse --sort position-rms --target target.json
+```
+
+Position-RMS sorting concerns complete piston mechanisms; primary E projections
+are not piston fits. For mechanical synthesis, pairing, adaptation and retuning,
+consult the [kinematics workflows](docs/DADA_ENGINE_RESEARCH_KINEMATICS.md).
+
+### Motion refit and mechanical synthesis (no thermodynamic integration)
+
+`motion-refit` initializes the unique destination `structured_c2_15p`; it does not
+run its resulting study. `motion-target` can extract motion directly from a hybrid,
+structured, spline or other compatible source; a spline is not a prerequisite.
+Replace uppercase IDs below with actual IDs from each produced library/catalogue;
+polish and mirror steps may generate new IDs rather than retaining the parent ID.
+
+```sh
+research motion-refit path/to/hybrid/campaign --candidate best \
+  --output work/structured/study.toml --report work/structured/refit.json --plot
+research motion-target path/to/source/campaign --candidate best --output work/target.json
+
+research mechanism synthesize work/target.json --family slider_crank \
+  --stage global_discovery --side both --seed 1234 --islands 4 --budget 2m \
+  --output work/slider-library.json
+research mechanism synthesize work/target.json --family four_bar \
+  --stage global_discovery --side both --seed 1234 --islands 8 --budget 2m \
+  --output work/fourbar-library.json
+research mechanism synthesize work/target.json --family four_bar \
+  --stage full_local_polish --side large --library work/fourbar-library.json \
+  --family-id LARGE_FAMILY_ID --output work/fourbar-polished.json
+research mechanism visualize work/fourbar-polished.json \
+  --family-id POLISHED_FAMILY_ID --side large --target work/target.json
+research mechanism visualize work/fourbar-library.json \
+  --side small --target work/target.json --browse --sort position-rms
+
+research mechanism synthesize work/target.json --family six_bar \
+  --stage primary_discovery --side large --islands 12 --budget 5m \
+  --output work/six-primary.json
+research mechanism synthesize work/target.json --family six_bar \
+  --stage downstream_fit --side large --library work/six-primary.json \
+  --family-id PRIMARY_ID --budget 5m --output work/six-downstream.json
+research mechanism synthesize work/target.json --family six_bar \
+  --stage full_local_polish --side large --library work/six-downstream.json \
+  --family-id DOWNSTREAM_ID --output work/six-polished.json
+research mechanism synthesize work/target.json --family six_bar \
+  --stage mirror_initialization --side small --library work/six-polished.json \
+  --family-id POLISHED_ID --output work/six-small-seed.json
+research mechanism synthesize work/target.json --family six_bar \
+  --stage opposite_local_adaptation --side small --library work/six-small-seed.json \
+  --family-id MIRROR_SEED_ID --output work/six-pair.json
+```
+
+Six-bar primary discovery retains intermediate E trajectories, not complete piston
+mechanisms. Its downstream, polish and opposite-side stages remain distinct.
+The first side can be SMALL or LARGE. Mirroring only creates an independent seed.
+
+### Select a pair, adapt it, then retune hardware
+
+Pair selection is explicitly human, with no automatic ranking of combinations.
+Select complete SMALL and LARGE artifacts; their physical families may differ.
+Choose either the common-library or separate-library form:
+
+```sh
+research mechanism pair work/slider-library.json \
+  --small SMALL_ID --large LARGE_ID --output work/selected-pair.json
+research mechanism pair \
+  --small-library work/slider-library.json --small SMALL_ID \
+  --large-library work/fourbar-library.json --large LARGE_ID \
+  --output work/mixed-pair.json
+
+research mechanism adapt path/to/source/campaign --candidate SOURCE_ID \
+  --library work/selected-pair.json --family-id PAIR_ID \
+  --output work/paired/study.toml --radius 0.1
+research validate work/paired/study.toml
+research run work/paired/study.toml --budget 30m --max-candidates 32
+
+research mechanism retune work/paired/campaign --candidate best \
+  --scope source-active --radius 0.1 --output work/retuned/study.toml
+research validate work/retuned/study.toml
+research run work/retuned/study.toml --budget 30m --max-candidates 32
+
+# On a study where both mechanisms and hardware are already active:
+research study bounds recenter path/to/active/study.toml \
+  --group mechanisms --half-width 0.01 --radius 1 \
+  --output work/combined-narrow/study.toml
+```
+
+`pair`, `adapt` and `retune` only prepare portable inputs; the `run` commands above
+perform thermodynamic searches and require task authorization. `adapt` frees the
+selected mechanical coordinates with hardware fixed. `retune` fixes the adapted
+mechanisms and reopens selected original hardware domains. Use the exact source
+candidate intended for the comparison, independently of the motion target's family.
+A complete pair already present in a library can go directly to `adapt`.
+
+In the last command, `half-width` narrows only the selected declared domains;
+`--radius 1` separately applies to ALL active parameters of the local scheduler.
+It does not equalize physical sensitivities. If replacing incompatible existing
+local regions is required, review the change before explicitly adding `--recenter`.
+
+## References and checks
+
+Use the [Research reference](docs/DADA_ENGINE_RESEARCH_REFERENCE.md) for study
+schema and policies, [kinematics reference](docs/DADA_ENGINE_RESEARCH_KINEMATICS.md)
+for family conventions, and [synthesis method](docs/MECHANISM_SYNTHESIS_SEARCH.md)
+for mechanical search stages. For architecture and persistence, consult
+[model interfaces](docs/PLUGGABLE_MODELS.md) and
+[campaign internals](docs/OPTIMIZATION_CAMPAIGN.md) when relevant.
+Keep scientific details in these references rather than duplicating them here.
+
+Run relevant checks from the source checkout with
+`PYTHONPATH=src python3 -m pytest`. Use the [validation map](docs/validation.md)
+to select checks appropriate to the change. Check documentation links after
+editing documentation and run `git diff --check` before delivery.
