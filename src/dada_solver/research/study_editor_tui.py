@@ -3,12 +3,7 @@ import json
 import sys
 from .study_editor import StudyEditor
 
-LABELS = {
-    'kinematics-small':'Mechanism / motion SMALL',
-    'kinematics-large':'Mechanism / motion LARGE',
-    'exchangers':'Exchangers', 'volumes':'Volumes', 'frequency':'Frequency',
-    'charge':'Charge', 'valves':'Valves', 'external-stream':'External streams',
-}
+from .search_window import GROUP_LABELS as LABELS
 
 
 def menu_focus_index(choices, focus_key=None, previous_index=0):
@@ -162,27 +157,8 @@ def bounds_preview_text(plan):
 
 
 def effective_bounds_text(editor):
-    review=editor.review(); rows=editor._rows(); search=review['search']
-    lines=['EFFECTIVE SEARCH BOUNDS',f"Global normalized radius: {search.get('radius_fraction','full declared bounds')} (ALL active parameters)"]
-    shown=set()
-    for group,label in LABELS.items():
-        names=[n for n in editor.select(groups=[group]) if n in review['effective_bounds'] and n not in shown]
-        if not names: continue
-        lines.append('\n'+label+' — declared | initial | effective | clipped')
-        for name in names:
-            shown.add(name); row=rows[name]
-            if row['kind']=='choice':
-                lines.append(f"{name}: {row['choices']!r} | {row['initial']!r} | declared choices (no numeric distance)")
-                continue
-            from dada_solver.campaign.parameters import parameter_from_mapping
-            p=parameter_from_mapping({k:v for k,v in row.items() if k!='unit'})
-            for i,box in enumerate(review['effective_bounds'][name]):
-                clipped=False
-                if search['domain']=='local_regions_v1':
-                    u=p.encode(search['regions'][i]['center'][name]); r=search['radius_fraction']
-                    clipped=u-r<0 or u+r>1
-                lines.append(f"{name}: [{row['lower']!r}, {row['upper']!r}] | {row['initial']!r} | [{box['lower']!r}, {box['upper']!r}] | {'yes' if clipped else 'no'}")
-    return '\n'.join(lines)
+    from .search_window import search_window, format_search_window
+    return format_search_window(search_window(editor.raw['parameters'],editor.review()['search']))
 
 
 def _recalibrate(editor,ui,group):

@@ -138,6 +138,13 @@ def _place(samples, side, head, width, gap, *, envelope, visible_stroke, links):
                         piston_positions=piston_positions,rod_length=abs(delta),clearance=gap)
 
 
+def _drawing_clearance(horizontal_span, width_px):
+    """Wall and linkage half-strokes plus a small drawing-unit safety margin."""
+    bar_half_pixels = .5*2.65*REFERENCE_DPI/72.
+    return (.5*max(_stroke_world(value) for value in CYLINDER_LINE_WIDTHS.values())
+            + bar_half_pixels*horizontal_span/max(1.,width_px-12.) + .01)
+
+
 def machine_geometry(artifacts, study_angles, *, width_px=1200, height_px=500):
     """Production joints, fixed cylinder layout, and whole-cycle rod clearance."""
     from .mechanism_view import MechanismModel
@@ -180,8 +187,10 @@ def machine_geometry(artifacts, study_angles, *, width_px=1200, height_px=500):
         cloud = np.array([p for frames,_ in probes.values() for state in frames for p in state.values()])
         xmin = min(cloud[:,0].min(),*(c['x_outer'] for _,c in probes.values()))
         xmax = max(cloud[:,0].max(),*(c['x_outer'] for _,c in probes.values()))
-        # Six pixels of visual margin plus the production drawing's joint radius.
-        gap = 6.*(xmax-xmin)/max(1.,width_px-12.)+.085
+        # Collision clearance covers the visible wall and bar half-strokes,
+        # not an arbitrary six-pixel exclusion zone around the whole cylinder.
+        # A large outboard mechanism must not manufacture a piston extension.
+        gap = _drawing_clearance(xmax-xmin,width_px)
         placed = place(gap)
         # Frame the dense envelope too: framing must not depend on which frames
         # happen to be exported, nor crop the new outboard mechanisms and rods.
@@ -270,7 +279,7 @@ def _transfer_endpoints(ax, geometry):
             for side,(_,cyl) in geometry['sides'].items()}
 
 
-def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_mechanisms=True):
+def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_mechanisms=True, vector_conduits=True):
     from matplotlib.patches import Circle, Rectangle
     from .transfer_block import PlacedAxes, LAYOUTS, draw_row
     ax.clear()
@@ -280,6 +289,8 @@ def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_me
     ax.set_aspect('equal',adjustable='box'); ax.apply_aspect()
     colors = ['#1f77b4','#ff7f0e','#2ca02c','#9467bd','#d62728','#444444']
     for side,temperature in (('small','S_temperature_K'),('large','L_temperature_K')):
+        if show_mechanisms in ('small','large') and side != show_mechanisms:
+            continue
         frames,cyl = geometry['sides'][side]
         state = frames[index]
         width,head,outer,piston = cyl['width'],cyl['x_inner'],cyl['x_outer'],cyl['piston_positions'][index]
@@ -295,7 +306,7 @@ def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_me
         ax.plot([piston,piston],[-width/2,width/2],color='#555555',lw=_stroke_points(ax,9.5 if side=='small' else 10.),zorder=4,solid_capstyle='butt')
         for xs,ys in (([head,head],[-width/2,width/2]),([head,outer],[width/2]*2),([head,outer],[-width/2]*2)):
             ax.plot(xs,ys,color='#111111',lw=linewidth,zorder=6,solid_capstyle='round')
-        if show_mechanisms:
+        if show_mechanisms is True or show_mechanisms == 'both' or show_mechanisms == side:
             if cyl['rod_length'] > 0.:
                 ax.plot([piston,state['P'][0]],[0.,0.],color='#555555',lw=_stroke_points(ax,4.),zorder=4,solid_capstyle='butt')
             ax.add_patch(Circle(state['P'],.075,facecolor='white',edgecolor='black',lw=1.1,zorder=8))
@@ -325,7 +336,8 @@ def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_me
                             ax.plot([xi-.04*scale,xi+.04*scale],[y-.31*scale,y-.24*scale],color='black',lw=1.2)
     large_width = geometry['sides']['large'][1]['width']
     endpoints = _transfer_endpoints(ax,geometry)
-    for branch,direction,y in (('Ho','left',TRANSFER_ROW_OFFSET*large_width),('Hi','right',-TRANSFER_ROW_OFFSET*large_width)):
+    rows=() if show_mechanisms in ('small','large') else (('Ho','left',TRANSFER_ROW_OFFSET*large_width),('Hi','right',-TRANSFER_ROW_OFFSET*large_width))
+    for branch,direction,y in rows:
         placed = PlacedAxes(ax,endpoints['small'],endpoints['large'],y,zorder_offset=6)
         opening = data[branch+('_to_S_valve_open' if branch=='Ho' else '_to_L_valve_open')][index]
         draw_row(placed,y=0.,name=branch,**LAYOUTS[layout][branch],valve_direction=direction,
@@ -333,12 +345,42 @@ def draw_machine_frame(ax, geometry, index, data, layout, Tmin, Tmax, *, show_me
                  left_color=temperature_rgb(data['S_temperature_K'][index],Tmin,Tmax),
                  right_color=temperature_rgb(data['L_temperature_K'][index],Tmin,Tmax),
                  hx_color=temperature_rgb(data[branch+'_temperature_K'][index],Tmin,Tmax))
+    if vector_conduits:
+        from .svg_conduits import draw_vector_conduits
+        draw_vector_conduits(ax)
     xmin,xmax,ymin,ymax = geometry['limits']
     ax.set_xlim(xmin,xmax); ax.set_ylim(ymin,ymax)
     ax.set_aspect('equal',adjustable='box'); ax.axis('off')
 
 
-def render_machine_webp(artifacts, cycle, *, layout, motor_operation=False, frames=FRAME_COUNT):
+def visible_machine_geometry(geometry, show_mechanisms):
+    """Reframe only; keep every cylinder, piston and linkage coordinate intact."""
+    if show_mechanisms is True or show_mechanisms == 'both': return geometry
+    if show_mechanisms not in (False,'none','small','large'):
+        raise ValueError('Visible mechanisms must be both, none, small or large.')
+    points=[]
+    for side,(frames,cyl) in geometry['sides'].items():
+        if show_mechanisms in ('small','large') and side != show_mechanisms:
+            continue
+        head=cyl['x_inner']+(1 if side=='small' else -1)*_stroke_world(CYLINDER_LINE_WIDTHS[side])
+        points.extend([(x,y) for x in (head,cyl['x_outer']) for y in (-cyl['width']/2,cyl['width']/2)])
+        if show_mechanisms==side:
+            points.extend(point for state in frames for point in state.values())
+    xy=np.asarray(points);low=xy.min(axis=0);high=xy.max(axis=0)
+    pad=.04*max(high-low)
+    return dict(geometry,limits=(low[0]-pad,high[0]+pad,low[1]-pad,high[1]+pad))
+
+
+def prepare_machine_frames(artifacts, cycle, *, motor_operation=False, frames=FRAME_COUNT):
+    """Shared drawing inputs for live Matplotlib, SVG and report WebP frames."""
+    query,data=frame_series(cycle,frames)
+    geometry=machine_geometry(artifacts,-query if motor_operation else query)
+    temperatures=np.concatenate([np.asarray(cycle['series'][name]) for name in
+        ('S_temperature_K','L_temperature_K','Ho_temperature_K','Hi_temperature_K')])
+    return geometry,data,float(temperatures.min()),float(temperatures.max())
+
+
+def render_machine_webp(artifacts, cycle, *, layout, motor_operation=False, frames=FRAME_COUNT, show_mechanisms="both"):
     """Encode a deterministic fixed-frame whole-machine animation, without graphs."""
     from PIL import Image, features
     from PIL import _webp
@@ -349,18 +391,15 @@ def render_machine_webp(artifacts, cycle, *, layout, motor_operation=False, fram
     from .transfer_block import LAYOUTS
     if layout not in LAYOUTS:
         raise ValueError(f'Unknown transfer layout {layout!r}.')
-    query,data = frame_series(cycle,frames)
-    geometry = machine_geometry(artifacts,-query if motor_operation else query)
-    temperatures = np.concatenate([np.asarray(cycle['series'][name]) for name in
-                                   ('S_temperature_K','L_temperature_K','Ho_temperature_K','Hi_temperature_K')])
-    Tmin,Tmax = float(temperatures.min()),float(temperatures.max())
+    geometry,data,Tmin,Tmax = prepare_machine_frames(artifacts,cycle,motor_operation=motor_operation,frames=frames)
+    geometry=visible_machine_geometry(geometry,show_mechanisms)
     fig = Figure(figsize=(12,5),dpi=100,facecolor='#f0f0f0')
     canvas = FigureCanvasAgg(fig); ax = fig.add_axes((.01,.01,.98,.98))
     images = []
     top,bottom = 500,0
     try:
         for i in range(frames):
-            draw_machine_frame(ax,geometry,i,data,layout,Tmin,Tmax)
+            draw_machine_frame(ax,geometry,i,data,layout,Tmin,Tmax,show_mechanisms=show_mechanisms)
             canvas.draw()
             pixels = np.asarray(canvas.buffer_rgba())
             rows = np.flatnonzero(np.any(pixels[:,:,:3]!=240,axis=(1,2)))

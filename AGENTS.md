@@ -45,7 +45,7 @@ research() { PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m dada_solver.res
 
 ```sh
 # Validate configuration, geometry and linked inputs.
-research validate study.toml
+research validate study.toml --search-window
 
 # Edit interactively (requires the optional tui extra).
 research study edit study.toml
@@ -97,12 +97,35 @@ research status campaign --list-candidates
 research report campaign --candidate best
 research report campaign --candidate best --plots mechanisms --external-webp
 research report campaign --plots none
+research graphs campaign --candidate best --candidate second --save-directory work/figures
+research graphs campaign --candidate best --candidate second --plots positions,pressures,torques
+research graphs campaign --candidate best --plots mechanisms --save-directory work/figures
+research graphs campaign --candidate best --plots mechanisms
+research report campaign --candidate best --plots torques
 research compare campaign-a campaign-b --candidate best --html work/comparison.html
 
 # Browse saved geometry only, with no thermodynamic integration.
 research mechanism visualize library.json --side large --browse
 research mechanism visualize library.json --side large --browse --sort position-rms --target target.json
 ```
+
+`validate --search-window` prints grouped, aligned tables with numbers rounded to at
+most five significant digits, declared/explored domains, centres and clipping. `--json` keeps full precision.
+`graphs` uses native Matplotlib Back/Forward, zoom and Save; PageUp/PageDown select
+plots directly. `--save-directory` only sets the initial save-dialog path.
+`torques` shows indicated gas-pressure crank loads, without inertia, friction or
+piston back pressure. Physical crank signs are retained; the total uses cycle progress.
+`--plots mechanisms` draws the report machine directly with production Matplotlib
+artists, one candidate per animation page. Space pauses/resumes; no replay occurs
+while navigating or saving. Choosing SVG in the native Save dialog exports a
+self-contained animated SVG (66 frames, 5.61 s/cycle), not a screenshot. Linkages
+and thermal conduits are vector paths with native SVG gradients. Report keeps
+animated WebP output, rendered from vector conduits before encoding.
+Use `--show-mechanisms both|none|small|large` on `graphs` or `report` to control
+the view: `none` keeps the thermal assembly; `small`/`large` show only that
+side's mechanism, piston, gas and cylinder, without the transfer block.
+
+
 
 Position-RMS sorting concerns complete piston mechanisms; primary E projections
 are not piston fits. For mechanical synthesis, pairing, adaptation and retuning,

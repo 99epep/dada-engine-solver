@@ -101,6 +101,7 @@ def main(argv=None):
     init.add_argument('--output', type=Path, required=True)
     validate = commands.add_parser('validate', help='Validate configuration and geometry without integration')
     validate.add_argument('study', type=Path)
+    validate.add_argument('--search-window', action='store_true', help='Show declared and effective search domains without integration')
     validate.add_argument('--json', action='store_true', help='Print full validation and runtime metadata')
     run = commands.add_parser('run', help='Start a bounded Sobol campaign')
     run.add_argument('study', type=Path)
@@ -211,9 +212,19 @@ def main(argv=None):
         p.add_argument('--list-candidates', action='store_true', help='List selected candidates in the terminal')
         if name != 'status':
             p.add_argument('--html', type=Path, help='Write or regenerate standalone HTML (report default: CAMPAIGN/report.html)')
-            p.add_argument('--plots', action='append', metavar='NAMES', help='Comma-separated/repeated: positions, volumes, pressures, heat, temperatures, flows, velocity, acceleration, mechanisms; default, all or none. Report defaults to positions,heat,pressures,temperatures for the best two.')
+            p.add_argument('--plots', action='append', metavar='NAMES', help='Comma-separated/repeated: positions, volumes, pressures, heat, temperatures, flows, velocity, acceleration, torques, mechanisms; default, all or none. Report defaults to positions,heat,pressures,temperatures for the best two.')
+        if name != 'status':
+            p.add_argument('--show-mechanisms',choices=('both','none','small','large'),default='both',help='Machine view: both, thermal assembly only (none), or one side without thermal circuit')
         if name == 'report':
             p.add_argument('--external-webp',action='store_true',help='Save mechanism WebP files beside the HTML in HTML_NAME.assets/ rather than embedding them')
+    graphs = commands.add_parser('graphs', help='Browse report curves for selected candidates in one Matplotlib window')
+    graphs.add_argument('paths', nargs='+', type=Path)
+    graphs.add_argument('--candidate', action='append', default=[], help='ID, unique prefix, best or second; repeat to overlay candidates')
+    graphs.add_argument('--plots', action='append', help='Report plot names; mechanisms adds live drawing and animated SVG export; default: curves only')
+    graphs.add_argument('--svg-vector-conduits', action='store_true', default=True, help=argparse.SUPPRESS)
+    graphs.add_argument('--show-mechanisms',choices=('both','none','small','large'),default='both',help='Machine view: both, thermal assembly only (none), or one side without thermal circuit')
+    graphs.add_argument('--save-directory', type=Path, help='Initial directory for the native Matplotlib save dialog')
+    graphs.add_argument('--no-show', action='store_true', help='Prepare the viewer without opening a GUI')
     args = parser.parse_args(argv)
     try:
         if args.command == 'study':
@@ -280,14 +291,18 @@ def main(argv=None):
             validation = dict(valid=True, study_id=study.study_id, protocol=study.data['study']['protocol'],
                 fixed=study.fixed_parameters, parameters=study.data['parameters'], backend=definition.numerical_settings['wall_backend'],
                 integration_started=False)
+            if args.search_window:
+                from .search_window import search_window, format_search_window
+                validation['search_window']=search_window(study.data['parameters'],study.data['search'])
             if args.json:
                 print(json.dumps(validation, indent=2))
             else:
                 print(f"Valid study: {study.data['study']['name']}\nStudy: {study.study_id}")
                 print(f"Families: {study.settings['small']['family']} / {study.settings['large']['family']}; {len(study.space.parameters)} active coordinates; no integration started.")
-                for p in study.data['parameters']:
+                for p in (() if args.search_window else study.data['parameters']):
                     description=f"fixed {p['value']}" if 'value' in p else f"choices {p['choices']}; initial {p['initial']}" if p.get('kind')=='choice' else f"{p['lower']} .. {p['upper']}; initial {p['initial']}"
                     print(f"  {p['name']} [{p['unit']}]: {description}")
+                if args.search_window: print(format_search_window(validation['search_window']))
                 if definition.wall_backend.name=='numba' and not validation['backend'].get('numba_available'):
                     print('Numba is unavailable; the existing Python fallback will be recorded in each result.')
         elif args.command in ('run','resume'):
@@ -505,6 +520,23 @@ def main(argv=None):
                     plt.close(figure)
                 else:
                     plt.show()
+        elif args.command == 'graphs':
+            from .graph_view import GRAPH_NAMES, browse_graphs
+            from .plot_data import plot_names
+            names=plot_names(args.plots) if args.plots is not None else GRAPH_NAMES
+            if not names:
+                raise ValueError('Choose at least one plot for graphs.')
+            cache=args.save_directory if args.save_directory is not None else (args.paths[0] if args.paths[0].is_dir() else args.paths[0].parent)
+            data=report.compare(args.paths,args.candidate,plots=names,
+                cache_directory=cache/'.research-plot-cache',mechanism_format='vector',show_mechanisms=args.show_mechanisms,
+                notify=lambda message: print(message,file=sys.stderr,flush=True))
+            for warning in data.get('warnings',[]): print(f'Warning: {warning}',file=sys.stderr)
+            figure,browser=browse_graphs(data,names=names,save_directory=args.save_directory,svg_vector_conduits=args.svg_vector_conduits)
+            print(f'Viewing {len(browser.records)} candidate(s); native Back/Forward browses graphs; use the toolbar Save action.')
+            import matplotlib.pyplot as plt
+            if args.no_show:
+                figure.canvas.draw();plt.close(figure)
+            else: plt.show()
         elif args.command == 'evaluate':
             record = evaluate(args.study, args.output, assignments=args.set, budget=args.budget)
             print(f"{record['candidate_id']} {record['status']}; saved {args.output}")
@@ -517,7 +549,7 @@ def main(argv=None):
             plots=getattr(args,'plots',None)
             if plots is None and args.command=='report': plots='default'
             cache_directory=destination.parent/'.research-plot-cache' if destination is not None else None
-            data = report.compare(args.paths,args.candidate, plots=plots,cache_directory=cache_directory,
+            data = report.compare(args.paths,args.candidate, plots=plots,cache_directory=cache_directory,show_mechanisms=getattr(args,'show_mechanisms','both'),
                 notify=lambda message: print(message,file=sys.stderr,flush=True))
             if destination is not None: report.render_html(data,destination,external_webp=getattr(args,'external_webp',False))
             if args.json:

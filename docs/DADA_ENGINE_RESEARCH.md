@@ -76,12 +76,21 @@ are in the [study editor reference](DADA_ENGINE_RESEARCH_REFERENCE.md#study-edit
 
 ```sh
 research validate outputs/my_study/study.toml
+research validate outputs/my_study/study.toml --search-window
 research evaluate outputs/my_study/study.toml \
     --output outputs/my_study/reference.json --budget 3m
 ```
 
 `validate` checks declarations, hashes and production geometry without integrating
-thermodynamics. Invalid declarations report the source file, line, parameter or
+thermodynamics. `--search-window` shows active parameters by group, their
+initials, declared domains, and the effective window of each local region. It
+shows the global normalized radius and clipping, respects log/integer encodings,
+and reports eligible choices without treating categories as physical distances.
+The grouped table rounds numbers to at most five significant digits without modifying
+values. Numeric bound pairs stay on one line, with fewer digits when necessary. Other
+long cells wrap within their columns; region identities label each table. The same display is available in `study edit`; add `--json` for structured
+output with full precision.
+Invalid declarations report the source file, line, parameter or
 constraint, and the corresponding TOML excerpt. Coupled geometry failures identify
 the affected piston and its related parameters rather than blaming an arbitrary
 coordinate. `evaluate` integrates one exact configured point, using active
@@ -153,6 +162,106 @@ Comparison can inspect several campaigns or saved evaluations without inventing
 a joint ranking for incompatible studies. Plot choices, evidence interpretation
 and animation details belong in the [cockpit guide](DADA_ENGINE_RESEARCH_COCKPIT.md).
 
+## Browse and save candidate graphs
+
+```sh
+research graphs path/to/campaign --candidate best
+research graphs path/to/campaign --candidate best --candidate second \
+    --plots positions,pressures,temperatures --save-directory work/figures
+research graphs path/to/campaign-a path/to/campaign-b \
+    --candidate CANDIDATE_A_ID --candidate CANDIDATE_B_ID --plots volumes,heat
+```
+
+One Matplotlib window uses the native toolbar: Back/Forward traverse graph and
+zoom history, Home restores the original view, and Save opens the backend's usual
+export dialog. No extra navigation or save buttons are added. PageUp/PageDown
+select the previous/next graph directly, including after a zoom has replaced
+forward history. Selected candidates are overlaid with candidate IDs and series
+labels. Without selectors, the existing report policy prepares the two best
+candidates per source. The default graph set includes all report curves except
+mechanism animations; request `--plots mechanisms` to add live machine pages. Use `--plots` to request only the curves you need.
+
+`--save-directory` sets the initial path of the native save dialog; it does not
+save files automatically. The native dialog handles format and overwrite choices.
+Programmatic `save_current(path)` provides a graph-only PNG/SVG/PDF export with
+the current zoom and refuses overwrite. `--no-show` supports headless preparation,
+but does not itself save a graph. Install the `plot` extra for Matplotlib; GUI
+availability depends on its configured backend.
+
+This viewer reuses the report sampling and replay cache. Thermal curves may
+require one announced saved-state cycle replay when uncached; they do not run a
+new search or periodic reconvergence. Navigation and saving only redraw prepared
+curves and never replay or integrate. Unavailable curves show their reason.
+Comparison across different studies has no combined scientific ranking; review
+the source definitions before interpreting the overlaid curves.
+
+### Live machine drawing and animated SVG export
+
+```sh
+research graphs path/to/campaign --candidate best --plots mechanisms
+research graphs path/to/campaign --candidate best --candidate second \
+    --plots positions,torques,mechanisms --save-directory work/figures
+```
+
+The machine is drawn directly with the report's production Matplotlib renderer,
+not by decoding its WebP. Each selected candidate gets a separate machine page. Machine pages have no
+visible title or annotations and fit the full-cycle envelope with small constant
+margins; curve titles return when navigating back to a graph.
+Geometry and cycle samples are prepared once; playback, navigation and saving
+perform no thermodynamic replay. Space pauses/resumes the live animation.
+
+Use the native Save action and choose SVG to export the **complete animation**:
+66 exact renderer frames, 85 ms each, looping over 5.61 seconds. The standalone
+SVG uses discrete SMIL visibility; there is no geometry or physics interpolation.
+The validated linkages, cylinder outlines and glyphs remain vector paths. The
+thermal conduits use native SVG linear gradients aligned to exact exchanger ports.
+All assets are incorporated in the file. Browsers with SMIL support animate it;
+viewers without support retain a static first-frame fallback. A wiki may sanitize
+SVG animation, so check its SVG embedding policy. PNG/PDF save the current frame.
+
+Vector conduits are standard in the live view and report renderer. Small axial
+overlaps at the exchanger ports and cylinder walls hide antialiasing seams without
+moving the thermal components. Report retains animated WebP output; its frames
+are rasterized from vector-strip thermal fills before WebP encoding. SVG export
+uses native `linearGradient` fills, preserving clips, valve directions and draw
+order. Gas inside the cylinders is a solid vector rectangle.
+
+```sh
+research report path/to/campaign --plots mechanisms --show-mechanisms none
+research graphs path/to/campaign --plots mechanisms --show-mechanisms small
+research graphs path/to/campaign --plots mechanisms --show-mechanisms large
+```
+
+`--show-mechanisms` defaults to `both`. The `none` mode hides both linkages and retains the thermal assembly.
+The `small` and `large` modes show only the selected mechanism, piston, gas and
+cylinder, without exchangers or the other cylinder. Framing follows the visible
+assembly; cylinder dimensions, piston motion and component positions are unchanged. `--external-webp` still saves report animations as separate assets.
+
+`save_current("machine.svg")` also exports the complete animation and refuses to
+overwrite. SVG animation uses the renderer's fixed full-machine framing, regardless
+of a temporary interactive zoom; ordinary curve SVGs remain static exports.
+
+### Gas torque at the cranks
+
+```sh
+research graphs path/to/campaign --candidate best --plots torques
+research report path/to/campaign --candidate best --plots torques
+```
+
+`torques` uses exact replay pressures and production piston volume rates:
+`tau_progress = P * dV/dt / abs(omega)`. For a physical mechanism, its signed
+crank torque is `tau_progress / (study_direction * crank_direction)`. Thus its
+product with signed crank speed equals that cylinder's indicated gas power.
+SMALL and LARGE retain their own crank conventions. The total curve is conjugate
+to positive cycle progress, not a sum of differently oriented shaft torques.
+Abstract motion laws expose generalized progress loads, not physical crank loads.
+
+These are **indicated gas-pressure torques** in N m, matching the existing absolute
+pressure work boundary. Piston back-face pressure, inertia, friction, bearings,
+auxiliaries and shaft efficiency are not added; this is not total required drive
+or useful output torque. No new thermodynamic evaluation is performed beyond the
+standard saved-state report replay, and stored candidate metrics are unchanged.
+
 ## Refine a promising result
 
 ```sh
@@ -198,3 +307,10 @@ quantities scale and which remain fixed.
 - [Capacity scaling](DADA_ENGINE_RESEARCH_CAPACITY.md): transformation rules.
 - [Current validation and limitations](validation.md): what the available
   software and physical evidence establishes.
+
+Machine animations use vector thermal conduits aligned to exchanger ports.
+`report --plots mechanisms` still exports animated WebP; `graphs` saves animated
+SVG through the native Matplotlib save action. Both commands accept
+`--show-mechanisms both|none|small|large`: `none` shows only pistons, cylinders,
+gas and the thermal circuit. `small` and `large` omit the thermal circuit and the other cylinder.
+Visibility changes framing, not machine geometry.

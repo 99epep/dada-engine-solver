@@ -15,7 +15,7 @@ function tickLabel(value,step){
 /* Offline rendering only: all scientific samples come from production Python. */
 function additionalPlots(){
  const host=byId('additionalPlots');host.innerHTML='';
- const titles={positions:'Normalized piston positions',heat:'Heat transfer: gas → wall',pressures:'Gas pressures',temperatures:'Cylinder gas temperatures',flows:'Signed passage mass flows',velocity:'Normalized piston velocity per cycle radian',acceleration:'Normalized piston acceleration per cycle radian squared'};
+ const titles={torques:'Indicated gas-pressure torques',positions:'Normalized piston positions',heat:'Heat transfer: gas → wall',pressures:'Gas pressures',temperatures:'Cylinder gas temperatures',flows:'Signed passage mass flows',velocity:'Normalized piston velocity per cycle radian',acceleration:'Normalized piston acceleration per cycle radian squared'};
  const colors=['#17658b','#b74424','#087660','#773baa','#986700','#b32573','#247070','#666666'];
  for(const [kind,title] of Object.entries(titles)){
   const candidates=rows.filter(r=>r.plots?.[kind]);if(!candidates.length)continue;
@@ -31,7 +31,7 @@ function additionalPlots(){
   if(!available.length)continue;
   let low=Infinity,high=-Infinity;for(const a of available)for(const v of a.series.values){low=Math.min(low,v);high=Math.max(high,v);}
   if(!Number.isFinite(low)||!Number.isFinite(high))continue;
-  const axis=niceAxis(low,high,kind==='heat'||kind==='flows'||kind==='velocity'||kind==='acceleration');low=axis.low;high=axis.high;
+  const axis=niceAxis(low,high,kind==='torques'||kind==='heat'||kind==='flows'||kind==='velocity'||kind==='acceleration');low=axis.low;high=axis.high;
   const w=1000,h=400,l=100,b=55,t=20,right=20,x=v=>l+v/360*(w-l-right),y=v=>h-b-(v-low)/(high-low)*(h-b-t);
   let svg='<svg role="img" aria-label="'+esc(title)+'" viewBox="0 0 '+w+' '+h+'"><path d="M'+l+' '+t+' V'+(h-b)+' H'+(w-right)+'" fill="none" stroke="#526575"/>';
   for(let i=0;i<=6;i++)svg+='<text x="'+x(i*60)+'" y="'+(h-b+22)+'" text-anchor="middle" font-size="13">'+i*60+'</text>';

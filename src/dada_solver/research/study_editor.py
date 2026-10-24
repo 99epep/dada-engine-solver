@@ -14,7 +14,7 @@ import tempfile
 from dada_solver.campaign.parameters import parameter_from_mapping, ParameterSpace, ChoiceParameter
 from .artifacts import MechanismArtifact
 from .families import parameter_specs, PHYSICAL_FAMILIES, ParameterSpec
-from .hardware_retuning import GROUPS as HARDWARE_GROUPS, _effective_bounds
+from .hardware_retuning import GROUPS as HARDWARE_GROUPS
 from .machine_basis import machine_parameters
 from .schema import load_study, compile_study, candidate_for_values
 from .study_io import dumps
@@ -349,12 +349,10 @@ class StudyEditor:
         if not after: warnings.append('No active parameters: use evaluate rather than run.')
         if replaced: warnings.append('Local regions will be replaced by one unevaluated initial center.' if search['domain']=='local_regions_v1' else 'Local regions will be removed for full declared-bound search.')
         if self.raw['kinematics']['coupling']=='shared_crank': warnings.append('Shared-crank phase belongs to both cylinders; coupling is unchanged.')
-        effective={}
+        from .search_window import effective_search_bounds
+        effective=effective_search_bounds(self.raw['parameters'],search)
         for r in self.raw['parameters']:
             if 'initial' not in r: continue
-            if search['domain']=='local_regions_v1':
-                effective[r['name']]=[_effective_bounds(r,region['center'][r['name']],search['radius_fraction']) for region in search['regions']]
-            else: effective[r['name']]=[copy.deepcopy(r)]
             p=parameter_from_mapping({k:v for k,v in r.items() if k!='unit'})
             if r['kind']!='choice' and min(p.encode(r['initial']),1-p.encode(r['initial']))<.05:
                 warnings.append(f"{r['name']}: initial within 5% of a declared boundary.")

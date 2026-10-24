@@ -90,7 +90,13 @@ def test_microtube_productivity_objective_contract():
     assert '| `maximize_cooling_cop_times_power_per_total_microtube` | `W/microtube` | Refrigeration |' in content
     assert ('`maximize_cooling_cop_times_power_per_total_microtube` maximizes\n'
             '`cooling_cop * cooling_power_per_total_microtube_w`.') in content
+    assert '| `maximize_motor_power_per_total_microtube` | `W/microtube` | Motor |' in content
+    assert 'motor_power_per_total_microtube_w' in content
+    assert '| `maximize_thermal_efficiency_times_power_per_total_microtube` | `W/microtube` | Motor |' in content
+    assert ('`maximize_thermal_efficiency_times_power_per_total_microtube` maximizes\n'
+            '`indicated_thermal_efficiency * motor_power_per_total_microtube_w`.') in content
     assert 'does not impose minimum COP or cooling power by itself' in content
+    assert 'does not impose minimum efficiency or motor power by itself' in content
 
 
 def test_study_editor_documents_domains_and_scheduler_separately():

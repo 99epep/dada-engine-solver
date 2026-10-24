@@ -44,6 +44,11 @@ def metric_parts(metrics, *, champion=False):
     if m.get('cooling_cop_times_power_per_total_microtube_w') is not None:
         fields.insert(0, ('cooling_cop_times_power_per_total_microtube_w',
                           'COP·Q/N', precision, ' W/µt'))
+    if m.get('motor_power_per_total_microtube_w') is not None:
+        fields.insert(0, ('motor_power_per_total_microtube_w', 'P/N', precision, ' W/µt'))
+    if m.get('thermal_efficiency_times_power_per_total_microtube_w') is not None:
+        fields.insert(0, ('thermal_efficiency_times_power_per_total_microtube_w',
+                          'eta·P/N', precision, ' W/µt'))
     return [f'{label} {m[key]:{fmt}}{unit}' for key,label,fmt,unit in fields
             if isinstance(m.get(key),(int,float)) and math.isfinite(m[key])]
 

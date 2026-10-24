@@ -212,6 +212,8 @@ class MachineEvaluator:
         if 'total_microtube_count' in derived:
             result['metrics'].setdefault('cooling_power_per_total_microtube_w', None)
             result['metrics'].setdefault('cooling_cop_times_power_per_total_microtube_w', None)
+            result['metrics'].setdefault('motor_power_per_total_microtube_w', None)
+            result['metrics'].setdefault('thermal_efficiency_times_power_per_total_microtube_w', None)
         if mechanical: result['constraints']=list(mechanical)+result['constraints']
         return result
 
@@ -475,12 +477,15 @@ class MachineEvaluator:
         return float(max_re), float(max_mach)
 
     def _assessment(self, evaluation, derived, source, distance, convergence, guess, extra=()):
-        from .objectives import (MaximizeCoolingPowerPerTotalMicrotube,
-            cooling_power_per_total_microtube, cooling_cop_times_power_per_total_microtube)
+        from .objectives import (
+            MaximizeCoolingPowerPerTotalMicrotube,
+            MaximizeMotorPowerPerTotalMicrotube,
+            cooling_power_per_total_microtube, cooling_cop_times_power_per_total_microtube,
+            motor_power_per_total_microtube, thermal_efficiency_times_power_per_total_microtube)
         context = {key: derived.get(key) for key in
                    ('heat_in_microtube_count', 'heat_out_microtube_count')}
         objective = (self.definition.objective.evaluate(evaluation, **context)
-            if isinstance(self.definition.objective, MaximizeCoolingPowerPerTotalMicrotube)
+            if isinstance(self.definition.objective, (MaximizeCoolingPowerPerTotalMicrotube, MaximizeMotorPowerPerTotalMicrotube))
             else self.definition.objective.evaluate(evaluation))
         constraints = [asdict(c.evaluate(evaluation)) for c in self.definition.constraints] + list(extra)
         objective_valid = objective.available and objective.value is not None and np.isfinite(objective.value)
@@ -510,6 +515,13 @@ class MachineEvaluator:
             metrics['cooling_cop_times_power_per_total_microtube_w'] = (
                 cooling_cop_times_power_per_total_microtube(
                     performance.cooling_cop if power is not None else None, productivity))
+            motor_power = (performance.motor_power if performance is not None
+                and performance.operating_mode is OperatingMode.MOTOR else None)
+            motor_productivity = motor_power_per_total_microtube(motor_power, **context)
+            metrics['motor_power_per_total_microtube_w'] = motor_productivity
+            metrics['thermal_efficiency_times_power_per_total_microtube_w'] = (
+                thermal_efficiency_times_power_per_total_microtube(
+                    performance.thermal_efficiency if motor_power is not None else None, motor_productivity))
         reasons = [c['name']+(': unavailable' if not c['available'] else ': violated') for c in constraints if not c['available'] or not c['satisfied']]
         if not objective_valid: reasons.append('objective unavailable or nonfinite')
         return dict(status=status, integrated=True, converged=evaluation.usable,

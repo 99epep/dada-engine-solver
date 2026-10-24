@@ -13,8 +13,8 @@ from .schema import compile_study
 
 DEFAULT_PLOTS = ('positions', 'heat', 'pressures', 'temperatures')
 PLOT_NAMES = ('positions', 'volumes', 'pressures', 'heat', 'temperatures', 'flows',
-              'velocity', 'acceleration', 'mechanisms')
-THERMAL_PLOTS = frozenset(('pressures', 'heat', 'temperatures', 'flows'))
+              'velocity', 'acceleration', 'torques', 'mechanisms')
+THERMAL_PLOTS = frozenset(('pressures', 'heat', 'temperatures', 'flows', 'torques'))
 
 
 def plot_names(value):
@@ -69,6 +69,26 @@ def kinematic_plots(study, record, names):
     if 'mechanisms' in names:
         from .visualization import sample_motion
         result['mechanisms'] = sample_motion(study,record['physical'],samples=181)
+    return result
+
+
+def gas_torque_plot(angles, points, angular_speed, *, study_direction=1,
+                    crank_directions=(1,1), physical_sides=(False,False)):
+    """Pressure-only torque by virtual work, using production piston volume rates.
+
+    Per-crank loads are conjugate to each mechanism's signed crank angle. The
+    total is conjugate to positive cycle progress, so total*abs(omega) is gas power.
+    Absolute cylinder pressures match the model's indicated work boundary; no
+    piston back pressure, friction, inertia or mechanical efficiency is invented.
+    """
+    progress=np.asarray([[p.pressures[i]*p.volume_rates[i]/angular_speed for i in (0,1)] for p in points])
+    directions=[study_direction*d for d in crank_directions]
+    series={}
+    for i,side in enumerate(('small','large')):
+        series[side+(' crank gas torque' if physical_sides[i] else ' generalized gas torque (cycle progress)')]=progress[:,i]/directions[i] if physical_sides[i] else progress[:,i]
+    series['total gas torque (cycle progress)']=np.sum(progress,axis=1)
+    result=curves(angles,'N m',series,method='Indicated gas-pressure loads from production P*dV/dt; no back pressure, inertia or friction.')
+    result['crank_to_progress_direction']={side:directions[i] if physical_sides[i] else None for i,side in enumerate(('small','large'))}
     return result
 
 
@@ -138,6 +158,12 @@ def replay_thermal(study, record, *, notify=lambda message: None):
     method = 'One-cycle replay from saved periodic endpoint under current runtime; historical verdict and metrics unchanged.'
     result = {name:curves(angles,unit,series,method=method) for name,unit,series in
               [('pressures','Pa',pressures),('temperatures','K',temperatures),('flows','kg/s',flows),('heat','W',heats)]}
+    from .families import PHYSICAL_FAMILIES
+    physical=dict(definition.fixed_parameters,**record['physical'])
+    result['torques']=gas_torque_plot(angles,points,model.angular_speed,
+        study_direction=model.study_crank_direction,
+        crank_directions=tuple(physical.get('kinematics.shared.crank_direction',physical.get(f'kinematics.{side}.crank_direction',1)) for side in ('small','large')),
+        physical_sides=tuple(study.settings[side]['family'] in PHYSICAL_FAMILIES for side in ('small','large')))
     metadata = dict(method=method,backend=backend,endpoint_relative_drift=float(np.max(np.abs(endpoint-state)/np.maximum(np.abs(state),1e-30))),
                     sample_count=len(angles),thermodynamic_replay=True)
     for plot in result.values(): plot['replay'] = metadata
@@ -153,7 +179,8 @@ def replay_thermal(study, record, *, notify=lambda message: None):
     return result
 
 
-def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda message: None):
+def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda message: None, mechanism_format='webp', show_mechanisms='both'):
+    if mechanism_format not in ('webp','vector'): raise ValueError('Unknown mechanism drawing format.')
     result = kinematic_plots(study,record,tuple(name for name in names if name != 'mechanisms'))
     mechanism_source = None
     if 'mechanisms' in names:
@@ -161,7 +188,7 @@ def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda
         mechanism_source = candidate_mechanisms(study,record['physical'])
         result['mechanisms'] = dict(unavailable='A complete physical mechanism is required for both cylinders.')
     if not THERMAL_PLOTS.intersection(names) and mechanism_source is None: return result
-    key = content_hash(dict(version=3,study_id=study.study_id,candidate_id=record['candidate_id'],
+    key = content_hash(dict(version=4,study_id=study.study_id,candidate_id=record['candidate_id'],
         physical=record['physical'],state=record.get('final_periodic_state'),runtime=runtime_identity()))
     path = Path(cache_directory)/(key+'.json.gz') if cache_directory is not None else None
     try:
@@ -191,11 +218,17 @@ def candidate_plots(study, record, names, *, cache_directory=None, notify=lambda
                 from .machine_render import render_machine_webp, layout_for_configuration
                 import base64
                 artifacts, configuration = mechanism_source
-                animation, metadata = render_machine_webp(artifacts,thermal['machine_cycle'],
-                    layout=layout_for_configuration(configuration),motor_operation=configuration.motor_operation)
-                result['mechanisms'] = dict(metadata, media_type='image/webp',
-                    data_uri='data:image/webp;base64,'+base64.b64encode(animation).decode('ascii'),
-                    size_bytes=len(animation), replay=thermal.get('temperatures',{}).get('replay'))
+                if mechanism_format=='vector':
+                    result['mechanisms']=dict(kind='machine_animation',layout=layout_for_configuration(configuration),
+                        motor_operation=configuration.motor_operation,show_mechanisms=show_mechanisms,
+                        artifacts={side:artifact.data for side,artifact in artifacts.items()},
+                        cycle=thermal['machine_cycle'],method='Live production machine drawing from saved-state cycle replay; no new integration during playback.')
+                else:
+                    animation, metadata = render_machine_webp(artifacts,thermal['machine_cycle'],
+                        layout=layout_for_configuration(configuration),motor_operation=configuration.motor_operation,show_mechanisms=show_mechanisms)
+                    result['mechanisms'] = dict(metadata, media_type='image/webp',
+                        data_uri='data:image/webp;base64,'+base64.b64encode(animation).decode('ascii'),
+                        size_bytes=len(animation), replay=thermal.get('temperatures',{}).get('replay'))
             except (ValueError,RuntimeError,ArithmeticError,ImportError) as error:
                 message = f'{type(error).__name__}: {error}'
                 notify(f"Machine animation {record['candidate_id'][:12]} unavailable: {message}")

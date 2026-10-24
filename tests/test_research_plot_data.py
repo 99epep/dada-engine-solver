@@ -68,7 +68,7 @@ def test_real_wall_replay_and_cache(refrigerator,tmp_path,monkeypatch):
     candidate=candidate_for_values(definition,{})
     row=dict(candidate.payload,**result,candidate_id=candidate.candidate_id)
     before=copy.deepcopy(row);messages=[]
-    plots=candidate_plots(study,row,('pressures','heat','temperatures','flows'),cache_directory=tmp_path,notify=messages.append)
+    plots=candidate_plots(study,row,('pressures','heat','temperatures','flows','torques'),cache_directory=tmp_path,notify=messages.append)
     assert row==before and not plots['pressures'].get('unavailable')
     assert len(plots['pressures']['series'])==4 and len(plots['heat']['series'])==2
     assert len(plots['temperatures']['series'])==6
@@ -77,6 +77,10 @@ def test_real_wall_replay_and_cache(refrigerator,tmp_path,monkeypatch):
     p=plots['heat'];cold=p['series'][0]['values']
     power=np.trapezoid(cold,np.radians(p['angle']))/(2*np.pi)
     assert -power==pytest.approx(row['metrics']['cooling_power_w'],rel=3e-4,abs=1e-5)
+    assert plots['torques']['unit']=='N m'
+    torque=plots['torques']['series'][-1]['values']
+    indicated=np.trapezoid(torque,np.radians(plots['torques']['angle']))/(2*np.pi)*definition.adapter.build(definition.fixed_parameters).configuration.angular_speed
+    assert indicated==pytest.approx(row['metrics']['indicated_power_w'],rel=3e-4,abs=1e-5)
     assert any('one cycle' in msg for msg in messages)
     monkeypatch.setattr('dada_solver.research.plot_data.replay_thermal',lambda *a,**k:pytest.fail('cache miss'))
     again=candidate_plots(study,row,('pressures',),cache_directory=tmp_path,notify=messages.append)
@@ -176,3 +180,45 @@ assert.ok(!svg.includes('heat_in'));assert.ok(!svg.includes('heat_out'));
 assert.equal(rows[0].plots.temperatures.series.length,6);
 """
     subprocess.run(['node','-e',script.replace('additionalPlots();mechanismPlots();','')+harness],check=True,capture_output=True)
+
+
+@pytest.mark.parametrize('operation_direction',[-1,1])
+@pytest.mark.parametrize('crank_directions',[(1,1),(-1,1),(1,-1)])
+def test_gas_crank_torques_work_and_signed_direction(operation_direction,crank_directions):
+    from types import SimpleNamespace
+    from dada_solver.research.plot_data import gas_torque_plot
+    angles=np.linspace(0,2*np.pi,61);speed=5.
+    points=[SimpleNamespace(pressures=(100000.,200000.),volume_rates=(speed*.001*np.sin(a),speed*.002*np.cos(a))) for a in angles]
+    result=gas_torque_plot(angles,points,speed,study_direction=operation_direction,
+                           crank_directions=crank_directions,physical_sides=(True,True))
+    series=[np.array(s['values']) for s in result['series']]
+    powers=sum(series[i]*speed*operation_direction*crank_directions[i] for i in (0,1))
+    expected=np.array([sum(p.pressures[i]*p.volume_rates[i] for i in (0,1)) for p in points])
+    assert powers==pytest.approx(expected)
+    assert series[-1]*speed==pytest.approx(expected)
+    assert result['crank_to_progress_direction']['small']==operation_direction*crank_directions[0]
+    abstract=gas_torque_plot(angles,points,speed,study_direction=operation_direction)
+    assert all('crank gas torque' not in s['label'] for s in abstract['series'])
+
+
+@pytest.mark.parametrize('family',['slider_crank','four_bar','six_bar'])
+@pytest.mark.parametrize('study_direction',[-1,1])
+def test_production_crank_torques_follow_piston_virtual_work(tmp_path,family,study_direction):
+    from dataclasses import replace
+    from types import SimpleNamespace
+    from dada_solver.research.plot_data import gas_torque_plot
+    study=load_study(initialize_kinematics(tmp_path/'study.toml',family,family))
+    definition=compile_study(study);values=definition.fixed_parameters
+    design=definition.adapter.build(values)
+    design=replace(design,configuration=replace(design.configuration,angular_speed=study_direction*abs(design.configuration.angular_speed)))
+    built=design.build();model=getattr(built,'model',built)
+    angles=np.linspace(.03,2*np.pi-.03,31)
+    directions=tuple(values.get('kinematics.shared.crank_direction',values.get(f'kinematics.{side}.crank_direction',1)) for side in ('small','large'))
+    points=[SimpleNamespace(pressures=(120000.,210000.),volume_rates=model.cylinder_volume_rates(float(a))) for a in angles]
+    result=gas_torque_plot(angles,points,model.angular_speed,study_direction=model.study_crank_direction,
+                           crank_directions=directions,physical_sides=(True,True))
+    for i,side in enumerate(('small','large')):
+        volume=getattr(model.kinematics,side+'_cylinder_volume')
+        h=1e-6
+        expected=[points[j].pressures[i]*(volume(float(a+h))-volume(float(a-h)))/(2*h*study_direction*directions[i]) for j,a in enumerate(angles)]
+        assert result['series'][i]['values']==pytest.approx(expected,rel=2e-5,abs=1e-6)

@@ -414,17 +414,17 @@ def test_transfer_rows_overlap_walls_and_have_requested_separation(tmp_path,layo
     ends=_transfer_endpoints(ax,geometry)
     width=geometry['sides']['large'][1]['width']
     # Every conduit lies above walls, below diodes, and above the serpentine.
-    conduits=[image for image in ax.images if image.get_zorder() in (8,9)]
-    assert conduits
+    conduits=[collection for collection in ax.collections if collection.get_zorder() in (8,9)]
+    assert conduits and not ax.images
     centers=[]
-    for image in conduits:
-        x0,x1,y0,y1=image.get_extent()
-        a,b=image.get_transform().transform(((x0,(y0+y1)/2),(x1,(y0+y1)/2)))
-        a,b=ax.transData.inverted().transform((a,b))
-        assert ends['small']-1e-12<=a[0]<=b[0]<=ends['large']+1e-12
-        centers.append(a[1])
-    assert min(centers)==pytest.approx(-.155*1.25*width)
-    assert max(centers)==pytest.approx(.155*1.25*width)
+    for collection in conduits:
+        vertices=np.concatenate([path.vertices for path in collection.get_paths()])
+        # Tiny extra axial overlap covers the full wall stroke and port seam.
+        assert vertices[:,0].min() >= ends['small']-.01
+        assert vertices[:,0].max() <= ends['large']+.01
+        centers.append((vertices[:,1].min()+vertices[:,1].max())/2)
+    assert min(centers)==pytest.approx(-.155*1.25*width,abs=.001)
+    assert max(centers)==pytest.approx(.155*1.25*width,abs=.001)
     coils=[patch for patch in ax.patches if isinstance(patch,PathPatch)]
     assert all(p.get_zorder()==7 for p in coils)
     walls=[line for line in ax.lines if line.get_zorder()==6 and line.get_color()=='#111111']
@@ -544,3 +544,17 @@ def test_four_bar_output_body_segments_share_color(tmp_path,output,base,edges,co
                 np.array_equal(line.get_xdata(),[state[a][0],state[b][0]]) and
                 np.array_equal(line.get_ydata(),[state[a][1],state[b][1]])]
             assert matches and all(line.get_color()==color for line in matches)
+
+
+@pytest.mark.parametrize('side',['small','large'])
+def test_piston_extension_not_triggered_by_arbitrary_viewport_margin(side):
+    from dada_solver.research.machine_render import _place, _drawing_clearance, _linkage_hits_cylinder
+    sign=-1 if side=='small' else 1
+    states=[dict(A=np.array((sign*3.,.75)),B=np.array((sign*2.,.75)),
+                 P=np.array((sign*x,0.))) for x in (0.,1.)]
+    links=[('A','B'),('B','P')]
+    gap=_drawing_clearance(49.,1200)
+    assert gap < .25
+    placed,cylinder=_place(states,side,0.,2.,gap,envelope=states,visible_stroke=1.,links=links)
+    assert cylinder['rod_length']==0.
+    assert all(point['P'][0]==piston for point,piston in zip(placed,cylinder['piston_positions']))

@@ -30,6 +30,8 @@ OBJECTIVE_UNITS = {
     'maximize_cooling_power': 'W',
     'maximize_cooling_power_per_total_microtube': 'W/microtube',
     'maximize_cooling_cop_times_power_per_total_microtube': 'W/microtube',
+    'maximize_motor_power_per_total_microtube': 'W/microtube',
+    'maximize_thermal_efficiency_times_power_per_total_microtube': 'W/microtube',
 }
 COOLING_OBJECTIVES = frozenset((
     'maximize_cooling_cop', 'maximize_cooling_power',
@@ -325,10 +327,14 @@ class ResearchDefinition(CampaignDefinition):
         from dada_solver.campaign.objectives import (
             MaximizeCoolingPowerPerTotalMicrotube,
             MaximizeCoolingCopTimesPowerPerTotalMicrotube,
+            MaximizeMotorPowerPerTotalMicrotube,
+            MaximizeThermalEfficiencyTimesPowerPerTotalMicrotube,
         )
         microtube_objectives = {
             'maximize_cooling_power_per_total_microtube': MaximizeCoolingPowerPerTotalMicrotube(),
             'maximize_cooling_cop_times_power_per_total_microtube': MaximizeCoolingCopTimesPowerPerTotalMicrotube(),
+            'maximize_motor_power_per_total_microtube': MaximizeMotorPowerPerTotalMicrotube(),
+            'maximize_thermal_efficiency_times_power_per_total_microtube': MaximizeThermalEfficiencyTimesPowerPerTotalMicrotube(),
         }
         self.objective=microtube_objectives.get(raw['objective']['type'])
         if self.objective is None:

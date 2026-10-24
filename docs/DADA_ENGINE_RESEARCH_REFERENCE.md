@@ -224,6 +224,8 @@ The objective contains `type` and `unit`:
 | `maximize_cooling_power` | `W` | Refrigeration |
 | `maximize_cooling_power_per_total_microtube` | `W/microtube` | Refrigeration |
 | `maximize_cooling_cop_times_power_per_total_microtube` | `W/microtube` | Refrigeration |
+| `maximize_motor_power_per_total_microtube` | `W/microtube` | Motor |
+| `maximize_thermal_efficiency_times_power_per_total_microtube` | `W/microtube` | Motor |
 
 `maximize_cooling_power_per_total_microtube` maximizes
 `cooling_power_w / (microtube.heat_in.tube_count + microtube.heat_out.tube_count)`.
@@ -237,6 +239,19 @@ by itself.
 rewards cooling efficiency and cooling productivity per physical microtube. It
 does not impose minimum COP or cooling power by itself. Its reported metric is
 `cooling_cop_times_power_per_total_microtube_w`, in `W/microtube`.
+
+`maximize_motor_power_per_total_microtube` maximizes
+`motor_power_w / (microtube.heat_in.tube_count + microtube.heat_out.tube_count)`.
+The denominator counts all physical microtubes in both exchangers, not hydraulic
+half-links. The corresponding metric is `motor_power_per_total_microtube_w`.
+This manufacturing productivity metric imposes no minimum efficiency or motor power
+by itself.
+
+`maximize_thermal_efficiency_times_power_per_total_microtube` maximizes
+`indicated_thermal_efficiency * motor_power_per_total_microtube_w`. This objective jointly
+rewards indicated thermal efficiency and motor productivity per physical microtube. It
+does not impose minimum efficiency or motor power by itself. Its reported metric is
+`thermal_efficiency_times_power_per_total_microtube_w`, in `W/microtube`.
 
 The objective must agree with the basis operating direction. Motor power and mechanical
 input are indicated quantities, not useful shaft power. Mechanical losses remain unknown
@@ -386,6 +401,36 @@ numerical similarity.
 `research validate STUDY` parses declarations, verifies hashes, constructs production
 geometry/machine objects and performs preflight checks. It does not integrate
 thermodynamics and does not establish cycle feasibility.
+
+`--search-window` adds a read-only grouped view of active declarations, initials,
+local region centres, effective intervals and clipping. The radius is applied in
+the declared normalized coordinates, including log transforms, rather than as a
+physical percentage. `--json --search-window` includes a `search_window` object.
+Choice eligibility follows the stored scheduler policy: `declared_choices` keeps
+all categories available; older local definitions without that flag retain their
+legacy encoded window, which is labelled explicitly. No policy is rewritten.
+
+`research graphs SOURCE [SOURCE ...] --candidate ID --plots positions,pressures`
+opens a Matplotlib curve browser using the same derived evidence as report/compare.
+Selectors are repeatable; default scope is the report's two best candidates per
+source. Native Back/Forward traverse graph/zoom history; Home restores the initial view.
+PageUp/PageDown select graph types directly. The native Save action exports the
+figure; `--save-directory DIR` sets its default path, without automatic saving. No replay occurs on navigation
+or export, but initial uncached thermal curves may require the standard one-cycle
+replay. `--no-show` prepares the viewer on a noninteractive backend. `--plots mechanisms` adds live report-machine drawing in the same browser,
+one page per selected candidate. It reuses the production renderer before WebP
+encoding. Space pauses/resumes. Native Save to SVG exports all 66 frames as a
+self-contained discrete SMIL animation (5.61 s/cycle); PNG/PDF capture the current
+frame. Existing gradients stay embedded images; geometry/glyphs stay SVG paths.
+Unsupported SVG readers display the first frame. Saving never integrates or
+replays; animated export uses fixed full-machine framing.
+The `torques` curve type shares saved-state replay with thermal curves. Per-side
+physical crank loads are pressure-only virtual-work loads conjugate to each signed
+crank angle. Their torque times signed crank speed equals per-cylinder indicated
+gas power. The total is conjugate to positive cycle progress; abstract families
+are labelled generalized loads. No piston back pressure, inertia or friction is
+assumed. See the [torque convention](DADA_ENGINE_RESEARCH.md#gas-torque-at-the-cranks).
+
 
 `research evaluate STUDY --output RESULT` evaluates one exact configured point, using
 active `initial` values unless overridden with `--set NAME=VALUE`. Overrides must
