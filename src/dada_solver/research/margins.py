@@ -38,7 +38,8 @@ PHYSICAL_CONSTRAINTS={
     'maximum_absolute_mass_flow':('limit','maximum','kg/s'),
     'maximum_mach_number':('limit','maximum','1'),
     'valid_thermodynamic_model':(None,'equal','1'),
-    'periodic_convergence':(None,'equal','1')}
+    'periodic_convergence':(None,'equal','1'),
+    'exchanger_length_to_diameter':('value','minimum','1')}
 
 
 def enrich_constraints(records, declarations):

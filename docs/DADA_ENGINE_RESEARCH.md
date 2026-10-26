@@ -78,8 +78,13 @@ are in the [study editor reference](DADA_ENGINE_RESEARCH_REFERENCE.md#study-edit
 research validate outputs/my_study/study.toml
 research validate outputs/my_study/study.toml --search-window
 research evaluate outputs/my_study/study.toml \
-    --output outputs/my_study/reference.json --budget 3m
+    --output outputs/my_study/reference.json --budget 3m \
+    --set microtube.heat_in.tube_count=24   # override a parameter (repeatable)
 ```
+
+The `--set` flag (alias `--set`) can be repeated to override any parameter defined in the study TOML. Each assignment must be `NAME=VALUE`; the CLI validates the name, casts to the correct type (integer, float, or raw string for choices), and uses the overridden value for the evaluation, leaving the original study file unchanged. This is handy for quick sensitivity checks without editing the TOML.
+
+`validate` checks declarations, hashes and production geometry without integrating thermodynamics. `--search-window` shows active parameters by group, their initials, declared domains, and the effective window of each local region. It never overwrites an existing result, so choose a new output filename for each evaluation.
 
 `validate` checks declarations, hashes and production geometry without integrating
 thermodynamics. `--search-window` shows active parameters by group, their

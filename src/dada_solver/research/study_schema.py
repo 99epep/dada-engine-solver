@@ -195,11 +195,38 @@ def load_current_study(path, *, basis_path=None, artifact_directory=None):
             if field: positive(row[field],kind)
     if 'valid_thermodynamic_model' not in names: raise ValueError('An explicit model-validity constraint is required.')
     with validation_location(path,('objective',)):
-        objective=raw['objective']; keys(objective,('type','unit'),'objective')
-        if objective['type'] not in OBJECTIVE_UNITS or objective['unit'] != OBJECTIVE_UNITS[objective['type']]:
-            raise ValueError('Unsupported objective or unit.')
-        if basis.configuration.motor_operation != (objective['type'] not in COOLING_OBJECTIVES):
-            raise ValueError('The objective must match the basis operating direction.')
+        objective = raw['objective']
+        # Validate basic keys for classic or expression objectives
+        keys(objective, ('type', 'unit'), 'objective')
+        if objective['type'] in OBJECTIVE_UNITS:
+            # Classic objective handling
+            if objective['unit'] != OBJECTIVE_UNITS[objective['type']]:
+                raise ValueError('Unsupported objective or unit.')
+                raise ValueError('Unsupported objective or unit.')
+            if basis.configuration.motor_operation != (objective['type'] not in COOLING_OBJECTIVES):
+                raise ValueError('The objective must match the basis operating direction.')
+            # Optional direction field for classic objectives
+            direction_key = f"{objective['type']}_direction"
+            if direction_key in objective:
+                direction = objective[direction_key]
+                if direction not in ('minimize', 'maximize'):
+                    raise ValueError('Invalid direction for classic objective.')
+        else:
+            # Expression‑based objective support
+            expr = objective['type']
+            # Direction can be provided via a generic 'direction' field for expression objectives
+            direction = objective.get('direction', 'minimize')
+            if direction not in ('minimize', 'maximize'):
+                raise ValueError('Invalid direction for expression objective.')
+            # Store parsed expression object for later use
+            from .objectives import ExpressionObjective
+            objective['_expression_obj'] = ExpressionObjective(name='expr', expr=expr, direction=direction)
+            # Preserve expression and direction in the schema
+            objective['_expression'] = expr
+            objective['_direction'] = direction
+            # Ensure a unit key exists; default to dimensionless if omitted
+            if 'unit' not in objective:
+                objective['unit'] = '1'
     signatures=set()
     for index,row in enumerate(mechanical):
         with validation_location(path,('mechanical_constraints',index),label=f"mechanical constraint {row.get('side')}.{row.get('metric')}"):
