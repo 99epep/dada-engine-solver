@@ -175,6 +175,10 @@ def _load_constraint(
                 large=float(data["large_piston_area"]),
             ),
         )
+    if constraint_type == "exchanger_length_to_diameter":
+        from dada_solver.research.configuration import ExchangerLengthToDiameter
+        val = data.get("value") if "value" in data else data.get("limit")
+        return ExchangerLengthToDiameter(value=float(val))
     raise ValueError(f"Unsupported sizing constraint: {constraint_type}")
 
 

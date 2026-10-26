@@ -257,6 +257,23 @@ The objective must agree with the basis operating direction. Motor power and mec
 input are indicated quantities, not useful shaft power. Mechanical losses remain unknown
 unless a separate physical model supplies them.
 
+### Expression-based objectives
+
+Research studies may also define custom arithmetic objectives in `[objective]`. The expression is specified in the `type` field, with an optional optimization `direction` (`"minimize"` by default, or `"maximize"`), and an optional `unit` (defaults to `"1"`):
+
+```toml
+[objective]
+type = "cooling_power_w * ratio"
+direction = "maximize"
+unit = "W"
+```
+
+The expression is evaluated in a sandboxed arithmetic interpreter (`asteval`). Supported operators include standard Python arithmetic (`+`, `-`, `*`, `/`, `**` or `^` for exponentiation) and safe mathematical functions (`sqrt`, `abs`, `min`, `max`, `log`, `exp`, `sin`, `cos`). Available variables include:
+
+- Thermodynamic cycle metrics: `indicated_power_w`, `power`, `gas_power`, `motor_power_w`, `cooling_power_w`, `cooling_cop`, `cop`, `indicated_thermal_efficiency`, `thermal_efficiency`, `heat_input_w`, `heat_out_w`, `mechanical_input_power`, `indicated_mechanical_input_power_w`.
+- Exchanger manufacturing productivities: `cooling_power_per_total_microtube_w`, `cooling_cop_times_power_per_total_microtube_w`, `motor_power_per_total_microtube_w`, `thermal_efficiency_times_power_per_total_microtube_w`.
+- Exchanger geometry: `ratio`, the micro-tube bundle length-to-diameter ratio ($L_{\text{tube}} / D_{\text{bundle}}$).
+
 `PHYSICAL_CONSTRAINTS` in `research.margins` defines the accepted vocabulary:
 
 | Constraint `type` | Numeric field | Unit |
@@ -270,10 +287,13 @@ unless a separate physical model supplies them.
 | `maximum_mach_number` | `limit` | `1` |
 | `valid_thermodynamic_model` | None | `1` |
 | `periodic_convergence` | None | `1` |
+| `exchanger_length_to_diameter` | `value` | `1` |
 
 Each declaration includes `type` and `unit`; numeric fields must be positive and finite.
 Duplicates are rejected. Generic studies require an explicit `valid_thermodynamic_model`
-constraint.
+constraint. `exchanger_length_to_diameter` constrains the minimum bundle length-to-diameter
+ratio ($L_{\text{tube}} / D_{\text{bundle}}$) across the machine's heat exchangers,
+excluding collectors. Its numeric `value` must be strictly positive.
 
 Model applicability/domain, study requirements, search bounds and numerical settings
 have distinct owners. A stricter study Mach limit does not redefine the exchanger's
@@ -432,10 +452,12 @@ are labelled generalized loads. No piston back pressure, inertia or friction is
 assumed. See the [torque convention](DADA_ENGINE_RESEARCH.md#gas-torque-at-the-cranks).
 
 
-`research evaluate STUDY --output RESULT` evaluates one exact configured point, using
-active `initial` values unless overridden with `--set NAME=VALUE`. Overrides must
-address declared active coordinates within their domains. It does not run a search and
-never overwrites an existing result.
+`research evaluate STUDY --output RESULT [--set NAME=VALUE ...]` evaluates one exact
+configured point, using active `initial` values unless overridden with `--set NAME=VALUE`.
+The `--set` flag may be repeated to override multiple active parameters; each override
+validates the parameter name, casts the value to its declared type (integer, float, or
+string choice), and checks declared bounds. It does not run a search and never overwrites
+an existing result file.
 
 
 ## Global Sobol search

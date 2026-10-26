@@ -399,7 +399,7 @@ class MachineEvaluator:
             evaluation = SimpleNamespace(configuration=design.configuration, usable=periodic.converged,
                 status=EvaluationStatus.CONVERGED if periodic.converged else EvaluationStatus.NOT_CONVERGED,
                 periodic=SimpleNamespace(message=periodic.message), performance=performance,
-                diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle)
+                diagnostics=diagnostics, validity=validity, model=wrapper.model, cycle=cycle, design=design)
             # Variable-property films/hydraulic passages already diagnose each side
             # against that side's declared gas-model domain, including Mach. Never
             # compare a global maximum with an unrelated generic/design threshold.
@@ -502,7 +502,8 @@ class MachineEvaluator:
                 validity=json_values(asdict(evaluation.validity)))
             if getattr(self.definition,'identity',{}).get('definition_kind') == 'research_v3':
                 from dada_solver.research.study_schema import COOLING_OBJECTIVES
-                cooling=self.definition.objective.name in COOLING_OBJECTIVES
+                cooling = (self.definition.objective.name in COOLING_OBJECTIVES
+                           or not getattr(self.definition.configuration, 'motor_operation', True))
                 metrics.update(cooling_power_w=p.cooling_power if cooling else None, cooling_cop=p.cooling_cop if cooling else None,
                                indicated_mechanical_input_power_w=p.mechanical_input_power if cooling else None)
         if all(value is not None for value in context.values()):

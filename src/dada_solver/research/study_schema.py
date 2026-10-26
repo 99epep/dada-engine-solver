@@ -196,31 +196,34 @@ def load_current_study(path, *, basis_path=None, artifact_directory=None):
     if 'valid_thermodynamic_model' not in names: raise ValueError('An explicit model-validity constraint is required.')
     with validation_location(path,('objective',)):
         objective = raw['objective']
-        # Validate basic keys for classic or expression objectives
-        keys(objective, ('type', 'unit'), 'objective')
+        direction_key = f"{objective.get('type')}_direction"
+        keys(objective, ('type',), 'objective', optional=('unit', 'direction', 'name', direction_key))
         if objective['type'] in OBJECTIVE_UNITS:
             # Classic objective handling
-            if objective['unit'] != OBJECTIVE_UNITS[objective['type']]:
-                raise ValueError('Unsupported objective or unit.')
+            if 'unit' not in objective or objective['unit'] != OBJECTIVE_UNITS[objective['type']]:
                 raise ValueError('Unsupported objective or unit.')
             if basis.configuration.motor_operation != (objective['type'] not in COOLING_OBJECTIVES):
                 raise ValueError('The objective must match the basis operating direction.')
             # Optional direction field for classic objectives
-            direction_key = f"{objective['type']}_direction"
             if direction_key in objective:
                 direction = objective[direction_key]
+                if direction not in ('minimize', 'maximize'):
+                    raise ValueError('Invalid direction for classic objective.')
+            elif 'direction' in objective:
+                direction = objective['direction']
                 if direction not in ('minimize', 'maximize'):
                     raise ValueError('Invalid direction for classic objective.')
         else:
             # Expression‑based objective support
             expr = objective['type']
-            # Direction can be provided via a generic 'direction' field for expression objectives
             direction = objective.get('direction', 'minimize')
             if direction not in ('minimize', 'maximize'):
                 raise ValueError('Invalid direction for expression objective.')
-            # Store parsed expression object for later use
-            from .objectives import ExpressionObjective
-            objective['_expression_obj'] = ExpressionObjective(name='expr', expr=expr, direction=direction)
+            import ast
+            try:
+                ast.parse(expr.replace('^', '**'))
+            except SyntaxError as e:
+                raise ValueError(f'Invalid expression objective syntax: {e}') from e
             # Preserve expression and direction in the schema
             objective['_expression'] = expr
             objective['_direction'] = direction
@@ -363,10 +366,26 @@ class ResearchDefinition(CampaignDefinition):
             'maximize_motor_power_per_total_microtube': MaximizeMotorPowerPerTotalMicrotube(),
             'maximize_thermal_efficiency_times_power_per_total_microtube': MaximizeThermalEfficiencyTimesPowerPerTotalMicrotube(),
         }
-        self.objective=microtube_objectives.get(raw['objective']['type'])
+        self.objective = microtube_objectives.get(raw['objective']['type'])
         if self.objective is None:
-            self.objective=_load_objective({'type':raw['objective']['type']})
-        self.constraints=tuple(MaximumMechanicalInputPower(row['limit']) if row['type']=='maximum_mechanical_input_power' else _load_constraint({k:v for k,v in row.items() if k!='unit'},None) for row in raw['constraints'])
+            if raw['objective']['type'] in OBJECTIVE_UNITS:
+                self.objective = _load_objective({'type': raw['objective']['type']})
+            else:
+                from .objectives import ExpressionObjective
+                obj_name = raw['objective'].get('name', 'expression_objective')
+                direction = raw['objective'].get('direction', 'minimize')
+                self.objective = ExpressionObjective(name=obj_name, expr=raw['objective']['type'], direction=direction)
+        constraints = []
+        for row in raw['constraints']:
+            if row['type'] == 'maximum_mechanical_input_power':
+                constraints.append(MaximumMechanicalInputPower(row['limit']))
+            elif row['type'] == 'exchanger_length_to_diameter':
+                from .configuration import ExchangerLengthToDiameter
+                val = row.get('value') if 'value' in row else row.get('limit')
+                constraints.append(ExchangerLengthToDiameter(value=float(val)))
+            else:
+                constraints.append(_load_constraint({k: v for k, v in row.items() if k != 'unit'}, None))
+        self.constraints = tuple(constraints)
         self.wall_numerical_settings=WallCycleNumericalSettings(**study.basis.data['wall_settings']) if study.basis.heat_in is not None else None
         self.wall_backend=WallBackendSettings(raw['numerical']['backend']); self.adaptive_wall_acceleration=None
         self.initial_wall_state=study.basis.data['warm_start'] if raw['warm_start']['initial_source']=='source_exact' else None

@@ -83,7 +83,7 @@ requires active parameters. Resume uses the stored campaign definition.
 research evaluate study.toml --budget 5m --output work/initial-evaluation.json
 research run study.toml --directory work/campaign --budget 30m --max-candidates 32
 research resume work/campaign --budget 30m --max-candidates 32
-dada-research evaluate study.toml --output eval.json --set microtube.heat_in.tube_count=24 \
+research evaluate study.toml --output eval.json --set microtube.heat_in.tube_count=24
 ```
 
 ### Inspect results and mechanisms
